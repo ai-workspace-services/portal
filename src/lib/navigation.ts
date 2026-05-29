@@ -19,6 +19,7 @@ import {
   Info,
   CreditCard,
   LifeBuoy,
+  PackageOpen,
 } from "lucide-react";
 
 export type ReleaseChannel = "stable" | "beta" | "develop";
@@ -77,6 +78,14 @@ export const createNavConfig = (
       href: "/xworkmate",
       icon: MessageSquare,
       active: (pathname) => pathname?.startsWith("/xworkmate"),
+      showOn: "both",
+    },
+    {
+      key: "xworkmateSuite",
+      label: isChinese ? "产品矩阵" : "Suite",
+      href: "/xworkmate-suite",
+      icon: PackageOpen,
+      active: (pathname) => pathname?.startsWith("/xworkmate-suite"),
       showOn: "both",
     },
     {
