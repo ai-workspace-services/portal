@@ -9,17 +9,14 @@ import {
   Cloud,
   Code2,
   FolderArchive,
-  Github,
   GitBranch,
   Layers3,
-  MessageCircle,
   Plug,
   PlayCircle,
   ServerCog,
   ShieldCheck,
   Sparkles,
   TerminalSquare,
-  Video,
 } from "lucide-react";
 
 type SuiteProduct = {
@@ -99,30 +96,6 @@ const deliverySteps = [
   },
 ];
 
-const socialChannels = [
-  {
-    name: "GitHub",
-    handle: "x-evor",
-    description: "查看 XWorkmate 套件源码、插件和技能包更新。",
-    href: "https://github.com/x-evor",
-    icon: Github,
-  },
-  {
-    name: "微信公众号",
-    handle: "行者深蓝",
-    description: "发布产品进展、AI 工作流实践和个人效率场景。",
-    href: "",
-    icon: MessageCircle,
-  },
-  {
-    name: "视频号 / 短视频",
-    handle: "XWorkmate Demo",
-    description: "预留演示视频、任务案例和使用片段展示位。",
-    href: "",
-    icon: Video,
-  },
-];
-
 export default function XWorkmateSuiteMarketing() {
   return (
     <main className="relative overflow-hidden bg-background text-text">
@@ -184,7 +157,7 @@ export default function XWorkmateSuiteMarketing() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-4 pb-8 pt-16 sm:px-6 sm:pt-20 lg:px-8 lg:pt-24">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase text-text-subtle">
@@ -195,7 +168,8 @@ export default function XWorkmateSuiteMarketing() {
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-6 text-text-muted">
-            页面主张不只讲“聊天更聪明”，而是展示任务线程、远程执行、多会话处理和文件产物如何服务个人工作流。
+            围绕持续任务线程、远程运行、多会话处理和文件产物管理，形成面向个人创作与开发的完整
+            AI 工作流。
           </p>
         </div>
 
@@ -300,9 +274,9 @@ export default function XWorkmateSuiteMarketing() {
                 从聊天窗口到个人工作区
               </h2>
               <p className="mt-3 text-sm leading-6 text-text-muted">
-                新页面的核心是把产品矩阵解释成一个人的使用闭环：客户端承载任务线程，Bridge
+                产品矩阵形成清晰的个人使用闭环：客户端承载任务线程，Bridge
                 连接运行环境，OpenClaw 插件处理多会话任务，Core Skills
-                帮助产出文件、图片、视频和代码。
+                支持文件、图片、视频和代码产出。
               </p>
             </div>
 
@@ -358,53 +332,6 @@ export default function XWorkmateSuiteMarketing() {
             <p className="mt-2 text-sm leading-6 text-text-muted">
               任务归档、产物面板、文档和多媒体输出都能回看，减少只停留在聊天记录里的零散结果。
             </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 pb-16 pt-2 sm:px-6 lg:px-8">
-        <div className="rounded-[16px] border border-surface-border bg-white/92 p-5 shadow-[var(--shadow-md)] lg:p-7">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-text-subtle">
-                Social media
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
-                底部社交媒体展示
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-6 text-text-muted">
-              GitHub 承接源码可信度，公众号和短视频位承接教程、案例和发布节奏。
-            </p>
-          </div>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {socialChannels.map(
-              ({ name, handle, description, href, icon: Icon }) => {
-                const card = (
-                  <div className="h-full rounded-[8px] border border-surface-border bg-background/80 p-5 transition hover:bg-white hover:shadow-sm">
-                    <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-                    <h3 className="mt-4 text-base font-semibold tracking-normal text-slate-950">
-                      {name}
-                    </h3>
-                    <p className="mt-1 text-sm font-semibold text-text-muted">
-                      {handle}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-text-muted">
-                      {description}
-                    </p>
-                  </div>
-                );
-
-                return href ? (
-                  <Link key={name} href={href}>
-                    {card}
-                  </Link>
-                ) : (
-                  <div key={name}>{card}</div>
-                );
-              },
-            )}
           </div>
         </div>
       </section>
