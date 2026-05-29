@@ -1,120 +1,63 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IntegrationDefaults } from "@/lib/openclaw/types";
 import { XWorkmateWorkspacePage } from "@/components/xworkmate/XWorkmateWorkspacePage";
-
-const pushMock = vi.fn();
-const assistantPaneMock = vi.fn();
-
-const mockStore = {
-  setScope: vi.fn(),
-  applyDefaults: vi.fn(),
-  setSelectedSessionKey: vi.fn(),
-  selectedSessionKey: "",
-  openclawUrl: "",
-  vaultUrl: "",
-  apisixUrl: "",
-};
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: pushMock,
-  }),
-}));
-
-vi.mock("@/i18n/LanguageProvider", () => ({
-  useLanguage: () => ({
-    language: "zh",
-  }),
-}));
-
-vi.mock("@/state/openclawConsoleStore", () => ({
-  useOpenClawConsoleStore: (selector: (state: typeof mockStore) => unknown) =>
-    selector(mockStore),
-}));
-
-vi.mock("@/components/openclaw/OpenClawAssistantPane", () => ({
-  OpenClawAssistantPane: (props: { integrationsHref?: string }) => {
-    assistantPaneMock(props);
-    return (
-      <div data-testid="assistant-pane">
-        assistant-pane:{props.integrationsHref ?? "missing"}
-      </div>
-    );
-  },
-}));
-
-const emptyDefaults: IntegrationDefaults = {
-  openclawUrl: "",
-  openclawOrigin: "",
-  openclawTokenConfigured: false,
-  vaultUrl: "",
-  vaultNamespace: "",
-  vaultTokenConfigured: false,
-  vaultSecretPath: "",
-  vaultSecretKey: "",
-  apisixUrl: "",
-  apisixTokenConfigured: false,
-};
 
 describe("XWorkmateWorkspacePage", () => {
   beforeEach(() => {
-    pushMock.mockReset();
-    assistantPaneMock.mockReset();
-    mockStore.setScope.mockReset();
-    mockStore.applyDefaults.mockReset();
-    mockStore.setSelectedSessionKey.mockReset();
-    mockStore.selectedSessionKey = "";
-    mockStore.openclawUrl = "";
-    mockStore.vaultUrl = "";
-    mockStore.apisixUrl = "";
-  });
+    vi.restoreAllMocks();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("action=ping")) {
+          return Response.json({
+            status: "ok",
+            version: "test-version",
+          });
+        }
 
-  it("renders the desktop-style AI Gateway empty state and routes to xworkmate integrations", () => {
-    render(
-      <XWorkmateWorkspacePage
-        defaults={emptyDefaults}
-        profile={null}
-        scopeKey="test-scope"
-      />,
-    );
-
-    expect(screen.getByText("先配置 AI Gateway")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /请先在 Settings -> AI Gateway 中配置地址、API Key 和默认模型/,
-      ),
-    ).toBeInTheDocument();
-
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "配置 AI Gateway" })[0],
-    );
-    expect(pushMock).toHaveBeenCalledWith("/xworkmate/integrations");
-  });
-
-  it("renders the assistant pane when a gateway target is available", () => {
-    const connectedDefaults: IntegrationDefaults = {
-      ...emptyDefaults,
-      openclawUrl: "wss://gateway.example.com",
-      openclawTokenConfigured: true,
-    };
-
-    mockStore.openclawUrl = "wss://gateway.example.com";
-
-    render(
-      <XWorkmateWorkspacePage
-        defaults={connectedDefaults}
-        profile={null}
-        scopeKey="test-scope"
-      />,
-    );
-
-    expect(screen.getByTestId("assistant-pane")).toBeInTheDocument();
-    expect(assistantPaneMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        integrationsHref: "/xworkmate/integrations",
+        return Response.json({
+          jsonrpc: "2.0",
+          id: "test",
+          result: {
+            success: true,
+            output: "bridge task ok",
+            artifacts: [{ name: "result.pdf" }],
+            remoteWorkingDirectory: "/tmp/xworkmate",
+          },
+        });
       }),
     );
+  });
+
+  it("renders the bridge workspace shell from the screenshot flow", async () => {
+    render(<XWorkmateWorkspacePage />);
+
+    expect(screen.getByText("XWorkmate")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("搜索任务")).toBeInTheDocument();
+    expect(screen.getByText("开始对话或运行任务")).toBeInTheDocument();
+    expect(
+      screen.getByText("已连接 · xworkmate-bridge.svc.plus"),
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Bridge: connected/)).toBeInTheDocument();
+    });
+  });
+
+  it("submits a prompt through the bridge proxy and renders the result", async () => {
+    render(<XWorkmateWorkspacePage />);
+
+    fireEvent.change(screen.getByPlaceholderText(/输入需求/), {
+      target: { value: "请只回复 ok" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "提交" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("bridge task ok").length).toBeGreaterThan(0);
+      expect(screen.getByText("/tmp/xworkmate")).toBeInTheDocument();
+      expect(screen.getByText("result.pdf")).toBeInTheDocument();
+    });
   });
 });

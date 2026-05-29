@@ -214,8 +214,8 @@ export default function ServicesPage() {
       key: "xworkmate",
       name: "XWorkmate",
       description: isChinese
-        ? "在线版 XWorkmate 工作区，底层由 OpenClaw gateway 驱动。"
-        : "Online XWorkmate workspace powered by the OpenClaw gateway.",
+        ? "在线版 XWorkmate 工作区，底层由 xworkmate-bridge 驱动。"
+        : "Online XWorkmate workspace powered by xworkmate-bridge.",
       href: "/xworkmate",
       icon: Command,
     },

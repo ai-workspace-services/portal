@@ -41,22 +41,29 @@ cp .env.example .env
 ## 主要入口 (Key Routes)
 
 - `/services`：服务导航页，保留现有控制台布局。
-- `/xworkmate`：原生 Next.js 的 XWorkmate 在线工作区，底层通过 OpenClaw gateway 接入。
+- `/xworkmate`：原生 Next.js 的 XWorkmate 在线工作区，底层通过 `xworkmate-bridge` 的 `/acp/rpc` 接入。
 - `/panel/api`：融合设置与集成页，用于配置和探测 OpenClaw Gateway、Vault Server、APISIX AI Gateway。
 
 ## AI 助手与集成能力 (Assistant & Integrations)
 
 当前主页 AI 辅助功能已经基于本仓库原生实现，核心行为如下：
 
-- 侧栏助手模式保留现有交互方式，但底层改为对接 OpenClaw gateway。
+- 侧栏助手模式保留现有交互方式，但 `/xworkmate` 主工作区直接对接 `xworkmate-bridge`。
 - 最大化助手页面统一收敛到 `/xworkmate`，旧的 `/services/openclaw` 只保留兼容跳转，不再继续使用旧的 control UI 套壳。
 - 页面截图通过 assistant chat 附件模式发送，而不是单独的浏览器控制壳。
-- `/panel/api` 提供 OpenClaw、Vault、APISIX 三类集成的默认值预填与连通性探测。
-- 网关地址与令牌从服务端环境变量读取，前端组件不硬编码敏感配置。
+- `/panel/api` 仍保留旧集成配置入口；`/xworkmate` 主路径不依赖它。
+- bridge 地址与令牌从服务端环境变量读取，前端组件不硬编码敏感配置。
 
 ## 环境变量 (Environment Variables)
 
-以下变量用于主页 AI 助手和集成页的服务端默认值预填：
+以下变量用于 `/xworkmate` 主工作区的服务端 bridge 代理：
+
+| 变量                | 用途                                  |
+| ------------------- | ------------------------------------- |
+| `BRIDGE_SERVER_URL` | XWorkmate bridge 服务根地址           |
+| `BRIDGE_AUTH_TOKEN` | XWorkmate bridge bearer token，服务端 |
+
+以下变量用于旧助手和集成页的服务端默认值预填：
 
 | 变量                          | 用途                                 |
 | ----------------------------- | ------------------------------------ |
