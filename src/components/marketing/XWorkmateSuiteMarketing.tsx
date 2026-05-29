@@ -9,18 +9,23 @@ import {
   Cloud,
   Code2,
   FolderArchive,
+  Github,
   GitBranch,
   Layers3,
+  MessageCircle,
   Plug,
+  PlayCircle,
   ServerCog,
   ShieldCheck,
   Sparkles,
   TerminalSquare,
+  Video,
 } from "lucide-react";
 
 type SuiteProduct = {
   name: string;
   repo: string;
+  href: string;
   role: string;
   description: string;
   icon: typeof AppWindow;
@@ -30,6 +35,7 @@ const suiteProducts: SuiteProduct[] = [
   {
     name: "xworkmate-app",
     repo: "x-evor/xworkmate-app",
+    href: "https://github.com/x-evor/xworkmate-app.git",
     role: "桌面工作台",
     description:
       "承载任务线程、执行模式、工作区文件和产物预览，让用户在 macOS 客户端内完成 AI Agent 工作流。",
@@ -38,6 +44,7 @@ const suiteProducts: SuiteProduct[] = [
   {
     name: "xworkmate-bridge",
     repo: "x-evor/xworkmate-bridge",
+    href: "https://github.com/x-evor/xworkmate-bridge",
     role: "网关与运行时连接",
     description:
       "连接你的桌面工作区与远程 OpenClaw 运行环境，让长任务可以继续跑、可恢复、可回到同一条线程。",
@@ -46,6 +53,7 @@ const suiteProducts: SuiteProduct[] = [
   {
     name: "openclaw-multi-session-plugins",
     repo: "x-evor/openclaw-multi-session-plugins",
+    href: "https://github.com/x-evor/openclaw-multi-session-plugins",
     role: "多会话执行插件",
     description:
       "把 OpenClaw 扩展成可并行处理任务的执行环境，支撑多线程、归档任务和产物落盘。",
@@ -54,6 +62,7 @@ const suiteProducts: SuiteProduct[] = [
   {
     name: "xworkspace-core-skills",
     repo: "x-evor/xworkspace-core-skills",
+    href: "https://github.com/x-evor/xworkspace-core-skills",
     role: "核心技能包",
     description:
       "沉淀常用写作、编程、图片、视频和工作区处理方式，让个人任务从聊天走向稳定产物。",
@@ -87,6 +96,30 @@ const deliverySteps = [
     title: "4. Workspace skills",
     body: "核心技能包把常见任务变成可复用工作方式，让写作、代码、图片和视频制作更稳定。",
     icon: ShieldCheck,
+  },
+];
+
+const socialChannels = [
+  {
+    name: "GitHub",
+    handle: "x-evor",
+    description: "查看 XWorkmate 套件源码、插件和技能包更新。",
+    href: "https://github.com/x-evor",
+    icon: Github,
+  },
+  {
+    name: "微信公众号",
+    handle: "行者深蓝",
+    description: "发布产品进展、AI 工作流实践和个人效率场景。",
+    href: "",
+    icon: MessageCircle,
+  },
+  {
+    name: "视频号 / 短视频",
+    handle: "XWorkmate Demo",
+    description: "预留演示视频、任务案例和使用片段展示位。",
+    href: "",
+    icon: Video,
   },
 ];
 
@@ -168,7 +201,7 @@ export default function XWorkmateSuiteMarketing() {
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {suiteProducts.map(
-            ({ name, repo, role, description, icon: Icon }) => (
+            ({ name, repo, href, role, description, icon: Icon }) => (
               <article
                 key={name}
                 className="flex min-h-[270px] flex-col rounded-[8px] border border-surface-border bg-white/92 p-5 shadow-[var(--shadow-soft)]"
@@ -188,7 +221,7 @@ export default function XWorkmateSuiteMarketing() {
                   {description}
                 </p>
                 <Link
-                  href={`https://github.com/${repo}`}
+                  href={href}
                   className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover"
                 >
                   {repo}
@@ -197,6 +230,61 @@ export default function XWorkmateSuiteMarketing() {
               </article>
             ),
           )}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid gap-5 rounded-[16px] border border-surface-border bg-white/92 p-5 shadow-[var(--shadow-md)] lg:grid-cols-[1.05fr_0.95fr] lg:p-7">
+          <div className="flex min-h-[320px] flex-col justify-between rounded-[12px] border border-surface-border bg-slate-950 p-5 text-white">
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/78">
+                <PlayCircle className="h-4 w-4" aria-hidden="true" />
+                Demo video
+              </span>
+              <span className="rounded-[8px] border border-white/10 px-2.5 py-1 text-xs text-white/56">
+                Coming soon
+              </span>
+            </div>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10">
+              <PlayCircle className="h-9 w-9" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold tracking-normal text-white">
+                预留 Demo 视频展示空间
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/68">
+                后续可放置 XWorkmate 从发起任务、连接 Bridge、执行 OpenClaw
+                多会话到产物归档的完整录屏，也可拆成短视频片段用于社媒传播。
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-center">
+            <p className="text-xs font-semibold uppercase text-text-subtle">
+              What to show
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
+              视频内容围绕个人工作流，不做企业宣讲
+            </h2>
+            <div className="mt-5 grid gap-3">
+              {[
+                "一个任务线程持续推进：补充上下文、恢复执行、继续产出。",
+                "产物面板展示文件、图片、视频和文档，而不是只停留在聊天气泡。",
+                "本地桌面体验和远程运行环境自然衔接，长任务不用守在窗口前。",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex gap-3 rounded-[8px] border border-surface-border bg-background/80 p-3 text-sm leading-6 text-text-muted"
+                >
+                  <CheckCircle2
+                    className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                    aria-hidden="true"
+                  />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -270,6 +358,53 @@ export default function XWorkmateSuiteMarketing() {
             <p className="mt-2 text-sm leading-6 text-text-muted">
               任务归档、产物面板、文档和多媒体输出都能回看，减少只停留在聊天记录里的零散结果。
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 pb-16 pt-2 sm:px-6 lg:px-8">
+        <div className="rounded-[16px] border border-surface-border bg-white/92 p-5 shadow-[var(--shadow-md)] lg:p-7">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase text-text-subtle">
+                Social media
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
+                底部社交媒体展示
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-text-muted">
+              GitHub 承接源码可信度，公众号和短视频位承接教程、案例和发布节奏。
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {socialChannels.map(
+              ({ name, handle, description, href, icon: Icon }) => {
+                const card = (
+                  <div className="h-full rounded-[8px] border border-surface-border bg-background/80 p-5 transition hover:bg-white hover:shadow-sm">
+                    <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                    <h3 className="mt-4 text-base font-semibold tracking-normal text-slate-950">
+                      {name}
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-text-muted">
+                      {handle}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-text-muted">
+                      {description}
+                    </p>
+                  </div>
+                );
+
+                return href ? (
+                  <Link key={name} href={href}>
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={name}>{card}</div>
+                );
+              },
+            )}
           </div>
         </div>
       </section>
