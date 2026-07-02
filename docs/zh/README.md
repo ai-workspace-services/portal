@@ -20,6 +20,7 @@
 
 ## 待归并的历史文档
 
+- `operations/vault-github-actions.md`
 - `SEO-AUDIT-REPORT.md`
 - `SEO-WORK-SUMMARY.md`
 - `advanced/customization.md`

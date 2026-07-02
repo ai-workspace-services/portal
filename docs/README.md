@@ -28,6 +28,7 @@ This `docs/` directory now has a bilingual canonical layer for the current repos
 
 ## Existing Docs To Reconcile / 需要继续归并的现有文档
 
+- `operations/vault-github-actions.md`
 - `SEO-AUDIT-REPORT.md`
 - `SEO-WORK-SUMMARY.md`
 - `advanced/customization.md`
