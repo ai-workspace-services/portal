@@ -41,12 +41,14 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 concurrency:
   group: console-pipeline-${{ github.ref_name }}
   cancel-in-progress: false
 
 env:
+  VAULT_ADDR: https://vault.svc.plus
   CANONICAL_DOMAIN: www.svc.plus
   SERVED_DOMAINS: www.svc.plus,console.svc.plus
   APP_BASE_URL: https://www.svc.plus
@@ -62,10 +64,6 @@ env:
   CLOUDFLARE_ACCOUNT_ID: e71be5efb76a6c54f78f008da4404f00
   GHCR_REGISTRY: ghcr.io
   GHCR_USERNAME: ${{ github.actor }}
-  GHCR_PASSWORD: ${{ secrets.GHCR_TOKEN || github.token }}
-  INTERNAL_SERVICE_TOKEN: ${{ secrets.INTERNAL_SERVICE_TOKEN }}
-  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  CLOUDFLARE_DNS_API_TOKEN: ${{ secrets.CLOUDFLARE_DNS_API_TOKEN }}
 
 jobs:
   prep:
@@ -116,9 +114,20 @@ jobs:
       - name: Set Up Docker Buildx
         run: bash scripts/github-actions/setup-docker-buildx.sh
 
+      - name: Load Vault secrets (CICD)
+        id: vault
+        uses: hashicorp/vault-action@v4
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: jwt
+          role: github-actions-console
+          jwtGithubAudience: vault
+          secrets: |
+            kv/data/CICD GHCR_TOKEN | GHCR_TOKEN
+
       - name: Log In To GHCR
         env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}
+          GHCR_TOKEN: ${{ steps.vault.outputs.GHCR_TOKEN }}
         run: bash scripts/github-actions/login-ghcr.sh
 
       - name: Publish Frontend Image
@@ -164,9 +173,25 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ansible
 
+      - name: Load Vault secrets (CICD)
+        id: vault
+        uses: hashicorp/vault-action@v4
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: jwt
+          role: github-actions-console
+          jwtGithubAudience: vault
+          secrets: |
+            kv/data/CICD GHCR_TOKEN | GHCR_TOKEN ;
+            kv/data/CICD INTERNAL_SERVICE_TOKEN | INTERNAL_SERVICE_TOKEN ;
+            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY | SINGLE_NODE_VPS_SSH_PRIVATE_KEY ;
+            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 | SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 ;
+            kv/data/CICD CLOUDFLARE_DNS_API_TOKEN | CLOUDFLARE_DNS_API_TOKEN
+
       - name: Configure SSH For Deploy Host
         env:
-          SINGLE_NODE_VPS_SSH_PRIVATE_KEY: ${{ secrets.SINGLE_NODE_VPS_SSH_PRIVATE_KEY }}
+          SINGLE_NODE_VPS_SSH_PRIVATE_KEY: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY }}
+          SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 }}
           TARGET_HOST: ${{ needs.prep.outputs.target_host }}
         run: bash scripts/github-actions/configure-ssh-for-deploy.sh
 
@@ -174,6 +199,11 @@ jobs:
         working-directory: playbooks
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_PASSWORD: ${{ steps.vault.outputs.GHCR_TOKEN }}
+          INTERNAL_SERVICE_TOKEN: ${{ steps.vault.outputs.INTERNAL_SERVICE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ steps.vault.outputs.CLOUDFLARE_DNS_API_TOKEN }}
+          CLOUDFLARE_DNS_API_TOKEN: ${{ steps.vault.outputs.CLOUDFLARE_DNS_API_TOKEN }}
         run: bash ../scripts/github-actions/run-console-deploy-playbook.sh
 
   validate:
@@ -192,7 +222,22 @@ jobs:
       - name: Check Out Repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
+      - name: Load Vault secrets (CICD)
+        id: vault
+        uses: hashicorp/vault-action@v4
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: jwt
+          role: github-actions-console
+          jwtGithubAudience: vault
+          secrets: |
+            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY | SINGLE_NODE_VPS_SSH_PRIVATE_KEY ;
+            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 | SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64
+
       - name: Configure SSH For Validate Host
+        env:
+          SINGLE_NODE_VPS_SSH_PRIVATE_KEY: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY }}
+          SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 }}
         run: bash scripts/github-actions/configure-ssh-for-deploy.sh
 
       - name: Verify Frontend Release On Host
@@ -233,8 +278,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ansible
 
+      - name: Load Vault secrets (CICD)
+        id: vault
+        uses: hashicorp/vault-action@v4
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: jwt
+          role: github-actions-console
+          jwtGithubAudience: vault
+          secrets: |
+            kv/data/CICD CLOUDFLARE_DNS_API_TOKEN | CLOUDFLARE_DNS_API_TOKEN
+
       - name: Update Cloudflare svc.plus DNS
         working-directory: playbooks
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+          CLOUDFLARE_DNS_API_TOKEN: ${{ steps.vault.outputs.CLOUDFLARE_DNS_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ steps.vault.outputs.CLOUDFLARE_DNS_API_TOKEN }}
         run: bash ../scripts/github-actions/run-cloudflare-svc-plus-dns-playbook.sh
