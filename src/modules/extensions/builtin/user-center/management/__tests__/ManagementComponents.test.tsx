@@ -119,4 +119,23 @@ describe("Management dashboard components", () => {
     expect(screen.getByRole("button", { name: "暂停" })).toBeInTheDocument();
     expect(screen.queryByText("已暂停")).not.toBeInTheDocument();
   });
+
+  it("falls back to email when username is absent", () => {
+    render(
+      <UserGroupManagement
+        users={[
+          {
+            id: "1",
+            email: "fallback@example.com",
+            role: "user",
+            active: true,
+          },
+        ]}
+        canEditRoles
+      />,
+    );
+
+    expect(screen.getAllByText("fallback@example.com")).toHaveLength(2);
+    expect(screen.getByText("活跃")).toBeInTheDocument();
+  });
 });

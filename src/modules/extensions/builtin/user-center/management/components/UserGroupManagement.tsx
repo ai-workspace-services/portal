@@ -63,6 +63,11 @@ function getUserDisplayName(user: ManagedUser): string {
     return name;
   }
 
+  const email = user.email?.trim();
+  if (email) {
+    return email;
+  }
+
   return "—";
 }
 
