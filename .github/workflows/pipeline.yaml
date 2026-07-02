@@ -185,13 +185,11 @@ jobs:
             kv/data/CICD GHCR_TOKEN | GHCR_TOKEN ;
             kv/data/CICD INTERNAL_SERVICE_TOKEN | INTERNAL_SERVICE_TOKEN ;
             kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY | SINGLE_NODE_VPS_SSH_PRIVATE_KEY ;
-            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 | SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 ;
             kv/data/CICD CLOUDFLARE_DNS_API_TOKEN | CLOUDFLARE_DNS_API_TOKEN
 
       - name: Configure SSH For Deploy Host
         env:
           SINGLE_NODE_VPS_SSH_PRIVATE_KEY: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY }}
-          SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 }}
           TARGET_HOST: ${{ needs.prep.outputs.target_host }}
         run: bash scripts/github-actions/configure-ssh-for-deploy.sh
 
@@ -231,13 +229,11 @@ jobs:
           role: github-actions-console
           jwtGithubAudience: vault
           secrets: |
-            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY | SINGLE_NODE_VPS_SSH_PRIVATE_KEY ;
-            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 | SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64
+            kv/data/CICD SINGLE_NODE_VPS_SSH_PRIVATE_KEY | SINGLE_NODE_VPS_SSH_PRIVATE_KEY
 
       - name: Configure SSH For Validate Host
         env:
           SINGLE_NODE_VPS_SSH_PRIVATE_KEY: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY }}
-          SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64: ${{ steps.vault.outputs.SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64 }}
         run: bash scripts/github-actions/configure-ssh-for-deploy.sh
 
       - name: Verify Frontend Release On Host

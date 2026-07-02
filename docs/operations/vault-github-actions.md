@@ -66,7 +66,7 @@ EOF
 The frontend pipeline expects these keys to exist:
 
 - `GHCR_TOKEN`
-- `SINGLE_NODE_VPS_SSH_PRIVATE_KEY` or `SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64`
+- `SINGLE_NODE_VPS_SSH_PRIVATE_KEY`
 - `INTERNAL_SERVICE_TOKEN`
 - `CLOUDFLARE_DNS_API_TOKEN`
 
@@ -83,14 +83,10 @@ The GitHub Actions workflow should:
 
 ## SSH key handling
 
-Prefer the base64-encoded key when it exists:
+Use the raw OpenSSH private key:
 
 ```bash
-if [ -n "${SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64:-}" ]; then
-  SSH_KEY="$(printf '%s' "${SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64}" | base64 -d)"
-elif [ -n "${SINGLE_NODE_VPS_SSH_PRIVATE_KEY:-}" ]; then
-  SSH_KEY="${SINGLE_NODE_VPS_SSH_PRIVATE_KEY}"
-fi
+SSH_KEY="${SINGLE_NODE_VPS_SSH_PRIVATE_KEY}"
 ```
 
 Then write the key to `~/.ssh/id_rsa` and validate it with `ssh-keygen -y -f`.

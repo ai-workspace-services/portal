@@ -66,7 +66,7 @@ EOF
 前端流水线至少会读取这些键：
 
 - `GHCR_TOKEN`
-- `SINGLE_NODE_VPS_SSH_PRIVATE_KEY` 或 `SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64`
+- `SINGLE_NODE_VPS_SSH_PRIVATE_KEY`
 - `INTERNAL_SERVICE_TOKEN`
 - `CLOUDFLARE_DNS_API_TOKEN`
 
@@ -83,14 +83,10 @@ GitHub Actions workflow 应满足：
 
 ## SSH 私钥处理
 
-优先使用 base64 版本：
+直接使用 OpenSSH 私钥原文：
 
 ```bash
-if [ -n "${SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64:-}" ]; then
-  SSH_KEY="$(printf '%s' "${SINGLE_NODE_VPS_SSH_PRIVATE_KEY_B64}" | base64 -d)"
-elif [ -n "${SINGLE_NODE_VPS_SSH_PRIVATE_KEY:-}" ]; then
-  SSH_KEY="${SINGLE_NODE_VPS_SSH_PRIVATE_KEY}"
-fi
+SSH_KEY="${SINGLE_NODE_VPS_SSH_PRIVATE_KEY}"
 ```
 
 然后把密钥写入 `~/.ssh/id_rsa`，再用 `ssh-keygen -y -f` 验证。
