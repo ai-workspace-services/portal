@@ -61,8 +61,8 @@ env:
   CLOUDFLARE_WEB_ANALYTICS_SITE_TAG: 0973e84ec8872c67c570f8072e92e21b
   CLOUDFLARE_ACCOUNT_ID: e71be5efb76a6c54f78f008da4404f00
   GHCR_REGISTRY: ghcr.io
-  GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
-  GHCR_PASSWORD: ${{ secrets.GHCR_TOKEN }}
+  GHCR_USERNAME: ${{ github.actor }}
+  GHCR_PASSWORD: ${{ secrets.GHCR_TOKEN || github.token }}
   INTERNAL_SERVICE_TOKEN: ${{ secrets.INTERNAL_SERVICE_TOKEN }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   CLOUDFLARE_DNS_API_TOKEN: ${{ secrets.CLOUDFLARE_DNS_API_TOKEN }}
@@ -118,7 +118,7 @@ jobs:
 
       - name: Log In To GHCR
         env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}
         run: bash scripts/github-actions/login-ghcr.sh
 
       - name: Publish Frontend Image
