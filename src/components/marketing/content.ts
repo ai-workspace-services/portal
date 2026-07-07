@@ -91,10 +91,10 @@ const zh: HomeMarketingContent = {
       {
         label: "产品与服务",
         columns: [
-          { label: "X 助手", description: "桌面工作台与 AI 助手", href: "/xworkmate" },
-          { label: "产品矩阵", description: "XWorkmate 全套产品概览", href: "/xworkmate-suite" },
-          { label: "云 IaC 目录", description: "多云基础设施即代码模板", href: "/cloud_iac" },
-          { label: "更多服务", description: "全部产品与解决方案", href: "/services" },
+          { label: "Xworkmate", description: "AI 核心链路域", href: "/products/xworkmate" },
+          { label: "SaaS 前端与加速域", description: "支持自建/托管 SaaS", href: "/products/saas" },
+          { label: "Open-platform", description: "开放平台与基础设施域", href: "/products/open-platform" },
+          { label: "Xstream Platform", description: "AI加速代理私有网络互联", href: "/products/xstream" },
         ],
       },
       {
@@ -129,13 +129,13 @@ const zh: HomeMarketingContent = {
     { icon: "zap", title: "弹性扩展", description: "按需使用，快速扩展，支撑业务持续增长。" },
   ],
   productGrid: {
-    title: "产品与服务",
-    subtitle: "模块化构建，按需组合，满足不同行业与场景需求。",
+    title: "一个平台，全面覆盖",
+    subtitle: "产品与服务，模块化构建，满足不同行业与场景需求。",
     items: [
-      { icon: "refresh", name: "XStream", description: "智能流量管理与应用加速，提升体验与可靠性。", href: "/services#xstream", learnMore: "了解更多" },
-      { icon: "cloud", name: "XCloudFlow", description: "云网络与连通服务，跨云跨地域安全互联。", href: "/services#xcloudflow", learnMore: "了解更多" },
-      { icon: "eye", name: "XScopeHub", description: "统一可观测与告警，全面洞察系统健康状态。", href: "/services#xscopehub", learnMore: "了解更多" },
-      { icon: "shield", name: "OpenClaw", description: "安全防护与合规能力，主动防御威胁与风险。", href: "/services#openclaw", learnMore: "了解更多" },
+      { icon: "refresh", name: "Xworkmate/Ai-workspace", description: "AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。", href: "/services#xworkmate", learnMore: "了解更多" },
+      { icon: "cloud", name: "SaaS 前端与加速域", description: "支持自建/托管 SaaS，涵盖 Web Console、Accounts、Billing 及底层 Xray 隧道代理。", href: "/services#saas", learnMore: "了解更多" },
+      { icon: "eye", name: "Open-platform", description: "开放平台与基础设施，涵盖 Gitea、Vault、IAM (Zitadel) 以及全局可观测性底座。", href: "/services#open-platform", learnMore: "了解更多" },
+      { icon: "shield", name: "Xstream Platform", description: "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道与观测代理及控制面同步节点。", href: "/services#xstream", learnMore: "了解更多" },
     ],
   },
   statsBar: [
@@ -151,15 +151,15 @@ const zh: HomeMarketingContent = {
     { icon: "zap", title: "敏捷高效，随需扩展", description: "按需使用，分钟级开通与集成，灵活应对业务变化，提升运维效率。" },
   ],
   inviteBanner: {
-    title: "邀请好友，共同成长",
-    description: "复制您的专属邀请链接，邀请团队或伙伴加入。",
+    title: "邀请好友，探索更多可能",
+    description: "分享您的专属邀请链接，好友注册后您将获得 30 天使用时长奖励。",
     inviteUrl: "https://console.svc.plus/invite/ABC123",
     copyLabel: "复制链接",
     copiedLabel: "已复制",
   },
   pricingTeaser: {
-    title: "简单透明的定价",
-    description: "按需订阅，灵活选择。无隐藏费用，随时可调整。",
+    title: "透明定价，按需选择",
+    description: "简单透明的计费方式，无需隐蔽费用。选择适合您的方案，按需使用，轻松上手。",
     priceLabel: "$0",
     priceSuffix: "起",
     features: ["按需订阅", "按量计费", "随时升级或取消"],
@@ -182,10 +182,10 @@ const en: HomeMarketingContent = {
       {
         label: "Products & Services",
         columns: [
-          { label: "X Assistant", description: "Desktop workspace & AI assistant", href: "/xworkmate" },
-          { label: "Product Suite", description: "The full XWorkmate lineup", href: "/xworkmate-suite" },
-          { label: "Cloud IaC Catalog", description: "Multi-cloud infrastructure-as-code templates", href: "/cloud_iac" },
-          { label: "More Services", description: "All products & solutions", href: "/services" },
+          { label: "Xworkmate", description: "AI Core Link Domain", href: "/products/xworkmate" },
+          { label: "SaaS Frontend", description: "Self-hosted / Managed SaaS", href: "/products/saas" },
+          { label: "Open-platform", description: "Infrastructure Domain", href: "/products/open-platform" },
+          { label: "Xstream Platform", description: "Private AI Network", href: "/products/xstream" },
         ],
       },
       {
@@ -220,13 +220,13 @@ const en: HomeMarketingContent = {
     { icon: "zap", title: "Elastic Scale", description: "Pay for what you use, scale quickly, and support continuous business growth." },
   ],
   productGrid: {
-    title: "Products & Services",
+    title: "One Platform, Full Coverage",
     subtitle: "Modular building blocks you can combine for any industry or scenario.",
     items: [
-      { icon: "refresh", name: "XStream", description: "Smart traffic management and acceleration for a faster, more reliable experience.", href: "/services#xstream", learnMore: "Learn more" },
-      { icon: "cloud", name: "XCloudFlow", description: "Cloud networking and connectivity, securely linking across clouds and regions.", href: "/services#xcloudflow", learnMore: "Learn more" },
-      { icon: "eye", name: "XScopeHub", description: "Unified observability and alerting for full visibility into system health.", href: "/services#xscopehub", learnMore: "Learn more" },
-      { icon: "shield", name: "OpenClaw", description: "Security and compliance capabilities that proactively defend against risk.", href: "/services#openclaw", learnMore: "Learn more" },
+      { icon: "refresh", name: "Xworkmate/Ai-workspace", description: "AI Core Link Domain covering App LiteLLM, OpenClaw, QMD & model routing.", href: "/services#xworkmate", learnMore: "Learn more" },
+      { icon: "cloud", name: "SaaS Frontend & Accel", description: "Self-hosted/managed SaaS covering Web Console, Accounts, Billing & Xray tunnels.", href: "/services#saas", learnMore: "Learn more" },
+      { icon: "eye", name: "Open-platform", description: "Open-source solutions covering Gitea, Vault, IAM, and global observability stack.", href: "/services#open-platform", learnMore: "Learn more" },
+      { icon: "shield", name: "Xstream Platform", description: "Private AI network interconnect covering Caddy, Xray tunnels, Vector agents.", href: "/services#xstream", learnMore: "Learn more" },
     ],
   },
   statsBar: [

@@ -37,18 +37,11 @@ export default function HeroSection() {
         </div>
 
         <div className="relative mx-auto hidden aspect-square w-full max-w-md items-center justify-center sm:flex">
-          <div className="absolute inset-6 rounded-[2.5rem] bg-primary/5" aria-hidden />
-          <div className="absolute left-2 top-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-900/8 bg-white shadow-sm">
-            <ShieldCheck className="h-7 w-7 text-primary" aria-hidden />
-          </div>
-          <div className="absolute right-2 top-10 flex h-20 w-20 items-center justify-center rounded-2xl border border-slate-900/8 bg-white shadow-sm">
-            <Cloud className="h-9 w-9 text-primary" aria-hidden />
-          </div>
-          <div className="absolute bottom-8 left-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-900/8 bg-white shadow-sm">
-            <Server className="h-7 w-7 text-primary" aria-hidden />
-          </div>
-          <div className="relative flex h-40 w-40 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="h-14 w-14 text-primary" aria-hidden />
+          <div className="absolute inset-0 rounded-[2.5rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
+            <Sparkles className="h-12 w-12 mb-4 opacity-50" aria-hidden />
+            <span className="text-sm font-medium">
+              [主视觉插画占位符]
+            </span>
           </div>
         </div>
       </div>
