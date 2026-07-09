@@ -9,7 +9,7 @@ if [[ "${event_name}" == "workflow_dispatch" ]]; then
   target_host="${input_target_host}"
   run_apply="${input_run_apply}"
 else
-  target_host="install.svc.plus"
+  target_host="jp-xhttp-contabo.svc.plus"
   run_apply="true"
 fi
 

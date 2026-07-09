@@ -31,7 +31,7 @@ on:
       target_host:
         description: Ansible host or alias
         required: false
-        default: "install.svc.plus"
+        default: "jp-xhttp-contabo.svc.plus"
         type: string
       run_apply:
         description: Apply deployment
