@@ -195,6 +195,13 @@ jobs:
           TARGET_HOST: ${{ needs.prep.outputs.target_host }}
         run: bash scripts/github-actions/configure-ssh-for-deploy.sh
 
+      - name: Clear Immutable Caddy Files
+        env:
+          TARGET_HOST: ${{ needs.prep.outputs.target_host }}
+        run: |
+          ssh -o BatchMode=yes "root@${TARGET_HOST}" \
+            'find /etc/caddy -maxdepth 2 \( -name Caddyfile -o -name "*.caddy" -o -name "*.caddy.bak*" \) -exec chattr -i {} + || true'
+
       - name: Run Deploy Playbook
         working-directory: playbooks
         env:
