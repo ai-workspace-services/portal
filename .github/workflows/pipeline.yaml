@@ -51,7 +51,7 @@ concurrency:
 env:
   VAULT_ADDR: https://vault.svc.plus
   CANONICAL_DOMAIN: console.xworkmate.com
-  SERVED_DOMAINS: www.svc.plus console.svc.plus www.xworkmate.com console.xworkmate.com
+  SERVED_DOMAINS: www.xworkmate.com console.xworkmate.com www.svc.plus console.svc.plus
   ALIAS_DOMAIN: www.xworkmate.com
   APP_BASE_URL: https://console.xworkmate.com
   NEXT_PUBLIC_APP_BASE_URL: https://console.xworkmate.com
