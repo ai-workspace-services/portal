@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release/v1.1.5
     paths:
       - ".github/workflows/pipeline.yaml"
       - "Dockerfile"
@@ -30,7 +31,7 @@ on:
       target_host:
         description: Ansible host or alias
         required: false
-        default: "jp-xhttp-contabo.svc.plus"
+        default: "install.svc.plus"
         type: string
       run_apply:
         description: Apply deployment
@@ -49,13 +50,14 @@ concurrency:
 
 env:
   VAULT_ADDR: https://vault.svc.plus
-  CANONICAL_DOMAIN: www.svc.plus
-  SERVED_DOMAINS: www.svc.plus,console.svc.plus
-  APP_BASE_URL: https://www.svc.plus
-  NEXT_PUBLIC_APP_BASE_URL: https://www.svc.plus
-  NEXT_PUBLIC_SITE_URL: https://www.svc.plus
-  RUNTIME_HOSTNAME: www.svc.plus
-  NEXT_RUNTIME_HOSTNAME: www.svc.plus
+  CANONICAL_DOMAIN: console.xworkmate.com
+  SERVED_DOMAINS: www.svc.plus,console.svc.plus,www.xworkmate.com,console.xworkmate.com
+  ALIAS_DOMAIN: www.xworkmate.com
+  APP_BASE_URL: https://console.xworkmate.com
+  NEXT_PUBLIC_APP_BASE_URL: https://console.xworkmate.com
+  NEXT_PUBLIC_SITE_URL: https://console.xworkmate.com
+  RUNTIME_HOSTNAME: console.xworkmate.com
+  NEXT_RUNTIME_HOSTNAME: console.xworkmate.com
   NEXT_PUBLIC_RUNTIME_ENVIRONMENT: prod
   NEXT_PUBLIC_RUNTIME_REGION: cn
   ACCOUNT_SERVICE_URL: https://accounts.svc.plus
