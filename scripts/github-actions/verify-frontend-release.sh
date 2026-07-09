@@ -149,14 +149,14 @@ if [[ -z "${EXPECTED_RELEASE_IMAGE_REF}" || -z "${EXPECTED_RELEASE_IMAGE_TAG}" |
   exit 1
 fi
 
-mapfile -t served_domains < <(
-  printf '%s' "${SERVED_DOMAINS}" | tr ',' '\n' | while IFS= read -r domain; do
-    domain="$(trim "${domain}")"
-    if [[ -n "${domain}" ]]; then
-      printf '%s\n' "${domain}"
-    fi
-  done
-)
+IFS=', ' read -r -a served_domain_candidates <<< "${SERVED_DOMAINS}"
+served_domains=()
+for domain in "${served_domain_candidates[@]}"; do
+  domain="$(trim "${domain}")"
+  if [[ -n "${domain}" ]]; then
+    served_domains+=("${domain}")
+  fi
+done
 
 if [[ "${#served_domains[@]}" -eq 0 ]]; then
   echo "No served domains were provided." >&2
