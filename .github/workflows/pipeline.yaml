@@ -161,7 +161,7 @@ jobs:
           # Intentionally pinned: playbooks@main regressed deploy reliability on 2026-04-12.
           # Any future bump must pass a full Deploy + Validate run before becoming the default.
           repository: x-evor/playbooks
-          ref: 80c545a95c3b16459f6494ed13d951faac57bfa8
+          ref: c1aac682c1c81b1ff5740a8155e52871db55de60
           path: playbooks
           token: ${{ github.token }}
 
