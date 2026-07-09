@@ -158,10 +158,10 @@ jobs:
       - name: Check Out Playbooks Repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          # Intentionally pinned: playbooks@main regressed deploy reliability on 2026-04-12.
+          # Intentionally pinned to a playbooks/main commit that passed console Deploy + Validate.
           # Any future bump must pass a full Deploy + Validate run before becoming the default.
           repository: x-evor/playbooks
-          ref: 8dbb6b779fcaa00333229e565396efcfdb3f7faa
+          ref: 38296848a81d96427fa0728d5129bc25a5fb02af
           path: playbooks
           token: ${{ github.token }}
 
