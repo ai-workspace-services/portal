@@ -77,7 +77,7 @@ export default function MarketingNav() {
 
               {openDropdown === index && (
                 <div className="absolute left-0 top-full pt-2">
-                  <div className="grid w-[560px] grid-cols-2 gap-1 rounded-2xl border border-slate-900/8 bg-white p-3 shadow-lg">
+                  <div className="grid w-[560px] grid-cols-2 gap-1 rounded-2xl border border-slate-900/8 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
                     {dropdown.columns.map((item) => (
                       <Link
                         key={item.label}
