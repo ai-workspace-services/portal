@@ -64,6 +64,14 @@ export default function ProductGrid() {
                        "/marketing/xstream/product.png"
                      ]}
                    />
+                 ) : item.name.toLowerCase().includes("open") ? (
+                   <Carousel
+                     images={[
+                       "/marketing/Open-Platform/unified-open-control-plane.png",
+                       "/marketing/Open-Platform/four-trusted-foundations.png",
+                       "/marketing/Open-Platform/secure-delivery-lifecycle.png"
+                     ]}
+                   />
                  ) : (
                    <div className="text-center">
                      <Icon className="h-10 w-10 mx-auto mb-2 opacity-50" aria-hidden />
