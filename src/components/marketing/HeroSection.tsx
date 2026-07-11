@@ -1,18 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Cloud, Server, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
 import { marketingTheme } from "@/components/marketing/theme";
+import {
+  loadHomepageHeroAsset,
+  resolveHomepageHeroImage,
+  type HomepageHeroAsset,
+} from "@/components/marketing/homeHeroAsset";
 
 export default function HeroSection() {
   const { language } = useLanguage();
   const { hero } = homeMarketingContent[language];
+  const [asset, setAsset] = useState<HomepageHeroAsset>({});
+
+  useEffect(() => {
+    let active = true;
+    loadHomepageHeroAsset(language).then((nextAsset) => {
+      if (active) {
+        setAsset(nextAsset);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [language]);
+
+  const visual = hero.visual;
+  const imageUrl =
+    asset.imageUrl ??
+    resolveHomepageHeroImage(visual.imageBasePath, asset.version);
+  const visualTitle = asset.title ?? visual.title;
+  const visualSubtitle = asset.subtitle ?? visual.subtitle;
+  const visualEyebrow = asset.eyebrow ?? visual.eyebrow;
 
   return (
-    <section className={`${marketingTheme.section.container} pt-14 pb-10 sm:pt-20`}>
+    <section
+      className={`${marketingTheme.section.container} pt-14 pb-10 sm:pt-20`}
+    >
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
         <div>
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
@@ -26,22 +55,65 @@ export default function HeroSection() {
             {hero.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href={hero.primaryCta.href} className={marketingTheme.cta.primary}>
+            <Link
+              href={hero.primaryCta.href}
+              className={marketingTheme.cta.primary}
+            >
               {hero.primaryCta.label}
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
-            <Link href={hero.secondaryCta.href} className={marketingTheme.cta.secondary}>
+            <Link
+              href={hero.secondaryCta.href}
+              className={marketingTheme.cta.secondary}
+            >
               {hero.secondaryCta.label}
             </Link>
           </div>
         </div>
 
-        <div className="relative mx-auto hidden aspect-square w-full max-w-md items-center justify-center sm:flex">
-          <div className="absolute inset-0 rounded-[2.5rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
-            <Sparkles className="h-12 w-12 mb-4 opacity-50" aria-hidden />
-            <span className="text-sm font-medium">
-              [主视觉插画占位符]
-            </span>
+        <div className="relative mx-auto hidden w-full max-w-[38rem] sm:block">
+          <div className="relative overflow-hidden rounded-[2rem] border border-slate-900/8 bg-[radial-gradient(circle_at_top_left,_rgba(67,120,255,0.22),_transparent_35%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(245,248,255,0.92))] p-5 shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-slate-400">
+                  {visualEyebrow}
+                </div>
+                <div className="mt-2 max-w-md text-lg font-semibold leading-snug text-slate-900">
+                  {visualTitle}
+                </div>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/12 text-primary">
+                <Sparkles className="h-5 w-5" aria-hidden />
+              </div>
+            </div>
+
+            <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/70 p-3">
+              {imageUrl ? (
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[1.2rem] bg-white">
+                  <img
+                    src={imageUrl}
+                    alt={visualTitle}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="flex aspect-[16/10] items-center justify-center rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50 text-center text-slate-400">
+                  <div>
+                    <Sparkles
+                      className="mx-auto h-10 w-10 opacity-60"
+                      aria-hidden
+                    />
+                    <div className="mt-3 text-sm font-medium">
+                      {visualTitle}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-slate-500">
+              {visualSubtitle}
+            </p>
           </div>
         </div>
       </div>
