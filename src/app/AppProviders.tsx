@@ -4,7 +4,6 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { ThemeProvider } from "../components/theme";
 import { LanguageProvider } from "../i18n/LanguageProvider";
-import { AskAIDialog } from "../components/AskAIDialog";
 import { useMoltbotStore } from "../lib/moltbotStore";
 import { cn } from "../lib/utils";
 import type { IntegrationDefaults } from "@/lib/openclaw/types";
@@ -81,14 +80,6 @@ export function AppProviders({
             <div className="flex-1 flex flex-col w-full relative">
               {children}
             </div>
-            {!isOpenClawWorkspace && !isHomepage ? (
-              <AskAIDialog
-                open={isOpen}
-                defaults={assistantDefaults}
-                onMinimize={toggleOpen}
-                onEnd={close}
-              />
-            ) : null}
           </div>
         </div>
       </LanguageProvider>
