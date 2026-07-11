@@ -92,56 +92,7 @@ type AiWorkspacePageProps = {
   initialSessionKey?: string;
 };
 
-const SEED_TASKS: TaskItem[] = [
-  {
-    id: "task-images",
-    title: "连续制作7张图片",
-    preview: "等待通过 bridge 重新提交任务。",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-new-1",
-    title: "新对话",
-    preview: "Bridge 响应读取中断，本轮结果未完成。请重新发送请求。",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-pdf",
-    title: "PDF制作",
-    preview: "完成了，PDF 已输出在任务工作区内。",
-    updatedAt: Date.now() - 65 * 60 * 1000,
-    state: "done",
-    files: [{ name: "result.pdf" }],
-  },
-  {
-    id: "task-video",
-    title: "视频制作",
-    preview: "等待通过 bridge 重新提交任务。",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-new-2",
-    title: "新对话",
-    preview: "invalid handshake: first request must be connect",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-current",
-    title: "新对话",
-    preview: "",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-];
+
 
 function formatRelativeTime(value: number): string {
   const elapsedMinutes = Math.max(0, Math.floor((Date.now() - value) / 60000));
@@ -215,8 +166,8 @@ export function AiWorkspacePage({
   initialPrompt = "",
   initialSessionKey = "",
 }: AiWorkspacePageProps): React.ReactNode {
-  const [tasks, setTasks] = useState<TaskItem[]>(SEED_TASKS);
-  const [activeTaskId, setActiveTaskId] = useState("task-current");
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState("");
   const [prompt, setPrompt] = useState(initialPrompt);
   const [files, setFiles] = useState<ComposerFile[]>([]);
   const [bridgeStatus, setBridgeStatus] = useState<
@@ -229,11 +180,11 @@ export function AiWorkspacePage({
   const [workingDirectory, setWorkingDirectory] = useState("");
 
   const activeTask = useMemo(
-    () => tasks.find((task) => task.id === activeTaskId) ?? tasks[0],
+    () => tasks.find((task) => task.id === activeTaskId),
     [activeTaskId, tasks],
   );
   const currentFiles = activeTask?.files ?? [];
-  const sessionId = initialSessionKey || activeTaskId;
+  const sessionId = initialSessionKey || activeTaskId || makeId("session");
 
   useEffect(() => {
     let cancelled = false;
@@ -413,11 +364,16 @@ export function AiWorkspacePage({
           </div>
 
           <div className="mt-2 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+            {tasks.length === 0 ? (
+              <div className="py-8 text-center text-xs font-semibold text-slate-400">
+                暂无任务
+              </div>
+            ) : null}
             {tasks.map((task) => (
               <button
                 key={task.id}
                 className={cn(
-                  "grid w-full grid-cols-[36px_minmax(0,1fr)_92px] gap-2 rounded-md px-3 py-3 text-left transition",
+                  "flex w-full items-start gap-2 rounded-md px-2 py-2 text-left transition",
                   activeTaskId === task.id
                     ? "bg-slate-100"
                     : "hover:bg-slate-50",
@@ -425,22 +381,23 @@ export function AiWorkspacePage({
                 type="button"
                 onClick={() => setActiveTaskId(task.id)}
               >
-                <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600">
-                  <ListChecks className="h-5 w-5" />
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm">
+                  <ListChecks className="h-4 w-4" />
                 </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold">
-                    {task.title}
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-start justify-between gap-1">
+                    <span className="block truncate text-sm font-bold">
+                      {task.title}
+                    </span>
+                    <span className="shrink-0 text-[10px] font-semibold text-slate-400">
+                      {formatRelativeTime(task.updatedAt)}
+                    </span>
                   </span>
-                  <span className="mt-1 line-clamp-2 block text-xs font-semibold leading-snug text-slate-400">
-                    {task.preview}
-                  </span>
-                </span>
-                <span className="flex flex-col items-end gap-4 text-xs font-semibold text-slate-400">
-                  {formatRelativeTime(task.updatedAt)}
-                  <span className="rounded-md bg-white p-1 shadow-sm">
-                    <Copy className="h-4 w-4" />
-                  </span>
+                  {task.preview && (
+                    <span className="mt-1 line-clamp-2 block text-xs font-semibold leading-tight text-slate-400">
+                      {task.preview}
+                    </span>
+                  )}
                 </span>
               </button>
             ))}
