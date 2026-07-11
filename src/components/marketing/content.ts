@@ -104,11 +104,6 @@ const zh: HomeMarketingContent = {
             href: "/products/xworkmate",
           },
           {
-            label: "SaaS 前端与加速域",
-            description: "支持自建/托管 SaaS",
-            href: "/products/saas",
-          },
-          {
             label: "Open-platform",
             description: "开放平台与基础设施域",
             href: "/products/open-platform",
@@ -204,31 +199,23 @@ const zh: HomeMarketingContent = {
         name: "Xworkmate/Ai-workspace",
         description:
           "AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。",
-        href: "/services#xworkmate",
-        learnMore: "了解更多",
-      },
-      {
-        icon: "cloud",
-        name: "SaaS 前端与加速域",
-        description:
-          "支持自建/托管 SaaS，涵盖 Web Console、Accounts、Billing 及底层 Xray 隧道代理。",
-        href: "/services#saas",
+        href: "/products/xworkmate",
         learnMore: "了解更多",
       },
       {
         icon: "eye",
         name: "Open-platform",
         description:
-          "开放平台与基础设施，涵盖 Gitea、Vault、IAM (Zitadel) 以及全局可观测性底座。",
-        href: "/services#open-platform",
+          "开源解决方案，涵盖 Gitea、Vault、IAM (Zitadel) 以及全局可观测性底座。",
+        href: "/products/open-platform",
         learnMore: "了解更多",
       },
       {
         icon: "shield",
         name: "Xstream Platform",
         description:
-          "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道与观测代理及控制面同步节点。",
-        href: "/services#xstream",
+          "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。",
+        href: "/products/xstream",
         learnMore: "了解更多",
       },
     ],
@@ -301,11 +288,6 @@ const en: HomeMarketingContent = {
             label: "Xworkmate",
             description: "AI Core Link Domain",
             href: "/products/xworkmate",
-          },
-          {
-            label: "SaaS Frontend",
-            description: "Self-hosted / Managed SaaS",
-            href: "/products/saas",
           },
           {
             label: "Open-platform",
@@ -409,15 +391,7 @@ const en: HomeMarketingContent = {
         name: "Xworkmate/Ai-workspace",
         description:
           "AI Core Link Domain covering App LiteLLM, OpenClaw, QMD & model routing.",
-        href: "/services#xworkmate",
-        learnMore: "Learn more",
-      },
-      {
-        icon: "cloud",
-        name: "SaaS Frontend & Accel",
-        description:
-          "Self-hosted/managed SaaS covering Web Console, Accounts, Billing & Xray tunnels.",
-        href: "/services#saas",
+        href: "/products/xworkmate",
         learnMore: "Learn more",
       },
       {
@@ -425,15 +399,15 @@ const en: HomeMarketingContent = {
         name: "Open-platform",
         description:
           "Open-source solutions covering Gitea, Vault, IAM, and global observability stack.",
-        href: "/services#open-platform",
+        href: "/products/open-platform",
         learnMore: "Learn more",
       },
       {
         icon: "shield",
         name: "Xstream Platform",
         description:
-          "Private AI network interconnect covering Caddy, Xray tunnels, Vector agents.",
-        href: "/services#xstream",
+          "Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.",
+        href: "/products/xstream",
         learnMore: "Learn more",
       },
     ],

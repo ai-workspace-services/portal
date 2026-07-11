@@ -6,6 +6,7 @@ import { ArrowRight, Cloud, Eye, RefreshCw, ShieldCheck, type LucideIcon } from 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
 import { marketingTheme } from "@/components/marketing/theme";
+import Carousel from "@/components/marketing/Carousel";
 
 const ICONS: Record<string, LucideIcon> = {
   refresh: RefreshCw,
@@ -46,12 +47,31 @@ export default function ProductGrid() {
             >
               {/* Image Placeholder Area for the "Topology Diagram or Card Image" */}
               <div className={`h-48 w-full border-b flex items-center justify-center ${colorClass}`}>
-                 <div className="text-center">
-                   <Icon className="h-10 w-10 mx-auto mb-2 opacity-50" aria-hidden />
-                   <span className="text-sm font-medium opacity-70">
-                     [此处放置 {item.name} 的连线拓扑图/卡片图片]
-                   </span>
-                 </div>
+                 {item.name === "Xworkmate/Ai-workspace" ? (
+                   <Carousel
+                     images={[
+                       "/marketing/xworkmate/已生成图像 1.png",
+                       "/marketing/xworkmate/已生成图像 2.png",
+                       "/marketing/xworkmate/已生成图像 3.png"
+                     ]}
+                   />
+                 ) : item.name === "Xstream Platform" ? (
+                   <Carousel
+                     images={[
+                       "/marketing/xstream/homepage.png",
+                       "/marketing/xstream/panel.png",
+                       "/marketing/xstream/pricing.png",
+                       "/marketing/xstream/product.png"
+                     ]}
+                   />
+                 ) : (
+                   <div className="text-center">
+                     <Icon className="h-10 w-10 mx-auto mb-2 opacity-50" aria-hidden />
+                     <span className="text-sm font-medium opacity-70">
+                       [此处放置 {item.name} 的连线拓扑图/卡片图片]
+                     </span>
+                   </div>
+                 )}
               </div>
 
               <div className="p-6">

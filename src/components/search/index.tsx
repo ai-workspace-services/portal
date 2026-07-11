@@ -3,8 +3,8 @@
 import { FormEvent, useState } from 'react'
 import clsx from 'clsx'
 import { Search } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-import { AskAIDialog } from '../AskAIDialog'
 import { useLanguage } from '../../i18n/LanguageProvider'
 
 type SearchComponentProps = {
@@ -13,8 +13,6 @@ type SearchComponentProps = {
   buttonClassName?: string
   variant?: 'default' | 'hero'
 }
-
-type PendingQuestion = { key: number; text: string }
 
 const baseWrapperClass = 'relative w-full max-w-xs'
 const heroWrapperClass = 'relative w-full max-w-2xl'
@@ -36,9 +34,8 @@ export default function SearchComponent({
   variant = 'default'
 }: SearchComponentProps) {
   const { language } = useLanguage()
+  const router = useRouter()
   const [searchValue, setSearchValue] = useState('')
-  const [askDialogOpen, setAskDialogOpen] = useState(false)
-  const [pendingQuestion, setPendingQuestion] = useState<PendingQuestion | null>(null)
 
   const placeholder =
     language === 'zh' ? '请输入关键字搜索内容' : 'Ask anything about your docs'
@@ -47,8 +44,7 @@ export default function SearchComponent({
     event.preventDefault()
     const trimmed = searchValue.trim()
     if (!trimmed) return
-    setPendingQuestion({ key: Date.now(), text: trimmed })
-    setAskDialogOpen(true)
+    router.push(`/xworkmate?prompt=${encodeURIComponent(trimmed)}`)
     setSearchValue('')
   }
 
@@ -60,28 +56,17 @@ export default function SearchComponent({
   )
 
   return (
-    <>
-      <form onSubmit={handleSearchSubmit} className={wrapperClasses}>
-        <input
-          type="search"
-          value={searchValue}
-          onChange={(event) => setSearchValue(event.target.value)}
-          placeholder={placeholder}
-          className={inputClasses}
-        />
-        <button type="submit" className={submitButtonClasses} aria-label="Ask AI">
-          <Search className={variant === 'hero' ? 'h-5 w-5' : 'h-4 w-4'} />
-        </button>
-      </form>
-      <AskAIDialog
-        open={askDialogOpen}
-        onMinimize={() => setAskDialogOpen(false)}
-        onEnd={() => {
-          setAskDialogOpen(false)
-          setPendingQuestion(null)
-        }}
-        initialQuestion={pendingQuestion ?? undefined}
+    <form onSubmit={handleSearchSubmit} className={wrapperClasses}>
+      <input
+        type="search"
+        value={searchValue}
+        onChange={(event) => setSearchValue(event.target.value)}
+        placeholder={placeholder}
+        className={inputClasses}
       />
-    </>
+      <button type="submit" className={submitButtonClasses} aria-label="Ask AI">
+        <Search className={variant === 'hero' ? 'h-5 w-5' : 'h-4 w-4'} />
+      </button>
+    </form>
   )
 }

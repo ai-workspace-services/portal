@@ -12,6 +12,7 @@ import {
   resolveHomepageHeroImage,
   type HomepageHeroAsset,
 } from "@/components/marketing/homeHeroAsset";
+import Carousel from "@/components/marketing/Carousel";
 
 export default function HeroSection() {
   const { language } = useLanguage();
@@ -72,48 +73,14 @@ export default function HeroSection() {
         </div>
 
         <div className="relative mx-auto hidden w-full max-w-[38rem] sm:block">
-          <div className="relative overflow-hidden rounded-[2rem] border border-slate-900/8 bg-[radial-gradient(circle_at_top_left,_rgba(67,120,255,0.22),_transparent_35%),linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(245,248,255,0.92))] p-5 shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-slate-400">
-                  {visualEyebrow}
-                </div>
-                <div className="mt-2 max-w-md text-lg font-semibold leading-snug text-slate-900">
-                  {visualTitle}
-                </div>
-              </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/12 text-primary">
-                <Sparkles className="h-5 w-5" aria-hidden />
-              </div>
-            </div>
-
-            <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/70 p-3">
-              {imageUrl ? (
-                <div className="relative aspect-[16/10] overflow-hidden rounded-[1.2rem] bg-white">
-                  <img
-                    src={imageUrl}
-                    alt={visualTitle}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="flex aspect-[16/10] items-center justify-center rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50 text-center text-slate-400">
-                  <div>
-                    <Sparkles
-                      className="mx-auto h-10 w-10 opacity-60"
-                      aria-hidden
-                    />
-                    <div className="mt-3 text-sm font-medium">
-                      {visualTitle}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <p className="mt-4 max-w-lg text-sm leading-relaxed text-slate-500">
-              {visualSubtitle}
-            </p>
+          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[2rem] shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
+            <Carousel
+              images={[
+                "/marketing/xworkmate/已生成图像 1.png",
+                "/marketing/xworkmate/已生成图像 2.png",
+                "/marketing/xworkmate/已生成图像 3.png"
+              ]}
+            />
           </div>
         </div>
       </div>
