@@ -12,6 +12,7 @@ import {
   resolveHomepageHeroImage,
   type HomepageHeroAsset,
 } from "@/components/marketing/homeHeroAsset";
+import Carousel from "@/components/marketing/Carousel";
 
 export default function HeroSection() {
   const { language } = useLanguage();
@@ -90,10 +91,12 @@ export default function HeroSection() {
             <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/70 p-3">
               {imageUrl ? (
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[1.2rem] bg-white">
-                  <img
-                    src={imageUrl}
-                    alt={visualTitle}
-                    className="h-full w-full object-cover"
+                  <Carousel
+                    images={[
+                      "/marketing/xworkmate/已生成图像 1.png",
+                      "/marketing/xworkmate/已生成图像 2.png",
+                      "/marketing/xworkmate/已生成图像 3.png"
+                    ]}
                   />
                 </div>
               ) : (
