@@ -77,6 +77,23 @@ cp .env.example .env
 
 更多说明见 `docs/getting-started/installation.md` 和 `.env.example`。
 
+### 首页主视觉远程资源 TL;DR
+
+首页布局和默认文案保留在代码内，可通过公开的 S3/CDN 资源动态覆盖主视觉图片与卡片文案：
+
+```dotenv
+NEXT_PUBLIC_HOME_HERO_CONTENT_URL=https://assets.svc.plus/marketing/home-hero/content.json
+NEXT_PUBLIC_HOME_HERO_MEDIA_BASE_URL=https://assets.svc.plus
+NEXT_PUBLIC_HOME_HERO_ASSET_VERSION=2026-07-11.1
+```
+
+- `CONTENT_URL` 指向中英文 JSON 配置；加载失败时自动使用代码内默认内容。
+- `MEDIA_BASE_URL` 是图片根地址，默认图片对象为 `marketing/home-hero.png`。
+- `ASSET_VERSION` 作为 `?v=` 查询参数追加到 JSON 和图片 URL，用于切换发布版本及刷新 CDN 缓存。
+- 三项均为 `NEXT_PUBLIC_*`，只能放公开地址和公开版本号，不能包含 S3 密钥或签名凭据。
+
+完整 JSON 格式、S3 CORS 和发布示例见 [`docs/integrations/homepage-hero-assets.md`](docs/integrations/homepage-hero-assets.md)。
+
 ## Stripe 配置 (Stripe Billing Setup)
 
 `/prices`、产品页和账户中心的购买入口现在统一读取前端公开的 Stripe `price_id`：
