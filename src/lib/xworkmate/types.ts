@@ -12,6 +12,8 @@ export type XWorkmateProfile = {
   vaultSecretPath: string;
   vaultSecretKey: string;
   apisixUrl: string;
+  bridgeUrl?: string;
+  bridgeToken?: string;
 };
 
 export type XWorkmateProfileResponse = {

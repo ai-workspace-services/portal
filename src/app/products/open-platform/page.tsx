@@ -33,12 +33,54 @@ export default function OpenPlatformPage() {
           </div>
         </section>
 
-        {/* Product Showcase Placeholder */}
-        <section className={`${marketingTheme.section.container} mt-16 text-center`}>
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 py-32">
-             <Globe className="mx-auto h-16 w-16 text-slate-300 mb-4" />
-             <h3 className="text-xl font-medium text-slate-500">Open-Platform 页面内容建设中</h3>
-             <p className="text-slate-400 mt-2">开源生态图谱、架构展示与文档资源即将上线</p>
+        <section className={`${marketingTheme.section.container} mt-16`}>
+          <div className="flex flex-col gap-24">
+            
+            {/* Unified Open Control Plane */}
+            <div className="flex flex-col items-center">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-6 text-center">统一控制面底座 (Unified Open Control Plane)</h2>
+              <p className="text-lg text-slate-600 mb-10 text-center max-w-3xl">
+                提供统一的开放控制平面，将底层设施与服务整合，实现从代码托管到安全交付的无缝协作。
+              </p>
+              <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                <img 
+                  src="/marketing/Open-Platform/unified-open-control-plane.png" 
+                  alt="Unified Open Control Plane" 
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+
+            {/* Four Trusted Foundations */}
+            <div className="flex flex-col items-center">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-6 text-center">四大可信基石 (Four Trusted Foundations)</h2>
+              <p className="text-lg text-slate-600 mb-10 text-center max-w-3xl">
+                构建牢固的安全基础设施，提供强大的身份验证、代码安全、数据保护与合规监控体系。
+              </p>
+              <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                <img 
+                  src="/marketing/Open-Platform/four-trusted-foundations.png" 
+                  alt="Four Trusted Foundations" 
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+
+            {/* Secure Delivery Lifecycle */}
+            <div className="flex flex-col items-center">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-6 text-center">安全交付生命周期 (Secure Delivery Lifecycle)</h2>
+              <p className="text-lg text-slate-600 mb-10 text-center max-w-3xl">
+                全面覆盖从开发构建、测试部署到生产运行的每一环节，确保软件交付链路的绝对安全与合规。
+              </p>
+              <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                <img 
+                  src="/marketing/Open-Platform/secure-delivery-lifecycle.png" 
+                  alt="Secure Delivery Lifecycle" 
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+
           </div>
         </section>
       </main>

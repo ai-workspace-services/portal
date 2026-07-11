@@ -155,9 +155,9 @@ const zh: HomeMarketingContent = {
     logout: "退出登录",
   },
   hero: {
-    title: ["统一云原生与", "网络运维，化繁为简，安全可控"],
+    title: ["构建强大的产品矩阵与", "开源平台解决方案"],
     subtitle:
-      "在单一平台上观测、调度与保护您的基础设施与应用，跨云跨地域一致体验，开放兼容，按需扩展。",
+      "融合开源底座与企业级安全标准，为您提供涵盖 AI 辅助研发、跨云控制与基础设施运维的全面产品服务矩阵，赋能团队高效协同。",
     primaryCta: { label: "进入控制台", href: "/panel" },
     secondaryCta: { label: "查看定价", href: "/prices" },
     visual: {

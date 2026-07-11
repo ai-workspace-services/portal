@@ -78,7 +78,7 @@ export default function HeroSection() {
               images={[
                 "/marketing/xworkmate/已生成图像 1.png",
                 "/marketing/xworkmate/已生成图像 2.png",
-                "/marketing/xworkmate/已生成图像 3.png"
+                "/marketing/xworkmate/已生成图像 3.png",
               ]}
             />
           </div>
