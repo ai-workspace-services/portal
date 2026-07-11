@@ -26,6 +26,7 @@ export type HomeMarketingContent = {
     links: { label: string; href: string }[];
     login: string;
     enterConsole: string;
+    logout: string;
   };
   hero: {
     title: string[];
@@ -156,6 +157,7 @@ const zh: HomeMarketingContent = {
     ],
     login: "登录",
     enterConsole: "进入控制台",
+    logout: "退出登录",
   },
   hero: {
     title: ["统一云原生与", "网络运维，化繁为简，安全可控"],
@@ -354,6 +356,7 @@ const en: HomeMarketingContent = {
     ],
     login: "Log in",
     enterConsole: "Enter Console",
+    logout: "Sign out",
   },
   hero: {
     title: ["Unified Cloud-Native &", "Network Operations, Simplified"],

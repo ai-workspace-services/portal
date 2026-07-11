@@ -2,29 +2,43 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
 import LanguageToggle from "@/components/LanguageToggle";
+import { useUserStore } from "@lib/userStore";
 
 export default function MarketingNav() {
   const { language } = useLanguage();
   const content = homeMarketingContent[language];
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+
+  const user = useUserStore((state) => state.user);
+  const isLoading = useUserStore((state) => state.isLoading);
+  const logout = useUserStore((state) => state.logout);
+  const isAuthenticated = Boolean(user);
+  const accountInitial =
+    user?.username?.charAt(0)?.toUpperCase() ??
+    user?.email?.charAt(0)?.toUpperCase() ??
+    "?";
+  const accountLabel = user?.username ?? user?.email ?? "";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
         setOpenDropdown(null);
+        setAccountOpen(false);
       }
     }
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setOpenDropdown(null);
         setMobileOpen(false);
+        setAccountOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -34,6 +48,12 @@ export default function MarketingNav() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  async function handleLogout() {
+    setAccountOpen(false);
+    setMobileOpen(false);
+    await logout();
+  }
 
   return (
     <nav
@@ -112,12 +132,53 @@ export default function MarketingNav() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageToggle />
-          <Link
-            href="/login"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-primary"
-          >
-            {content.nav.login}
-          </Link>
+          {isLoading ? (
+            <div
+              className="h-9 w-9 animate-pulse rounded-full bg-slate-100"
+              aria-hidden
+            />
+          ) : isAuthenticated ? (
+            <div className="relative">
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-full border border-slate-900/10 py-1 pl-1 pr-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                onClick={() => setAccountOpen((open) => !open)}
+                aria-expanded={accountOpen}
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                  {accountInitial}
+                </span>
+                <span className="max-w-[10rem] truncate">{accountLabel}</span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                    accountOpen ? "rotate-180" : ""
+                  }`}
+                  aria-hidden
+                />
+              </button>
+              {accountOpen && (
+                <div className="absolute right-0 top-full pt-2">
+                  <div className="w-44 rounded-2xl border border-slate-900/8 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                    >
+                      <LogOut className="h-4 w-4" aria-hidden />
+                      {content.nav.logout}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-primary"
+            >
+              {content.nav.login}
+            </Link>
+          )}
           <Link
             href="/panel"
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
@@ -167,16 +228,39 @@ export default function MarketingNav() {
               {link.label}
             </Link>
           ))}
+          {isAuthenticated && !isLoading && (
+            <div className="mt-3 flex items-center gap-3 border-t border-slate-900/8 pt-4">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                {accountInitial}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700">
+                {accountLabel}
+              </span>
+            </div>
+          )}
           <div className="mt-3 flex items-center gap-3 border-t border-slate-900/8 pt-4">
-            <Link
-              href="/login"
-              className="flex-1 rounded-full border border-slate-900/12 px-4 py-2.5 text-center text-sm font-semibold text-slate-700"
-            >
-              {content.nav.login}
-            </Link>
+            {isLoading ? null : isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-900/12 px-4 py-2.5 text-center text-sm font-semibold text-slate-700"
+              >
+                <LogOut className="h-4 w-4" aria-hidden />
+                {content.nav.logout}
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="flex-1 rounded-full border border-slate-900/12 px-4 py-2.5 text-center text-sm font-semibold text-slate-700"
+                onClick={() => setMobileOpen(false)}
+              >
+                {content.nav.login}
+              </Link>
+            )}
             <Link
               href="/panel"
               className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
+              onClick={() => setMobileOpen(false)}
             >
               {content.nav.enterConsole}
             </Link>
