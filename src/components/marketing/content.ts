@@ -110,7 +110,7 @@ const zh: HomeMarketingContent = {
           },
           {
             label: "Xstream Platform",
-            description: "AI加速代理与SaaS前台私有网络互联",
+            description: "AI加速代理私有网络互联",
             href: "/products/xstream",
           },
         ],
@@ -214,7 +214,7 @@ const zh: HomeMarketingContent = {
         icon: "shield",
         name: "Xstream Platform",
         description:
-          "AI加速代理私有网络互联与SaaS前端，支持自建/托管SaaS，涵盖 Web Console、Accounts、Billing 以及 Caddy、Xray 隧道观测代理与同步节点。",
+          "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。",
         href: "/products/xstream",
         learnMore: "了解更多",
       },
@@ -296,7 +296,7 @@ const en: HomeMarketingContent = {
           },
           {
             label: "Xstream Platform",
-            description: "Private AI Network & SaaS Frontend",
+            description: "Private AI Network",
             href: "/products/xstream",
           },
         ],
@@ -406,7 +406,7 @@ const en: HomeMarketingContent = {
         icon: "shield",
         name: "Xstream Platform",
         description:
-          "Private AI network interconnect and SaaS frontend covering Web Console, Accounts, Billing, Caddy, Xray tunnels, and Vector agents.",
+          "Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.",
         href: "/products/xstream",
         learnMore: "Learn more",
       },
