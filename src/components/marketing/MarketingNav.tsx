@@ -8,6 +8,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useUserStore } from "@lib/userStore";
+import { cn } from "@/lib/utils";
 
 export default function MarketingNav() {
   const { language } = useLanguage();
@@ -26,6 +27,34 @@ export default function MarketingNav() {
     user?.email?.charAt(0)?.toUpperCase() ??
     "?";
   const accountLabel = user?.username ?? user?.email ?? "";
+
+  const [activeConsole, setActiveConsole] = useState<"user" | "admin" | "operator">("user");
+
+  useEffect(() => {
+    if (user?.isAdmin) {
+      setActiveConsole("admin");
+    } else if (user?.isOperator) {
+      setActiveConsole("operator");
+    } else {
+      setActiveConsole("user");
+    }
+  }, [user]);
+
+  const showRoleSelector = isAuthenticated && (user?.isAdmin || user?.isOperator);
+
+  const displayLabel = showRoleSelector
+    ? activeConsole === "admin"
+      ? "Admin"
+      : activeConsole === "operator"
+        ? "Operator"
+        : "用户中心"
+    : accountLabel;
+
+  const consoleHref = showRoleSelector
+    ? activeConsole === "admin" || activeConsole === "operator"
+      ? "/panel/management"
+      : "/panel"
+    : "/panel";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -148,7 +177,7 @@ export default function MarketingNav() {
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {accountInitial}
                 </span>
-                <span className="max-w-[10rem] truncate">{accountLabel}</span>
+                <span className="max-w-[10rem] truncate">{displayLabel}</span>
                 <ChevronDown
                   className={`h-3.5 w-3.5 transition-transform duration-200 ${
                     accountOpen ? "rotate-180" : ""
@@ -157,8 +186,64 @@ export default function MarketingNav() {
                 />
               </button>
               {accountOpen && (
-                <div className="absolute right-0 top-full pt-2">
-                  <div className="w-44 rounded-2xl border border-slate-900/8 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
+                <div className="absolute right-0 top-full pt-2 z-50">
+                  <div className="w-48 rounded-2xl border border-slate-900/8 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
+                    {showRoleSelector && (
+                      <div className="border-b border-slate-100 pb-1.5 mb-1.5">
+                        <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                          切换控制台
+                        </div>
+                        {user?.isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveConsole("admin");
+                              setAccountOpen(false);
+                            }}
+                            className={cn(
+                              "flex w-full items-center px-3 py-1.5 text-left text-sm font-medium rounded-lg transition-colors",
+                              activeConsole === "admin"
+                                ? "bg-primary/10 text-primary"
+                                : "text-slate-700 hover:bg-slate-50"
+                            )}
+                          >
+                            Admin 管理面
+                          </button>
+                        )}
+                        {user?.isOperator && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveConsole("operator");
+                              setAccountOpen(false);
+                            }}
+                            className={cn(
+                              "flex w-full items-center px-3 py-1.5 text-left text-sm font-medium rounded-lg transition-colors",
+                              activeConsole === "operator"
+                                ? "bg-primary/10 text-primary"
+                                : "text-slate-700 hover:bg-slate-50"
+                            )}
+                          >
+                            Operator 运营面
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveConsole("user");
+                            setAccountOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full items-center px-3 py-1.5 text-left text-sm font-medium rounded-lg transition-colors",
+                            activeConsole === "user"
+                              ? "bg-primary/10 text-primary"
+                              : "text-slate-700 hover:bg-slate-50"
+                          )}
+                        >
+                          用户中心
+                        </button>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -180,7 +265,7 @@ export default function MarketingNav() {
             </Link>
           )}
           <Link
-            href="/panel"
+            href={consoleHref}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
           >
             {content.nav.enterConsole}
@@ -258,7 +343,7 @@ export default function MarketingNav() {
               </Link>
             )}
             <Link
-              href="/panel"
+              href={consoleHref}
               className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
               onClick={() => setMobileOpen(false)}
             >
