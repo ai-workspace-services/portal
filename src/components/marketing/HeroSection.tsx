@@ -75,11 +75,7 @@ export default function HeroSection() {
         <div className="relative mx-auto hidden w-full max-w-[38rem] sm:block">
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[2rem] shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
             <Carousel
-              images={[
-                "/marketing/xworkmate/已生成图像 1.png",
-                "/marketing/xworkmate/已生成图像 2.png",
-                "/marketing/xworkmate/已生成图像 3.png",
-              ]}
+              images={hero.slides ?? []}
             />
           </div>
         </div>

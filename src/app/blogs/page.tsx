@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 export default async function BlogPage() {
   const listing = await getBlogList({ page: 1, pageSize: 200 });
+  
   const categories = listing.categories;
   const postsWithoutContent = listing.posts.map(
     ({
@@ -24,7 +25,7 @@ export default async function BlogPage() {
       sourcePath: _sourcePath,
       language: _language,
       ...post
-    }) => post,
+    }: any) => post,
   );
 
   return (

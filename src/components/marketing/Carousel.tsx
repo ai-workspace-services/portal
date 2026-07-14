@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+export type CarouselImage = string | { src: string; width?: number; height?: number };
+
 export type CarouselProps = {
-  images: string[];
+  images: CarouselImage[];
   autoSlideInterval?: number;
 };
 
@@ -34,15 +36,27 @@ export default function Carousel({ images, autoSlideInterval = 5000 }: CarouselP
         className="flex transition-transform duration-500 ease-out h-full"
         style={{ transform: `translateX(-${currentIndex * 100}%)`, width: `${images.length * 100}%` }}
       >
-        {images.map((src, idx) => (
-          <div key={idx} className="relative w-full h-full shrink-0">
-            <img 
-              src={src} 
-              alt={`Slide ${idx + 1}`} 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
+        {images.map((img, idx) => {
+          const rawSrc = typeof img === 'string' ? img : img.src;
+          const width = typeof img === 'string' ? undefined : img.width;
+          const height = typeof img === 'string' ? undefined : img.height;
+          
+          // Encode URI to prevent Next.js from crashing when setting preload headers
+          // for images with non-ASCII characters in their filenames.
+          const src = encodeURI(rawSrc);
+
+          return (
+            <div key={idx} className="relative w-full h-full shrink-0">
+              <img 
+                src={src} 
+                alt={`Slide ${idx + 1}`} 
+                width={width}
+                height={height}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Navigation Arrows */}
