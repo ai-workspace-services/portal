@@ -3,85 +3,84 @@
 import Footer from "@/components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { marketingTheme } from "@/components/marketing/theme";
-import { ArrowRight, Zap, Shield, Globe } from "lucide-react";
+import { ArrowRight, Bot, Cpu, Network, ShieldCheck, Lock, Layers, Activity, Monitor, Shield, Zap, Globe } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import openPlatformContent from "@/data/content/open-platform.json";
+
+const ICONS: Record<string, any> = {
+  bot: Bot,
+  network: Network,
+  monitor: Monitor,
+  shield: Shield,
+  "shield-check": ShieldCheck,
+  activity: Activity,
+  layers: Layers,
+  lock: Lock,
+  zap: Zap,
+  globe: Globe,
+};
 
 export default function OpenPlatformPage() {
+  const { language } = useLanguage();
+  const content = openPlatformContent[language as keyof typeof openPlatformContent];
+  const { hero, showcases } = content;
+
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden">
       <MarketingNav />
       <main className="pt-24 pb-16 sm:pt-32">
         {/* Hero Section */}
         <section className={`${marketingTheme.section.container} text-center`}>
-          <div className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-50/50 px-3 py-1 text-sm font-medium text-indigo-600 mb-8">
-            <Globe className="mr-2 h-4 w-4" />
-            开源解决方案
+          <div className="inline-flex items-center rounded-full border border-teal-500/30 bg-teal-50/50 px-3 py-1 text-sm font-medium text-teal-600 mb-8">
+            <Layers className="mr-2 h-4 w-4" />
+            {hero.badge}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl mb-6">
-            Open-Platform
+            {hero.title}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-slate-600 mb-10">
-            涵盖 Gitea、Vault、IAM (Zitadel) 以及全局可观测性底座，为您提供安全、开放、可扩展的基础设施与平台解决方案。
+            {hero.subtitle}
           </p>
           <div className="flex justify-center gap-4">
-            <Link href="/panel" className={marketingTheme.cta.primary}>
-              进入控制台 <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-            <Link href="/prices" className={marketingTheme.cta.secondary}>
-              查看服务方案
+            <Link href={hero.cta.href} className={marketingTheme.cta.primary}>
+              {hero.cta.label} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </div>
         </section>
 
-        <section className={`${marketingTheme.section.container} mt-16`}>
-          <div className="flex flex-col gap-24">
-            
-            {/* Unified Open Control Plane */}
-            <div className="flex flex-col items-center">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-6 text-center">统一控制面底座 (Unified Open Control Plane)</h2>
-              <p className="text-lg text-slate-600 mb-10 text-center max-w-3xl">
-                提供统一的开放控制平面，将底层设施与服务整合，实现从代码托管到安全交付的无缝协作。
-              </p>
-              <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                <img 
-                  src="/marketing/Open-Platform/unified-open-control-plane.png" 
-                  alt="Unified Open Control Plane" 
-                  className="w-full h-auto"
-                />
-              </div>
-            </div>
+        {/* Product Showcase via JSON */}
+        <section className={`${marketingTheme.section.container} mt-16 space-y-32`}>
+          {showcases.map((showcase: any, idx: number) => {
+            const Icon = ICONS[showcase.icon] || Layers;
+            const isReverse = showcase.reverse;
 
-            {/* Four Trusted Foundations */}
-            <div className="flex flex-col items-center">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-6 text-center">四大可信基石 (Four Trusted Foundations)</h2>
-              <p className="text-lg text-slate-600 mb-10 text-center max-w-3xl">
-                构建牢固的安全基础设施，提供强大的身份验证、代码安全、数据保护与合规监控体系。
-              </p>
-              <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                <img 
-                  src="/marketing/Open-Platform/four-trusted-foundations.png" 
-                  alt="Four Trusted Foundations" 
-                  className="w-full h-auto"
-                />
+            return (
+              <div key={idx} className={`flex flex-col ${isReverse ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12`}>
+                <div className={`flex-1 ${isReverse ? 'lg:pl-10' : 'lg:pr-10'}`}>
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-100 text-teal-600 shadow-inner">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-4">{showcase.title}</h2>
+                  <p className="text-lg text-slate-600 leading-relaxed">
+                    {showcase.description}
+                  </p>
+                </div>
+                <div className="flex-1 w-full relative">
+                  <div className={`absolute -inset-4 bg-gradient-to-${isReverse ? 'tl' : 'tr'} from-teal-100 to-emerald-50 opacity-50 blur-xl rounded-full`} />
+                  <div className="relative rounded-3xl border border-slate-200 bg-white/60 backdrop-blur-xl shadow-2xl overflow-hidden p-2">
+                    <div className="rounded-2xl overflow-hidden">
+                      <img 
+                        src={encodeURI(showcase.image)} 
+                        alt={showcase.title} 
+                        className="w-full object-cover transform hover:scale-105 transition-transform duration-700"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Secure Delivery Lifecycle */}
-            <div className="flex flex-col items-center">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-6 text-center">安全交付生命周期 (Secure Delivery Lifecycle)</h2>
-              <p className="text-lg text-slate-600 mb-10 text-center max-w-3xl">
-                全面覆盖从开发构建、测试部署到生产运行的每一环节，确保软件交付链路的绝对安全与合规。
-              </p>
-              <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                <img 
-                  src="/marketing/Open-Platform/secure-delivery-lifecycle.png" 
-                  alt="Secure Delivery Lifecycle" 
-                  className="w-full h-auto"
-                />
-              </div>
-            </div>
-
-          </div>
+            );
+          })}
         </section>
       </main>
       <div className="mx-auto w-full max-w-6xl px-6 pb-10 lg:px-8">

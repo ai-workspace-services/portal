@@ -1,14 +1,54 @@
 {
   "zh": {
-    "eyebrow": "安全与合规",
-    "title": "XStream",
-    "tagline": "安全与合规自动化",
-    "description": "策略即代码守护交付流水线，为全球团队提供网络加速、合规审计与安全基线。"
+    "hero": {
+      "badge": "AI加速代理私有网络互联",
+      "title": "Xstream Platform",
+      "subtitle": "涵盖 Caddy、Xray 隧道观测代理与同步节点，构建安全高效的私有 AI 加速网络。",
+      "cta": {
+        "label": "立即体验",
+        "href": "/panel"
+      }
+    },
+    "showcases": [
+      {
+        "title": "私有加速网络",
+        "description": "利用 Xray 隧道与 Caddy 代理，为全球分布式节点提供高速、稳定的安全网络通道。",
+        "icon": "shield",
+        "image": "/marketing/xstream/product.png"
+      },
+      {
+        "title": "全局流量观测",
+        "description": "全链路监控与流量分析，实时了解网络拥堵点，轻松进行策略调整与资源分配。",
+        "icon": "activity",
+        "image": "/marketing/xstream/panel.png",
+        "reverse": true
+      }
+    ]
   },
   "en": {
-    "eyebrow": "Security & Compliance",
-    "title": "XStream",
-    "tagline": "Security & compliance automation",
-    "description": "Policy-as-code guardrails with global acceleration that keep distributed releases fast, auditable, and compliant."
+    "hero": {
+      "badge": "Private AI Network Interconnect",
+      "title": "Xstream Platform",
+      "subtitle": "Covers Caddy, Xray tunnel observation agents and sync nodes, building a secure and efficient private AI acceleration network.",
+      "cta": {
+        "label": "Experience Now",
+        "href": "/panel"
+      }
+    },
+    "showcases": [
+      {
+        "title": "Private Acceleration Network",
+        "description": "Use Xray tunnels and Caddy proxies to provide high-speed, stable secure network channels for global distributed nodes.",
+        "icon": "shield",
+        "image": "/marketing/xstream/product.png"
+      },
+      {
+        "title": "Global Traffic Observability",
+        "description": "Full-chain monitoring and traffic analysis, real-time understanding of network congestion points, and easy policy adjustment and resource allocation.",
+        "icon": "activity",
+        "image": "/marketing/xstream/panel.png",
+        "reverse": true
+      }
+    ]
   }
 }

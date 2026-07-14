@@ -63,3 +63,6 @@ build/
 dist/
 out/
 target/
+
+# Auto-generated marketing content
+src/data/content/home-marketing.json

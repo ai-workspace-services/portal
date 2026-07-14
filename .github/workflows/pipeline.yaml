@@ -1,11 +1,10 @@
 name: Console Service Pipeline
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches:
-      - main
-      - dev
-      - release/**
+    branches: ['release/**']
     tags:
       - 'v*'
     paths:
@@ -14,21 +13,13 @@ on:
       - "deploy/single-node/**"
       - "package.json"
       - "yarn.lock"
-      - "scripts/github-actions/build-and-push-frontend-image.sh"
-      - "scripts/github-actions/compute-frontend-release-metadata.sh"
-      - "scripts/github-actions/render-frontend-build-args.sh"
-      - "scripts/github-actions/render-frontend-runtime-env.sh"
-      - "scripts/github-actions/prepare-frontend-build-context.sh"
-      - "scripts/github-actions/run-console-deploy-playbook.sh"
-      - "scripts/github-actions/run-cloudflare-svc-plus-dns-playbook.sh"
-      - "scripts/github-actions/verify-frontend-release-over-ssh.sh"
-      - "scripts/github-actions/verify-frontend-release.sh"
+      - "src/**"
+      - "scripts/**"
+      - "public/**"
       - "scripts/prebuild.sh"
       - "contentlayer.config.ts"
       - "next.config.js"
       - "next.config.mjs"
-      - "src/**"
-      - "public/**"
   workflow_dispatch:
     inputs:
       target_host:

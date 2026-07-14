@@ -56,7 +56,25 @@ async function generateHomepageContent() {
   return content
 }
 
-async function generateProductContent(product: 'xstream' | 'xcloudflow' | 'xscopehub') {
+async function generateHomeMarketingContent() {
+  const languages: Language[] = ['zh', 'en']
+  const content: Record<Language, any> = {} as any
+
+  for (const lang of languages) {
+    try {
+      const filePath = path.join(CONTENT_ROOT, 'homepage', lang, 'marketing.md')
+      const raw = await fs.readFile(filePath, 'utf-8')
+      const { metadata } = parseFrontMatter(raw)
+      content[lang] = metadata
+    } catch (error) {
+      console.error(`Failed to read home-marketing content for ${lang}:`, error)
+    }
+  }
+
+  return content
+}
+
+async function generateProductContent(product: 'xworkmate' | 'xstream' | 'open-platform') {
   const languages: Language[] = ['zh', 'en']
   const content: Record<Language, any> = {} as any
 
@@ -68,6 +86,24 @@ async function generateProductContent(product: 'xstream' | 'xcloudflow' | 'xscop
       content[lang] = metadata
     } catch (error) {
       console.error(`Failed to read ${product} content for ${lang}:`, error)
+    }
+  }
+
+  return content
+}
+
+async function generateDocsContent() {
+  const languages: Language[] = ['zh', 'en']
+  const content: Record<Language, any> = {} as any
+
+  for (const lang of languages) {
+    try {
+      const filePath = path.join(CONTENT_ROOT, 'docs', lang, 'home.md')
+      const raw = await fs.readFile(filePath, 'utf-8')
+      const { metadata } = parseFrontMatter(raw)
+      content[lang] = metadata
+    } catch (error) {
+      console.error(`Failed to read docs content for ${lang}:`, error)
     }
   }
 
@@ -86,8 +122,15 @@ async function main() {
     JSON.stringify(homepageContent, null, 2)
   )
 
+  console.log('Generating home marketing content...')
+  const homeMarketingContent = await generateHomeMarketingContent()
+  await fs.writeFile(
+    path.join(OUTPUT_ROOT, 'home-marketing.json'),
+    JSON.stringify(homeMarketingContent, null, 2)
+  )
+
   // Generate product content
-  const products = ['xstream', 'xcloudflow', 'xscopehub'] as const
+  const products = ['xworkmate', 'xstream', 'open-platform'] as const
   for (const product of products) {
     console.log(`Generating ${product} content...`)
     const productContent = await generateProductContent(product)
@@ -96,6 +139,13 @@ async function main() {
       JSON.stringify(productContent, null, 2)
     )
   }
+
+  console.log('Generating docs content...')
+  const docsContent = await generateDocsContent()
+  await fs.writeFile(
+    path.join(OUTPUT_ROOT, 'docs-home.json'),
+    JSON.stringify(docsContent, null, 2)
+  )
 
   console.log('Content generation complete!')
 }

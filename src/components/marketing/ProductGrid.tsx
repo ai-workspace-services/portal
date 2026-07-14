@@ -47,31 +47,8 @@ export default function ProductGrid() {
             >
               {/* Image Placeholder Area for the "Topology Diagram or Card Image" */}
               <div className={`h-48 w-full border-b flex items-center justify-center ${colorClass}`}>
-                 {item.name === "Xworkmate/Ai-workspace" ? (
-                   <Carousel
-                     images={[
-                       "/marketing/xworkmate/已生成图像 1.png",
-                       "/marketing/xworkmate/已生成图像 2.png",
-                       "/marketing/xworkmate/已生成图像 3.png"
-                     ]}
-                   />
-                 ) : item.name === "Xstream Platform" ? (
-                   <Carousel
-                     images={[
-                       "/marketing/xstream/homepage.png",
-                       "/marketing/xstream/panel.png",
-                       "/marketing/xstream/pricing.png",
-                       "/marketing/xstream/product.png"
-                     ]}
-                   />
-                 ) : item.name.toLowerCase().includes("open") ? (
-                   <Carousel
-                     images={[
-                       "/marketing/Open-Platform/unified-open-control-plane.png",
-                       "/marketing/Open-Platform/four-trusted-foundations.png",
-                       "/marketing/Open-Platform/secure-delivery-lifecycle.png"
-                     ]}
-                   />
+                 {item.slides && item.slides.length > 0 ? (
+                   <Carousel images={item.slides} />
                  ) : (
                    <div className="text-center">
                      <Icon className="h-10 w-10 mx-auto mb-2 opacity-50" aria-hidden />
