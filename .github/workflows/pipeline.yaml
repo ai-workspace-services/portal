@@ -1,38 +1,24 @@
 name: Console Service Pipeline
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches:
-      - main
-      - release/v1.1.5
-    paths:
-      - ".github/workflows/pipeline.yaml"
-      - "Dockerfile"
-      - "deploy/single-node/**"
-      - "package.json"
-      - "yarn.lock"
-      - "scripts/github-actions/build-and-push-frontend-image.sh"
-      - "scripts/github-actions/compute-frontend-release-metadata.sh"
-      - "scripts/github-actions/render-frontend-build-args.sh"
-      - "scripts/github-actions/render-frontend-runtime-env.sh"
-      - "scripts/github-actions/prepare-frontend-build-context.sh"
-      - "scripts/github-actions/run-console-deploy-playbook.sh"
-      - "scripts/github-actions/run-cloudflare-svc-plus-dns-playbook.sh"
-      - "scripts/github-actions/verify-frontend-release-over-ssh.sh"
-      - "scripts/github-actions/verify-frontend-release.sh"
-      - "scripts/prebuild.sh"
-      - "contentlayer.config.ts"
-      - "next.config.js"
-      - "next.config.mjs"
-      - "src/**"
-      - "public/**"
+    branches: ['release/**']
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       target_host:
         description: Ansible host or alias
         required: false
-        default: "jp-xhttp-contabo.svc.plus"
+        default: ""
         type: string
+      deployment_environment:
+        description: Deployment environment
+        required: true
+        default: uat
+        type: choice
+        options: [dev, uat, prod]
       run_apply:
         description: Apply deployment
         required: true
