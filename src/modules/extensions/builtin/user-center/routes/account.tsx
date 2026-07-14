@@ -4,6 +4,7 @@ import Breadcrumbs from '@/app/panel/components/Breadcrumbs'
 import MfaSetupPanel from '../account/MfaSetupPanel'
 import SubscriptionPanel from '../account/SubscriptionPanel'
 import UserOverview from '../components/UserOverview'
+import ServiceReadinessCard from '../components/ServiceReadinessCard'
 import { useUserStore } from '@lib/userStore'
 
 export default function UserCenterAccountRoute() {
@@ -19,6 +20,7 @@ export default function UserCenterAccountRoute() {
         ]}
       />
       <UserOverview hideMfaMainPrompt />
+      {!isReadOnlyRole ? <ServiceReadinessCard /> : null}
       {!isReadOnlyRole ? <MfaSetupPanel showSummary={false} /> : null}
       {!isReadOnlyRole ? <SubscriptionPanel /> : null}
     </div>

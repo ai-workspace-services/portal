@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { SESSION_COOKIE_NAME, clearSessionCookie } from "@lib/authGateway";
 import { resolvePublicUserEmail } from "@lib/publicUserIdentity";
+import { normalizeServiceReadiness } from "@lib/serviceReadiness";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
 const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
@@ -15,6 +16,9 @@ type AccountUser = {
   email: string;
   mfaEnabled?: boolean;
   mfaPending?: boolean;
+  emailVerified?: boolean;
+  passwordSet?: boolean;
+  serviceReadiness?: unknown;
   mfa?: {
     totpEnabled?: boolean;
     totpPending?: boolean;
@@ -220,6 +224,7 @@ export async function GET(request: NextRequest) {
     email: normalizedUser.email,
     role: normalizedRole,
   });
+  const serviceReadiness = normalizeServiceReadiness(rawUser.serviceReadiness);
 
   return NextResponse.json({
     user: {
@@ -228,6 +233,9 @@ export async function GET(request: NextRequest) {
       mfaEnabled: derivedMfaEnabled,
       mfaPending: derivedMfaPending,
       mfa: normalizedMfa,
+      emailVerified: Boolean(rawUser.emailVerified),
+      passwordSet: Boolean(rawUser.passwordSet),
+      ...(serviceReadiness ? { serviceReadiness } : {}),
       role: normalizedRole,
       groups: normalizedGroups,
       permissions: normalizedPermissions,
