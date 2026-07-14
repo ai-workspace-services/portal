@@ -1,6 +1,7 @@
 import Breadcrumbs from '@/app/panel/components/Breadcrumbs'
 
 import { IntegrationsConsole } from '../components/IntegrationsConsole'
+import AdvancedServiceGate from '../components/AdvancedServiceGate'
 
 export default function UserCenterApiRoute() {
   return (
@@ -11,7 +12,9 @@ export default function UserCenterApiRoute() {
           { label: 'Integrations', href: '/panel/api' },
         ]}
       />
-      <IntegrationsConsole />
+      <AdvancedServiceGate serviceName="OpenClaw advanced automation">
+        <IntegrationsConsole />
+      </AdvancedServiceGate>
     </div>
   )
 }
