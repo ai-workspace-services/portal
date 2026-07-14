@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { resolvePublicUserEmail } from '@lib/publicUserIdentity'
+import { normalizeServiceReadiness, type ServiceReadiness } from '@lib/serviceReadiness'
 
 export type UserRole = 'user' | 'operator' | 'admin'
 
@@ -11,7 +12,7 @@ export type TenantMembership = {
   role?: UserRole
 }
 
-type User = {
+export type User = {
   id: string
   uuid: string
   email: string
@@ -19,6 +20,9 @@ type User = {
   username: string
   mfaEnabled: boolean
   mfaPending: boolean
+  emailVerified: boolean
+  passwordSet: boolean
+  serviceReadiness?: ServiceReadiness
   role: UserRole
   groups: string[]
   permissions: string[]
@@ -99,6 +103,9 @@ async function fetchSessionUser(): Promise<User | null> {
         username?: string
         mfaEnabled?: boolean
         mfaPending?: boolean
+        emailVerified?: boolean
+        passwordSet?: boolean
+        serviceReadiness?: unknown
         role?: string
         groups?: string[]
         permissions?: string[]
@@ -211,6 +218,9 @@ async function fetchSessionUser(): Promise<User | null> {
       username: normalizedUsername ?? publicEmail,
       mfaEnabled: Boolean(mfaEnabled ?? mfa?.totpEnabled),
       mfaPending: Boolean(mfaPending ?? mfa?.totpPending) && !Boolean(mfaEnabled ?? mfa?.totpEnabled),
+      emailVerified: Boolean(sessionUser.emailVerified),
+      passwordSet: Boolean(sessionUser.passwordSet),
+      serviceReadiness: normalizeServiceReadiness(sessionUser.serviceReadiness) ?? undefined,
       mfa: normalizedMfa,
       role: normalizedRole,
       groups: normalizedGroups,

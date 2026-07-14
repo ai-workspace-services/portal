@@ -46,7 +46,7 @@ function loadYamlSource(sourceKey: RuntimeSourceKey): string | undefined {
 
 type RuntimeSourceKey = 'base' | 'prod' | 'sit'
 
-export type RuntimeEnvironment = 'prod' | 'sit'
+export type RuntimeEnvironment = 'dev' | 'uat' | 'prod' | 'sit'
 export type RuntimeRegion = 'default' | 'cn' | 'global'
 
 export type RuntimeConfig = {
@@ -240,9 +240,9 @@ function normalizeEnvironmentValue(value: unknown): RuntimeEnvironment | undefin
     staging: 'sit',
     test: 'sit',
     qa: 'sit',
-    uat: 'sit',
-    dev: 'sit',
-    development: 'sit',
+    uat: 'uat',
+    dev: 'dev',
+    development: 'dev',
     preview: 'sit',
     preprod: 'sit',
   }
@@ -367,7 +367,8 @@ function splitEnvironmentOverrides(
   environment: RuntimeEnvironment,
   region: RuntimeRegion,
 ): { environmentOverrides: Record<string, unknown>; regionOverrides?: Record<string, unknown> } {
-  const envConfig = parseYamlSource(environment)
+  const source: RuntimeSourceKey = environment === 'prod' ? 'prod' : 'sit'
+  const envConfig = parseYamlSource(source)
   const environmentOverrides = mergeConfigs({}, envConfig)
   let regionOverrides: Record<string, unknown> | undefined
 
@@ -422,7 +423,7 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
     ...(finalConfig as RuntimeConfig),
     environment,
     region,
-    source: environment,
+    source: environment === 'prod' ? 'prod' : 'sit',
     hostname,
     detectedBy: detectionLabel,
   }

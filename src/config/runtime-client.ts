@@ -38,9 +38,9 @@ function normalizeEnvironmentValue(value: unknown): RuntimeEnvironment | undefin
     staging: 'sit',
     test: 'sit',
     qa: 'sit',
-    uat: 'sit',
-    dev: 'sit',
-    development: 'sit',
+    uat: 'uat',
+    dev: 'dev',
+    development: 'dev',
     preview: 'sit',
     preprod: 'sit',
   }

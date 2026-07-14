@@ -10,6 +10,7 @@ import {
   type OpenClawStreamEvent,
 } from '@/lib/openclaw/types'
 import { resolveOpenClawGatewayConfig } from '@/server/consoleIntegrations'
+import { requireAdvancedServiceReadiness } from '@/server/account/serviceReadiness'
 import { OpenClawGatewayClient, OpenClawGatewayError } from '@/server/openclaw/gateway-client'
 
 export const runtime = 'nodejs'
@@ -407,6 +408,9 @@ async function handleSend(body: SendBody, request: NextRequest): Promise<Respons
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
+  const readinessGate = await requireAdvancedServiceReadiness(request)
+  if (!readinessGate.allowed) return readinessGate.response
+
   let body: BootstrapBody | SendBody
 
   try {
