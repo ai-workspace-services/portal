@@ -35,6 +35,36 @@ describe("middleware public route policy", () => {
     );
   });
 
+  it("keeps prices and about pages public", () => {
+    const pricesResponse = middleware(
+      new NextRequest("https://console.svc.plus/prices"),
+    );
+    const aboutResponse = middleware(
+      new NextRequest("https://console.svc.plus/about"),
+    );
+
+    expect(pricesResponse).toBeUndefined();
+    expect(aboutResponse).toBeUndefined();
+  });
+
+  it("requires login for products paths", () => {
+    const productsResponse = middleware(
+      new NextRequest("https://console.svc.plus/products"),
+    );
+    const productXstreamResponse = middleware(
+      new NextRequest("https://console.svc.plus/products/xstream"),
+    );
+
+    expect(productsResponse?.status).toBe(307);
+    expect(productsResponse?.headers.get("location")).toContain(
+      "/login?redirect=%2Fproducts",
+    );
+    expect(productXstreamResponse?.status).toBe(307);
+    expect(productXstreamResponse?.headers.get("location")).toContain(
+      "/login?redirect=%2Fproducts%2Fxstream",
+    );
+  });
+
   it("redirects protected pages to login when no session cookie exists", () => {
     const response = middleware(
       new NextRequest("https://console.svc.plus/panel?tab=agent"),

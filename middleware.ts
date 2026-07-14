@@ -6,6 +6,8 @@ import { SESSION_COOKIE_NAME } from "./src/lib/authGateway";
 const PUBLIC_EXACT_PATHS = new Set([
   "/",
   "/services",
+  "/prices",
+  "/about",
   "/login",
   "/register",
   "/email-verification",
