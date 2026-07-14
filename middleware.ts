@@ -3,23 +3,8 @@ import { NextResponse } from "next/server";
 
 import { SESSION_COOKIE_NAME } from "./src/lib/authGateway";
 
-const PUBLIC_EXACT_PATHS = new Set([
-  "/",
-  "/services",
-  "/login",
-  "/register",
-  "/email-verification",
-  "/logout",
-  "/404",
-  "/500",
-]);
-
-function isDocsPath(pathname: string): boolean {
-  return pathname === "/docs" || pathname.startsWith("/docs/");
-}
-
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_EXACT_PATHS.has(pathname) || isDocsPath(pathname);
+function isProtectedPath(pathname: string): boolean {
+  return pathname === "/panel" || pathname.startsWith("/panel/");
 }
 
 function buildRedirectTarget(request: NextRequest): string {
@@ -30,7 +15,7 @@ function buildRedirectTarget(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (isPublicPath(pathname)) {
+  if (!isProtectedPath(pathname)) {
     return undefined;
   }
 
