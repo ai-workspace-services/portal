@@ -22,22 +22,12 @@ on:
       - "next.config.mjs"
   workflow_dispatch:
     inputs:
-      target_host:
-        description: Ansible host or alias
-        required: false
-        default: ""
-        type: string
       deployment_environment:
         description: Deployment environment
         required: true
         default: uat
         type: choice
         options: [dev, uat, prod]
-      run_apply:
-        description: Apply deployment
-        required: true
-        default: true
-        type: boolean
 
 permissions:
   contents: read
@@ -72,8 +62,6 @@ jobs:
     name: Prep
     runs-on: ubuntu-latest
     outputs:
-      target_host: ${{ steps.inputs.outputs.target_host }}
-      run_apply: ${{ steps.inputs.outputs.run_apply }}
       deployment_environment: ${{ steps.inputs.outputs.deployment_environment }}
       image_tag: ${{ steps.metadata.outputs.image_tag }}
       image_ref: ${{ steps.metadata.outputs.image_ref }}
@@ -88,14 +76,9 @@ jobs:
         id: inputs
         env:
           EVENT_NAME: ${{ github.event_name }}
-          INPUT_TARGET_HOST: ${{ inputs.target_host }}
-          INPUT_RUN_APPLY: ${{ inputs.run_apply }}
           INPUT_ENVIRONMENT: ${{ inputs.deployment_environment }}
           REF_NAME: ${{ github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}
-          DEV_TARGET_HOST: ${{ vars.DEV_TARGET_HOST }}
-          UAT_TARGET_HOST: ${{ vars.UAT_TARGET_HOST }}
-          PROD_TARGET_HOST: ${{ vars.PROD_TARGET_HOST }}
         run: bash scripts/github-actions/resolve-workflow-inputs.sh
 
       - name: Compute Image Metadata
