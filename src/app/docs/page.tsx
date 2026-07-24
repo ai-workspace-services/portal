@@ -8,8 +8,9 @@ import docsHomeContent from "@/data/content/docs-home.json";
 
 export default function DocsHome() {
   const { language } = useLanguage();
-  const content = docsHomeContent[language as keyof typeof docsHomeContent];
-  const { home, collections } = content;
+  const content = (docsHomeContent as any)[language] || (docsHomeContent as any).zh;
+  const collections = content?.collections || [];
+  const home = content?.home;
   
   const articleCount = collections.reduce(
     (sum: number, collection: any) => sum + (collection.versions?.length || 0),
