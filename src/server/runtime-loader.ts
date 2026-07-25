@@ -448,7 +448,11 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
     ...(finalConfig as RuntimeConfig),
     environment,
     region,
-    source: environment === 'prod' ? 'prod' : 'sit',
+    // 与上面 splitEnvironmentOverrides 实际选用的源保持一致。
+    // 这里原本也是 `environment === 'prod' ? 'prod' : 'sit'` —— 那是个只用于
+    // 上报的字段, 在源选择改成一环境一源之后, 它会在 uat/dev 下报告
+    // source: 'sit' 而实际读的是 uat.yaml/dev.yaml, 排障时正好指向错误的文件。
+    source: environment,
     hostname,
     detectedBy: detectionLabel,
   }
