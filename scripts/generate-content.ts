@@ -118,15 +118,15 @@ async function main() {
   console.log('Generating homepage content...')
   const homepageContent = await generateHomepageContent()
   await fs.writeFile(
-    path.join(OUTPUT_ROOT, 'homepage.json'),
-    JSON.stringify(homepageContent, null, 2)
+    path.join(OUTPUT_ROOT, 'homepage.ts'),
+    'export default ' + JSON.stringify(homepageContent, null, 2) + ';'
   )
 
   console.log('Generating home marketing content...')
   const homeMarketingContent = await generateHomeMarketingContent()
   await fs.writeFile(
-    path.join(OUTPUT_ROOT, 'home-marketing.json'),
-    JSON.stringify(homeMarketingContent, null, 2)
+    path.join(OUTPUT_ROOT, 'home-marketing.ts'),
+    'export const homeMarketingContentData = ' + JSON.stringify(homeMarketingContent, null, 2) + ';'
   )
 
   // Generate product content
@@ -135,16 +135,16 @@ async function main() {
     console.log(`Generating ${product} content...`)
     const productContent = await generateProductContent(product)
     await fs.writeFile(
-      path.join(OUTPUT_ROOT, `${product}.json`),
-      JSON.stringify(productContent, null, 2)
+      path.join(OUTPUT_ROOT, `${product}.ts`),
+      'export default ' + JSON.stringify(productContent, null, 2) + ';'
     )
   }
 
   console.log('Generating docs content...')
   const docsContent = await generateDocsContent()
   await fs.writeFile(
-    path.join(OUTPUT_ROOT, 'docs-home.json'),
-    JSON.stringify(docsContent, null, 2)
+    path.join(OUTPUT_ROOT, 'docs-home.ts'),
+    'export default ' + JSON.stringify(docsContent, null, 2) + ';'
   )
 
   console.log('Content generation complete!')

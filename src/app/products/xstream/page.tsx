@@ -6,7 +6,7 @@ import { marketingTheme } from "@/components/marketing/theme";
 import { ArrowRight, Bot, Cpu, Network, ShieldCheck, Lock, Layers, Activity, Monitor, Shield, Zap, Globe } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import xstreamContent from "@/data/content/xstream.json";
+import xstreamContent from "@/data/content/xstream";
 
 const ICONS: Record<string, any> = {
   bot: Bot,

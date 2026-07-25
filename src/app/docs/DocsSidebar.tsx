@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { SidebarRoot } from "../../components/layout/SidebarRoot";
 import { DocsSidebarContent } from "./DocsSidebarContent";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import docsHomeContent from "@/data/content/docs-home.json";
+import docsHomeContent from "@/data/content/docs-home";
 
 export default function DocsSidebar() {
   const pathname = usePathname();

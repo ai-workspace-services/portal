@@ -19,13 +19,13 @@ elif [[ "${ref_name}" == "main" ]]; then
 elif [[ "${ref_name}" == release/* || "${REF_TYPE:-}" == "tag" ]]; then
   environment="prod"
 else
-  environment="dev"
+  environment="sit"
 fi
 
 case "${environment}" in
-  dev|uat|prod) ;;
+  sit|uat|prod) ;;
   *)
-    echo "Unsupported deployment environment: ${environment}. Use dev, uat, or prod." >&2
+    echo "Unsupported deployment environment: ${environment}. Use sit, uat, or prod." >&2
     exit 1
     ;;
 esac

@@ -27,7 +27,7 @@ on:
         required: true
         default: uat
         type: choice
-        options: [dev, uat, prod]
+        options: [sit, uat, prod]
 
 permissions:
   contents: read
@@ -114,7 +114,7 @@ jobs:
         with:
           url: ${{ env.VAULT_ADDR }}
           method: jwt
-          role: github-actions-console
+          role: github-actions-portal-${{ needs.prep.outputs.deployment_environment }}
           jwtGithubAudience: vault
           secrets: |
             kv/data/CICD GHCR_TOKEN | GHCR_TOKEN
