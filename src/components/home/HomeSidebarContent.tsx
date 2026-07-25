@@ -73,7 +73,7 @@ const sidebarContent = {
 
 export function HomeSidebarContent() {
     const { language } = useLanguage()
-    const data = sidebarContent[language as keyof typeof sidebarContent]
+    const data = (sidebarContent as any)[language] || (sidebarContent as any).zh
 
     return (
         <>
