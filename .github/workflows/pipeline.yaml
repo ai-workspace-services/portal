@@ -133,3 +133,4 @@ jobs:
           PUSH_LATEST: ${{ needs.prep.outputs.push_latest }}
         run: bash scripts/github-actions/publish-frontend-image.sh
 
+
