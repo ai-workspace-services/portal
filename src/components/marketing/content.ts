@@ -90,8 +90,6 @@ export type HomeMarketingContent = {
   };
 };
 
-import * as generatedContent from "@/data/content/home-marketing.json";
+import { homeMarketingContentData } from "@/data/content/home-marketing";
 
-const rawContent = generatedContent as any;
-const parsedContent = rawContent && rawContent.default ? rawContent.default : rawContent;
-export const homeMarketingContent: Record<Language, HomeMarketingContent> = parsedContent as Record<Language, HomeMarketingContent>;
+export const homeMarketingContent: Record<Language, HomeMarketingContent> = homeMarketingContentData as any;
