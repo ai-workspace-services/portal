@@ -23,7 +23,7 @@ const ICONS: Record<string, any> = {
 
 export default function XstreamPage() {
   const { language } = useLanguage();
-  const content = xstreamContent[language];
+  const content = (xstreamContent as any)[language] || (xstreamContent as any).zh;
   const { hero, showcases } = content;
 
   return (

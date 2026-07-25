@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export default function MarketingNav() {
   const { language } = useLanguage();
-  const content = homeMarketingContent[language];
+  const content = (homeMarketingContent as any)[language] || (homeMarketingContent as any).zh;
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
