@@ -1,5 +1,4 @@
-export const homeMarketingContentData = 
-{
+export const homeMarketingContentData = {
   "zh": {
     "brand": {
       "name": "SVC+",
