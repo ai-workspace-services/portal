@@ -23,7 +23,7 @@ const ICONS: Record<string, any> = {
 
 export default function OpenPlatformPage() {
   const { language } = useLanguage();
-  const content = openPlatformContent[language as keyof typeof openPlatformContent];
+  const content = (openPlatformContent as any)[language] || (openPlatformContent as any).zh;
   const { hero, showcases } = content;
 
   return (
