@@ -20,7 +20,7 @@ const ICONS: Record<string, any> = {
 
 export default function XworkmatePage() {
   const { language } = useLanguage();
-  const content = xworkmateContent[language];
+  const content = (xworkmateContent as any)[language] || (xworkmateContent as any).zh;
   const { hero, showcases } = content;
 
   return (
