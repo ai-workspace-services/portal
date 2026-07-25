@@ -116,6 +116,61 @@ UAT 既连不上自己的服务，又通过 base 的漏项连着生产认证。
 
 ---
 
+## 路径三：Dockerfile 把 `RUNTIME_ENV=prod` 烧进镜像
+
+```dockerfile
+ENV NODE_ENV=production \
+    RUNTIME_ENV=prod \        # ← Dockerfile:106
+    REGION=cn \
+```
+
+`runtime-loader` 检测环境的**第一级**就是 `process.env.RUNTIME_ENV`，所以它在每次
+容器启动时都命中。**路径一里那个默认值根本走不到。**
+
+> 这同时更正本文档最初的一处判断：先前写"`RUNTIME_ENV` 从未被设置"是错的 ——
+> 它被设置了，设成 `prod`，只是在当时检视的范围外一层。第一级分支已经命中时，
+> 改兜底值没有任何作用。
+
+已修（portal#114 移除，gitops#115 改为部署时注入）。
+
+## 路径四：`NEXT_PUBLIC_*` 在 CI 顶层被硬编码为生产值
+
+`.github/workflows/pipeline.yaml` 的 workflow 顶层 `env:`：
+
+```yaml
+NEXT_PUBLIC_APP_BASE_URL: https://console.xworkmate.com
+NEXT_PUBLIC_SITE_URL: https://console.xworkmate.com
+ACCOUNT_SERVICE_URL: https://accounts.svc.plus
+RUNTIME_HOSTNAME: console.xworkmate.com
+```
+
+`NEXT_PUBLIC_*` 会被 **编译进客户端 bundle**，运行时无法更改。所以这条路径
+不受路径一至三的修复影响。
+
+`build` job 只覆盖了其中一个：
+
+| 变量 | PR（SIT）构建里的实际值 | |
+|---|---|---|
+| `NEXT_PUBLIC_RUNTIME_ENVIRONMENT` | `sit` | ✅ 第 100 行按环境覆盖 |
+| `NEXT_PUBLIC_APP_BASE_URL` | `https://console.xworkmate.com` | ❌ |
+| `NEXT_PUBLIC_SITE_URL` | `https://console.xworkmate.com` | ❌ |
+| `ACCOUNT_SERVICE_URL` | `https://accounts.svc.plus` | ❌ |
+
+覆盖机制本身是可用的 —— `NEXT_PUBLIC_RUNTIME_ENVIRONMENT` 已经用它按环境取值。
+缺的是把其余几个也纳入。
+
+**未修，因为需要一个我无法从代码推断的事实**：SIT 环境对应的域名。UAT 的可以
+从 provision 输出确定（`console-uat` / `accounts-uat` + `TARGET_DOMAIN_BASE`），
+prod 已知，但 SIT 用什么域名（或是否根本不对外暴露）需要确认。填错域名比暂时
+留着更糟：它会变成一个"看起来已经修好"的错误配置。
+
+### 与 runtime config 的关系待厘清
+
+`NEXT_PUBLIC_APP_BASE_URL` 与 `runtime-service-config.<env>.yaml` 的
+`dashboardUrl`/`authUrl` 是两套并行的来源。修路径四之前需要先确定：应用代码在
+两者都存在时以哪个为准。否则可能出现"改了一个、另一个仍然生效"的局面 ——
+与本次审计发现的每一条都是同一种失败形态。
+
 ## 修复方向
 
 按"改一处就能减少一条路径"排序：
