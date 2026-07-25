@@ -102,9 +102,18 @@ FROM ${NODE_RUNTIME_IMAGE} AS runner
 
 WORKDIR /app/dashboard/
 
+# RUNTIME_ENV / REGION 刻意不在这里赋值 —— 由运行时(compose 的
+# environment: 或 docker run -e)注入。
+#
+# 这里原本写着 RUNTIME_ENV=prod。runtime-loader 解析环境的第一级就是
+# process.env.RUNTIME_ENV, 所以每一个镜像不论构建来源, 启动即以生产身份
+# 运行、连生产认证服务 —— SIT / UAT / 本地全都如此, 且不报任何错。
+#
+# 镜像不应该知道自己会被部署到哪里: 同一个 digest 要能部署到任意环境, 环境
+# 是部署时的事实, 不是构建时的属性。不赋值时 loader 会落到它自己的默认值
+# (dev), 那是安全的方向 —— 猜错成 dev 只是连不上, 猜错成 prod 会把测试流量
+# 打进生产。
 ENV NODE_ENV=production \
-    RUNTIME_ENV=prod \
-    REGION=cn \
     PORT=3000
 
 # ---------------------------
