@@ -1,4 +1,7 @@
+# SIT。authUrl 与 docsServiceUrl 原先缺失, 靠 base 兜底 —— 而 base 里写的是
+# 生产地址, 所以 SIT 一直在对生产认证服务发请求。现在显式给出。
 apiBaseUrl: http://127.0.0.1:8080
-authUrl: https://accounts.svc.plus
+authUrl: http://127.0.0.1:18081
 dashboardUrl: http://localhost:3000
+docsServiceUrl: https://docs.svc.plus
 logLevel: debug

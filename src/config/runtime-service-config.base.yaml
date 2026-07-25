@@ -1,6 +1,11 @@
-# Base runtime configuration shared by all environments.
-apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
-authUrl: https://accounts.svc.plus
-dashboardUrl: https://www.svc.plus
-docsServiceUrl: https://docs.svc.plus
+# 所有环境共享的运行时配置。
+#
+# 这里**不放任何服务端点**。原先 base 写着生产地址(authUrl:
+# accounts.svc.plus / dashboardUrl: www.svc.plus / docsServiceUrl:
+# docs.svc.plus), 而配置是 base 与环境层做 merge —— 任何环境层没有显式覆盖
+# 的键都会沿用 base 的值。sit.yaml 覆盖了 apiBaseUrl 和 dashboardUrl, 却漏了
+# authUrl 和 docsServiceUrl, 于是 SIT 的认证请求一直打在生产上, 而且不报错。
+#
+# 服务端点一律由环境层给出。缺失时下游断言会失败 —— 那是想要的行为, 比沿用
+# 一个"看起来能用"的生产地址安全得多。
 logLevel: info

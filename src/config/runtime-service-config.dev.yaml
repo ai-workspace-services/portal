@@ -1,0 +1,6 @@
+# 本地开发。全部指向本机 —— 本地构建绝不应该连到任何共享环境。
+apiBaseUrl: http://127.0.0.1:8080
+authUrl: http://127.0.0.1:18081
+dashboardUrl: http://localhost:3000
+docsServiceUrl: http://127.0.0.1:3001
+logLevel: debug
