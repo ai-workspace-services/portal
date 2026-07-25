@@ -100,7 +100,7 @@ export default function MarketingNav() {
         </Link>
 
         <div className="hidden items-center gap-1 lg:flex">
-          {content.nav.dropdowns.map((dropdown, index) => (
+          {content.nav.dropdowns.map((dropdown: any, index: number) => (
             <div
               key={dropdown.label}
               className="relative"
@@ -127,7 +127,7 @@ export default function MarketingNav() {
               {openDropdown === index && (
                 <div className="absolute left-0 top-full pt-2">
                   <div className="grid w-[560px] grid-cols-2 gap-1 rounded-2xl border border-slate-900/8 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
-                    {dropdown.columns.map((item) => (
+                    {dropdown.columns.map((item: any) => (
                       <Link
                         key={item.label}
                         href={item.href}
@@ -148,7 +148,7 @@ export default function MarketingNav() {
             </div>
           ))}
 
-          {content.nav.links.map((link) => (
+          {content.nav.links.map((link: any) => (
             <Link
               key={link.label}
               href={link.href}
@@ -284,13 +284,13 @@ export default function MarketingNav() {
 
       {mobileOpen && (
         <div className="border-t border-slate-900/8 bg-white px-6 pb-6 pt-2 lg:hidden">
-          {content.nav.dropdowns.map((dropdown) => (
+          {content.nav.dropdowns.map((dropdown: any) => (
             <div key={dropdown.label} className="py-2">
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 {dropdown.label}
               </div>
               <div className="mt-1 space-y-1">
-                {dropdown.columns.map((item) => (
+                {dropdown.columns.map((item: any) => (
                   <Link
                     key={item.label}
                     href={item.href}
@@ -303,7 +303,7 @@ export default function MarketingNav() {
               </div>
             </div>
           ))}
-          {content.nav.links.map((link) => (
+          {content.nav.links.map((link: any) => (
             <Link
               key={link.label}
               href={link.href}

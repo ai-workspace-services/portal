@@ -87,11 +87,11 @@ export function HomeSidebarContent() {
             </SidebarHeader>
 
             <SidebarContent className="space-y-4">
-                {data.sections.map((section) => (
+                {data.sections.map((section: any) => (
                     <div key={section.slug} className="space-y-2 rounded-md border border-black/10 bg-[#f6f7f9] p-3">
                         <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
                         <ul className="space-y-2">
-                            {section.items.map((item) => (
+                            {section.items.map((item: any) => (
                                 <li key={item.label} className="group flex flex-col gap-1">
                                     <a
                                         href={item.href}
