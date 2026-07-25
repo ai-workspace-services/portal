@@ -4,7 +4,7 @@ import { ArrowRight, BookCopy, Files } from "lucide-react";
 import Link from "next/link";
 import { PublicPageIntro } from "@/components/public/PublicPageShell";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import docsHomeContent from "@/data/content/docs-home.json";
+import docsHomeContent from "@/data/content/docs-home";
 
 export default function DocsHome() {
   const { language } = useLanguage();

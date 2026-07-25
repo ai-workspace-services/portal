@@ -65,4 +65,4 @@ out/
 target/
 
 # Auto-generated marketing content
-src/data/content/home-marketing.json
+src/data/content/*.ts

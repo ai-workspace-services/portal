@@ -6,7 +6,7 @@ import { marketingTheme } from "@/components/marketing/theme";
 import { ArrowRight, Bot, Cpu, Network, ShieldCheck, Lock, Layers, Activity, Monitor } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import xworkmateContent from "@/data/content/xworkmate.json";
+import xworkmateContent from "@/data/content/xworkmate";
 
 const ICONS: Record<string, any> = {
   bot: Bot,
