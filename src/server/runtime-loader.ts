@@ -44,7 +44,7 @@ function loadYamlSource(sourceKey: RuntimeSourceKey): string | undefined {
   }
 }
 
-type RuntimeSourceKey = 'base' | 'prod' | 'sit'
+type RuntimeSourceKey = 'base' | 'dev' | 'sit' | 'uat' | 'prod'
 
 export type RuntimeEnvironment = 'dev' | 'uat' | 'prod' | 'sit'
 export type RuntimeRegion = 'default' | 'cn' | 'global'
@@ -234,7 +234,10 @@ function normalizeEnvironmentValue(value: unknown): RuntimeEnvironment | undefin
     prod: 'prod',
     production: 'prod',
     release: 'prod',
-    main: 'prod',
+    // main 归 uat, 不是 prod。组织的环境路由规范是 main push -> UAT,
+    // 生产只经 v* tag(engineering-standards/
+    // multi-environment-delivery-and-release §1)。
+    main: 'uat',
     live: 'prod',
     sit: 'sit',
     staging: 'sit',
@@ -355,10 +358,25 @@ export function readRuntimeEnvSettings(): RuntimeEnvSettings {
     }
   }
 
+  // 检测不出环境时默认 'dev', 不是 'prod'。
+  //
+  // 原先默认 'prod' 让每一个构建产物都以生产身份运行: RUNTIME_ENV 从未被
+  // 设置(CI 传的是另一个名字 NEXT_PUBLIC_RUNTIME_ENVIRONMENT), 而
+  // .runtime-env-config.yaml 被 .gitignore 排除且 Dockerfile 不生成它 ——
+  // 四个候选路径全部落空, 于是 SIT / UAT / 本地开发全都连生产服务, 且
+  // 不报任何错。
+  //
+  // fail-safe 的方向是最小影响面: 猜错成 dev 只会让本地连不上, 猜错成
+  // prod 会让测试流量打到生产。
+  console.warn(
+    '[runtime-config] Could not determine the runtime environment from ' +
+      'RUNTIME_ENV or any .runtime-env-config.yaml candidate; defaulting to ' +
+      "'dev'. Set RUNTIME_ENV explicitly for anything other than local development.",
+  )
   runtimeEnvSettingsCache = {
-    environment: 'prod',
+    environment: 'dev',
     region: 'default',
-    detectedBy: 'default',
+    detectedBy: 'default:dev',
   }
   return runtimeEnvSettingsCache
 }
@@ -367,7 +385,14 @@ function splitEnvironmentOverrides(
   environment: RuntimeEnvironment,
   region: RuntimeRegion,
 ): { environmentOverrides: Record<string, unknown>; regionOverrides?: Record<string, unknown> } {
-  const source: RuntimeSourceKey = environment === 'prod' ? 'prod' : 'sit'
+  // 每个环境映射到同名配置源, 不再是"非 prod 即 sit"。
+  //
+  // 那个三元表达式让 uat 与 dev 静默使用 SIT 的端点 —— UAT 会去连
+  // 127.0.0.1:8080(在 UAT 主机上不存在), 而 RuntimeEnvironment 声明了 4 个
+  // 值、RuntimeSourceKey 只有 3 个, 类型本身就暴露了这个不匹配。
+  // 现在新增环境时缺配置文件会让 parseYamlSource 报 warn 并返回空对象,
+  // 端点缺失由下游断言暴露, 而不是安静地落到另一个环境的配置上。
+  const source: RuntimeSourceKey = environment
   const envConfig = parseYamlSource(source)
   const environmentOverrides = mergeConfigs({}, envConfig)
   let regionOverrides: Record<string, unknown> | undefined

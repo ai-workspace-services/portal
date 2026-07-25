@@ -1,4 +1,13 @@
-# Overrides for the production environment.
+# 生产环境。
+#
+# 顶层必须给全端点: region 的默认值是 'default', 而下面 regions 只声明了 cn
+# 与 global —— region=default 时 regions 覆盖不命中。原先 prod 顶层没有端点,
+# 靠 base 兜底才能工作(base 里写的正是这几个生产地址), 而同一个兜底让所有
+# 非生产环境也连上了生产。现在 base 不再放端点, 每个环境自己声明完整。
+apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
+authUrl: https://accounts.svc.plus
+dashboardUrl: https://www.svc.plus
+docsServiceUrl: https://docs.svc.plus
 logLevel: warn
 regions:
   cn:
