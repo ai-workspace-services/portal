@@ -11,18 +11,18 @@ export const homeMarketingContentData =
           "label": "产品与服务",
           "columns": [
             {
-              "label": "Xworkmate",
-              "description": "AI 核心链路域",
+              "label": "AI Workspace",
+              "description": "让 AI 真正参与你的工作，而不是停留在对话中",
               "href": "/products/xworkmate"
             },
             {
-              "label": "Open-platform",
-              "description": "开放平台与基础设施域",
+              "label": "Platform & Infrastructure",
+              "description": "为 AI Workspace 提供可控、可扩展的基础支撑",
               "href": "/products/open-platform"
             },
             {
-              "label": "Xstream Platform",
-              "description": "AI加速代理私有网络互联",
+              "label": "AI Connectivity",
+              "description": "为 AI Workspace 提供稳定、安全的连接能力",
               "href": "/products/xstream"
             }
           ]
@@ -74,10 +74,10 @@ export const homeMarketingContentData =
     },
     "hero": {
       "title": [
-        "构建强大的产品矩阵与",
-        "开源平台解决方案"
+        "构建、连接并掌控你的",
+        "AI 工作空间平台"
       ],
-      "subtitle": "融合开源底座与企业级安全标准，为您提供涵盖 AI 辅助研发、跨云控制与基础设施运维的全面产品服务矩阵，赋能团队高效协同。",
+      "subtitle": "兼顾稳定性、可控性与架构自由。支持托管使用，也支持自建部署，在易用性与控制力之间自由选择。",
       "primaryCta": {
         "label": "进入控制台",
         "href": "/panel"
@@ -134,12 +134,12 @@ export const homeMarketingContentData =
     ],
     "productGrid": {
       "title": "一个平台，全面覆盖",
-      "subtitle": "产品与服务，模块化构建，满足不同行业与场景需求。",
+      "subtitle": "三者协同，让 AI 从工具变成真正可用的工作系统。",
       "items": [
         {
           "icon": "refresh",
-          "name": "Xworkmate/Ai-workspace",
-          "description": "AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。",
+          "name": "AI Workspace",
+          "description": "让 AI 真正参与你的工作，而不是停留在对话中。将对话、任务和工具整合，持续产出可交付的结果。",
           "href": "/products/xworkmate",
           "learnMore": "了解更多",
           "slides": [
@@ -162,8 +162,8 @@ export const homeMarketingContentData =
         },
         {
           "icon": "eye",
-          "name": "Open-platform",
-          "description": "开源解决方案，涵盖 Gitea、Vault、IAM (Zitadel) 以及全局可观测性底座。",
+          "name": "Platform & Infrastructure",
+          "description": "提供可控、可扩展的基础支撑，支持从托管到自建的灵活部署选项，让你逐步掌控基础设施。",
           "href": "/products/open-platform",
           "learnMore": "了解更多",
           "slides": [
@@ -186,8 +186,8 @@ export const homeMarketingContentData =
         },
         {
           "icon": "shield",
-          "name": "Xstream Platform",
-          "description": "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。",
+          "name": "AI Connectivity",
+          "description": "为你的 AI Workspace 提供稳定、安全的连接能力。优化连接策略，提升访问全球 AI 服务的稳定性。",
           "href": "/products/xstream",
           "learnMore": "了解更多",
           "slides": [
@@ -218,18 +218,18 @@ export const homeMarketingContentData =
     "statsBar": [
       {
         "icon": "refresh",
-        "value": "Xworkmate/Ai-workspace",
-        "label": "AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。"
+        "value": "AI Workspace",
+        "label": "让 AI 真正参与你的工作，而不是停留在对话中。"
       },
       {
         "icon": "shield",
-        "value": "Xstream Platform",
-        "label": "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。"
+        "value": "AI Connectivity",
+        "label": "为你的 AI Workspace 提供稳定、安全的连接能力。"
       },
       {
         "icon": "eye",
-        "value": "Open-platform",
-        "label": "开源解决方案，涵盖 IAC，DevOPS、安全、IAM (Zitadel) 以及全局可观测性的平台解决方案。"
+        "value": "Platform & Infrastructure",
+        "label": "提供可控、可扩展的基础支撑，支持从托管到自建的灵活部署。"
       }
     ],
     "benefitList": [
@@ -296,18 +296,18 @@ export const homeMarketingContentData =
           "label": "Products & Services",
           "columns": [
             {
-              "label": "Xworkmate",
-              "description": "AI Core Link Domain",
+              "label": "AI Workspace",
+              "description": "Make AI a true part of your workflow",
               "href": "/products/xworkmate"
             },
             {
-              "label": "Open-platform",
-              "description": "Infrastructure Domain",
+              "label": "Platform & Infrastructure",
+              "description": "Complete control over your AI foundation",
               "href": "/products/open-platform"
             },
             {
-              "label": "Xstream Platform",
-              "description": "Private AI Network",
+              "label": "AI Connectivity",
+              "description": "Stable and secure AI access",
               "href": "/products/xstream"
             }
           ]
@@ -359,10 +359,10 @@ export const homeMarketingContentData =
     },
     "hero": {
       "title": [
-        "Unified Cloud-Native &",
-        "Network Operations, Simplified"
+        "Build, Connect, and Control",
+        "Your AI Workspace"
       ],
-      "subtitle": "Observe, orchestrate, and protect your infrastructure and applications from a single platform — consistent across clouds and regions, open by design, scales on demand.",
+      "subtitle": "A cloud-neutral platform built for stability and freedom. Choose between our managed service or deploy your own infrastructure for ultimate control.",
       "primaryCta": {
         "label": "Enter Console",
         "href": "/panel"
@@ -419,12 +419,12 @@ export const homeMarketingContentData =
     ],
     "productGrid": {
       "title": "One Platform, Full Coverage",
-      "subtitle": "Modular building blocks you can combine for any industry or scenario.",
+      "subtitle": "Everything you need to turn AI from a simple tool into a real working system.",
       "items": [
         {
           "icon": "refresh",
-          "name": "Xworkmate/Ai-workspace",
-          "description": "AI Core Link Domain covering App LiteLLM, OpenClaw, QMD & model routing.",
+          "name": "AI Workspace",
+          "description": "Bring your conversations, tasks, and tools into a single, unified workspace. Stop context switching and generate real, deliverable outputs with AI.",
           "href": "/products/xworkmate",
           "learnMore": "Learn more",
           "slides": [
@@ -447,8 +447,8 @@ export const homeMarketingContentData =
         },
         {
           "icon": "eye",
-          "name": "Open-platform",
-          "description": "Open-source solutions covering Gitea, Vault, IAM, and global observability stack.",
+          "name": "Platform & Infrastructure",
+          "description": "Built on a cloud-neutral architecture that scales with you. Start easily with our managed service, or self-host your own infrastructure.",
           "href": "/products/open-platform",
           "learnMore": "Learn more",
           "slides": [
@@ -471,8 +471,8 @@ export const homeMarketingContentData =
         },
         {
           "icon": "shield",
-          "name": "Xstream Platform",
-          "description": "Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.",
+          "name": "AI Connectivity",
+          "description": "Experience reliable AI access with intelligent routing and network optimization. We ensure your workspace stays connected with maximum stability.",
           "href": "/products/xstream",
           "learnMore": "Learn more",
           "slides": [
@@ -503,18 +503,18 @@ export const homeMarketingContentData =
     "statsBar": [
       {
         "icon": "refresh",
-        "value": "Xworkmate/Ai-workspace",
-        "label": "AI Core Linkage Domain, covering smart agents and model routing scheduling like App LiteLLM, OpenClaw, QMD."
+        "value": "AI Workspace",
+        "label": "Make AI a true part of your workflow, not just a chat window."
       },
       {
         "icon": "shield",
-        "value": "Xstream Platform",
-        "label": "AI Accelerated Agent Private Network Interconnection, covering Caddy, Xray tunnel observation agents, and sync nodes."
+        "value": "AI Connectivity",
+        "label": "Keep your connection to global AI services stable and secure."
       },
       {
         "icon": "eye",
-        "value": "Open-platform",
-        "label": "Open Source Solutions, covering IAC, DevOps, Security, IAM (Zitadel), and global observability foundations."
+        "value": "Platform & Infrastructure",
+        "label": "Gain complete control over your AI foundation."
       }
     ],
     "benefitList": [
