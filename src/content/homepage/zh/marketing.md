@@ -6,14 +6,14 @@ nav:
   dropdowns:
     - label: 产品与服务
       columns:
-        - label: Xworkmate
-          description: AI 核心链路域
+        - label: AI Workspace
+          description: 让 AI 真正参与你的工作，而不是停留在对话中
           href: /products/xworkmate
-        - label: Open-platform
-          description: 开放平台与基础设施域
+        - label: Platform & Infrastructure
+          description: 为 AI Workspace 提供可控、可扩展的基础支撑
           href: /products/open-platform
-        - label: Xstream Platform
-          description: AI加速代理私有网络互联
+        - label: AI Connectivity
+          description: 为 AI Workspace 提供稳定、安全的连接能力
           href: /products/xstream
     - label: 资源中心
       columns:
@@ -42,9 +42,9 @@ nav:
   logout: 退出登录
 hero:
   title:
-    - 构建强大的产品矩阵与
-    - 开源平台解决方案
-  subtitle: 融合开源底座与企业级安全标准，为您提供涵盖 AI 辅助研发、跨云控制与基础设施运维的全面产品服务矩阵，赋能团队高效协同。
+    - 构建、连接并掌控你的
+    - AI 工作空间平台
+  subtitle: 兼顾稳定性、可控性与架构自由。支持托管使用，也支持自建部署，在易用性与控制力之间自由选择。
   primaryCta:
     label: 进入控制台
     href: /panel
@@ -81,11 +81,11 @@ featureGrid:
     description: 按需使用，快速扩展，支撑业务持续增长。
 productGrid:
   title: 一个平台，全面覆盖
-  subtitle: 产品与服务，模块化构建，满足不同行业与场景需求。
+  subtitle: 三者协同，让 AI 从工具变成真正可用的工作系统。
   items:
     - icon: refresh
-      name: Xworkmate/Ai-workspace
-      description: AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。
+      name: AI Workspace
+      description: 让 AI 真正参与你的工作，而不是停留在对话中。将对话、任务和工具整合，持续产出可交付的结果。
       href: /products/xworkmate
       learnMore: 了解更多
       slides:
@@ -99,8 +99,8 @@ productGrid:
           width: 1920
           height: 1080
     - icon: eye
-      name: Open-platform
-      description: 开源解决方案，涵盖 Gitea、Vault、IAM (Zitadel) 以及全局可观测性底座。
+      name: Platform & Infrastructure
+      description: 提供可控、可扩展的基础支撑，支持从托管到自建的灵活部署选项，让你逐步掌控基础设施。
       href: /products/open-platform
       learnMore: 了解更多
       slides:
@@ -114,8 +114,8 @@ productGrid:
           width: 1920
           height: 1080
     - icon: shield
-      name: Xstream Platform
-      description: AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。
+      name: AI Connectivity
+      description: 为你的 AI Workspace 提供稳定、安全的连接能力。优化连接策略，提升访问全球 AI 服务的稳定性。
       href: /products/xstream
       learnMore: 了解更多
       slides:
@@ -133,14 +133,14 @@ productGrid:
           height: 1080
 statsBar:
   - icon: refresh
-    value: Xworkmate/Ai-workspace
-    label: AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。
+    value: AI Workspace
+    label: 让 AI 真正参与你的工作，而不是停留在对话中。
   - icon: shield
-    value: Xstream Platform
-    label: AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。
+    value: AI Connectivity
+    label: 为你的 AI Workspace 提供稳定、安全的连接能力。
   - icon: eye
-    value: Open-platform
-    label: 开源解决方案，涵盖 IAC，DevOPS、安全、IAM (Zitadel) 以及全局可观测性的平台解决方案。
+    value: Platform & Infrastructure
+    label: 提供可控、可扩展的基础支撑，支持从托管到自建的灵活部署。
 benefitList:
   - icon: globe
     title: 开放中立，连接无界
