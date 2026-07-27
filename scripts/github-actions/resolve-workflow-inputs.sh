@@ -12,13 +12,23 @@ ref_name="${REF_NAME:-}"
 # deployment_environment 仍然要留: build job 用它设
 # NEXT_PUBLIC_RUNTIME_ENVIRONMENT, 那是编译进前端产物的值, 属于构建输入
 # 而不是部署输入。
-if [[ "${event_name}" == "workflow_dispatch" ]]; then
-  environment="${input_environment:-uat}"
+if [[ "${event_name}" == "pull_request" ]]; then
+  environment="sit"
 elif [[ "${ref_name}" == "main" ]]; then
-  environment="uat"
+  if [[ "${event_name}" == "workflow_dispatch" && -n "${input_environment:-}" ]]; then
+    environment="${input_environment}"
+  else
+    environment="uat"
+  fi
 elif [[ "${ref_name}" == release/* || "${REF_TYPE:-}" == "tag" ]]; then
-  environment="prod"
+  if [[ "${event_name}" == "workflow_dispatch" && -n "${input_environment:-}" ]]; then
+    environment="${input_environment}"
+  else
+    environment="prod"
+  fi
 else
+  # Vault OIDC roles for uat and prod require main or release/* refs.
+  # Custom or feature branches must use sit to satisfy Vault claim validation.
   environment="sit"
 fi
 
