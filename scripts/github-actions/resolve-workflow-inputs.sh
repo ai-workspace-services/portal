@@ -20,6 +20,12 @@ elif [[ "${ref_name}" == "main" ]]; then
   else
     environment="uat"
   fi
+elif [[ "${ref_name}" == daily-build-* ]]; then
+  if [[ "${event_name}" == "workflow_dispatch" && -n "${input_environment:-}" ]]; then
+    environment="${input_environment}"
+  else
+    environment="uat"
+  fi
 elif [[ "${ref_name}" == release/* || "${REF_TYPE:-}" == "tag" ]]; then
   if [[ "${event_name}" == "workflow_dispatch" && -n "${input_environment:-}" ]]; then
     environment="${input_environment}"
