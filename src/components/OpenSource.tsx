@@ -28,12 +28,12 @@ const projects = [
     link: 'https://www.svc.plus/xscopehub',
   },
   {
-    name: 'XStream',
+    name: 'XConnect',
     desc: {
-      en: 'Policy-as-code security automation with global delivery acceleration.',
-      zh: '策略即代码的安全自动化引擎，为全球团队提供网络加速与合规能力。',
+      en: 'The connector for AI workspaces, with AI acceleration and secure access.',
+      zh: '面向 AI 工作空间的连接器，提供 AI 加速与安全访问能力。',
     },
-    link: 'https://www.svc.plus/xstream',
+    link: 'https://www.svc.plus/xconnect',
   },
 ]
 

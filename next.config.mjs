@@ -98,12 +98,22 @@ export async function redirects() {
     },
     {
       source: '/XStream',
-      destination: '/xstream',
+      destination: '/xconnect',
       permanent: true,
     },
     {
       source: '/Xstream',
-      destination: '/xstream',
+      destination: '/xconnect',
+      permanent: true,
+    },
+    {
+      source: '/xstream',
+      destination: '/xconnect',
+      permanent: true,
+    },
+    {
+      source: '/products/xstream',
+      destination: '/products/xconnect',
       permanent: true,
     },
     {

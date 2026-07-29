@@ -127,19 +127,19 @@ const HERO_SOLUTIONS: HeroSolution[] = [
     tertiaryCtaHref: '/docs/xscopehub',
   },
   {
-    slug: 'xstream',
-    title: 'XStream',
-    tagline: '网络加速器',
-    description: '按需构建全球传输网络，保障跨地域应用与数据同步的稳定低时延体验。',
-    features: ['动态最优路径与带宽调度', '内置零信任安全与访问控制', '对接主流 CDN 与边缘节点'],
+    slug: 'xconnect',
+    title: 'XConnect',
+    tagline: 'AI workspace connector',
+    description: '为 AI 工作空间提供连接与加速能力，统一接入自建或预置的工作区。',
+    features: ['Workspace connection', 'AI acceleration', 'Unified access controls'],
     bodyHtml:
-      '<p>XStream 通过软件定义的网络加速技术，为实时互动、音视频与数据分发提供稳定的全球链路。</p>',
+      '<p>XConnect is the connector for AI workspaces, combining secure access, acceleration, and workflow-ready connectivity in one product.</p>',
     primaryCtaLabel: '立刻体验',
-    primaryCtaHref: '/xstream',
+    primaryCtaHref: '/xconnect',
     secondaryCtaLabel: '下载链接',
-    secondaryCtaHref: '/download?product=xstream',
+    secondaryCtaHref: '/download?product=xconnect',
     tertiaryCtaLabel: '文档链接',
-    tertiaryCtaHref: '/docs/xstream',
+    tertiaryCtaHref: '/docs/xconnect',
   },
 ]
 

@@ -51,7 +51,7 @@ export default function PricesPage() {
             : "Manage billing in Stripe customer portal",
         ],
         button: isChinese ? "使用 Stripe 订阅" : "Subscribe with Stripe",
-        highlight: product.slug === "xstream",
+        highlight: product.slug === "xconnect",
         billingPlan: product.billing.saas,
       });
     }

@@ -1,5 +1,5 @@
 import homepageContent from '../data/content/homepage.json'
-import xstreamContent from '../data/content/xstream.json'
+import xconnectContent from '../data/content/xconnect.json'
 import xcloudflowContent from '../data/content/xcloudflow.json'
 import xscopehubContent from '../data/content/xscopehub.json'
 
@@ -30,7 +30,7 @@ export type FeatureContent = {
 
 export function loadHeroContent(
   type: 'homepage' | 'product',
-  product?: 'xstream' | 'xcloudflow' | 'xscopehub',
+  product?: 'xconnect' | 'xcloudflow' | 'xscopehub',
   language: Language = 'zh'
 ): HeroContent | null {
   try {
@@ -38,8 +38,8 @@ export function loadHeroContent(
 
     if (type === 'homepage') {
       content = homepageContent
-    } else if (product === 'xstream') {
-      content = xstreamContent
+    } else if (product === 'xconnect') {
+      content = xconnectContent
     } else if (product === 'xcloudflow') {
       content = xcloudflowContent
     } else if (product === 'xscopehub') {
@@ -56,7 +56,7 @@ export function loadHeroContent(
 }
 
 export function loadFeatureContent(
-  product: 'xstream' | 'xcloudflow' | 'xscopehub',
+  product: 'xconnect' | 'xcloudflow' | 'xscopehub',
   section: 'features' | 'editions' | 'scenarios' | 'faq',
   language: Language = 'zh'
 ): FeatureContent | null {

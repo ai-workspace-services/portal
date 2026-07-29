@@ -1,6 +1,6 @@
 import xcloudflow from "./xcloudflow";
+import xconnect from "./xconnect";
 import xscopehub from "./xscopehub";
-import xstream from "./xstream";
 
 export type EditionLink = {
   label: string;
@@ -56,7 +56,7 @@ export function readPublicStripePrice(key: string): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-export const PRODUCT_LIST: ProductConfig[] = [xstream, xscopehub, xcloudflow];
+export const PRODUCT_LIST: ProductConfig[] = [xconnect, xscopehub, xcloudflow];
 
 export const PRODUCT_MAP = new Map<string, ProductConfig>(
   PRODUCT_LIST.map((product) => [product.slug, product]),
