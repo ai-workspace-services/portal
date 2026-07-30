@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-page-custom-font */
 
-export const dynamic = 'error'
 
 import './globals.css'
 import type { Metadata } from 'next'
