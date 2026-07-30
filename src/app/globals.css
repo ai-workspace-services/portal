@@ -259,6 +259,10 @@ button {
     margin-bottom: 0;
   }
 
+  .public-doc-prose > h1:first-child {
+    display: none;
+  }
+
   .public-doc-prose h1,
   .public-doc-prose h2,
   .public-doc-prose h3,
