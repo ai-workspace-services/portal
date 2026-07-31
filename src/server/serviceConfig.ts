@@ -2,31 +2,29 @@ import 'server-only'
 
 import { loadRuntimeConfig } from './runtime-loader'
 
-const FALLBACK_ACCOUNT_SERVICE_URL = 'https://accounts.svc.plus'
-const FALLBACK_SERVER_SERVICE_URL = 'https://api.svc.plus'
-const FALLBACK_DOCS_SERVICE_URL = 'https://docs.svc.plus'
+const FALLBACK_ACCOUNT_SERVICE_URL = 'http://127.0.0.1:8080'
+const FALLBACK_SERVER_SERVICE_URL = 'http://127.0.0.1:3000/api'
+const FALLBACK_DOCS_SERVICE_URL = 'http://127.0.0.1:3000/docs'
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
 
-function getRuntimeDefaultAccountServiceUrl(): string {
-  const runtime = loadRuntimeConfig()
-  const candidate = typeof runtime.authUrl === 'string' ? runtime.authUrl : undefined
-  return candidate ?? FALLBACK_ACCOUNT_SERVICE_URL
+function getRuntimeDefaultAccountServiceUrl(requestHost?: string | null): string {
+  const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
+  const candidate = typeof runtime.authUrl === 'string' ? runtime.authUrl.trim() : undefined
+  return candidate && candidate.length > 0 ? candidate : FALLBACK_ACCOUNT_SERVICE_URL
 }
 
-function getRuntimeDefaultServerServiceUrl(): string {
-  const runtime = loadRuntimeConfig()
-  const candidate = typeof runtime.apiBaseUrl === 'string' ? runtime.apiBaseUrl : undefined
-  return candidate ?? FALLBACK_SERVER_SERVICE_URL
+function getRuntimeDefaultServerServiceUrl(requestHost?: string | null): string {
+  const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
+  const candidate = typeof runtime.apiBaseUrl === 'string' ? runtime.apiBaseUrl.trim() : undefined
+  return candidate && candidate.length > 0 ? candidate : FALLBACK_SERVER_SERVICE_URL
 }
 
-function getRuntimeDefaultDocsServiceUrl(): string {
-  const runtime = loadRuntimeConfig()
-  const candidate = typeof runtime.docsServiceUrl === 'string' ? runtime.docsServiceUrl : undefined
-  return candidate ?? FALLBACK_DOCS_SERVICE_URL
+function getRuntimeDefaultDocsServiceUrl(requestHost?: string | null): string {
+  const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
+  const candidate = typeof runtime.docsServiceUrl === 'string' ? runtime.docsServiceUrl.trim() : undefined
+  return candidate && candidate.length > 0 ? candidate : FALLBACK_DOCS_SERVICE_URL
 }
-
-
 
 function readEnvValue(...keys: string[]): string | undefined {
   for (const key of keys) {
@@ -91,14 +89,17 @@ function normalizeBrowserBaseUrl(baseUrl: string): string {
   }
 }
 
-export function getAccountServiceBaseUrl(): string {
+export function getAccountServiceBaseUrl(requestHost?: string | null): string {
+  const runtimeUrl = getRuntimeDefaultAccountServiceUrl(requestHost)
   const configured = readEnvValue('ACCOUNT_SERVICE_URL', 'NEXT_PUBLIC_ACCOUNT_SERVICE_URL')
-  const resolved = configured ?? getRuntimeDefaultAccountServiceUrl()
+  // Dynamic runtime config takes precedence over static .env.production build fallbacks (https://accounts.svc.plus)
+  const isStaticProdFallback = configured === 'https://accounts.svc.plus'
+  const resolved = (configured && !isStaticProdFallback) ? configured : (runtimeUrl || FALLBACK_ACCOUNT_SERVICE_URL)
   return normalizeServiceOrigin(normalizeBrowserBaseUrl(resolved))
 }
 
-export function getAccountServiceApiBaseUrl(): string {
-  const accountBaseUrl = getAccountServiceBaseUrl()
+export function getAccountServiceApiBaseUrl(requestHost?: string | null): string {
+  const accountBaseUrl = getAccountServiceBaseUrl(requestHost)
   const apiPath = '/api/auth/'
   try {
     const url = new URL(apiPath, accountBaseUrl)
@@ -142,14 +143,16 @@ export function isSelfReferentialServiceTarget(
   return normalizedServiceHost === normalizedRequestHost
 }
 
-export function getServerServiceBaseUrl(): string {
+export function getServerServiceBaseUrl(requestHost?: string | null): string {
+  const runtimeUrl = getRuntimeDefaultServerServiceUrl(requestHost)
   const configured = readEnvValue(
     'SERVER_SERVICE_URL',
     'NEXT_PUBLIC_SERVER_SERVICE_URL',
     'NEXT_PUBLIC_API_BASE_URL',
   )
-  const fallback = getRuntimeDefaultServerServiceUrl()
-  return normalizeBaseUrl(configured ?? fallback)
+  const isStaticProdFallback = configured === 'https://api.svc.plus'
+  const resolved = (configured && !isStaticProdFallback) ? configured : (runtimeUrl || FALLBACK_SERVER_SERVICE_URL)
+  return normalizeBaseUrl(resolved)
 }
 
 const SERVER_INTERNAL_URL_ENV_KEYS = [
@@ -164,19 +167,22 @@ const DOCS_SERVICE_URL_ENV_KEYS = [
   'DOCS_SERVICE_INTERNAL_URL',
 ] as const
 
-export function getInternalServerServiceBaseUrl(): string {
+export function getInternalServerServiceBaseUrl(requestHost?: string | null): string {
   const configured = readEnvValue(...SERVER_INTERNAL_URL_ENV_KEYS)
   if (configured) {
     return normalizeBaseUrl(configured)
   }
 
   // For distributed architecture, internal and external URLs are the same
-  return getServerServiceBaseUrl()
+  return getServerServiceBaseUrl(requestHost)
 }
 
-export function getDocsServiceBaseUrl(): string {
+export function getDocsServiceBaseUrl(requestHost?: string | null): string {
+  const runtimeUrl = getRuntimeDefaultDocsServiceUrl(requestHost)
   const configured = readEnvValue(...DOCS_SERVICE_URL_ENV_KEYS)
-  return normalizeBaseUrl(configured ?? getRuntimeDefaultDocsServiceUrl())
+  const isStaticProdFallback = configured === 'https://docs.svc.plus'
+  const resolved = (configured && !isStaticProdFallback) ? configured : (runtimeUrl || FALLBACK_DOCS_SERVICE_URL)
+  return normalizeBaseUrl(resolved)
 }
 
 export const serviceConfig = {
