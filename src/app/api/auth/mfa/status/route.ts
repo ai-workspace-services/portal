@@ -7,10 +7,10 @@ import {
   isSelfReferentialServiceTarget,
 } from '@server/serviceConfig'
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl()
-
 export async function GET(request: NextRequest) {
-  if (isSelfReferentialServiceTarget(ACCOUNT_API_BASE, request.headers.get('host'))) {
+  const requestHost = request.headers.get('host')
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost)
+  if (isSelfReferentialServiceTarget(accountApiBase, requestHost)) {
     return NextResponse.json(
       {
         error: 'account_service_misconfigured',
@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
 
   const endpointParams = params.toString()
   const endpoint = endpointParams
-    ? `${ACCOUNT_API_BASE}/mfa/status?${endpointParams}`
-    : `${ACCOUNT_API_BASE}/mfa/status`
+    ? `${accountApiBase}/mfa/status?${endpointParams}`
+    : `${accountApiBase}/mfa/status`
 
   const response = await fetch(endpoint, {
     method: 'GET',

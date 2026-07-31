@@ -69,10 +69,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const requestHost = request.headers.get("host");
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
+
   if (
     isSelfReferentialServiceTarget(
-      ACCOUNT_API_BASE,
-      request.headers.get("host"),
+      accountApiBase,
+      requestHost,
     )
   ) {
     return NextResponse.json(
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
       loginBody.totpCode = totpCode;
     }
 
-    const response = await fetch(`${ACCOUNT_API_BASE}/login`, {
+    const response = await fetch(`${accountApiBase}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

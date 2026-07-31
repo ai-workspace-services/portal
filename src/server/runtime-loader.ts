@@ -280,8 +280,8 @@ function normalizeRegionValue(value: unknown): RuntimeRegion | undefined {
 
 let runtimeEnvSettingsCache: RuntimeEnvSettings | undefined
 
-export function readRuntimeEnvSettings(): RuntimeEnvSettings {
-  if (runtimeEnvSettingsCache) {
+export function readRuntimeEnvSettings(hostname?: string): RuntimeEnvSettings {
+  if (runtimeEnvSettingsCache && !hostname) {
     return runtimeEnvSettingsCache
   }
 
@@ -294,12 +294,28 @@ export function readRuntimeEnvSettings(): RuntimeEnvSettings {
       const regionEnv = process.env.REGION
       const region = regionEnv ? normalizeRegionValue(regionEnv) || 'default' : 'default'
 
-      runtimeEnvSettingsCache = {
+      const settings = {
         environment,
         region,
         detectedBy: 'env:RUNTIME_ENV',
       }
-      return runtimeEnvSettingsCache
+      if (!hostname) {
+        runtimeEnvSettingsCache = settings
+      }
+      return settings
+    }
+  }
+
+  if (hostname) {
+    const lowerHost = hostname.toLowerCase()
+    if (lowerHost.includes('uat')) {
+      return { environment: 'uat', region: 'default', detectedBy: 'hostname:uat' }
+    }
+    if (lowerHost.includes('sit')) {
+      return { environment: 'sit', region: 'default', detectedBy: 'hostname:sit' }
+    }
+    if (lowerHost.includes('svc.plus')) {
+      return { environment: 'prod', region: 'default', detectedBy: 'hostname:prod' }
     }
   }
 
@@ -427,7 +443,7 @@ function buildCacheKey(
 
 export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfig {
   const { hostname, detectedBy: hostnameDetectedBy } = detectHostname(options?.hostname)
-  const { environment, region, detectedBy: envDetectedBy } = readRuntimeEnvSettings()
+  const { environment, region, detectedBy: envDetectedBy } = readRuntimeEnvSettings(hostname)
 
   const cacheKey = buildCacheKey(hostname, environment, region)
   const cached = runtimeConfigCache.get(cacheKey)
