@@ -50,8 +50,14 @@ export async function POST(request: NextRequest) {
       headers.Authorization = `Bearer ${sessionToken}`
     }
 
+    // 后端 provisionTOTP 里 `token` 优先于 session: 只要请求带了 token, 它就走
+    // refreshMFAChallenge 分支, 挑战对不上直接 401 invalid_mfa_token, 根本不看
+    // session。而 MFA 挑战是 accounts 进程内存态 —— 容器一重启全没, 浏览器里那个
+    // 10 分钟 TTL 的 xc_mfa_challenge cookie 却还在。于是「明明登录着却报会话过期、
+    // 密钥框空白」。已登录用户重新绑定本就该以 session 为准, 所以有 session 时不
+    // 回传陈旧的挑战 token; 登录期(needMfa, 尚无 session)那条路径仍然靠它。
     const body: Record<string, string> = {}
-    if (token) {
+    if (token && !sessionToken) {
       body.token = token
     }
     if (issuer) {
