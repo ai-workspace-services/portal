@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const revalidate = false;
+export const revalidate = 0;
 
 import type { Metadata } from "next";
 import { Suspense } from "react";
