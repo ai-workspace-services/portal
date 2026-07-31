@@ -8,6 +8,7 @@ import {
   clearSessionCookie,
   deriveMaxAgeFromExpires,
   MFA_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
 } from "@lib/authGateway";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
@@ -52,6 +53,9 @@ export async function POST(request: NextRequest) {
   }
 
   const cookieToken = cookieStore.get(MFA_COOKIE_NAME)?.value ?? "";
+  const sessionToken = normalizeString(
+    cookieStore.get(SESSION_COOKIE_NAME)?.value,
+  );
   const token = normalizeString(payload?.token || cookieToken);
   const code = normalizeCode(payload?.code ?? payload?.totp);
 
@@ -70,12 +74,27 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(`${ACCOUNT_API_BASE}/mfa/verify`, {
+    // 这条路由服务的是「绑定确认」——用户刚 provision 完一个新密钥、要用第一个
+    // 动态码把它确认下来。对应的后端是 /mfa/totp/verify(它接受 `token` 字段,
+    // 校验通过后置 MFAEnabled=true 并签发 session)。
+    // 不是 /mfa/verify —— 那条是登录期的二次校验, 入参叫 mfa_ticket/mfaToken,
+    // 且开头就断言 user.MFAEnabled 必须已经为 true, 对首次绑定必然返回
+    // mfa_not_enabled。登录流程的 MFA 走 /api/auth/login 自带的 totp 字段,
+    // 不经过这里。
+    // /mfa/totp/verify 挂在 authProtected 组下, 走 AuthMiddleware —— 浏览器只有
+    // cookie, 所以这里必须把 xc_session 翻成 Authorization 头。这正是 BFF 存在
+    // 的理由, 也是当初 Caddy 把本前缀直接转给 Go 服务后 MFA 全废的原因之一。
+    const upstreamHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (sessionToken) {
+      upstreamHeaders.Authorization = `Bearer ${sessionToken}`;
+    }
+
+    const response = await fetch(`${ACCOUNT_API_BASE}/mfa/totp/verify`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ mfaToken: token, code }),
+      headers: upstreamHeaders,
+      body: JSON.stringify({ token, code }),
       cache: "no-store",
     });
 
