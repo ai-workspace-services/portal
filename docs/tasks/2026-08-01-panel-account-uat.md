@@ -1,8 +1,8 @@
 # `/panel/account` UAT 页面补全
 
-> **Status**: ⏳ 代码完成 + 定向验证,待 PR 审阅与认证浏览器视觉复核
+> **Status**: ⏳ 代码完成 + 定向验证,PR #132 待审阅与认证浏览器视觉复核
 > **Date**: 2026-08-01
-> **Related PRs**: 待创建
+> **Related PRs**: [#132 OPEN](https://github.com/ai-workspace-services/portal/pull/132)
 > **组件**: `src/modules/extensions/builtin/user-center/routes/account.tsx` + account panel components
 
 ## 目标
