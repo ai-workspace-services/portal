@@ -1,90 +1,108 @@
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import SubscriptionPanel from '../SubscriptionPanel'
+import SubscriptionPanel from "../SubscriptionPanel";
 
-vi.mock('swr', () => ({
+vi.mock("swr", () => ({
   default: vi.fn((key: string) => {
-    if (key === '/api/auth/subscriptions') {
+    if (key === "/api/auth/subscriptions") {
       return {
         data: { subscriptions: [] },
         isLoading: false,
         mutate: vi.fn(),
-      }
+      };
     }
-    if (key === 'account-usage-summary') {
+    if (key === "account-usage-summary") {
       return {
         data: {
           totalBytes: 384,
           currentBalance: 87.5,
           remainingIncludedQuota: 2048,
+          includedQuotaBytes: 4096,
+          usedBytes: 2048,
+          usagePercent: 50,
+          periodStart: "2026-04-01T00:00:00Z",
+          periodEnd: "2026-05-01T00:00:00Z",
           syncDelaySeconds: 12,
           arrears: false,
-          sourceOfTruth: 'postgresql',
+          sourceOfTruth: "postgresql",
           billingProfile: {
-            packageName: 'starter',
-            pricingRuleVersion: 'pricing-v1',
+            packageName: "starter",
+            pricingRuleVersion: "pricing-v1",
           },
         },
-      }
+      };
     }
-    if (key === 'account-billing-summary') {
+    if (key === "account-billing-summary") {
       return {
         data: {
-          sourceOfTruth: 'postgresql',
+          sourceOfTruth: "postgresql",
           billingProfile: {
-            packageName: 'starter',
-            pricingRuleVersion: 'pricing-v1',
+            packageName: "starter",
+            pricingRuleVersion: "pricing-v1",
           },
           ledger: [
             {
-              id: 'ledger-1',
-              entryType: 'traffic_charge',
+              id: "ledger-1",
+              entryType: "traffic_charge",
               ratedBytes: 50,
               amountDelta: -12.5,
               balanceAfter: 75,
-              pricingRuleVersion: 'pricing-v1',
-              bucketStart: '2026-04-08T10:30:00Z',
+              pricingRuleVersion: "pricing-v1",
+              bucketStart: "2026-04-08T10:30:00Z",
             },
           ],
         },
-      }
+      };
     }
-    if (key === 'account-policy') {
+    if (key === "account-policy") {
       return {
         data: {
-          preferredStrategy: 'ewma',
-          eligibleNodeGroups: ['hk-premium'],
+          preferredStrategy: "ewma",
+          eligibleNodeGroups: ["hk-premium"],
         },
-      }
+      };
     }
-    return { data: undefined, isLoading: false, mutate: vi.fn() }
+    return { data: undefined, isLoading: false, mutate: vi.fn() };
   }),
-}))
+}));
 
-vi.mock('@components/billing/stripe-client', () => ({
+vi.mock("@components/billing/stripe-client", () => ({
   openStripePortal: vi.fn(),
-}))
+}));
 
-vi.mock('../../lib/fetchAccountUsage', () => ({
+vi.mock("../../lib/fetchAccountUsage", () => ({
   fetchAccountUsageSummary: vi.fn(),
   fetchAccountBillingSummary: vi.fn(),
   fetchAccountPolicy: vi.fn(),
-}))
+}));
 
-describe('SubscriptionPanel', () => {
-  it('renders accounts-backed source-of-truth usage metadata', () => {
-    render(<SubscriptionPanel />)
+describe("SubscriptionPanel", () => {
+  it("renders accounts-backed source-of-truth usage metadata", () => {
+    render(<SubscriptionPanel />);
 
-    expect(screen.getByText('Authoritative Usage')).toBeInTheDocument()
-    expect(screen.getByText('统计由 accounts.svc.plus 汇总，非本地客户端计数。')).toBeInTheDocument()
-    expect(screen.getAllByText('数据源：postgresql')).toHaveLength(2)
-    expect(screen.getByText('384 B')).toBeInTheDocument()
-    expect(screen.getByText(/统计延迟约 12 秒/)).toBeInTheDocument()
-    expect(screen.getByText(/策略组 hk-premium/)).toBeInTheDocument()
-    expect(screen.getByText((content) => content.includes('套餐') && content.includes('starter') && content.includes('pricing-v1'))).toBeInTheDocument()
-    expect(screen.getByText('Recent Billing Ledger')).toBeInTheDocument()
-    expect(screen.getByText(/traffic_charge/)).toBeInTheDocument()
-  })
-})
+    expect(screen.getByText("Authoritative Usage")).toBeInTheDocument();
+    expect(
+      screen.getByText("统计由 accounts.svc.plus 汇总，非本地客户端计数。"),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("数据源：postgresql")).toHaveLength(2);
+    expect(screen.getByText("384 B")).toBeInTheDocument();
+    expect(screen.getByText("Monthly Quota")).toBeInTheDocument();
+    expect(screen.getByText("50.0%")).toBeInTheDocument();
+    expect(screen.getByText(/已用 2 KB \/ 4 KB/)).toBeInTheDocument();
+    expect(screen.getByText(/本期重置：/)).toBeInTheDocument();
+    expect(screen.getByText(/统计延迟约 12 秒/)).toBeInTheDocument();
+    expect(screen.getByText(/策略组 hk-premium/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (content) =>
+          content.includes("套餐") &&
+          content.includes("starter") &&
+          content.includes("pricing-v1"),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Recent Billing Ledger")).toBeInTheDocument();
+    expect(screen.getByText(/traffic_charge/)).toBeInTheDocument();
+  });
+});
