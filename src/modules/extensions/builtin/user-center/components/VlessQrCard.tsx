@@ -35,6 +35,7 @@ interface VlessQrCardProps {
   copy: VlessQrCopy
   defaultTransport?: VlessTransport
   visibleTransports?: VlessTransport[]
+  className?: string
 }
 
 const DEFAULT_TRANSPORT: VlessTransport = 'xhttp'
@@ -62,6 +63,7 @@ export default function VlessQrCard({
   copy,
   defaultTransport,
   visibleTransports,
+  className,
 }: VlessQrCardProps) {
   const { data: allNodes, error: nodesError } = useSWR<VlessNode[]>('user-center-agent-nodes', fetchAgentNodes)
 
@@ -225,7 +227,7 @@ export default function VlessQrCard({
   const isDisabled = !vlessUri
 
   return (
-    <Card>
+    <Card className={className}>
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between">
           <div>
