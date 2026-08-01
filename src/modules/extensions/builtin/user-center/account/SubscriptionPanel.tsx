@@ -118,7 +118,7 @@ export default function SubscriptionPanel() {
   );
 
   return (
-    <Card>
+    <Card data-testid="subscription-panel">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-[var(--color-heading)]">
@@ -152,7 +152,12 @@ export default function SubscriptionPanel() {
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
 
       {usageSummary ? (
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
+            <h3 className="text-sm font-semibold text-[var(--color-heading)]">当前用量与配额</h3>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
               Authoritative Usage
@@ -242,16 +247,21 @@ export default function SubscriptionPanel() {
               {usageSummary.suspendState || "—"}
             </p>
           </div>
+          </div>
         </div>
       ) : null}
 
       {billingSummary?.ledger?.length ? (
-        <div className="mt-4 rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
+        <div className="mt-6 rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-[var(--color-heading)]">
-                Recent Billing Ledger
-              </h3>
+              <div className="mb-1 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
+                <h3 className="text-sm font-semibold text-[var(--color-heading)]">
+                  <span className="sr-only">Recent Billing Ledger</span>
+                  账单流水
+                </h3>
+              </div>
               <p className="text-xs text-[var(--color-text-subtle)]">
                 展示 accounts.svc.plus 返回的最新按量计费分录。
               </p>
@@ -300,11 +310,17 @@ export default function SubscriptionPanel() {
           加载订阅中…
         </p>
       ) : records.length === 0 ? (
-        <p className="mt-4 text-sm text-[var(--color-text-subtle)]">
-          暂无订阅记录。
-        </p>
+        <div className="mt-6 rounded-xl border border-dashed border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-heading)]">订阅记录</h3>
+          <p className="mt-2 text-sm text-[var(--color-text-subtle)]">暂无订阅记录。</p>
+        </div>
       ) : (
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="mt-6">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
+            <h3 className="text-sm font-semibold text-[var(--color-heading)]">订阅记录</h3>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
           {records.map((record) => {
             const canCancel =
               record.provider === "stripe" &&
@@ -416,6 +432,7 @@ export default function SubscriptionPanel() {
               </div>
             );
           })}
+          </div>
         </div>
       )}
     </Card>

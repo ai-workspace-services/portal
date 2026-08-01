@@ -16,9 +16,9 @@ import VlessQrCard from './VlessQrCard'
 type UserOverviewProps = {
   hideMfaMainPrompt?: boolean
   dashboardLayout?: boolean
+  hideVless?: boolean
 }
-
-export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayout = false }: UserOverviewProps) {
+export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayout = false, hideVless = false }: UserOverviewProps) {
   const router = useRouter()
   const { language } = useLanguage()
   const copy = translations[language].userCenter.overview
@@ -152,11 +152,13 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
           <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.uuid.description}</p>
         </Card>
 
-        <VlessQrCard
-          uuid={vlessUuid}
-          copy={copy.cards.vless}
-          className={dashboardLayout ? 'xl:col-span-6' : ''}
-        />
+        {!hideVless ? (
+          <VlessQrCard
+            uuid={vlessUuid}
+            copy={copy.cards.vless}
+            className={dashboardLayout ? 'xl:col-span-6' : ''}
+          />
+        ) : null}
 
         <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.username.label}</p>

@@ -1,34 +1,44 @@
-# Account dashboard visual QA
+# `/panel/account` design QA
 
-## Comparison target
+**Source visual truth**: `/Users/shenlan/Desktop/panel.png` (opened for review; XStream Dashboard reference, 1487 × 1058 px)
 
-- Source visual truth: `/Users/shenlan/Desktop/panel.png` and the supplied existing-account reference `/var/folders/13/xrzs9z_n5ygb1nhxytxsf4480000gn/T/codex-clipboard-05a37579-54ce-4fd6-b039-21888d2599b1.png`.
-- Intended route/state: `/panel/account`, authenticated account with usage, VLESS node, UUID, email, and security-readiness data.
+**Implementation screenshot**: not captured. The current environment has no authenticated browser/session that can render `/panel/account`; an unauthenticated capture would redirect or omit the account data and would not be a valid comparison.
 
-## Intended layout changes
+**Viewport**: target desktop viewport matching the source screenshot; exact CSS viewport and device scale factor were not captured because authenticated rendering was unavailable.
 
-- Moves the existing subscription and monthly-quota panel to the top of the account route.
-- Uses a responsive 12-column account-and-connection grid at `xl`: UUID (3), VLESS connection (6), username (3), then email (3).
-- Keeps the existing VLESS QR/copy/download controls, UUID copy, username/email display, and service-readiness/MFA actions unchanged.
+**State**: authenticated account dashboard with populated subscription, quota, node, VLESS, policy, and security data — blocked before implementation capture.
 
-## Evidence and constraint
+## Comparison evidence
 
-- Source images were opened at their original supplied pixel dimensions.
-- No browser-rendered implementation screenshot is available in this Codex task: the required in-app browser surface is not exposed, and `/panel/account` also needs an authenticated account plus live node/usage data to reproduce the target state.
-- Component-level coverage passed for the responsive account layout, UUID copy, VLESS copy/download availability, and the existing quota presentation.
+- Full-view source: reviewed from `/Users/shenlan/Desktop/panel.png`. The reference establishes the intended hierarchy: top summary, connection/node workspace, policy/security grouping, and restrained blue/green status tokens.
+- Focused comparison: not performed. The implementation screenshot could not be captured in the same authenticated state, so typography, spacing, color, copy, image/QR fidelity, and responsive behavior cannot be judged against the source without false precision.
+- Browser-rendered interactions, console errors, and authenticated states: not verified because no authenticated browser surface was available.
+
+## Implementation intent
+
+- `/panel/account` now groups existing account data into profile, billing/quota, VLESS connections/nodes, and policy/security sections.
+- Node cards render only API-provided name, address, server name, ports, and protocols. No online, latency, load, audit, or traffic numbers were invented.
+- Existing SWR keys and API routes, Stripe portal, cancellation, VLESS URI/QR generation, service readiness, and MFA setup flows remain in place.
 
 ## Findings
 
-- [P2] Browser visual comparison is pending. The implementation cannot be compared at the target viewport until an authenticated browser session with representative account data is available.
+- [P0] Authenticated implementation capture is unavailable, so visual acceptance cannot be completed.
+  Location: `/panel/account`.
+  Evidence: no authenticated browser/session is available in this environment; no valid implementation screenshot exists.
+  Impact: a source-to-render comparison would be speculative.
+  Fix: run the task with an authenticated browser/session, capture the same desktop viewport, test primary interactions, and repeat this QA pass.
+
+## Comparison history
+
+No P0/P1/P2 visual iteration was run because the first implementation comparison was blocked before capture.
 
 ## Implementation checklist
 
-- [x] Preserve UUID, VLESS, identity, security, and quota components.
-- [x] Reorder the account page for subscription/quota-first hierarchy.
-- [x] Add responsive account and connection grid placement.
-- [x] Add focused control and quota tests.
-- [ ] Capture `/panel/account` at desktop and mobile breakpoints in an authenticated browser session.
+- [x] Source screenshot opened and recorded.
+- [x] Account page hierarchy implemented without adding backend fields.
+- [x] Focused component tests and targeted lint completed.
+- [ ] Capture authenticated implementation at the same viewport.
+- [ ] Compare full view and focused connection/quota/security regions.
+- [ ] Re-run interaction and console-error checks.
 
-## Final result
-
-blocked
+final result: blocked
