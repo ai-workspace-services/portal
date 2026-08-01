@@ -100,7 +100,7 @@ describe("UserOverview", () => {
     render(<UserOverview hideMfaMainPrompt dashboardLayout />);
 
     expect(
-      screen.getByRole("heading", { name: "账号与连接" }),
+      screen.getByLabelText("Account identity and connection"),
     ).toBeInTheDocument();
     expect(screen.getByText("admin")).toBeInTheDocument();
     expect(screen.getByText("admin@example.test")).toBeInTheDocument();
