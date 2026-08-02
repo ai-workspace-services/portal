@@ -472,6 +472,70 @@ type UserCenterMfaTranslation = {
   error: string
 }
 
+type UserCenterAccountTranslation = {
+  breadcrumbs: {
+    dashboard: string
+    account: string
+  }
+  serviceReadiness: {
+    loading: string
+    error: string
+    readyTitle: string
+    readyBody: string
+    eyebrow: string
+    title: string
+    description: string
+    refresh: string
+    currentStep: string
+    complete: string
+    continue: string
+    newPasswordLabel: string
+    newPasswordPlaceholder: string
+    saving: string
+    setPassword: string
+    passwordTooShort: string
+  }
+  subscription: {
+    title: string
+    description: string
+    manageBilling: string
+    openingBilling: string
+    portalError: string
+    cancelError: string
+    cancelRequestError: string
+    usage: string
+    usageDescription: string
+    source: string
+    balanceQuota: string
+    remainingQuota: string
+    package: string
+    rules: string
+    policySync: string
+    syncDelay: string
+    eligibleGroups: string
+    status: string
+    arrears: string
+    normal: string
+    recentLedger: string
+    recentLedgerDescription: string
+    loading: string
+    empty: string
+    paymentMethod: string
+    plan: string
+    externalId: string
+    created: string
+    updated: string
+    starts: string
+    expires: string
+    cancelled: string
+    note: string
+    historical: string
+    cancelledAction: string
+    processing: string
+    stop: string
+  }
+}
+
 type UserCenterTranslation = {
   sections: {
     workspace: string
@@ -496,6 +560,7 @@ type UserCenterTranslation = {
   }
   overview: UserCenterOverviewTranslation
   mfa: UserCenterMfaTranslation
+  account: UserCenterAccountTranslation
 }
 
 type AboutTranslation = {
@@ -1133,6 +1198,66 @@ export const translations: Record<'en' | 'zh', Translation> = {
           disableFailed: 'We could not reset MFA. Please try again later.',
         },
         error: 'We could not complete the request. Please try again.',
+      },
+      account: {
+        breadcrumbs: { dashboard: 'Dashboard', account: 'Account' },
+        serviceReadiness: {
+          loading: 'Loading account readiness…',
+          error: 'We could not load your account readiness. Please try again.',
+          readyTitle: 'Advanced services unlocked',
+          readyBody: 'Your account meets the email, password, and MFA requirements.',
+          eyebrow: 'Advanced services',
+          title: 'Finish account security setup',
+          description: 'Dedicated resources and advanced automations unlock after these three security checks are complete.',
+          refresh: 'Refresh',
+          currentStep: 'CURRENT STEP',
+          complete: 'Complete',
+          continue: 'Continue',
+          newPasswordLabel: 'New account password',
+          newPasswordPlaceholder: 'New password (8+ characters)',
+          saving: 'Saving…',
+          setPassword: 'Set password',
+          passwordTooShort: 'Use at least 8 characters for your password.',
+        },
+        subscription: {
+          title: 'Subscriptions & billing',
+          description: 'Review Stripe purchases and subscription status, or manage billing in the customer portal.',
+          manageBilling: 'Manage Stripe billing',
+          openingBilling: 'Opening…',
+          portalError: 'The Stripe customer portal is temporarily unavailable.',
+          cancelError: 'Could not cancel the subscription. Please try again.',
+          cancelRequestError: 'An error occurred while cancelling the subscription.',
+          usage: 'Authoritative usage',
+          usageDescription: 'Usage is aggregated by accounts.svc.plus, not counted by the local client.',
+          source: 'Source',
+          balanceQuota: 'Balance / quota',
+          remainingQuota: 'Remaining quota',
+          package: 'Package',
+          rules: 'Rules',
+          policySync: 'Policy / sync',
+          syncDelay: 'Sync delay',
+          eligibleGroups: 'Eligible groups',
+          status: 'Status',
+          arrears: 'In arrears',
+          normal: 'Normal',
+          recentLedger: 'Recent billing ledger',
+          recentLedgerDescription: 'Latest usage-based billing entries returned by accounts.svc.plus.',
+          loading: 'Loading subscriptions…',
+          empty: 'No subscription records yet.',
+          paymentMethod: 'Payment method',
+          plan: 'Plan',
+          externalId: 'External ID',
+          created: 'Created',
+          updated: 'Updated',
+          starts: 'Starts',
+          expires: 'Expires',
+          cancelled: 'Cancelled',
+          note: 'Note',
+          historical: 'Historical record',
+          cancelledAction: 'Cancelled',
+          processing: 'Processing…',
+          stop: 'Cancel subscription',
+        },
       },
     },
     marketing: {
@@ -1926,6 +2051,66 @@ export const translations: Record<'en' | 'zh', Translation> = {
           disableFailed: '无法重置多因素认证，请稍后再试。',
         },
         error: '操作失败，请稍后再试。',
+      },
+      account: {
+        breadcrumbs: { dashboard: '控制台', account: '账户' },
+        serviceReadiness: {
+          loading: '正在加载账户状态…',
+          error: '无法加载账户状态，请稍后重试。',
+          readyTitle: '高级服务已解锁',
+          readyBody: '您的账户已满足邮箱、密码和多因素认证要求。',
+          eyebrow: '高级服务',
+          title: '完成账户安全设置',
+          description: '完成这三项安全检查后，即可解锁专属资源和高级自动化功能。',
+          refresh: '刷新',
+          currentStep: '当前步骤',
+          complete: '已完成',
+          continue: '继续',
+          newPasswordLabel: '新账户密码',
+          newPasswordPlaceholder: '新密码（至少 8 个字符）',
+          saving: '保存中…',
+          setPassword: '设置密码',
+          passwordTooShort: '密码至少需要 8 个字符。',
+        },
+        subscription: {
+          title: '订阅与计费',
+          description: '查看 Stripe 购买记录和当前订阅状态，或进入客户门户管理账单。',
+          manageBilling: '管理 Stripe 账单',
+          openingBilling: '跳转中…',
+          portalError: '暂时无法打开 Stripe 客户门户。',
+          cancelError: '取消订阅失败，请稍后重试。',
+          cancelRequestError: '取消订阅时发生错误。',
+          usage: '权威用量',
+          usageDescription: '用量由 accounts.svc.plus 汇总，不以本地客户端计数为准。',
+          source: '数据源',
+          balanceQuota: '余额 / 配额',
+          remainingQuota: '剩余配额',
+          package: '套餐',
+          rules: '规则',
+          policySync: '策略 / 同步',
+          syncDelay: '统计延迟约',
+          eligibleGroups: '策略组',
+          status: '状态',
+          arrears: '欠费',
+          normal: '正常',
+          recentLedger: '近期计费分录',
+          recentLedgerDescription: '展示 accounts.svc.plus 返回的最新按量计费分录。',
+          loading: '加载订阅中…',
+          empty: '暂无订阅记录。',
+          paymentMethod: '付款方式',
+          plan: '套餐',
+          externalId: '外部 ID',
+          created: '创建时间',
+          updated: '更新时间',
+          starts: '开始时间',
+          expires: '到期时间',
+          cancelled: '取消时间',
+          note: '备注',
+          historical: '历史记录',
+          cancelledAction: '已取消',
+          processing: '处理中…',
+          stop: '停止订阅',
+        },
       },
     },
     marketing: {

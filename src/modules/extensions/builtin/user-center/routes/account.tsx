@@ -6,17 +6,21 @@ import SubscriptionPanel from '../account/SubscriptionPanel'
 import UserOverview from '../components/UserOverview'
 import ServiceReadinessCard from '../components/ServiceReadinessCard'
 import { useUserStore } from '@lib/userStore'
+import { useLanguage } from '@i18n/LanguageProvider'
+import { translations } from '@i18n/translations'
 
 export default function UserCenterAccountRoute() {
   const user = useUserStore((state) => state.user)
   const isReadOnlyRole = Boolean(user?.isReadOnly)
+  const { language } = useLanguage()
+  const copy = translations[language].userCenter.account
 
   return (
     <div className="space-y-6">
       <Breadcrumbs
         items={[
-          { label: 'Dashboard', href: '/panel' },
-          { label: 'Account', href: '/panel/account' },
+          { label: copy.breadcrumbs.dashboard, href: '/panel' },
+          { label: copy.breadcrumbs.account, href: '/panel/account' },
         ]}
       />
       <UserOverview hideMfaMainPrompt />
