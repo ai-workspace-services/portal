@@ -4,10 +4,15 @@ import { useCallback, useMemo, useState } from "react";
 import useSWR from "swr";
 
 import { openStripePortal } from "@components/billing/stripe-client";
+import { formatBytes } from "@lib/format";
 import Card from "../components/Card";
-import { fetchAccountBillingSummary, fetchAccountPolicy, fetchAccountUsageSummary } from "../lib/fetchAccountUsage";
-import { useLanguage } from '@i18n/LanguageProvider';
-import { translations } from '@i18n/translations';
+import {
+  fetchAccountBillingSummary,
+  fetchAccountPolicy,
+  fetchAccountUsageSummary,
+} from "../lib/fetchAccountUsage";
+import { useLanguage } from "@i18n/LanguageProvider";
+import { translations } from "@i18n/translations";
 
 const fetcher = (url: string) =>
   fetch(url, {
@@ -46,6 +51,18 @@ function formatDate(value?: string) {
   return date.toLocaleString();
 }
 
+function formatQuotaBytes(value?: number) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? formatBytes(value)
+    : "—";
+}
+
+function formatPeriodEnd(value?: string | null) {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
+}
+
 export default function SubscriptionPanel() {
   const { language } = useLanguage();
   const copy = translations[language].userCenter.account.subscription;
@@ -53,8 +70,14 @@ export default function SubscriptionPanel() {
     "/api/auth/subscriptions",
     fetcher,
   );
-  const { data: usageSummary } = useSWR("account-usage-summary", fetchAccountUsageSummary);
-  const { data: billingSummary } = useSWR("account-billing-summary", fetchAccountBillingSummary);
+  const { data: usageSummary } = useSWR(
+    "account-usage-summary",
+    fetchAccountUsageSummary,
+  );
+  const { data: billingSummary } = useSWR(
+    "account-billing-summary",
+    fetchAccountBillingSummary,
+  );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -99,7 +122,7 @@ export default function SubscriptionPanel() {
   );
 
   return (
-    <Card>
+    <Card data-testid="subscription-panel">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-[var(--color-heading)]">
@@ -133,63 +156,108 @@ export default function SubscriptionPanel() {
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
 
       {usageSummary ? (
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
-              {copy.usage}
-            </p>
-            <p className="mt-2 text-2xl font-semibold text-[var(--color-heading)]">
-              {usageSummary.totalBytes.toLocaleString()} B
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              {copy.usageDescription}
-            </p>
-            <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
-              {copy.source}：{usageSummary.sourceOfTruth || "—"}
-            </p>
+        <div className="mt-6">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
+            <h3 className="text-sm font-semibold text-[var(--color-heading)]">当前用量与配额</h3>
           </div>
-          <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
-              {copy.balanceQuota}
-            </p>
-            <p className="mt-2 text-2xl font-semibold text-[var(--color-heading)]">
-              {typeof usageSummary.currentBalance === "number"
-                ? usageSummary.currentBalance.toFixed(2)
-                : "—"}
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              {copy.remainingQuota} {typeof usageSummary.remainingIncludedQuota === "number"
-                ? `${usageSummary.remainingIncludedQuota.toLocaleString()} B`
-                : "—"}
-            </p>
-            <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
-              {copy.package} {usageSummary.billingProfile?.packageName || billingSummary?.billingProfile?.packageName || "default"}，
-              {copy.rules} {usageSummary.billingProfile?.pricingRuleVersion || billingSummary?.billingProfile?.pricingRuleVersion || "—"}
-            </p>
-          </div>
-          <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
-              {copy.policySync}
-            </p>
-            <p className="mt-2 text-base font-semibold text-[var(--color-heading)]">
-              {accountPolicy?.preferredStrategy || "—"}
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              {copy.syncDelay} {usageSummary.syncDelaySeconds ?? 0} s，{copy.eligibleGroups}{" "}
-              {accountPolicy?.eligibleNodeGroups?.join(", ") || "—"}
-            </p>
-            <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
-              {copy.status} {usageSummary.arrears ? copy.arrears : copy.normal} / {usageSummary.throttleState || "—"} / {usageSummary.suspendState || "—"}
-            </p>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
+                {copy.usage}
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--color-heading)]">
+                {usageSummary.totalBytes.toLocaleString()} B
+              </p>
+              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+                {copy.usageDescription}
+              </p>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                {copy.source}：{usageSummary.sourceOfTruth || "—"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
+                {copy.monthlyQuota}
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--color-heading)]">
+                {typeof usageSummary.usagePercent === "number"
+                  ? `${Math.min(100, Math.max(0, usageSummary.usagePercent)).toFixed(1)}%`
+                  : "—"}
+              </p>
+              <div
+                className="mt-3 h-2 overflow-hidden rounded-full bg-[color:var(--color-surface-muted)]"
+                aria-label={copy.monthlyQuota}
+              >
+                <div
+                  className="h-full rounded-full bg-[var(--color-primary)] transition-all"
+                  style={{
+                    width: `${
+                      typeof usageSummary.usagePercent === "number"
+                        ? Math.min(100, Math.max(0, usageSummary.usagePercent))
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+              <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
+                {copy.used} {formatQuotaBytes(usageSummary.usedBytes)} /{" "}
+                {formatQuotaBytes(usageSummary.includedQuotaBytes)}
+              </p>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                {copy.periodReset}：{formatPeriodEnd(usageSummary.periodEnd)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
+                {copy.balanceQuota}
+              </p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--color-heading)]">
+                {typeof usageSummary.currentBalance === "number"
+                  ? usageSummary.currentBalance.toFixed(2)
+                  : "—"}
+              </p>
+              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+                {copy.remainingQuota} {typeof usageSummary.remainingIncludedQuota === "number"
+                  ? `${usageSummary.remainingIncludedQuota.toLocaleString()} B`
+                  : "—"}
+              </p>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                {copy.package} {usageSummary.billingProfile?.packageName || billingSummary?.billingProfile?.packageName || "default"}，{" "}
+                {copy.rules} {usageSummary.billingProfile?.pricingRuleVersion || billingSummary?.billingProfile?.pricingRuleVersion || "—"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">
+                {copy.policySync}
+              </p>
+              <p className="mt-2 text-base font-semibold text-[var(--color-heading)]">
+                {accountPolicy?.preferredStrategy || "—"}
+              </p>
+              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+                {copy.syncDelay} {usageSummary.syncDelaySeconds ?? 0} s，{copy.eligibleGroups}{" "}
+                {accountPolicy?.eligibleNodeGroups?.join(", ") || "—"}
+              </p>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                {copy.status} {usageSummary.arrears ? copy.arrears : copy.normal} /{" "}
+                {usageSummary.throttleState || "—"} /{" "}
+                {usageSummary.suspendState || "—"}
+              </p>
+            </div>
           </div>
         </div>
       ) : null}
 
       {billingSummary?.ledger?.length ? (
-        <div className="mt-4 rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
+        <div className="mt-6 rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-[var(--color-heading)]">{copy.recentLedger}</h3>
+              <div className="mb-1 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
+                <h3 className="text-sm font-semibold text-[var(--color-heading)]">
+                  {copy.recentLedger}
+                </h3>
+              </div>
               <p className="text-xs text-[var(--color-text-subtle)]">
                 {copy.recentLedgerDescription}
               </p>
@@ -205,16 +273,26 @@ export default function SubscriptionPanel() {
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2 text-sm"
               >
                 <div>
-                  <p className="font-medium text-[var(--color-text)]">{entry.entryType}</p>
+                  <p className="font-medium text-[var(--color-text)]">
+                    {entry.entryType}
+                  </p>
                   <p className="text-xs text-[var(--color-text-subtle)]">
-                    {entry.pricingRuleVersion || "—"} · {entry.bucketStart ? formatDate(entry.bucketStart) : "—"}
+                    {entry.pricingRuleVersion || "—"} ·{" "}
+                    {entry.bucketStart ? formatDate(entry.bucketStart) : "—"}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-[var(--color-text)]">{entry.ratedBytes.toLocaleString()} B</p>
+                  <p className="font-medium text-[var(--color-text)]">
+                    {entry.ratedBytes.toLocaleString()} B
+                  </p>
                   <p className="text-xs text-[var(--color-text-subtle)]">
-                    {typeof entry.amountDelta === "number" ? entry.amountDelta.toFixed(2) : "—"} / 余额{" "}
-                    {typeof entry.balanceAfter === "number" ? entry.balanceAfter.toFixed(2) : "—"}
+                    {typeof entry.amountDelta === "number"
+                      ? entry.amountDelta.toFixed(2)
+                      : "—"}{" "}
+                    / 余额{" "}
+                    {typeof entry.balanceAfter === "number"
+                      ? entry.balanceAfter.toFixed(2)
+                      : "—"}
                   </p>
                 </div>
               </div>
@@ -228,11 +306,17 @@ export default function SubscriptionPanel() {
           {copy.loading}
         </p>
       ) : records.length === 0 ? (
-        <p className="mt-4 text-sm text-[var(--color-text-subtle)]">
-          {copy.empty}
-        </p>
+        <div className="mt-6 rounded-xl border border-dashed border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4">
+          <h3 className="text-sm font-semibold text-[var(--color-heading)]">{copy.subscriptionRecords}</h3>
+          <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.empty}</p>
+        </div>
       ) : (
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="mt-6">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" aria-hidden="true" />
+            <h3 className="text-sm font-semibold text-[var(--color-heading)]">订阅记录</h3>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
           {records.map((record) => {
             const canCancel =
               record.provider === "stripe" &&
@@ -344,6 +428,7 @@ export default function SubscriptionPanel() {
               </div>
             );
           })}
+          </div>
         </div>
       )}
     </Card>

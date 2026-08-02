@@ -12,4 +12,5 @@
 
 | 日期 | 任务 | 状态 | 关联 PR |
 |---|---|---|---|
+| 2026-08-01 | [`/panel/account` UAT 页面补全](2026-08-01-panel-account-uat.md) | ⏳ 待审阅与认证浏览器复核 | [portal #132 OPEN](https://github.com/ai-workspace-services/portal/pull/132) |
 | 2026-07-11 | [主页导航登录态显示](2026-07-11-homepage-auth-nav.md) | ⏳ 待合并部署 | portal (本 PR) |

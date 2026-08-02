@@ -506,6 +506,9 @@ type UserCenterAccountTranslation = {
     usage: string
     usageDescription: string
     source: string
+    monthlyQuota: string
+    used: string
+    periodReset: string
     balanceQuota: string
     remainingQuota: string
     package: string
@@ -520,6 +523,7 @@ type UserCenterAccountTranslation = {
     recentLedgerDescription: string
     loading: string
     empty: string
+    subscriptionRecords: string
     paymentMethod: string
     plan: string
     externalId: string
@@ -1230,6 +1234,9 @@ export const translations: Record<'en' | 'zh', Translation> = {
           usage: 'Authoritative usage',
           usageDescription: 'Usage is aggregated by accounts.svc.plus, not counted by the local client.',
           source: 'Source',
+          monthlyQuota: 'Monthly quota',
+          used: 'Used',
+          periodReset: 'Period reset',
           balanceQuota: 'Balance / quota',
           remainingQuota: 'Remaining quota',
           package: 'Package',
@@ -1244,6 +1251,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           recentLedgerDescription: 'Latest usage-based billing entries returned by accounts.svc.plus.',
           loading: 'Loading subscriptions…',
           empty: 'No subscription records yet.',
+          subscriptionRecords: 'Subscription records',
           paymentMethod: 'Payment method',
           plan: 'Plan',
           externalId: 'External ID',
@@ -2083,6 +2091,9 @@ export const translations: Record<'en' | 'zh', Translation> = {
           usage: '权威用量',
           usageDescription: '用量由 accounts.svc.plus 汇总，不以本地客户端计数为准。',
           source: '数据源',
+          monthlyQuota: '月度配额',
+          used: '已用',
+          periodReset: '本期重置',
           balanceQuota: '余额 / 配额',
           remainingQuota: '剩余配额',
           package: '套餐',
@@ -2097,6 +2108,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           recentLedgerDescription: '展示 accounts.svc.plus 返回的最新按量计费分录。',
           loading: '加载订阅中…',
           empty: '暂无订阅记录。',
+          subscriptionRecords: '订阅记录',
           paymentMethod: '付款方式',
           plan: '套餐',
           externalId: '外部 ID',

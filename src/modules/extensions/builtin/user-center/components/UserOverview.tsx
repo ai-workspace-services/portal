@@ -15,9 +15,10 @@ import VlessQrCard from './VlessQrCard'
 
 type UserOverviewProps = {
   hideMfaMainPrompt?: boolean
+  dashboardLayout?: boolean
+  hideVless?: boolean
 }
-
-export default function UserOverview({ hideMfaMainPrompt = false }: UserOverviewProps) {
+export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayout = false, hideVless = false }: UserOverviewProps) {
   const router = useRouter()
   const { language } = useLanguage()
   const copy = translations[language].userCenter.overview
@@ -88,7 +89,7 @@ export default function UserOverview({ hideMfaMainPrompt = false }: UserOverview
 
   return (
     <div className="space-y-6 text-[var(--color-text)] transition-colors">
-      <div>
+      <div className={dashboardLayout ? 'border-b border-[color:var(--color-surface-border)] pb-4' : ''}>
         <p className="text-sm text-[var(--color-text-subtle)] opacity-90">{copy.uuidNote}</p>
       </div>
 
@@ -123,8 +124,15 @@ export default function UserOverview({ hideMfaMainPrompt = false }: UserOverview
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+      <div
+        aria-label="Account identity and connection"
+        className={
+          dashboardLayout
+            ? 'grid gap-4 md:grid-cols-2 xl:grid-cols-12'
+            : 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'
+        }
+      >
+        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.uuid.label}</p>
@@ -144,25 +152,28 @@ export default function UserOverview({ hideMfaMainPrompt = false }: UserOverview
           <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.uuid.description}</p>
         </Card>
 
-        <VlessQrCard
-          uuid={vlessUuid}
-          copy={copy.cards.vless}
-        />
+        {!hideVless ? (
+          <VlessQrCard
+            uuid={vlessUuid}
+            copy={copy.cards.vless}
+            className={dashboardLayout ? 'xl:col-span-6' : ''}
+          />
+        ) : null}
 
-        <Card>
+        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.username.label}</p>
           <p className="mt-1 text-base font-medium text-[var(--color-text)]">{username}</p>
           <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.username.description}</p>
         </Card>
 
-        <Card>
+        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.email.label}</p>
           <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">{email}</p>
           <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.email.description}</p>
         </Card>
 
         {shouldShowMfaMainPrompt ? (
-          <Card>
+          <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.mfa.label}</p>
@@ -178,7 +189,6 @@ export default function UserOverview({ hideMfaMainPrompt = false }: UserOverview
             </div>
           </Card>
         ) : null}
-
       </div>
     </div>
   )
