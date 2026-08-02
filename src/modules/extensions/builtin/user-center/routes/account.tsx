@@ -9,18 +9,22 @@ import AccountSection from '../components/AccountSection'
 import UserOverview from '../components/UserOverview'
 import ServiceReadinessCard from '../components/ServiceReadinessCard'
 import { useUserStore } from '@lib/userStore'
+import { useLanguage } from '@i18n/LanguageProvider'
+import { translations } from '@i18n/translations'
 
 export default function UserCenterAccountRoute() {
   const user = useUserStore((state) => state.user)
   const isReadOnlyRole = Boolean(user?.isReadOnly)
+  const { language } = useLanguage()
+  const copy = translations[language].userCenter.account
   const uuid = user?.uuid ?? user?.id ?? null
 
   return (
     <div className="space-y-8">
       <Breadcrumbs
         items={[
-          { label: 'Dashboard', href: '/panel' },
-          { label: 'Account', href: '/panel/account' },
+          { label: copy.breadcrumbs.dashboard, href: '/panel' },
+          { label: copy.breadcrumbs.account, href: '/panel/account' },
         ]}
       />
       <header className="rounded-[var(--radius-xl)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-5 py-5 shadow-[var(--shadow-sm)] sm:px-6">

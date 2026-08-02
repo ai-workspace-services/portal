@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import SubscriptionPanel from "../SubscriptionPanel";
 
+vi.mock("@i18n/LanguageProvider", () => ({
+  useLanguage: () => ({ language: "en" }),
+}));
+
 vi.mock("swr", () => ({
   default: vi.fn((key: string) => {
     if (key === "/api/auth/subscriptions") {
@@ -82,27 +86,30 @@ describe("SubscriptionPanel", () => {
   it("renders accounts-backed source-of-truth usage metadata", () => {
     render(<SubscriptionPanel />);
 
-    expect(screen.getByText("Authoritative Usage")).toBeInTheDocument();
+    expect(screen.getByText("Authoritative usage")).toBeInTheDocument();
     expect(
-      screen.getByText("统计由 accounts.svc.plus 汇总，非本地客户端计数。"),
+      screen.getByText(
+        "Usage is aggregated by accounts.svc.plus, not counted by the local client.",
+      ),
     ).toBeInTheDocument();
-    expect(screen.getAllByText("数据源：postgresql")).toHaveLength(2);
+    expect(screen.getAllByText("Source：postgresql")).toHaveLength(2);
     expect(screen.getByText("384 B")).toBeInTheDocument();
-    expect(screen.getByText("Monthly Quota")).toBeInTheDocument();
+    expect(screen.getByText("Monthly quota")).toBeInTheDocument();
     expect(screen.getByText("50.0%")).toBeInTheDocument();
-    expect(screen.getByText(/已用 2 KB \/ 4 KB/)).toBeInTheDocument();
-    expect(screen.getByText(/本期重置：/)).toBeInTheDocument();
-    expect(screen.getByText(/统计延迟约 12 秒/)).toBeInTheDocument();
-    expect(screen.getByText(/策略组 hk-premium/)).toBeInTheDocument();
+    expect(screen.getByText(/Used 2 KB \/ 4 KB/)).toBeInTheDocument();
+    expect(screen.getByText(/Period reset：/)).toBeInTheDocument();
+    expect(screen.getByText(/Sync delay 12 s/)).toBeInTheDocument();
+    expect(screen.getByText(/Eligible groups hk-premium/)).toBeInTheDocument();
     expect(
       screen.getByText(
         (content) =>
-          content.includes("套餐") &&
+          content.includes("Package") &&
           content.includes("starter") &&
+          content.includes("Rules") &&
           content.includes("pricing-v1"),
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText("Recent Billing Ledger")).toBeInTheDocument();
+    expect(screen.getByText("Recent billing ledger")).toBeInTheDocument();
     expect(screen.getByText(/traffic_charge/)).toBeInTheDocument();
   });
 });

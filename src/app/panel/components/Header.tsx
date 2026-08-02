@@ -8,6 +8,7 @@ import { useUserStore } from "@lib/userStore";
 import type { UserRole } from "@lib/userStore";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
+import LanguageToggle from "@components/LanguageToggle";
 
 const ROLE_BADGES: Record<UserRole, { label: string; className: string }> = {
   user: {
@@ -66,7 +67,11 @@ export default function Header({
     (shouldRenderPublicEmail ? user?.email : undefined) ??
     navCopy.title;
   const accountInitial = resolveAccountInitial(accountLabel);
-  const statusBadge = isLoading ? "Syncing" : badge.label;
+  const statusBadge = isLoading
+    ? language === "zh" ? "同步中" : "Syncing"
+    : language === "zh"
+      ? ({ user: "用户", operator: "运营", admin: "管理员" }[role] ?? badge.label)
+      : badge.label;
   const badgeClasses = isLoading
     ? "bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] opacity-70"
     : badge.className;
@@ -79,10 +84,10 @@ export default function Header({
             type="button"
             className="tactile-button tactile-button-soft gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)] md:hidden"
             onClick={onMenu}
-            aria-label="Toggle navigation menu"
+            aria-label={language === "zh" ? "切换导航菜单" : "Toggle navigation menu"}
           >
             <Menu className="h-4 w-4" />
-            Menu
+            {language === "zh" ? "菜单" : "Menu"}
           </button>
 
           {onCollapse && (
@@ -90,7 +95,9 @@ export default function Header({
               type="button"
               className="tactile-button tactile-button-soft hidden h-8 w-8 items-center justify-center p-0 text-[var(--color-text-subtle)] md:flex"
               onClick={onCollapse}
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={isCollapsed
+              ? (language === "zh" ? "展开侧边栏" : "Expand sidebar")
+              : (language === "zh" ? "收起侧边栏" : "Collapse sidebar")}
             >
               {isCollapsed ? (
                 <ChevronRight className="h-4 w-4" />
@@ -107,8 +114,9 @@ export default function Header({
               href="/"
               className="tactile-button tactile-button-soft gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)]"
             >
-              返回主页
+              {language === "zh" ? "返回主页" : "Back to homepage"}
             </Link>
+            <LanguageToggle />
             <span
               className={`rounded-[999px] px-3 py-1.5 text-xs font-semibold ${badgeClasses}`}
             >
