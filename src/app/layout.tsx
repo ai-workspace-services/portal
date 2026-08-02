@@ -132,6 +132,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           strategy="afterInteractive"
         />
         {/* End Cloudflare Web Analytics */}
+        <Script
+          src="https://datafa.st/js/script.js"
+          data-website-id="dfid_RRpFATHOgNffArMsKNpYT"
+          data-domain="www.svc.plus"
+          strategy="afterInteractive"
+        />
       </head>
       <body className={bodyClassName}>
         <AppProviders assistantDefaults={assistantDefaults}>{children}</AppProviders>
