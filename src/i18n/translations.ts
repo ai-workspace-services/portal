@@ -521,6 +521,11 @@ type UserCenterAccountTranslation = {
     normal: string
     recentLedger: string
     recentLedgerDescription: string
+    overviewTab: string
+    detailTab: string
+    last1Hour: string
+    last24Hours: string
+    monthToDate: string
     loading: string
     empty: string
     subscriptionRecords: string
@@ -1249,6 +1254,11 @@ export const translations: Record<'en' | 'zh', Translation> = {
           normal: 'Normal',
           recentLedger: 'Recent billing ledger',
           recentLedgerDescription: 'Latest usage-based billing entries returned by accounts.svc.plus.',
+          overviewTab: 'Overview',
+          detailTab: 'Details',
+          last1Hour: 'Last 1 hour',
+          last24Hours: 'Last 24 hours',
+          monthToDate: 'Month to date',
           loading: 'Loading subscriptions…',
           empty: 'No subscription records yet.',
           subscriptionRecords: 'Subscription records',
@@ -2106,6 +2116,11 @@ export const translations: Record<'en' | 'zh', Translation> = {
           normal: '正常',
           recentLedger: '近期计费分录',
           recentLedgerDescription: '展示 accounts.svc.plus 返回的最新按量计费分录。',
+          overviewTab: '概览',
+          detailTab: '详情',
+          last1Hour: '最近 1 小时',
+          last24Hours: '最近 24 小时',
+          monthToDate: '本月合计',
           loading: '加载订阅中…',
           empty: '暂无订阅记录。',
           subscriptionRecords: '订阅记录',

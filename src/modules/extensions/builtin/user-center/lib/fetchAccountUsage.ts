@@ -41,6 +41,23 @@ export type AccountBillingProfile = {
   pricingRuleVersion?: string;
 };
 
+export type AccountUsageBucket = {
+  bucketStart: string;
+  nodeId?: string;
+  accountUuid: string;
+  region?: string;
+  lineCode?: string;
+  uplinkBytes: number;
+  downlinkBytes: number;
+  totalBytes: number;
+};
+
+export type AccountUsageBucketsResponse = {
+  accountUuid: string;
+  sourceOfTruth?: string;
+  buckets?: AccountUsageBucket[];
+};
+
 export type BillingLedgerEntry = {
   id: string;
   entryType: string;
@@ -107,6 +124,22 @@ export function fetchAccountUsageSummary(): Promise<AccountUsageSummary> {
 
 export function fetchAccountPolicy(): Promise<AccountPolicy> {
   return requestJSON<AccountPolicy>("/api/account/policy");
+}
+
+// Buckets are per-minute; the caller decides how far back to look (e.g.
+// month-to-date) and reduces them into hour/day/month totals client-side —
+// the API has no separate rollup endpoint for that.
+export function fetchAccountUsageBuckets(
+  start?: Date,
+  end?: Date,
+): Promise<AccountUsageBucketsResponse> {
+  const params = new URLSearchParams();
+  if (start) params.set("start", start.toISOString());
+  if (end) params.set("end", end.toISOString());
+  const query = params.toString();
+  return requestJSON<AccountUsageBucketsResponse>(
+    `/api/account/usage/buckets${query ? `?${query}` : ""}`,
+  );
 }
 
 export function fetchAccountBillingSummary(): Promise<AccountBillingSummary> {
