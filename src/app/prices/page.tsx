@@ -7,7 +7,7 @@ import { Check, Shield } from "lucide-react";
 import CheckoutStatusBanner from "@components/billing/CheckoutStatusBanner";
 import { startStripeCheckout } from "@components/billing/stripe-client";
 import Footer from "../../components/Footer";
-import UnifiedNavigation from "../../components/UnifiedNavigation";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import { useLanguage } from "../../i18n/LanguageProvider";
 import { PRODUCT_LIST, type BillingPlan } from "@modules/products/registry";
 
@@ -143,7 +143,7 @@ export default function PricesPage() {
 
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-150 flex flex-col">
-      <UnifiedNavigation />
+      <MarketingNav />
 
       <main className="flex-1 relative overflow-hidden pt-24 pb-20">
         <div
