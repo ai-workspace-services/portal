@@ -12,19 +12,18 @@ const enContent = {
     { label: "Company Name", value: "XWork Technologies LLC" },
     { label: "Brand", value: "XWork Technologies" },
     { label: "Entity Type", value: "Limited Liability Company (LLC)" },
-    { label: "Industry", value: "B2B Software Development" },
+    { label: "Industry", value: "Software Development" },
   ],
   activitiesTitle: "Core Focus",
   activities: [
-    "AI Workspace",
-    "Cloud-Neutral Platform",
-    "Developer Infrastructure",
-    "AI Connectivity",
-    "Open Platform",
+    "AI-Powered Productivity Tools",
+    "Cloud-Neutral Infrastructure",
+    "Developer Platforms",
+    "AI Connectivity & Integration"
   ],
   productsTitle: "Platform",
   products: [
-    { name: "SVC+ Cloud-Neutral Platform", description: "A professional platform offering AI-native workspace solutions, developer infrastructure, and seamless open platform connectivity." },
+    { name: "SVC+ Cloud-Neutral Platform", description: "A robust platform offering developer infrastructure, AI integrations, and flexible cloud environments for businesses and individuals." },
   ]
 };
 
@@ -34,19 +33,18 @@ const zhContent = {
     { label: "公司名称", value: "XWork Technologies LLC" },
     { label: "品牌名称", value: "XWork Technologies" },
     { label: "实体类型", value: "有限责任公司 (LLC)" },
-    { label: "所属行业", value: "B2B 软件开发" },
+    { label: "所属行业", value: "软件开发" },
   ],
   activitiesTitle: "核心方向",
   activities: [
-    "AI 原生工作区 (AI Workspace)",
-    "云中立平台 (Cloud-Neutral Platform)",
-    "开发者基础设施 (Developer Infrastructure)",
-    "AI 连接 (AI Connectivity)",
-    "开放平台 (Open Platform)",
+    "人工智能生产力工具 (AI Productivity Tools)",
+    "云中立基础设施 (Cloud-Neutral Infrastructure)",
+    "开发者平台 (Developer Platforms)",
+    "AI 连接与集成 (AI Connectivity)"
   ],
   productsTitle: "旗下平台",
   products: [
-    { name: "SVC+ Cloud-Neutral Platform", description: "一个专业的 B2B 平台，提供 AI 原生工作区解决方案、开发者基础设施以及无缝的开放平台连接。" },
+    { name: "SVC+ Cloud-Neutral Platform", description: "一个可靠的平台，为企业和个人提供开发者基础设施、AI 集成和灵活的云环境。" },
   ]
 };
 
