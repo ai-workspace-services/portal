@@ -1523,17 +1523,17 @@ export const translations: Record<'en' | 'zh', Translation> = {
             secondaryCtaLabel: 'Download',
             tertiaryCtaLabel: 'Documentation',
           },
-          xstream: {
-            tagline: 'Global network accelerator',
+          xconnect: {
+            tagline: 'AI workspace connector',
             description:
-              'Build a programmable worldwide network to keep cross-region applications and data sync low-latency and reliable.',
+              'Connect AI workspaces with secure access and acceleration for real work.',
             features: [
-              'Dynamic path optimization and bandwidth scheduling',
-              'Zero-trust security and access control built in',
-              'Connect with leading CDNs and edge locations',
+              'Workspace connection for self-hosted and managed deployments',
+              'AI acceleration and secure access built in',
+              'Unified routing for collaboration-ready workflows',
             ],
             bodyHtml:
-              '<p>XStream applies software-defined acceleration to deliver stable global links for real-time interaction, media streaming, and data distribution.</p>',
+              '<p>XConnect is the connector for AI workspaces, combining secure access, acceleration, and workflow-ready connectivity in one product.</p>',
             primaryCtaLabel: 'Try now',
             secondaryCtaLabel: 'Download',
             tertiaryCtaLabel: 'Documentation',

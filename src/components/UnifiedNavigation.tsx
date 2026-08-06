@@ -202,7 +202,7 @@ export default function UnifiedNavigation() {
     ? [
         "/login",
         "/register",
-        "/xstream",
+        "/xconnect",
         "/xcloudflow",
         "/xscopehub",
         "/blogs",

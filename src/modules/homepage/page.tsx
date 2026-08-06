@@ -93,14 +93,14 @@ export default function Homepage() {
       link: 'https://www.svc.plus/xscopehub',
     },
     {
-      name: 'XStream',
+      name: 'XConnect',
       description:
         language === 'zh'
-          ? '网络与合规加速入口，策略即代码内建护栏。'
-          : 'Network acceleration and compliance guardrails with policy as code.',
+          ? '面向 AI 工作空间的连接器，提供 AI 加速与安全接入。'
+          : 'The connector for AI workspaces with AI acceleration and secure access.',
       action: language === 'zh' ? '查看' : 'View',
       icon: '↯',
-      link: 'https://www.svc.plus/xstream',
+      link: 'https://www.svc.plus/xconnect',
     },
     {
       name: 'XControl',

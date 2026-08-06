@@ -3,10 +3,10 @@
 import Footer from "@/components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { marketingTheme } from "@/components/marketing/theme";
-import { ArrowRight, Bot, Cpu, Network, ShieldCheck, Lock, Layers, Activity, Monitor, Shield, Zap, Globe } from "lucide-react";
+import { ArrowRight, Bot, Network, ShieldCheck, Lock, Layers, Activity, Monitor, Shield, Zap, Globe } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import xstreamContent from "@/data/content/xstream";
+import xconnectContent from "@/data/content/xconnect.json";
 
 const ICONS: Record<string, any> = {
   bot: Bot,
@@ -21,16 +21,15 @@ const ICONS: Record<string, any> = {
   globe: Globe,
 };
 
-export default function XstreamPage() {
+export default function XConnectPage() {
   const { language } = useLanguage();
-  const content = (xstreamContent as any)[language] || (xstreamContent as any).zh;
+  const content = (xconnectContent as any)[language] || (xconnectContent as any).zh;
   const { hero, showcases } = content;
 
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden">
       <MarketingNav />
       <main className="pt-24 pb-16 sm:pt-32">
-        {/* Hero Section */}
         <section className={`${marketingTheme.section.container} text-center`}>
           <div className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-50/50 px-3 py-1 text-sm font-medium text-indigo-600 mb-8">
             <Zap className="mr-2 h-4 w-4" />
@@ -49,7 +48,6 @@ export default function XstreamPage() {
           </div>
         </section>
 
-        {/* Product Showcase via JSON */}
         <section className={`${marketingTheme.section.container} mt-16 space-y-32`}>
           {showcases.map((showcase: any, idx: number) => {
             const Icon = ICONS[showcase.icon] || Shield;
@@ -70,9 +68,9 @@ export default function XstreamPage() {
                   <div className={`absolute -inset-4 bg-gradient-to-${isReverse ? 'tl' : 'tr'} from-indigo-100 to-purple-50 opacity-50 blur-xl rounded-full`} />
                   <div className="relative rounded-3xl border border-slate-200 bg-white/60 backdrop-blur-xl shadow-2xl overflow-hidden p-2">
                     <div className="rounded-2xl overflow-hidden">
-                      <img 
-                        src={encodeURI(showcase.image)} 
-                        alt={showcase.title} 
+                      <img
+                        src={encodeURI(showcase.image)}
+                        alt={showcase.title}
                         className="w-full object-cover transform hover:scale-105 transition-transform duration-700"
                       />
                     </div>

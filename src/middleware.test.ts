@@ -48,12 +48,12 @@ describe("middleware public route policy", () => {
     const productsResponse = middleware(
       new NextRequest("https://console.svc.plus/products"),
     );
-    const productXstreamResponse = middleware(
-      new NextRequest("https://console.svc.plus/products/xstream"),
+    const productXconnectResponse = middleware(
+      new NextRequest("https://console.svc.plus/products/xconnect"),
     );
 
     expect(productsResponse).toBeUndefined();
-    expect(productXstreamResponse).toBeUndefined();
+    expect(productXconnectResponse).toBeUndefined();
   });
 
   it("keeps blogs public", () => {
