@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import UnifiedNavigation from "../../components/UnifiedNavigation";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import Footer from "../../components/Footer";
 import { Mail, Globe } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageProvider";
@@ -67,7 +67,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-150 flex flex-col">
-      <UnifiedNavigation />
+      <MarketingNav />
       <main className="flex-1 relative overflow-hidden pt-24 pb-20">
         <div className="absolute inset-0 bg-gradient-app-from opacity-20 pointer-events-none" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-6">

@@ -1,5 +1,5 @@
 import Footer from "@/components/Footer";
-import UnifiedNavigation from "@/components/UnifiedNavigation";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import { cn } from "@/lib/utils";
 
 type PublicPageShellProps = {
@@ -28,7 +28,7 @@ export function PublicPageShell({
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0))]"
       />
       <div className="relative">
-        <UnifiedNavigation />
+        <MarketingNav />
         <div
           className={cn(
             "mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16",
