@@ -25,12 +25,12 @@ type PolicyContent = {
 
 const enContent: PolicyContent = {
   title: "Privacy Policy",
-  subtitle: "This Privacy Policy explains how XWork Technologies LLC collects, uses, and protects your information across our AI-powered applications, cloud platforms, and SaaS products.",
+  subtitle: "This Privacy Policy explains how XWork Technologies LLC collects, uses, and protects your information across the SVC+ Cloud-Neutral Platform, our AI-native workspaces, and developer infrastructure.",
   effective: "Effective Date: October 1, 2026",
   updated: "Last Updated: October 1, 2026",
   overview: [
     "XWork Technologies LLC (\"we\", \"our\", \"us\") is committed to protecting your privacy and ensuring you have a positive experience on our website and in using our software products and services.",
-    "This Privacy Policy applies to our website and any SaaS platforms, developer tools, or services that link to this policy.",
+    "This Privacy Policy applies to our website and any platform, developer tools, or services that link to this policy.",
     "We follow strict data-minimization practices and only process data that is required to provide our services and ensure their secure operation."
   ],
   sections: [
@@ -123,12 +123,12 @@ const enContent: PolicyContent = {
 
 const zhContent: PolicyContent = {
   title: "隐私政策",
-  subtitle: "本隐私政策说明了 XWork Technologies LLC 如何在我们的 AI 应用程序、云平台和 SaaS 产品中收集、使用和保护您的信息。",
+  subtitle: "本隐私政策说明了 XWork Technologies LLC 如何在 SVC+ Cloud-Neutral Platform、AI 原生工作区和开发者基础设施中收集、使用和保护您的信息。",
   effective: "生效日期：2026年10月1日",
   updated: "最后更新：2026年10月1日",
   overview: [
     "XWork Technologies LLC（“我们”）致力于保护您的隐私，确保您在使用我们的网站、软件产品和服务时获得良好的体验。",
-    "本隐私政策适用于链接至本政策的网站及任何 SaaS 平台、开发者工具或服务。",
+    "本隐私政策适用于链接至本政策的网站及任何平台、开发者工具或服务。",
     "我们遵循严格的数据最小化原则，仅处理提供服务和保障其安全运行所必需的数据。"
   ],
   sections: [
