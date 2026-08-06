@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import Footer from "@/components/Footer";
-import UnifiedNavigation from "@/components/UnifiedNavigation";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import XWorkmateSuiteMarketing from "@/components/marketing/XWorkmateSuiteMarketing";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function XWorkmateSuitePage() {
   return (
     <div className="min-h-screen bg-background text-text">
-      <UnifiedNavigation />
+      <MarketingNav />
       <XWorkmateSuiteMarketing />
       <Footer />
     </div>

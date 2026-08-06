@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import UnifiedNavigation from "../../../components/UnifiedNavigation";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import Footer from "../../../components/Footer";
 import Discussions from "../../../components/support/Discussions";
 import { useLanguage } from "../../../i18n/LanguageProvider";
@@ -12,7 +12,7 @@ export default function DiscussionsPage() {
 
     return (
         <div className="min-h-screen bg-background text-text transition-colors duration-150 flex flex-col">
-            <UnifiedNavigation />
+            <MarketingNav />
 
             <main className="flex-1 relative overflow-hidden pt-24 pb-20">
                 <div className="relative mx-auto max-w-5xl px-6">
