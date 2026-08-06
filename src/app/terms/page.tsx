@@ -34,7 +34,7 @@ export default function TermsPage() {
 
                                 <section>
                                     <h3 className="text-xl font-semibold text-heading mb-3">2. 服务的使用 / Use of Services</h3>
-                                    <p>我们授予您有限的、非排他性的、不可转让的许可，以便根据本条款访问和使用我们的 AI 软件应用程序、SaaS 平台和开发者工具。服务仅限用于合法的商业或个人用途。</p>
+                                    <p>我们授予您有限的、非排他性的、不可转让的许可，以便根据本条款访问和使用 SVC+ Cloud-Neutral Platform、AI 原生工作区和开发者基础设施。服务仅限用于合法的商业或个人用途。</p>
                                 </section>
 
                                 <section>
@@ -54,7 +54,7 @@ export default function TermsPage() {
                                 <section>
                                     <h3 className="text-xl font-semibold text-heading mb-3">5. 订阅与支付 / Subscription and Payments</h3>
                                     <ul className="list-disc pl-5 space-y-2">
-                                        <li><strong>费用：</strong> 使用特定的高级功能或 SaaS 产品可能需要按订阅制付费。</li>
+                                        <li><strong>费用：</strong> 使用特定的高级功能或平台服务可能需要按订阅制付费。</li>
                                         <li><strong>支付：</strong> 订阅通常会在计费周期结束时自动续订，除非您在续订日期前取消。</li>
                                         <li><strong>退款：</strong> 除非法律强制要求，否则已支付的费用通常不可退还。</li>
                                     </ul>
@@ -94,7 +94,7 @@ export default function TermsPage() {
 
                                 <section>
                                     <h3 className="text-xl font-semibold text-heading mb-3">2. Use of Services</h3>
-                                    <p>We grant you a limited, non-exclusive, non-transferable license to access and use our AI software applications, SaaS platforms, and developer tools in accordance with these Terms. Services are intended for lawful business or personal use only.</p>
+                                    <p>We grant you a limited, non-exclusive, non-transferable license to access and use the SVC+ Cloud-Neutral Platform, AI-native workspaces, and developer infrastructure in accordance with these Terms. Services are intended for lawful business or personal use only.</p>
                                 </section>
 
                                 <section>
@@ -114,7 +114,7 @@ export default function TermsPage() {
                                 <section>
                                     <h3 className="text-xl font-semibold text-heading mb-3">5. Subscription and Payments</h3>
                                     <ul className="list-disc pl-5 space-y-2">
-                                        <li><strong>Fees:</strong> Access to certain premium features or SaaS products requires payment on a subscription basis.</li>
+                                        <li><strong>Fees:</strong> Access to certain premium features or platform services requires payment on a subscription basis.</li>
                                         <li><strong>Payment:</strong> Subscriptions typically renew automatically at the end of the billing cycle unless you cancel before the renewal date.</li>
                                         <li><strong>Refunds:</strong> Except as required by law, paid fees are generally non-refundable.</li>
                                     </ul>

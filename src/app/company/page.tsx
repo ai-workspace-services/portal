@@ -10,23 +10,21 @@ const enContent = {
   title: "Company Information",
   details: [
     { label: "Company Name", value: "XWork Technologies LLC" },
+    { label: "Brand", value: "XWork Technologies" },
     { label: "Entity Type", value: "Limited Liability Company (LLC)" },
-    { label: "Registered State", value: "Wyoming, United States" },
-    { label: "Industry", value: "Software Development" },
+    { label: "Industry", value: "B2B Software Development" },
   ],
-  activitiesTitle: "Business Activities",
+  activitiesTitle: "Core Focus",
   activities: [
-    "AI Software Applications",
-    "Cloud-native Platform Development",
-    "Developer Tools",
-    "SaaS Products",
-    "Software Infrastructure Solutions",
+    "AI Workspace",
+    "Cloud-Neutral Platform",
+    "Developer Infrastructure",
+    "AI Connectivity",
+    "Open Platform",
   ],
-  productsTitle: "Products",
+  productsTitle: "Platform",
   products: [
-    { name: "XWorkmate", description: "AI Workspace platform for productivity and intelligent workflows." },
-    { name: "XConnect", description: "AI connectivity platform connecting applications, services, and AI capabilities." },
-    { name: "Cloud-Neutral Platform", description: "Developer infrastructure and tools designed for flexible cloud environments." },
+    { name: "SVC+ Cloud-Neutral Platform", description: "A professional platform offering AI-native workspace solutions, developer infrastructure, and seamless open platform connectivity." },
   ]
 };
 
@@ -34,23 +32,21 @@ const zhContent = {
   title: "公司信息",
   details: [
     { label: "公司名称", value: "XWork Technologies LLC" },
+    { label: "品牌名称", value: "XWork Technologies" },
     { label: "实体类型", value: "有限责任公司 (LLC)" },
-    { label: "注册地", value: "美国怀俄明州" },
-    { label: "所属行业", value: "软件开发" },
+    { label: "所属行业", value: "B2B 软件开发" },
   ],
-  activitiesTitle: "业务范围",
+  activitiesTitle: "核心方向",
   activities: [
-    "人工智能软件应用",
-    "云原生平台开发",
-    "开发者工具",
-    "SaaS 产品",
-    "软件基础设施解决方案",
+    "AI 原生工作区 (AI Workspace)",
+    "云中立平台 (Cloud-Neutral Platform)",
+    "开发者基础设施 (Developer Infrastructure)",
+    "AI 连接 (AI Connectivity)",
+    "开放平台 (Open Platform)",
   ],
-  productsTitle: "旗下产品",
+  productsTitle: "旗下平台",
   products: [
-    { name: "XWorkmate", description: "面向生产力和智能工作流的 AI 工作区平台。" },
-    { name: "XConnect", description: "连接应用程序、服务和 AI 能力的 AI 连接平台。" },
-    { name: "Cloud-Neutral Platform", description: "专为灵活的云环境设计的开发者基础设施和工具。" },
+    { name: "SVC+ Cloud-Neutral Platform", description: "一个专业的 B2B 平台，提供 AI 原生工作区解决方案、开发者基础设施以及无缝的开放平台连接。" },
   ]
 };
 
