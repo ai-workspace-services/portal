@@ -9,20 +9,20 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 const enContent = {
   title: "About XWork Technologies",
   paragraphs: [
-    "XWork Technologies LLC is a B2B software company building AI-native workspaces, cloud-neutral infrastructure, and developer platforms.",
-    "As the creator of the SVC+ Cloud-Neutral Platform, we deliver robust solutions designed to optimize AI connectivity, empower open platform integrations, and provide scalable developer infrastructure.",
-    "Our focus is creating reliable and professional software products that help organizations build, manage, and scale their digital capabilities across diverse environments.",
-    "We believe enterprise software should be accessible, intelligent, and adaptable to the evolving needs of modern businesses."
+    "XWork Technologies LLC is a software company building AI-powered productivity tools and cloud-neutral infrastructure solutions.",
+    "As the creators of products like the SVC+ Cloud-Neutral Platform, we deliver robust solutions designed to optimize AI connectivity, empower developers, and enhance individual and team productivity.",
+    "Our focus is creating reliable and professional software products that help users and organizations build, manage, and scale their digital capabilities across diverse environments.",
+    "We believe software should be accessible, intelligent, and adaptable to the evolving needs of both consumers and businesses."
   ]
 };
 
 const zhContent = {
   title: "关于 XWork Technologies",
   paragraphs: [
-    "XWork Technologies LLC 是一家 B2B 软件公司，致力于构建 AI 原生工作区、云中立基础设施和开发者平台。",
-    "作为 SVC+ Cloud-Neutral Platform 的核心开发方，我们提供可靠的解决方案，旨在优化 AI 连接、赋能开放平台集成并提供可扩展的开发者基础设施。",
-    "我们的重点是创造专业、可靠的软件产品，帮助企业在多样化的环境中构建、管理和扩展其数字能力。",
-    "我们相信企业级软件应该是易于访问、智能的，并能够适应现代企业不断变化的需求。"
+    "XWork Technologies LLC 是一家软件公司，致力于构建由人工智能驱动的生产力工具和云中立的基础设施解决方案。",
+    "作为 SVC+ Cloud-Neutral Platform 等产品的开发方，我们提供可靠的解决方案，旨在优化 AI 连接、赋能开发者，并提升个人与团队的生产力。",
+    "我们的重点是创造专业、可靠的软件产品，帮助用户和企业在多样化的环境中构建、管理和扩展其数字能力。",
+    "我们相信软件应该是易于访问、智能的，并能够适应消费者和现代企业不断变化的需求。"
   ]
 };
 
