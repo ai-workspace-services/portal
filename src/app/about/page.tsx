@@ -9,20 +9,28 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 const enContent = {
   title: "About XWork Technologies",
   paragraphs: [
-    "XWork Technologies LLC is a software company building AI-powered productivity tools and cloud-neutral infrastructure solutions.",
-    "As the creators of products like the SVC+ Cloud-Neutral Platform, we deliver robust solutions designed to optimize AI connectivity, empower developers, and enhance individual and team productivity.",
-    "Our focus is creating reliable and professional software products that help users and organizations build, manage, and scale their digital capabilities across diverse environments.",
-    "We believe software should be accessible, intelligent, and adaptable to the evolving needs of both consumers and businesses."
+    "XWork Technologies LLC is a software company focused on building AI-powered productivity tools and cloud-neutral infrastructure solutions.",
+    "We create modern software products that combine artificial intelligence, automation, and open technologies to help individuals, developers, and organizations improve productivity and build flexible digital experiences.",
+    "Through products such as SVC+ Cloud-Neutral Platform, XWorkmate AI Workspace, and XConnect AI Connectivity, we explore practical solutions that make technology more accessible, intelligent, and adaptable.",
+    "Our focus areas include:",
+    "• AI-powered productivity tools: Building intelligent software experiences that help users work more efficiently.",
+    "• Cloud-neutral infrastructure solutions: Creating flexible and scalable technology solutions across different environments.",
+    "• Developer-focused platforms: Providing tools and platforms that simplify modern software development and workflows.",
+    "XWork Technologies LLC is committed to creating reliable, user-focused software products for the evolving digital world."
   ]
 };
 
 const zhContent = {
   title: "关于 XWork Technologies",
   paragraphs: [
-    "XWork Technologies LLC 是一家软件公司，致力于构建由人工智能驱动的生产力工具和云中立的基础设施解决方案。",
-    "作为 SVC+ Cloud-Neutral Platform 等产品的开发方，我们提供可靠的解决方案，旨在优化 AI 连接、赋能开发者，并提升个人与团队的生产力。",
-    "我们的重点是创造专业、可靠的软件产品，帮助用户和企业在多样化的环境中构建、管理和扩展其数字能力。",
-    "我们相信软件应该是易于访问、智能的，并能够适应消费者和现代企业不断变化的需求。"
+    "XWork Technologies LLC 是一家专注于构建由人工智能驱动的生产力工具和云中立基础设施解决方案的软件公司。",
+    "我们致力于打造现代化的软件产品，结合人工智能、自动化与开放技术，帮助个人、开发者和企业提升生产力并构建灵活的数字体验。",
+    "通过 SVC+ Cloud-Neutral Platform、XWorkmate AI Workspace 和 XConnect AI Connectivity 等产品，我们不断探索实用的解决方案，让技术更加易于使用、智能且具备极强的适应性。",
+    "我们的核心领域包括：",
+    "• AI 生产力工具：构建智能的软件体验，帮助用户更高效地工作。",
+    "• 云中立基础设施解决方案：在不同环境中提供灵活且可扩展的技术底座。",
+    "• 开发者平台：提供各类工具和平台，简化现代软件开发与工作流。",
+    "XWork Technologies LLC 致力于为不断演进的数字世界创造可靠、以用户为中心的软件产品。"
   ]
 };
 
