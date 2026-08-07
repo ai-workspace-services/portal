@@ -1,46 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChatInputArea from '@/components/ai-workspace/ChatInputArea';
 import RightContextPanel, { type ArtifactFile } from '@/components/ai-workspace/RightContextPanel';
 import { Network, Presentation, Microscope, Globe, FileText, Table, Palette, ChevronsLeft, PlayCircle, Menu } from 'lucide-react';
 import { useParams } from 'next/navigation';
-
-const DEMO_CONTEXT_MESSAGES = [
-  {
-    role: 'user',
-    content: '请帮我梳理并精简 XWorkmate 品牌树与主页文案，要求分为关键词、三支柱与协同段落。',
-  },
-  {
-    role: 'assistant',
-    content: `1. **关键词**：**Work · Connect · Control**（干活 · 连接 · 掌控）
-   * **三支柱对产品牌树**：Work -> Human + Agent Shared Workspace; Connect -> Workspace Connect; Control -> Agent Memory
-   * **Workspace Connect / Agent Memory** 仅作**功能名**，不立品牌
-
-2. **svc.plus（平台品牌）**
-   * **全球标语**：**Open Platform for AI-native Infrastructure**（移除 "Cloud Service"）
-   * **关键词**：**Deploy · Connect · Operate**（部署 · 连接 · 运营）
-   * 六大模块 Console / Gateway / API / Billing / Accounts / Deployment 归入四特性卡，仅作模块名
-   * 入口保持 **console.svc.plus** 不变
-
-3. **品牌纪律**：不新增 XConnect / XMemory; LLC、Apple Developer、GitHub Organization 统一围绕 XWorkmate; GitHub 三组织 (ai-workspace-lab / ai-workspace-xstream / ai-workspace-infra) 嵌入两站 Footer。
-
-一个观察：现在 xworkmate.com 与 console.svc.plus 共用同一张中文落地页（两者抓取内容一致），文案其实是"混合体"。本次已按品牌树拆成两套独立文案——如果你希望，下一步我可以把两套文案直接落到两份 HTML 里分别部署，或保持共页只做单套切换。`,
-  }
-];
-
-const DEMO_FILES: ArtifactFile[] = [
-  { name: 'README.v24.md', path: 'README.v24.md', size: '2.5 KB', date: '2026-08-04 14:05' },
-  { name: 'xworkmate.com-homepage-copy.v20.md', path: 'copy/xworkmate.com-homepage-copy.v20.md', size: '3.7 KB', date: '2026-08-04 14:05' },
-  { name: 'svc.plus-homepage-copy.v9.md', path: 'copy/svc.plus-homepage-copy.v9.md', size: '3.9 KB', date: '2026-08-04 14:05' },
-];
+import { taskStore, type TaskItem } from '@/lib/xworkmate/taskStore';
 
 export default function ConversationPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const isNew = id === 'new' || !id;
 
+  const [activeTask, setActiveTask] = useState<TaskItem | null>(null);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+
+  useEffect(() => {
+    if (!isNew && id) {
+      const found = taskStore.getTasks().find(t => t.sessionKey === id || t.id === id);
+      if (found) {
+        setActiveTask(found);
+      } else {
+        setActiveTask({
+          id: id,
+          sessionKey: id,
+          title: '对话任务',
+          preview: '正在运行中...',
+          projectLabel: '通用专项',
+          updatedAtMs: Date.now(),
+          status: 'running',
+          progress: 25,
+          artifactPaths: [],
+        });
+      }
+    }
+  }, [id, isNew]);
+
+  const taskTitle = isNew ? '新对话' : (activeTask?.title || '对话任务');
+  const workingPath = isNew ? '.../threads/draft-new' : `.../threads/${id}`;
+  const messages = isNew ? [] : [
+    { role: 'user', content: activeTask?.preview || '任务开始执行' },
+    { role: 'assistant', content: 'XWorkmate 已接收到您的需求，正在沿用当前任务上下文为您持续处理。' }
+  ];
 
   return (
     <div className="flex-1 flex overflow-hidden bg-white relative">
@@ -113,7 +114,7 @@ export default function ConversationPage() {
         ) : (
           /* Active Thread Message Context Replay */
           <div className="flex-1 overflow-y-auto p-8 max-w-3xl w-full mx-auto space-y-6">
-            {DEMO_CONTEXT_MESSAGES.map((msg, idx) => (
+            {messages.map((msg, idx) => (
               <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 <div className={`p-4 rounded-2xl max-w-2xl text-sm leading-relaxed ${
                   msg.role === 'user' 
@@ -136,10 +137,10 @@ export default function ConversationPage() {
       {/* Right Sidebar */}
       {rightPanelOpen && (
         <RightContextPanel 
-          sessionTitle={isNew ? "新对话" : "主页SEO优化"}
-          workingPath={isNew ? ".../threads/draft-new" : ".../shenlan/.xworkmate/threads/draft-178582321..."}
-          msgCount={isNew ? 0 : 2}
-          files={isNew ? [] : DEMO_FILES}
+          sessionTitle={taskTitle}
+          workingPath={workingPath}
+          msgCount={isNew ? 0 : messages.length}
+          files={activeTask?.artifactPaths.map(p => ({ name: p, path: p, size: '1.2 KB', date: '刚刚' })) || []}
           onClose={() => setRightPanelOpen(false)} 
         />
       )}
