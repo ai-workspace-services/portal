@@ -19,17 +19,11 @@ interface RightContextPanelProps {
   onClose?: () => void;
 }
 
-const DEFAULT_FILES: ArtifactFile[] = [
-  { name: 'README.v24.md', path: 'README.v24.md', size: '2.5 KB', date: '2026-08-04 14:05' },
-  { name: 'xworkmate.com-homepage-copy.v20.md', path: 'copy/xworkmate.com-homepage-copy.v20.md', size: '3.7 KB', date: '2026-08-04 14:05' },
-  { name: 'svc.plus-homepage-copy.v9.md', path: 'copy/svc.plus-homepage-copy.v9.md', size: '3.9 KB', date: '2026-08-04 14:05' },
-];
-
 export default function RightContextPanel({
-  sessionTitle = "主页SEO优化",
-  workingPath = ".../shenlan/.xworkmate/threads/draft-178582321...",
-  msgCount = 2,
-  files = DEFAULT_FILES,
+  sessionTitle = "对话任务",
+  workingPath = ".../threads/draft-active",
+  msgCount = 0,
+  files = [],
   onClose,
 }: RightContextPanelProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'preview'>('all');

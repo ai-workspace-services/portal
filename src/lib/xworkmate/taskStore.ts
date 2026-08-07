@@ -14,12 +14,6 @@ export interface TaskItem {
   artifactPaths: string[];
 }
 
-const INITIAL_TASKS: TaskItem[] = [
-  { id: '1', sessionKey: 'draft-1785823210227642-1', title: '主页SEO优化', preview: '已完成。基于最终品牌树...', projectLabel: 'SEO项目', updatedAtMs: Date.now() - 480000, status: 'completed', progress: 100, artifactPaths: ['seo_plan.md'] },
-  { id: '2', sessionKey: 'draft-178590624986936-1', title: '管线测试复跑', preview: '写好了，围绕「1000万以内最好的...」', projectLabel: '测试', updatedAtMs: Date.now() - 600000, status: 'running', progress: 45, artifactPaths: [] },
-  { id: '3', sessionKey: 'draft-178574641044258-1', title: '自媒体矩阵文案包', preview: '已完成整理，矩阵文案包写好了...', projectLabel: '文案矩阵', updatedAtMs: Date.now() - 720000, status: 'ready', progress: 28, artifactPaths: ['draft1.md', 'draft2.md'] },
-];
-
 class TaskStore {
   private tasks: TaskItem[] = [];
   private listeners: Set<() => void> = new Set();
@@ -29,16 +23,21 @@ class TaskStore {
       const stored = localStorage.getItem('xworkmate_task_store');
       if (stored) {
         try {
-          this.tasks = JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          // Filter out hardcoded demo tasks if present
+          this.tasks = Array.isArray(parsed) 
+            ? parsed.filter((t: TaskItem) => !['1', '2', '3'].includes(t.id) && !t.title.includes('主页SEO优化') && !t.title.includes('管线测试复跑') && !t.title.includes('自媒体矩阵文案包'))
+            : [];
+          this.save();
         } catch {
-          this.tasks = INITIAL_TASKS;
+          this.tasks = [];
         }
       } else {
-        this.tasks = INITIAL_TASKS;
+        this.tasks = [];
         this.save();
       }
     } else {
-      this.tasks = INITIAL_TASKS;
+      this.tasks = [];
     }
   }
 
