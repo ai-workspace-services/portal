@@ -1,13 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
-import { PenSquare, ChevronRight, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { PenSquare, ChevronRight, FileText, CheckCircle2, RefreshCw } from 'lucide-react';
 import DashboardCharts from '@/components/ai-workspace/DashboardCharts';
 import ProjectCard from '@/components/ai-workspace/ProjectCard';
+import { buildWorkbenchProjection, type TaskThread, type WorkbenchProjection } from '@/lib/xworkmate/workbenchProjection';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+
+// Initial demo threads matching the exact layout
+const DEMO_THREADS: TaskThread[] = [
+  { id: '1', sessionKey: 'draft-1785823210227642-1', title: 'draft-1785823210227642...', workspacePath: '/draft-1785823210227642', artifactPaths: ['doc1.md', 'doc2.md', 'doc3.md'], messages: [{ role: 'user', text: 'Task thread started' }], updatedAtMs: Date.now() - 480000 },
+  { id: '2', sessionKey: 'draft-178590624986936-1', title: 'draft-178590624986936...', workspacePath: '/draft-178590624986936', artifactPaths: [], messages: [{ role: 'user', text: 'Initializing' }], updatedAtMs: Date.now() - 480000 },
+  { id: '3', sessionKey: 'draft-178574641044258-1', title: 'draft-178574641044258...', workspacePath: '/draft-178574641044258', artifactPaths: ['a.md', 'b.md', 'c.md', 'd.md', 'e.md', 'f.md', 'g.md', 'h.md'], messages: [{ role: 'user', text: 'Running tests' }], updatedAtMs: Date.now() - 480000 },
+  { id: '4', sessionKey: 'draft-1785762014105762-2', title: 'draft-1785762014105762-2', workspacePath: '/draft-1785762014105762-2', artifactPaths: ['plan.md'], messages: [{ role: 'user', text: 'Writing docs' }], updatedAtMs: Date.now() - 480000 },
+];
 
 export default function AiWorkspacePage() {
   const [activeTab, setActiveTab] = useState('总览');
+  const [threads, setThreads] = useState<TaskThread[]>(DEMO_THREADS);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/ai-workspace/threads');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setThreads(data);
+          }
+        }
+      } catch (err) {
+        console.warn('Using default workbench thread projection', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboard();
+  }, []);
+
+  const projection: WorkbenchProjection = buildWorkbenchProjection(threads);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative">
@@ -17,10 +51,16 @@ export default function AiWorkspacePage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-1">工作台</h1>
           <p className="text-sm text-gray-500">把零碎进展沉淀为清晰工作</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm">
-          <PenSquare className="w-4 h-4" />
-          快速记录
-        </button>
+        <div className="flex items-center gap-3">
+          {loading && <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />}
+          <Link 
+            href="/ai-workspace/conversation/new"
+            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <PenSquare className="w-4 h-4" />
+            快速记录
+          </Link>
+        </div>
       </header>
 
       {/* Content Area */}
@@ -51,21 +91,38 @@ export default function AiWorkspacePage() {
             <div className="mb-8">
               <h3 className="text-sm font-bold text-gray-900 mb-4">正在推进的专项</h3>
               <div className="space-y-1">
-                <ProjectCard title="draft-1785823210227642..." threadsCount={1} artifactsCount={3} progress={28} />
-                <ProjectCard title="draft-178590624986936..." threadsCount={1} artifactsCount={0} progress={12} />
-                <ProjectCard title="draft-178574641044258..." threadsCount={1} artifactsCount={8} progress={28} />
-                <ProjectCard title="draft-1785762014105762-2" threadsCount={1} artifactsCount={1} progress={28} />
+                {projection.projects.length > 0 ? (
+                  projection.projects.map((proj, idx) => (
+                    <ProjectCard 
+                      key={idx} 
+                      title={proj.label} 
+                      threadsCount={proj.items.length} 
+                      artifactsCount={proj.artifactCount} 
+                      progress={proj.progress} 
+                    />
+                  ))
+                ) : (
+                  DEMO_THREADS.map((t, idx) => (
+                    <ProjectCard 
+                      key={idx} 
+                      title={t.title || ''} 
+                      threadsCount={1} 
+                      artifactsCount={t.artifactPaths?.length || 0} 
+                      progress={28} 
+                    />
+                  ))
+                )}
               </div>
-              <button className="w-full mt-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors flex items-center justify-center gap-1">
+              <Link href="/ai-workspace/tasks" className="w-full mt-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl transition-colors flex items-center justify-center gap-1">
                 查看全部专项 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Right Column (Insights) */}
         <div className="w-80 flex-shrink-0 bg-gray-50/50 p-6 overflow-y-auto border-l border-gray-100 flex flex-col gap-6">
-          <DashboardCharts />
+          <DashboardCharts data={projection.workloadSeries} />
 
           <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
             <div className="flex justify-between items-center mb-4">
@@ -77,7 +134,7 @@ export default function AiWorkspacePage() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600">计划工作项</span>
-                  <span className="font-bold text-gray-900">23</span>
+                  <span className="font-bold text-gray-900">{projection.totalPlannedCount || 23}</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-600 w-full" />
@@ -87,16 +144,16 @@ export default function AiWorkspacePage() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600">已有进展</span>
-                  <span className="font-bold text-gray-900">2</span>
+                  <span className="font-bold text-gray-900">{projection.completedCount || 2}</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 w-[10%]" />
+                  <div className="h-full bg-green-500" style={{ width: `${projection.overallProgress || 10}%` }} />
                 </div>
               </div>
               
               <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
                 <span className="text-sm text-gray-600">整体进度</span>
-                <span className="text-base font-bold text-blue-600">26%</span>
+                <span className="text-base font-bold text-blue-600">{projection.overallProgress || 26}%</span>
               </div>
             </div>
           </div>

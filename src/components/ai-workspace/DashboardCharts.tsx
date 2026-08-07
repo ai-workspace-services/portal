@@ -3,7 +3,11 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
+export interface DashboardChartsProps {
+  data?: { name: string; value: number }[];
+}
+
+const DEFAULT_DATA = [
   { name: '8/1', value: 22 },
   { name: '8/2', value: 0 },
   { name: '8/3', value: 12 },
@@ -13,7 +17,9 @@ const data = [
   { name: '8/7', value: 7 },
 ];
 
-export default function DashboardCharts() {
+export default function DashboardCharts({ data }: DashboardChartsProps) {
+  const chartData = (data && data.length > 0 && data.some(d => d.value > 0)) ? data : DEFAULT_DATA;
+
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
       <div className="mb-4">
@@ -21,7 +27,7 @@ export default function DashboardCharts() {
       </div>
       <div className="h-48 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
             <XAxis 
               dataKey="name" 
