@@ -3,46 +3,53 @@
 import React from 'react';
 import ChatInputArea from '@/components/ai-workspace/ChatInputArea';
 import RightContextPanel from '@/components/ai-workspace/RightContextPanel';
-import { PenSquare, PlayCircle, Menu } from 'lucide-react';
+import { Network, Presentation, Microscope, Globe, FileText, Table, Palette } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function ConversationPage() {
   return (
     <div className="flex-1 flex overflow-hidden bg-white">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-gray-50/30">
-        {/* Header */}
-        <header className="flex justify-center items-center py-4 px-6 relative flex-shrink-0">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-1 py-1 shadow-sm text-sm">
-            <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 text-white font-medium">
-              <PlayCircle className="w-4 h-4" />
-              对话工作流
-            </button>
-            <div className="h-4 w-px bg-gray-200" />
-            <button className="flex items-center gap-1 px-3 py-1 rounded-full text-gray-600 hover:bg-gray-50">
-              <Menu className="w-4 h-4" />
-              渲染
-              <ChevronDownIcon className="w-3 h-3 text-gray-400" />
-            </button>
-            <div className="h-4 w-px bg-gray-200" />
-            <span className="px-3 py-1 text-gray-500 text-xs">已连接 · xworkmate-bridge.svc.plus</span>
-          </div>
-        </header>
+      <div className="flex-1 flex flex-col min-w-0 bg-white relative">
+        {/* Top Header Controls (Optional/Float) */}
+        <div className="absolute top-4 right-4 flex items-center gap-2 text-xs">
+          <span className="text-gray-400">已连接 · xworkmate-bridge.svc.plus</span>
+        </div>
 
-        {/* Chat History Area (Empty State for now) */}
-        <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 max-w-md w-full text-center">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">开始对话或运行任务</h2>
-            <p className="text-sm text-gray-500 mb-6">输入需求后即可开始执行，结果会回到当前会话并同步到任务页。</p>
-            <button className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm">
-              <PenSquare className="w-4 h-4" />
-              开始输入
-            </button>
+        {/* Center Content for Empty State */}
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <h1 className="text-5xl font-black tracking-widest text-gray-900 mb-12">
+            XWORKMATE
+          </h1>
+          
+          <div className="w-full max-w-3xl">
+            <ChatInputArea />
+          </div>
+
+          {/* Quick Suggestions below input */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-2 max-w-3xl">
+            <SuggestionItem icon={Network} label="集群" />
+            <SuggestionItem icon={Presentation} label="PPT" />
+            <SuggestionItem icon={Microscope} label="深度研究" />
+            <SuggestionItem icon={Globe} label="网站" />
+            <SuggestionItem icon={FileText} label="文档" />
+            <SuggestionItem icon={Table} label="表格" />
+            <SuggestionItem icon={Palette} label="设计" />
           </div>
         </div>
 
-        {/* Bottom Input Area */}
-        <div className="flex-shrink-0">
-          <ChatInputArea />
+        {/* Bottom Floating Inspiration */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4">
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 backdrop-blur-md rounded-2xl text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-500">💡</span>
+              探索灵感
+            </div>
+            <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
+              滑动探索 
+              <ChevronUpIcon className="w-4 h-4" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -52,10 +59,19 @@ export default function ConversationPage() {
   );
 }
 
-function ChevronDownIcon({ className }: { className?: string }) {
+function SuggestionItem({ icon: Icon, label }: { icon: any, label: string }) {
+  return (
+    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 hover:border-gray-200 hover:bg-gray-50 rounded-full text-[13px] text-gray-600 font-medium transition-colors shadow-sm">
+      <Icon className="w-4 h-4 text-gray-400" />
+      {label}
+    </button>
+  );
+}
+
+function ChevronUpIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="m6 9 6 6 6-6"/>
+      <path d="m18 15-6-6-6 6"/>
     </svg>
   );
 }
