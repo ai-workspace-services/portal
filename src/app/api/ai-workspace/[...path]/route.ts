@@ -13,20 +13,31 @@ const DEFAULT_FORWARD_HEADERS = [
   'x-trace-id',
 ];
 
-export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
-  return handleProxy(request, params);
+type RouteParams = {
+  params: Promise<{
+    path: string[];
+  }>;
+};
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  const resolvedParams = await params;
+  return handleProxy(request, resolvedParams);
 }
-export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
-  return handleProxy(request, params);
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  const resolvedParams = await params;
+  return handleProxy(request, resolvedParams);
 }
-export async function PUT(request: NextRequest, { params }: { params: { path: string[] } }) {
-  return handleProxy(request, params);
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  const resolvedParams = await params;
+  return handleProxy(request, resolvedParams);
 }
-export async function DELETE(request: NextRequest, { params }: { params: { path: string[] } }) {
-  return handleProxy(request, params);
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  const resolvedParams = await params;
+  return handleProxy(request, resolvedParams);
 }
-export async function PATCH(request: NextRequest, { params }: { params: { path: string[] } }) {
-  return handleProxy(request, params);
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  const resolvedParams = await params;
+  return handleProxy(request, resolvedParams);
 }
 
 async function handleProxy(request: NextRequest, params: { path: string[] }) {
