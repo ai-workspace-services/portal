@@ -1,19 +1,30 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import ChatInputArea from '@/components/ai-workspace/ChatInputArea';
 import RightContextPanel from '@/components/ai-workspace/RightContextPanel';
-import { Network, Presentation, Microscope, Globe, FileText, Table, Palette } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Network, Presentation, Microscope, Globe, FileText, Table, Palette, ChevronsLeft } from 'lucide-react';
 
 export default function ConversationPage() {
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+
   return (
-    <div className="flex-1 flex overflow-hidden bg-white">
+    <div className="flex-1 flex overflow-hidden bg-white relative">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white relative">
-        {/* Top Header Controls (Optional/Float) */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 text-xs">
+        {/* Top Right Actions */}
+        <div className="absolute top-4 right-4 flex items-center gap-3 text-xs z-10">
           <span className="text-gray-400">已连接 · xworkmate-bridge.svc.plus</span>
+          {!rightPanelOpen && (
+            <button
+              onClick={() => setRightPanelOpen(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 text-gray-600 transition-colors font-medium"
+              title="展开右侧上下文面板"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+              上下文
+            </button>
+          )}
         </div>
 
         {/* Center Content for Empty State */}
@@ -54,7 +65,9 @@ export default function ConversationPage() {
       </div>
 
       {/* Right Sidebar */}
-      <RightContextPanel />
+      {rightPanelOpen && (
+        <RightContextPanel onClose={() => setRightPanelOpen(false)} />
+      )}
     </div>
   );
 }
