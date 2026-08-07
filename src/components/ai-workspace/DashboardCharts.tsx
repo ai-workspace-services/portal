@@ -7,18 +7,19 @@ export interface DashboardChartsProps {
   data?: { name: string; value: number }[];
 }
 
-const DEFAULT_DATA = [
-  { name: '8/1', value: 22 },
-  { name: '8/2', value: 0 },
-  { name: '8/3', value: 12 },
-  { name: '8/4', value: 4 },
-  { name: '8/5', value: 5 },
-  { name: '8/6', value: 3 },
-  { name: '8/7', value: 7 },
-];
+function getZeroWorkloadSeries() {
+  const dates = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    dates.push({ name: `${d.getMonth() + 1}/${d.getDate()}`, value: 0 });
+  }
+  return dates;
+}
 
 export default function DashboardCharts({ data }: DashboardChartsProps) {
-  const chartData = (data && data.length > 0 && data.some(d => d.value > 0)) ? data : DEFAULT_DATA;
+  const chartData = (data && data.length > 0) ? data : getZeroWorkloadSeries();
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
@@ -41,6 +42,7 @@ export default function DashboardCharts({ data }: DashboardChartsProps) {
               tickLine={false} 
               tick={{ fontSize: 10, fill: '#9ca3af' }}
               tickCount={5}
+              domain={[0, 'dataMax + 5']}
             />
             <Tooltip 
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
