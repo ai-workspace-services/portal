@@ -44,3 +44,21 @@ Always respond with:
 4. Next step
 
 If these rules conflict with user instructions, ask once for clarification and proceed conservatively.
+
+## XWorkmate Desktop-to-Web Adaptation Guidelines
+
+When porting or aligning features from `xworkmate-app` (Flutter Desktop) to `portal` (Next.js Web):
+
+- **Dual Collapsible Sidebars**:
+  - **Left Sidebar**: Must support full hiding. When hidden, render a floating reveal rail button (`ChevronsRight` / `>>`) at top-left (`position: absolute; left: 12px; top: 12px`) so users can reopen the sidebar from anywhere.
+  - **Right Context Panel**: Must support full collapse. When collapsed, provide an explicit trigger in the top header (e.g., "上下文" toggle button) to reopen the drawer.
+
+- **Composer (Input Area) Aesthetics**:
+  - High-fidelity rounded pill style (`rounded-[28px]` or `rounded-3xl`).
+  - Clean, borderless textarea with contextual placeholders (e.g., "尽管问，或做个 Agent 任务...").
+  - Bottom action bar containing the `+` tool popover trigger on the left, mode selector (e.g., "快速 进阶 ∨") and circular submit button (`↑`) on the right.
+
+- **Bridge API & Token Proxy**:
+  - Pass requests to `https://xworkmate-bridge.svc.plus` via Next.js API route proxy (`/api/ai-workspace/[...path]`).
+  - Automatically forward user session headers (`cookie`, `authorization`, `x-account-session`) to bypass CORS and reuse authentication state.
+
