@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, ArrowUp, FileText, Table, Presentation, Image as ImageIcon, Video, ShoppingBag, ScrollText, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { taskStore } from '@/lib/xworkmate/taskStore';
 import * as Popover from '@radix-ui/react-popover';
 
 const TOOLS = [
@@ -23,13 +25,29 @@ const TOOLS = [
 export default function ChatInputArea() {
   const [text, setText] = useState('');
   const [mode, setMode] = useState('快速');
+  const router = useRouter();
+
+  const handleSubmit = () => {
+    if (!text.trim()) return;
+    const newTask = taskStore.addTask(text, text);
+    setText('');
+    router.push(`/ai-workspace/conversation/${newTask.sessionKey}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-[28px] shadow-sm p-4 mx-auto w-full relative flex flex-col transition-all">
+    <div className="bg-white border border-gray-200 rounded-[28px] shadow-sm p-4 mx-auto w-full relative flex flex-col transition-all hover:border-gray-300">
       {/* Text Area */}
       <textarea 
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder="尽管问，或做个 Agent 任务..."
         className="w-full min-h-[90px] resize-none outline-none border-none text-base text-gray-900 placeholder:text-gray-400 p-2 bg-transparent leading-relaxed"
       />
@@ -83,6 +101,7 @@ export default function ChatInputArea() {
           </button>
 
           <button 
+            onClick={handleSubmit}
             className={cn(
               "w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm",
               text.trim() ? "bg-gray-900 text-white hover:bg-black" : "bg-gray-200 text-white cursor-not-allowed"

@@ -27,18 +27,14 @@ export default function ConversationPage() {
           )}
         </div>
 
-        {/* Center Content for Empty State */}
-        <div className="flex-1 flex flex-col items-center justify-center p-8">
-          <h1 className="text-5xl font-black tracking-widest text-gray-900 mb-12">
+        {/* Top / Center Content Stream */}
+        <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center p-8 pt-16 pb-4">
+          <h1 className="text-5xl font-black tracking-widest text-gray-900 mb-8">
             XWORKMATE
           </h1>
-          
-          <div className="w-full max-w-3xl">
-            <ChatInputArea />
-          </div>
 
-          {/* Quick Suggestions below input */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-2 max-w-3xl">
+          {/* Quick Suggestions */}
+          <div className="flex flex-wrap items-center justify-center gap-3 max-w-3xl">
             <SuggestionItem icon={Network} label="集群" />
             <SuggestionItem icon={Presentation} label="PPT" />
             <SuggestionItem icon={Microscope} label="深度研究" />
@@ -49,18 +45,9 @@ export default function ConversationPage() {
           </div>
         </div>
 
-        {/* Bottom Floating Inspiration */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4">
-          <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 backdrop-blur-md rounded-2xl text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <span className="text-yellow-500">💡</span>
-              探索灵感
-            </div>
-            <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
-              滑动探索 
-              <ChevronUpIcon className="w-4 h-4" />
-            </div>
-          </div>
+        {/* Bottom Docked Chat Input Container */}
+        <div className="w-full max-w-3xl mx-auto px-4 pb-6 flex-shrink-0">
+          <ChatInputArea />
         </div>
       </div>
 
@@ -78,13 +65,5 @@ function SuggestionItem({ icon: Icon, label }: { icon: any, label: string }) {
       <Icon className="w-4 h-4 text-gray-400" />
       {label}
     </button>
-  );
-}
-
-function ChevronUpIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="m18 15-6-6-6 6"/>
-    </svg>
   );
 }

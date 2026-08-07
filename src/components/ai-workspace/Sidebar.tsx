@@ -1,10 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Plus, Settings, Languages, Sun, ChevronsLeft, CheckSquare, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { taskStore, type TaskItem } from '@/lib/xworkmate/taskStore';
 
 interface SidebarProps {
   onHide?: () => void;
@@ -12,10 +13,19 @@ interface SidebarProps {
 
 export default function Sidebar({ onHide }: SidebarProps) {
   const pathname = usePathname();
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+
+  useEffect(() => {
+    setTasks(taskStore.getTasks());
+    const unsubscribe = taskStore.subscribe(() => {
+      setTasks([...taskStore.getTasks()]);
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <aside className="w-64 bg-[#f7f7f8] flex flex-col h-full border-r border-gray-200 flex-shrink-0 transition-all duration-300 ease-in-out">
-      {/* Top Logo / Search / Collapse */}
+      {/* Top Logo / Collapse */}
       <div className="p-4 flex items-center justify-between h-14">
         <div className="flex items-center gap-2 px-2">
           <div className="w-6 h-6 bg-gray-900 text-white rounded flex items-center justify-center font-bold text-xs">X</div>
@@ -66,18 +76,15 @@ export default function Sidebar({ onHide }: SidebarProps) {
           
           <div className="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400">最近对话</div>
           
-          <NavItem 
-            href="/ai-workspace/conversation/1" 
-            icon={MessageSquare} 
-            title="主页SEO优化" 
-            active={pathname === '/ai-workspace/conversation/1'} 
-          />
-          <NavItem 
-            href="/ai-workspace/conversation/2" 
-            icon={MessageSquare} 
-            title="管线测试复跑" 
-            active={false} 
-          />
+          {tasks.map(task => (
+            <NavItem 
+              key={task.sessionKey}
+              href={`/ai-workspace/conversation/${task.sessionKey}`}
+              icon={MessageSquare} 
+              title={task.title} 
+              active={pathname === `/ai-workspace/conversation/${task.sessionKey}`} 
+            />
+          ))}
         </div>
       </div>
 
