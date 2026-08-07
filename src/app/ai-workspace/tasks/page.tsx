@@ -1,12 +1,29 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Search, Plus, Filter, CheckSquare, Folder, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Filter } from 'lucide-react';
 import ProjectCard from '@/components/ai-workspace/ProjectCard';
+import { taskStore, type TaskItem } from '@/lib/xworkmate/taskStore';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function TasksPage() {
   const [filter, setFilter] = useState('all');
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+
+  useEffect(() => {
+    setTasks(taskStore.getTasks());
+    const unsubscribe = taskStore.subscribe(() => {
+      setTasks([...taskStore.getTasks()]);
+    });
+    return unsubscribe;
+  }, []);
+
+  const filteredTasks = tasks.filter(t => {
+    if (filter === 'in_progress') return t.status === 'running' || t.status === 'ready';
+    if (filter === 'completed') return t.status === 'completed';
+    return true;
+  });
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
@@ -25,10 +42,13 @@ export default function TasksPage() {
               className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 outline-none w-64"
             />
           </div>
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm">
+          <Link 
+            href="/ai-workspace/conversation/new"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
+          >
             <Plus className="w-4 h-4" />
             新建任务
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -59,13 +79,16 @@ export default function TasksPage() {
       {/* Main Task List */}
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">专项推进列表</h3>
-          <ProjectCard title="draft-1785823210227642..." threadsCount={1} artifactsCount={3} progress={28} />
-          <ProjectCard title="draft-178590624986936..." threadsCount={1} artifactsCount={0} progress={12} />
-          <ProjectCard title="draft-178574641044258..." threadsCount={1} artifactsCount={8} progress={28} />
-          <ProjectCard title="draft-1785762014105762-2" threadsCount={1} artifactsCount={1} progress={28} />
-          <ProjectCard title="draft-1785600000000000-1" threadsCount={2} artifactsCount={4} progress={65} />
-          <ProjectCard title="draft-1785500000000000-0" threadsCount={1} artifactsCount={12} progress={100} />
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">专项推进列表 ({filteredTasks.length})</h3>
+          {filteredTasks.map((t) => (
+            <ProjectCard 
+              key={t.sessionKey}
+              title={t.title}
+              threadsCount={1}
+              artifactsCount={t.artifactPaths.length}
+              progress={t.progress}
+            />
+          ))}
         </div>
       </div>
     </div>
