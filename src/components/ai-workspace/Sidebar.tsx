@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Plus, Settings, Languages, Sun, ChevronsLeft, CheckSquare, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Plus, Settings, Languages, Sun, ChevronsLeft, Search, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { taskStore, type TaskItem } from '@/lib/xworkmate/taskStore';
 
@@ -14,6 +14,7 @@ interface SidebarProps {
 export default function Sidebar({ onHide }: SidebarProps) {
   const pathname = usePathname();
   const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setTasks(taskStore.getTasks());
@@ -23,18 +24,29 @@ export default function Sidebar({ onHide }: SidebarProps) {
     return unsubscribe;
   }, []);
 
+  const filteredTasks = tasks.filter(t => 
+    t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    t.preview.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <aside className="w-64 bg-[#f7f7f8] flex flex-col h-full border-r border-gray-200 flex-shrink-0 transition-all duration-300 ease-in-out">
-      {/* Top Logo / Collapse */}
-      <div className="p-4 flex items-center justify-between h-14">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-6 h-6 bg-gray-900 text-white rounded flex items-center justify-center font-bold text-xs">X</div>
-          <span className="font-bold text-gray-900">XWorkmate</span>
+      {/* Top Search & Collapse */}
+      <div className="p-3 pb-2 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索任务"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500 shadow-sm"
+          />
         </div>
         {onHide && (
           <button 
             onClick={onHide} 
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200/50 rounded-md transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors flex-shrink-0"
             title="收起边栏"
           >
             <ChevronsLeft className="w-4 h-4" />
@@ -42,84 +54,81 @@ export default function Sidebar({ onHide }: SidebarProps) {
         )}
       </div>
 
-      {/* Main Actions */}
-      <div className="px-3 space-y-2 mt-2">
+      {/* Main Action Buttons */}
+      <div className="px-3 space-y-2 mt-1">
         <Link 
           href="/ai-workspace" 
           className={cn(
-            "flex items-center gap-2.5 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
+            "flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
           )}
         >
-          <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left">工作台</span>
+          <LayoutDashboard className="w-4 h-4" />
+          <span>工作台</span>
         </Link>
         <Link 
           href="/ai-workspace/conversation/new" 
           className={cn(
-            "flex items-center gap-2.5 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
+            "flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
           )}
         >
-          <Plus className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1 text-left">新对话</span>
+          <Plus className="w-4 h-4" />
+          <span>新对话</span>
         </Link>
       </div>
 
-      {/* Navigation List */}
-      <div className="flex-1 overflow-y-auto px-3 mt-6">
+      {/* Task List Header & Items */}
+      <div className="flex-1 overflow-y-auto px-3 mt-4">
+        <div className="px-2 pb-2 text-xs font-bold text-gray-700 flex items-center gap-1.5">
+          <span className="text-gray-400">≡</span> 任务列表
+        </div>
+        
         <div className="space-y-1">
-          <NavItem 
-            href="/ai-workspace/tasks" 
-            icon={CheckSquare} 
-            title="任务列表" 
-            active={pathname === '/ai-workspace/tasks'} 
-          />
-          
-          <div className="pt-4 pb-2 px-3 text-xs font-semibold text-gray-400">最近对话</div>
-          
-          {tasks.map(task => (
-            <NavItem 
-              key={task.sessionKey}
-              href={`/ai-workspace/conversation/${task.sessionKey}`}
-              icon={MessageSquare} 
-              title={task.title} 
-              active={pathname === `/ai-workspace/conversation/${task.sessionKey}`} 
-            />
-          ))}
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map(task => (
+              <Link 
+                key={task.sessionKey}
+                href={`/ai-workspace/conversation/${task.sessionKey}`}
+                className={cn(
+                  "flex items-start gap-2.5 w-full p-2.5 rounded-xl transition-colors text-xs",
+                  pathname === `/ai-workspace/conversation/${task.sessionKey}` ? "bg-white shadow-sm text-gray-900 font-semibold border border-gray-100" : "text-gray-600 hover:bg-gray-200/50"
+                )}
+              >
+                <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-gray-900 truncate">{task.title}</div>
+                  <div className="text-[11px] text-gray-400 truncate mt-0.5">{task.preview}</div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="text-center py-6 text-xs text-gray-400">暂无关联任务</div>
+          )}
         </div>
       </div>
 
       {/* Bottom Actions */}
       <div className="p-3 border-t border-gray-200/60 space-y-1">
-        <button className="flex items-center gap-3 w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-sm">
-          <Settings className="w-4 h-4" />
-          <span className="flex-1 text-left">设置</span>
+        <button className="flex items-center justify-between w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-xs">
+          <div className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            <span>设置</span>
+          </div>
         </button>
-        <button className="flex items-center gap-3 w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-sm">
-          <Languages className="w-4 h-4" />
-          <span className="flex-1 text-left">语言</span>
-          <span className="text-xs px-2 py-0.5 bg-gray-200/60 rounded-md">中</span>
+        <button className="flex items-center justify-between w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-xs">
+          <div className="flex items-center gap-2">
+            <Languages className="w-4 h-4" />
+            <span>语言</span>
+          </div>
+          <span className="text-[11px] px-2 py-0.5 bg-gray-200/60 text-gray-600 rounded-md font-medium">中</span>
         </button>
-        <button className="flex items-center gap-3 w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-sm">
-          <Sun className="w-4 h-4" />
-          <span className="flex-1 text-left">主题</span>
-          <span className="text-xs px-2 py-0.5 bg-gray-200/60 rounded-md">跟随</span>
+        <button className="flex items-center justify-between w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-xs">
+          <div className="flex items-center gap-2">
+            <Sun className="w-4 h-4" />
+            <span>主题</span>
+          </div>
+          <span className="text-[11px] px-2 py-0.5 bg-gray-200/60 text-gray-600 rounded-md font-medium">跟随</span>
         </button>
       </div>
     </aside>
-  );
-}
-
-function NavItem({ href, icon: Icon, title, active }: { href: string, icon: any, title: string, active?: boolean }) {
-  return (
-    <Link 
-      href={href}
-      className={cn(
-        "flex items-center gap-3 w-full py-2 px-3 rounded-xl transition-colors text-sm",
-        active ? "bg-white shadow-sm text-gray-900 font-medium" : "text-gray-600 hover:bg-gray-200/50"
-      )}
-    >
-      <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={active ? 2.5 : 2} />
-      <span className="flex-1 truncate">{title}</span>
-    </Link>
   );
 }

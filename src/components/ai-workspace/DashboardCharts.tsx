@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export interface DashboardChartsProps {
   data?: { name: string; value: number }[];
@@ -22,13 +22,19 @@ export default function DashboardCharts({ data }: DashboardChartsProps) {
   const chartData = (data && data.length > 0) ? data : getZeroWorkloadSeries();
 
   return (
-    <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-gray-900">工作负载趋势（近 7 天）</h3>
       </div>
       <div className="h-48 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#2563eb" stopOpacity={0.15}/>
+                <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0}/>
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
             <XAxis 
               dataKey="name" 
@@ -42,20 +48,21 @@ export default function DashboardCharts({ data }: DashboardChartsProps) {
               tickLine={false} 
               tick={{ fontSize: 10, fill: '#9ca3af' }}
               tickCount={5}
-              domain={[0, 'dataMax + 5']}
             />
             <Tooltip 
-              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px -2px rgb(0 0 0 / 0.1)' }}
             />
-            <Line 
-              type="linear" 
+            <Area 
+              type="monotone" 
               dataKey="value" 
-              stroke="#2563eb" 
-              strokeWidth={2}
-              dot={{ r: 3, fill: '#2563eb', strokeWidth: 0 }}
+              stroke="#0256e8" 
+              strokeWidth={2.5}
+              fillOpacity={1} 
+              fill="url(#colorValue)" 
+              dot={{ r: 3, fill: '#0256e8', strokeWidth: 0 }}
               activeDot={{ r: 5 }}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>
