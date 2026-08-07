@@ -78,7 +78,7 @@ export const userCenterExtension: DashboardExtension = {
       loader: () => import("./routes/account"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
-      sidebar: { section: "management", order: 20 },
+      sidebar: { section: "management", order: 20, hidden: true },
     },
     {
       id: "subscription",

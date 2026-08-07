@@ -1060,7 +1060,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         preferences: 'Preferences',
       },
       items: {
-        dashboard: 'Dashboard',
+        dashboard: 'Overview',
         agents: 'Agents',
         apis: 'APIs',
         accounts: 'Accounts',
@@ -1926,7 +1926,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         preferences: '偏好设置',
       },
       items: {
-        dashboard: '仪表盘',
+        dashboard: '总览',
         agents: '运行节点',
         apis: '接口集成',
         accounts: '账户中心',

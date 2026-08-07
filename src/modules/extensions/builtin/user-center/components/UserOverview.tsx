@@ -17,8 +17,9 @@ type UserOverviewProps = {
   hideMfaMainPrompt?: boolean
   dashboardLayout?: boolean
   hideVless?: boolean
+  showIdentityNote?: boolean
 }
-export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayout = false, hideVless = false }: UserOverviewProps) {
+export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayout = false, hideVless = false, showIdentityNote = true }: UserOverviewProps) {
   const router = useRouter()
   const { language } = useLanguage()
   const copy = translations[language].userCenter.overview
@@ -49,6 +50,9 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
 
   const requiresSetup = Boolean(user && !user.isReadOnly && (!user.mfaEnabled || user.mfaPending))
   const shouldShowMfaMainPrompt = !hideMfaMainPrompt && !user?.isReadOnly
+  const dashboardCardClassName = dashboardLayout
+    ? `${hideVless ? 'xl:col-span-4' : 'xl:col-span-3'} !p-4`
+    : ''
 
   const handleCopy = useCallback(async () => {
     const identifier = user?.uuid ?? user?.id
@@ -89,9 +93,11 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
 
   return (
     <div className="space-y-6 text-[var(--color-text)] transition-colors">
-      <div className={dashboardLayout ? 'border-b border-[color:var(--color-surface-border)] pb-4' : ''}>
-        <p className="text-sm text-[var(--color-text-subtle)] opacity-90">{copy.uuidNote}</p>
-      </div>
+      {showIdentityNote ? (
+        <div className={dashboardLayout ? 'border-b border-[color:var(--color-surface-border)] pb-4' : ''}>
+          <p className="text-sm text-[var(--color-text-subtle)] opacity-90">{copy.uuidNote}</p>
+        </div>
+      ) : null}
 
       {shouldShowMfaMainPrompt && requiresSetup ? (
         <div className="rounded-[var(--radius-xl)] border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-4 text-sm text-[var(--color-warning-foreground)] transition-colors">
@@ -132,7 +138,7 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
             : 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'
         }
       >
-        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
+        <Card className={dashboardCardClassName}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.uuid.label}</p>
@@ -149,7 +155,7 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
               {copied ? copy.cards.uuid.copied : copy.cards.uuid.copy}
             </button>
           </div>
-          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.uuid.description}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">{copy.cards.uuid.description}</p>
         </Card>
 
         {!hideVless ? (
@@ -160,20 +166,20 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
           />
         ) : null}
 
-        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
+        <Card className={dashboardCardClassName}>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.username.label}</p>
           <p className="mt-1 text-base font-medium text-[var(--color-text)]">{username}</p>
-          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.username.description}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">{copy.cards.username.description}</p>
         </Card>
 
-        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
+        <Card className={dashboardCardClassName}>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.email.label}</p>
           <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">{email}</p>
-          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.email.description}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">{copy.cards.email.description}</p>
         </Card>
 
         {shouldShowMfaMainPrompt ? (
-          <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
+          <Card className={dashboardCardClassName}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.mfa.label}</p>
