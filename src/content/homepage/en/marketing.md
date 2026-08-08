@@ -14,7 +14,7 @@ nav:
           href: /products/open-platform
         - label: Xstream Platform
           description: Private AI Network
-          href: /products/xstream
+          href: /products/xconnect
     - label: Resources
       columns:
         - label: Documentation
@@ -116,7 +116,7 @@ productGrid:
     - icon: shield
       name: Xstream Platform
       description: Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.
-      href: /products/xstream
+      href: /products/xconnect
       learnMore: Learn more
       slides:
         - src: /marketing/xstream/homepage.png

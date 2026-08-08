@@ -14,7 +14,7 @@ nav:
           href: /products/open-platform
         - label: AI Connectivity
           description: 为 AI Workspace 提供稳定、安全的连接能力
-          href: /products/xstream
+          href: /products/xconnect
     - label: 资源中心
       columns:
         - label: 文档中心
@@ -116,7 +116,7 @@ productGrid:
     - icon: shield
       name: AI Connectivity
       description: 为你的 AI Workspace 提供稳定、安全的连接能力。优化连接策略，提升访问全球 AI 服务的稳定性。
-      href: /products/xstream
+      href: /products/xconnect
       learnMore: 了解更多
       slides:
         - src: /marketing/xstream/homepage.png
