@@ -17,13 +17,13 @@ const enContent = {
   activitiesTitle: "Core Focus",
   activities: [
     "AI-Powered Productivity Tools",
-    "Cloud-Neutral Infrastructure",
+    "XWork Tech Infrastructure",
     "Developer Platforms",
     "AI Connectivity & Integration"
   ],
   productsTitle: "Platform",
   products: [
-    { name: "SVC+ Cloud-Neutral Platform", description: "A robust platform offering developer infrastructure, AI integrations, and flexible cloud environments for businesses and individuals." },
+    { name: "SVC+ XWork Tech Platform", description: "A robust platform offering developer infrastructure, AI integrations, and flexible cloud environments for businesses and individuals." },
   ]
 };
 
@@ -38,13 +38,13 @@ const zhContent = {
   activitiesTitle: "核心方向",
   activities: [
     "人工智能生产力工具 (AI Productivity Tools)",
-    "云中立基础设施 (Cloud-Neutral Infrastructure)",
+    "云中立基础设施 (XWork Tech Infrastructure)",
     "开发者平台 (Developer Platforms)",
     "AI 连接与集成 (AI Connectivity)"
   ],
   productsTitle: "旗下平台",
   products: [
-    { name: "SVC+ Cloud-Neutral Platform", description: "一个可靠的平台，为企业和个人提供开发者基础设施、AI 集成和灵活的云环境。" },
+    { name: "SVC+ XWork Tech Platform", description: "一个可靠的平台，为企业和个人提供开发者基础设施、AI 集成和灵活的云环境。" },
   ]
 };
 

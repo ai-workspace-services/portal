@@ -5,7 +5,7 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import XWorkmateSuiteMarketing from "@/components/marketing/XWorkmateSuiteMarketing";
 
 export const metadata: Metadata = {
-  title: "XWorkmate 产品矩阵 | Cloud-Neutral Console",
+  title: "XWorkmate 产品矩阵 | XWork Tech Console",
   description:
     "面向个人 AI 工作流的 XWorkmate App、Bridge、OpenClaw multi-session plugins 与 workspace core skills 产品矩阵。",
 };

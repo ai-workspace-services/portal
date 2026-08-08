@@ -21,11 +21,11 @@ type EcosystemNode = {
 const featureCopy: Record<PageVariant, Record<'zh' | 'en', { title: string; subtitle: string }>> = {
   homepage: {
     zh: {
-      title: '构建一体化的 Cloud-Neutral 云原生生态',
+      title: '构建一体化的 XWork Tech 云原生生态',
       subtitle: '通过统一治理、自动化与可观测能力，连接团队、工具与环境。',
     },
     en: {
-      title: 'Build a unified Cloud-Neutral cloud-native ecosystem',
+      title: 'Build a unified XWork Tech cloud-native ecosystem',
       subtitle: 'Connect teams, toolchains, and environments with shared governance, automation, and observability.',
     },
   },

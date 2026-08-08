@@ -17,7 +17,7 @@ export const userCenterExtension: DashboardExtension = {
     title: "用户中心",
     description: "核心控制台能力，包括账户、管理与观测功能。",
     version: "1.0.0",
-    author: "Cloud-Neutral",
+    author: "XWork Tech",
     keywords: ["dashboard", "accounts", "management"],
   },
   routes: [

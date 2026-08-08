@@ -45,11 +45,11 @@ export async function generateMetadata({
   }
 
   if (!post) {
-    return { title: "Blog Post | Cloud-Neutral" };
+    return { title: "Blog Post | XWork Tech" };
   }
 
   return {
-    title: `${post.title} | Cloud-Neutral Blog`,
+    title: `${post.title} | XWork Tech Blog`,
     description: post.excerpt,
   };
 }

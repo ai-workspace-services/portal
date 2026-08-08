@@ -22,8 +22,8 @@ export default function DiscussionsPage() {
                         </h1>
                         <p className="text-text-muted max-w-2xl mx-auto">
                             {isChinese
-                                ? "欢迎来到 Cloud-Neutral Toolkit 社区！这里是分享想法、提出问题和与其他开发者交流的地方。"
-                                : "Welcome to the Cloud-Neutral Toolkit community! This is the place to share ideas, ask questions, and connect with other developers."}
+                                ? "欢迎来到 XWork Tech Toolkit 社区！这里是分享想法、提出问题和与其他开发者交流的地方。"
+                                : "Welcome to the XWork Tech Toolkit community! This is the place to share ideas, ask questions, and connect with other developers."}
                         </p>
                     </div>
 

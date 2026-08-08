@@ -34,7 +34,7 @@ export default function TermsPage() {
 
                                 <section>
                                     <h3 className="text-xl font-semibold text-heading mb-3">2. 服务的使用 / Use of Services</h3>
-                                    <p>我们授予您有限的、非排他性的、不可转让的许可，以便根据本条款访问和使用 SVC+ Cloud-Neutral Platform、AI 原生工作区和开发者基础设施。服务仅限用于合法的商业或个人用途。</p>
+                                    <p>我们授予您有限的、非排他性的、不可转让的许可，以便根据本条款访问和使用 SVC+ XWork Tech Platform、AI 原生工作区和开发者基础设施。服务仅限用于合法的商业或个人用途。</p>
                                 </section>
 
                                 <section>
@@ -94,7 +94,7 @@ export default function TermsPage() {
 
                                 <section>
                                     <h3 className="text-xl font-semibold text-heading mb-3">2. Use of Services</h3>
-                                    <p>We grant you a limited, non-exclusive, non-transferable license to access and use the SVC+ Cloud-Neutral Platform, AI-native workspaces, and developer infrastructure in accordance with these Terms. Services are intended for lawful business or personal use only.</p>
+                                    <p>We grant you a limited, non-exclusive, non-transferable license to access and use the SVC+ XWork Tech Platform, AI-native workspaces, and developer infrastructure in accordance with these Terms. Services are intended for lawful business or personal use only.</p>
                                 </section>
 
                                 <section>
