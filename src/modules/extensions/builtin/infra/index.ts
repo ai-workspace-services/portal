@@ -8,7 +8,7 @@ export const infraExtension: DashboardExtension = {
     title: "基础设施管理",
     description: "云基础设施、部署、资源与可观测性管理。",
     version: "1.0.0",
-    author: "Cloud-Neutral",
+    author: "XWork Tech",
     keywords: ["infrastructure", "deployments", "resources", "observability"],
   },
   routes: [

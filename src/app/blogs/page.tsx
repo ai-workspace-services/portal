@@ -9,9 +9,9 @@ import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { getBlogList } from "@lib/docsServiceClient";
 
 export const metadata: Metadata = {
-  title: "Blog | Cloud-Neutral",
+  title: "Blog | XWork Tech",
   description:
-    "Latest updates, releases, and insights from the Cloud-Neutral community.",
+    "Latest updates, releases, and insights from the XWork Tech community.",
 };
 
 export default async function BlogPage() {

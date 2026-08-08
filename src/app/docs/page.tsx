@@ -43,7 +43,7 @@ export default function DocsHome() {
             title={home?.title || "Documentation"}
             subtitle={
               home?.description ||
-              "Unified references for Cloud-Neutral Toolkit services."
+              "Unified references for XWork Tech Toolkit services."
             }
             titleClassName="editorial-display text-[2.8rem] tracking-[-0.07em] sm:text-[3.6rem]"
           />

@@ -130,7 +130,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             subtitle={
               isChinese
                 ? "把产品更新、发布日志和架构观察收进同一套公开页阅读语法。"
-                : "A calmer feed for releases, essays, and field notes across the Cloud-Neutral stack."
+                : "A calmer feed for releases, essays, and field notes across the XWork Tech stack."
             }
             titleClassName={
               isChinese

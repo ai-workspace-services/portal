@@ -712,7 +712,7 @@ export type Translation = {
 export const translations: Record<'en' | 'zh', Translation> = {
   en: {
     hero: {
-      title: 'Cloud-Neutral',
+      title: 'XWork Tech',
       description: 'Unified tools for building and managing your cloud native stack.',
       start: 'Get Started',
       learn: 'Learn More',
@@ -770,7 +770,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     login: {
       title: 'Account Login',
-      description: 'Sign in to personalize your Cloud-Neutral experience.',
+      description: 'Sign in to personalize your XWork Tech experience.',
       usernameLabel: 'Username',
       passwordLabel: 'Password',
       submit: 'Sign in',
@@ -867,7 +867,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     auth: {
       register: {
         badge: 'Create account',
-        title: 'Join Cloud-Neutral',
+        title: 'Join XWork Tech',
 
         subtitle: 'We’ll email a verification code so you can confirm your address before accessing the workspace.',
 
@@ -998,7 +998,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           wechat: 'Continue with WeChat',
         },
         registerPrompt: {
-          text: 'New to Cloud-Neutral?',
+          text: 'New to XWork Tech?',
           link: 'Create an account',
         },
         alerts: {
@@ -1345,7 +1345,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           ],
         },
         stats: [
-          { value: '0+', label: 'Integration of Cloud-Neutral Toolkit applications' },
+          { value: '0+', label: 'Integration of XWork Tech Toolkit applications' },
           { value: '0+', label: 'Recent 24h Visits' },
           { value: '7', label: 'View our examples and guides' },
         ],
@@ -1357,20 +1357,20 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         shortcuts: {
           title: 'More shortcuts',
-          subtitle: 'Save time when integrating Cloud-Neutral Toolkit',
+          subtitle: 'Save time when integrating XWork Tech Toolkit',
           buttons: {
             start: 'Get Started',
             docs: 'Docs',
             guides: 'Guides',
           },
           items: [
-            { title: 'Get started', description: 'An overview of using Cloud-Neutral Toolkit' },
-            { title: 'Creating your application', description: 'Integrate Cloud-Neutral Toolkit into your application' },
-            { title: 'More about Authentication', description: 'Understand all about authenticating with Cloud-Neutral Toolkit' },
-            { title: 'Understanding Authorization', description: 'Scope out all about authorization using Cloud-Neutral Toolkit' },
-            { title: 'Machine-to-Machine', description: 'Integrate Cloud-Neutral Toolkit into your services' },
-            { title: 'Connect via CLI', description: 'Connect Cloud-Neutral Toolkit with your application via CLI' },
-            { title: 'REST & Admin APIs', description: 'Programmatically integrate Cloud-Neutral Toolkit into your application' },
+            { title: 'Get started', description: 'An overview of using XWork Tech Toolkit' },
+            { title: 'Creating your application', description: 'Integrate XWork Tech Toolkit into your application' },
+            { title: 'More about Authentication', description: 'Understand all about authenticating with XWork Tech Toolkit' },
+            { title: 'Understanding Authorization', description: 'Scope out all about authorization using XWork Tech Toolkit' },
+            { title: 'Machine-to-Machine', description: 'Integrate XWork Tech Toolkit into your services' },
+            { title: 'Connect via CLI', description: 'Connect XWork Tech Toolkit with your application via CLI' },
+            { title: 'REST & Admin APIs', description: 'Programmatically integrate XWork Tech Toolkit into your application' },
           ],
         },
         tabsLabel: 'Product Matrix',
@@ -1652,7 +1652,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     login: {
       title: '账户登录',
-      description: '登录以获得个性化的 Cloud-Neutral 体验。',
+      description: '登录以获得个性化的 XWork Tech 体验。',
       usernameLabel: '用户名',
       passwordLabel: '密码',
       submit: '立即登录',
@@ -1748,7 +1748,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     auth: {
       register: {
         badge: '立即注册',
-        title: '加入 Cloud-Neutral',
+        title: '加入 XWork Tech',
         subtitle: '我们会先向你的邮箱发送验证码，确认地址后即可进入工作台。',
 
         highlights: [
@@ -2207,7 +2207,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           ],
         },
         stats: [
-          { value: '0+', label: '集成 Cloud-Neutral Toolkit 的应用程序' },
+          { value: '0+', label: '集成 XWork Tech Toolkit 的应用程序' },
           { value: '0+', label: '最近24小时访量' },
           { value: '7', label: '查看我们的示例和指南' },
         ],
@@ -2219,20 +2219,20 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         shortcuts: {
           title: '更多快捷方式',
-          subtitle: '在集成 Cloud-Neutral Toolkit 时节省时间',
+          subtitle: '在集成 XWork Tech Toolkit 时节省时间',
           buttons: {
             start: '开始使用',
             docs: '文档',
             guides: '指南',
           },
           items: [
-            { title: '开始使用', description: 'Cloud-Neutral Toolkit 使用概览' },
-            { title: '创建您的应用程序', description: '将 Cloud-Neutral Toolkit 集成到您的应用程序中' },
-            { title: '关于身份验证', description: '了解有关使用 Cloud-Neutral Toolkit 进行身份验证的所有信息' },
-            { title: '了解授权', description: '了解有关使用 Cloud-Neutral Toolkit 进行授权的所有信息' },
-            { title: '机器对机器', description: '将 Cloud-Neutral Toolkit 集成到您的服务中' },
-            { title: '通过 CLI 连接', description: '通过 CLI 将 Cloud-Neutral Toolkit 连接到您的应用程序' },
-            { title: 'REST & Admin APIs', description: '通过编程将 Cloud-Neutral Toolkit 集成到您的应用程序中' },
+            { title: '开始使用', description: 'XWork Tech Toolkit 使用概览' },
+            { title: '创建您的应用程序', description: '将 XWork Tech Toolkit 集成到您的应用程序中' },
+            { title: '关于身份验证', description: '了解有关使用 XWork Tech Toolkit 进行身份验证的所有信息' },
+            { title: '了解授权', description: '了解有关使用 XWork Tech Toolkit 进行授权的所有信息' },
+            { title: '机器对机器', description: '将 XWork Tech Toolkit 集成到您的服务中' },
+            { title: '通过 CLI 连接', description: '通过 CLI 将 XWork Tech Toolkit 连接到您的应用程序' },
+            { title: 'REST & Admin APIs', description: '通过编程将 XWork Tech Toolkit 集成到您的应用程序中' },
           ],
         },
         tabsLabel: '产品矩阵',
