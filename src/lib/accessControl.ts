@@ -22,6 +22,43 @@ export type AccessRule = {
 
 const KNOWN_ROLES: UserRole[] = ["user", "operator", "admin"];
 
+// 组名 → 角色。用户加入这些组即继承对应角色的访问权，与 role 字段是"或"
+// 关系（取两者中更高的一个）。
+//
+// 键必须小写：比较前会把组名 trim + toLowerCase，所以 "Admin"、"ADMIN"、
+// " admin " 都能命中。root 与 admin 同级，与 userStore 的 KNOWN_ROLE_MAP
+// 保持一致——那里也把 root 归一化成 admin。
+const GROUP_ROLE_MAP: Record<string, UserRole> = {
+  root: "admin",
+  admin: "admin",
+  administrator: "admin",
+  operator: "operator",
+  ops: "operator",
+};
+
+// 角色强弱顺序，用于在 role 字段与组继承之间取较高者。
+const ROLE_RANK: Record<UserRole, number> = {
+  user: 0,
+  operator: 1,
+  admin: 2,
+};
+
+// 用户的有效角色 = max(role 字段, 组继承出来的最高角色)。
+// 组只能提升权限、不能降低——降权要改 role 字段本身。
+export function resolveEffectiveRole(
+  role: UserRole,
+  groups?: string[],
+): UserRole {
+  let effective = role;
+  for (const group of groups ?? []) {
+    const mapped = GROUP_ROLE_MAP[group.trim().toLowerCase()];
+    if (mapped && ROLE_RANK[mapped] > ROLE_RANK[effective]) {
+      effective = mapped;
+    }
+  }
+  return effective;
+}
+
 function normalizeRoles(roles?: UserRole[]): UserRole[] | undefined {
   if (!roles || roles.length === 0) {
     return undefined;
@@ -79,7 +116,9 @@ export function resolveAccess(
     return { allowed: true, userRole: null };
   }
 
-  const role: UserRole = user.role;
+  // 组继承：加入 root/admin/operator 组的用户拿到对应角色的访问权，
+  // 不需要改他们的 role 字段。
+  const role: UserRole = resolveEffectiveRole(user.role, user.groups);
   const userPermissions = new Set(user?.permissions ?? []);
   const roleAllowed = normalizedRoles
     ? normalizedRoles.includes(role)
