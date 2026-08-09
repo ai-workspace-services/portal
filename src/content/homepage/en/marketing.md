@@ -1,20 +1,23 @@
 ---
 brand:
   name: SVC+
-  tagline: Cloud-Neutral
+  tagline: AI Workspace Platform
 nav:
   dropdowns:
     - label: Products & Services
       columns:
-        - label: Xworkmate
-          description: AI Core Link Domain
+        - label: XWorkmate
+          description: AI Workspace · Make AI a true part of your workflow
           href: /products/xworkmate
-        - label: Open-platform
-          description: Infrastructure Domain
-          href: /products/open-platform
-        - label: Xstream Platform
-          description: Private AI Network
+        - label: XConnect
+          description: AI Connectivity · Stable and secure access for your AI Workspace
           href: /products/xconnect
+        - label: AI Workspace
+          description: Jump into your workspace — chat, tasks, and delivery
+          href: /products/ai-workspace
+        - label: Open Platform
+          description: Open-source, controllable, extensible infrastructure — self-host anytime
+          href: /products/open-platform
     - label: Resources
       columns:
         - label: Documentation
@@ -42,9 +45,9 @@ nav:
   logout: Sign out
 hero:
   title:
-    - Unified Cloud-Native &
-    - Network Operations, Simplified
-  subtitle: Observe, orchestrate, and protect your infrastructure and applications from a single platform — consistent across clouds and regions, open by design, scales on demand.
+    - Build, Connect, and Control
+    - Your AI Workspace
+  subtitle: A cloud-neutral platform built for stability and freedom. Choose between our managed service or deploy your own infrastructure for ultimate control.
   primaryCta:
     label: Enter Console
     href: /panel
@@ -63,7 +66,7 @@ hero:
     - src: /marketing/xworkmate/已生成图像 1.png
       width: 1920
       height: 1080
-    - src: /marketing/xstream/homepage.png
+    - src: /marketing/xconnect/homepage.png
       width: 1920
       height: 1080
 featureGrid:
@@ -81,11 +84,11 @@ featureGrid:
     description: Pay for what you use, scale quickly, and support continuous business growth.
 productGrid:
   title: One Platform, Full Coverage
-  subtitle: Modular building blocks you can combine for any industry or scenario.
+  subtitle: XWorkmate, XConnect, and Open Platform work together to turn AI from a simple tool into a real working system.
   items:
     - icon: refresh
-      name: Xworkmate/Ai-workspace
-      description: AI Core Link Domain covering App LiteLLM, OpenClaw, QMD & model routing.
+      name: XWorkmate
+      description: AI Workspace · Bring your conversations, tasks, and tools into a single, unified workspace. Stop context switching and generate real, deliverable outputs with AI.
       href: /products/xworkmate
       learnMore: Learn more
       slides:
@@ -98,9 +101,36 @@ productGrid:
         - src: /marketing/xworkmate/已生成图像 3.png
           width: 1920
           height: 1080
+    - icon: shield
+      name: XConnect
+      description: AI Connectivity · Experience reliable AI access with intelligent routing and network optimization. We ensure your workspace stays connected with maximum stability.
+      href: /products/xconnect
+      learnMore: Learn more
+      slides:
+        - src: /marketing/xconnect/homepage.png
+          width: 1920
+          height: 1080
+        - src: /marketing/xconnect/panel.png
+          width: 1920
+          height: 1080
+        - src: /marketing/xconnect/pricing.png
+          width: 1920
+          height: 1080
+        - src: /marketing/xconnect/product.png
+          width: 1920
+          height: 1080
+    - icon: cloud
+      name: AI Workspace
+      description: XWorkmate and XConnect together form an open AI workspace — conversations, tasks, and connectivity in one place. Jump in now.
+      href: /products/ai-workspace
+      learnMore: Enter workspace
+      slides:
+        - src: /marketing/xworkmate-suite-hero.png
+          width: 1920
+          height: 1080
     - icon: eye
-      name: Open-platform
-      description: Open-source solutions covering Gitea, Vault, IAM, and global observability stack.
+      name: Open Platform
+      description: Platform & Infrastructure · Built on a cloud-neutral, open-source architecture that scales with you. Start easily with our managed service, or self-host your own infrastructure.
       href: /products/open-platform
       learnMore: Learn more
       slides:
@@ -113,34 +143,19 @@ productGrid:
         - src: /marketing/Open-Platform/secure-delivery-lifecycle.png
           width: 1920
           height: 1080
-    - icon: shield
-      name: Xstream Platform
-      description: Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.
-      href: /products/xconnect
-      learnMore: Learn more
-      slides:
-        - src: /marketing/xstream/homepage.png
-          width: 1920
-          height: 1080
-        - src: /marketing/xstream/panel.png
-          width: 1920
-          height: 1080
-        - src: /marketing/xstream/pricing.png
-          width: 1920
-          height: 1080
-        - src: /marketing/xstream/product.png
-          width: 1920
-          height: 1080
 statsBar:
   - icon: refresh
-    value: Xworkmate/Ai-workspace
-    label: AI Core Linkage Domain, covering smart agents and model routing scheduling like App LiteLLM, OpenClaw, QMD.
+    value: XWorkmate
+    label: AI Workspace · Make AI a true part of your workflow, not just a chat window.
   - icon: shield
-    value: Xstream Platform
-    label: AI Accelerated Agent Private Network Interconnection, covering Caddy, Xray tunnel observation agents, and sync nodes.
+    value: XConnect
+    label: AI Connectivity · Keep your connection to global AI services stable and secure.
+  - icon: globe
+    value: AI Workspace
+    label: Conversations, tasks, and tools in one place — real deliverable outputs.
   - icon: eye
-    value: Open-platform
-    label: Open Source Solutions, covering IAC, DevOps, Security, IAM (Zitadel), and global observability foundations.
+    value: Open Platform
+    label: Platform & Infrastructure · Gain complete, extensible control over your AI foundation.
 benefitList:
   - icon: globe
     title: Open & neutral, connected without limits
