@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { Check, Shield } from "lucide-react";
 
@@ -25,11 +25,193 @@ type PricingCard = {
   billingPlan?: BillingPlan;
 };
 
+// Mirrors accounts' billingPlanPayload (api/billing_plans.go). Only the
+// fields this page actually reads.
+type CatalogPlan = {
+  planId: string;
+  stripePriceId?: string;
+  active: boolean;
+};
+
+// XConnect is the marketing name for the same product this catalog prices —
+// billing_plans is the live source of truth (seeded via the admin API,
+// checked out through the same Stripe wiring xscopehub/xcloudflow already
+// use). The static price/feature copy below is display text; the only
+// values read live are stripePriceId and active, so the buttons never
+// offer to check out a plan that isn't actually purchasable yet.
+const XCONNECT_PRODUCT_SLUG = "xconnect";
+
+function useBillingCatalog(): Map<string, CatalogPlan> {
+  const [catalog, setCatalog] = useState<Map<string, CatalogPlan>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/billing/plans", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : { plans: [] }))
+      .then((data: { plans?: CatalogPlan[] }) => {
+        if (cancelled) return;
+        setCatalog(
+          new Map((data.plans ?? []).map((plan) => [plan.planId, plan])),
+        );
+      })
+      .catch(() => {
+        // Catalog stays empty; cards below fall back to "coming soon".
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return catalog;
+}
+
+function useXconnectCards(
+  isChinese: boolean,
+  catalog: Map<string, CatalogPlan>,
+): PricingCard[] {
+  return useMemo(() => {
+    const purchasable = (planId: string) => {
+      const plan = catalog.get(planId);
+      return Boolean(plan?.active && plan.stripePriceId);
+    };
+    const priceIdOf = (planId: string) => catalog.get(planId)?.stripePriceId ?? "";
+
+    const cards: PricingCard[] = [
+      {
+        key: "xconnect-free",
+        name: isChinese ? "Free 体验版" : "Free",
+        price: isChinese ? "¥0" : "$0",
+        description: isChinese
+          ? "登录即可体验：高速流量每周 1 小时，用完自动降级为标准 VPS 流量，不断线。"
+          : "Sign in and try it: 1 hour of accelerated traffic per week, then a seamless fallback to standard VPS traffic.",
+        features: isChinese
+          ? [
+              "每周 1 小时高速流量，用完降级 VPS",
+              "Demo 资源卡片：每天 1 次、每次 1 小时",
+              "不承诺 SLA，不提供多端会话持久化",
+            ]
+          : [
+              "1 hour of accelerated traffic per week, then VPS fallback",
+              "Demo resource card: 1 run/day, 1 hour/run",
+              "No SLA, no persisted multi-device sessions",
+            ],
+        button: isChinese ? "免费开始" : "Start for free",
+        href: "/login",
+      },
+      {
+        key: "xconnect-payg",
+        productSlug: XCONNECT_PRODUCT_SLUG,
+        name: isChinese ? "按量付费" : "Pay-As-You-Go",
+        price: isChinese ? "¥1/GB" : "¥1/GB",
+        description: isChinese
+          ? "预充值账户余额，高速流量按 ¥1/GB 计费，资源卡片明码实价。欠费立即停机，计算资源保留 7 天、对象存储保留 30 天后释放。"
+          : "Top up your balance and pay ¥1/GB for accelerated traffic, with resource cards billed at list price. Suspended immediately on zero balance; compute is kept for 7 days and object storage for 30.",
+        features: isChinese
+          ? [
+              "高速流量 ¥1/GB，按量扣费",
+              "资源服务卡片明码实价",
+              "欠费立即停机，7 天内可恢复",
+            ]
+          : [
+              "Accelerated traffic at ¥1/GB",
+              "Resource cards billed at list price",
+              "Suspends immediately on zero balance, recoverable within 7 days",
+            ],
+        button: isChinese ? "登录后充值" : "Sign in to top up",
+        href: "/panel/subscription",
+      },
+      {
+        key: "xconnect-pro-monthly",
+        productSlug: XCONNECT_PRODUCT_SLUG,
+        name: isChinese ? "Pro 订阅（月付）" : "Pro (Monthly)",
+        price: isChinese ? "¥20" : "¥20",
+        period: isChinese ? "/月" : "/month",
+        description: isChinese
+          ? "每月赠送 20GB 高速流量，超出部分按 ¥1/GB 自动计费。"
+          : "20GB of accelerated traffic every month; overage auto-bills at ¥1/GB.",
+        features: isChinese
+          ? [
+              "每月 20GB 高速流量",
+              "超出部分 ¥1/GB 自动计费",
+              "资源卡片明码实价 + 20% 托管费",
+              "14 天欠费宽限期",
+            ]
+          : [
+              "20GB accelerated traffic per month",
+              "Overage auto-billed at ¥1/GB",
+              "Resource cards at list price + 20% managed fee",
+              "14-day grace period on payment failure",
+            ],
+        highlight: true,
+        button: purchasable("PRO-MONTHLY")
+          ? isChinese
+            ? "使用 Stripe 订阅"
+            : "Subscribe with Stripe"
+          : isChinese
+            ? "即将上线"
+            : "Coming soon",
+        billingPlan: {
+          name: "Pro Monthly",
+          price: 20,
+          currency: "CNY",
+          mode: "subscription",
+          planId: "PRO-MONTHLY",
+          stripePriceId: priceIdOf("PRO-MONTHLY"),
+        },
+      },
+      {
+        key: "xconnect-pro-yearly",
+        productSlug: XCONNECT_PRODUCT_SLUG,
+        name: isChinese ? "Pro 订阅（年付）" : "Pro (Yearly)",
+        price: isChinese ? "¥200" : "¥200",
+        period: isChinese ? "/年" : "/year",
+        description: isChinese
+          ? "每个自然月赠送 20GB 高速流量（全年共 240GB），比月付省 ¥40。"
+          : "20GB of accelerated traffic every calendar month (240GB/year) — ¥40 cheaper than paying monthly.",
+        features: isChinese
+          ? [
+              "每自然月 20GB 高速流量，全年 240GB",
+              "超出部分 ¥1/GB 自动计费",
+              "资源卡片明码实价 + 20% 托管费",
+              "比月付省 ¥40/年",
+            ]
+          : [
+              "20GB accelerated traffic per calendar month, 240GB/year",
+              "Overage auto-billed at ¥1/GB",
+              "Resource cards at list price + 20% managed fee",
+              "¥40/year cheaper than monthly",
+            ],
+        button: purchasable("PRO-YEARLY")
+          ? isChinese
+            ? "使用 Stripe 订阅"
+            : "Subscribe with Stripe"
+          : isChinese
+            ? "即将上线"
+            : "Coming soon",
+        billingPlan: {
+          name: "Pro Yearly",
+          price: 200,
+          currency: "CNY",
+          mode: "subscription",
+          planId: "PRO-YEARLY",
+          stripePriceId: priceIdOf("PRO-YEARLY"),
+        },
+      },
+    ];
+
+    return cards;
+  }, [isChinese, catalog]);
+}
+
 export default function PricesPage() {
   const { language } = useLanguage();
   const isChinese = language === "zh";
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const billingCards: PricingCard[] = PRODUCT_LIST.flatMap((product) => {
+  const catalog = useBillingCatalog();
+  const xconnectCards = useXconnectCards(isChinese, catalog);
+  const billingCards: PricingCard[] = PRODUCT_LIST.filter(
+    (product) => product.slug !== XCONNECT_PRODUCT_SLUG,
+  ).flatMap((product) => {
     const cards: PricingCard[] = [];
     if (product.billing?.saas) {
       cards.push({
@@ -51,7 +233,6 @@ export default function PricesPage() {
             : "Manage billing in Stripe customer portal",
         ],
         button: isChinese ? "使用 Stripe 订阅" : "Subscribe with Stripe",
-        highlight: product.slug === "xconnect",
         billingPlan: product.billing.saas,
       });
     }
@@ -93,20 +274,24 @@ export default function PricesPage() {
     },
     {
       key: "custom",
-      name: isChinese ? "定制版本" : "Custom Version",
-      price: isChinese ? "定制" : "Custom",
+      name: isChinese ? "专属定制" : "Custom",
+      price: isChinese ? "商务洽谈" : "Talk to us",
       description: isChinese
-        ? "企业客户可联系销售获取定制交付。"
-        : "Contact sales for enterprise deployment and support.",
+        ? "按合同约定配额与 SLA，不走自助支付，由商务与运营团队开通。"
+        : "Contract-defined quota and SLA, provisioned by our team rather than self-serve checkout.",
       features: isChinese
-        ? ["企业支持", "专属交付", "定制 SLA"]
-        : ["Enterprise support", "Tailored delivery", "Custom SLA"],
+        ? ["按合同约定配额", "合同级 SLA", "专属交付与商务支持"]
+        : [
+            "Contract-defined quota",
+            "Contractual SLA",
+            "Dedicated delivery and account support",
+          ],
       button: isChinese ? "联系我们" : "Contact Sales",
       href: "/support",
     },
   ];
 
-  const cards = [...billingCards, ...extraCards];
+  const cards = [...xconnectCards, ...billingCards, ...extraCards];
 
   const handleCheckout = async (card: PricingCard) => {
     if (
@@ -154,12 +339,12 @@ export default function PricesPage() {
         <div className="relative mx-auto max-w-7xl px-6">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-4">
             <h1 className="text-4xl font-bold tracking-tight text-heading sm:text-6xl">
-              {isChinese ? "Stripe 统一定价" : "Stripe Unified Pricing"}
+              {isChinese ? "定价方案" : "Pricing"}
             </h1>
             <p className="text-lg text-text-muted">
               {isChinese
-                ? "所有在线购买统一通过 Stripe 完成，历史敏感支付方式入口已移除。"
-                : "All online purchases now run through Stripe. Sensitive payment options have been removed."}
+                ? "从免费体验到按量付费、订阅与专属定制，随用量增长按需升级。所有在线购买统一通过 Stripe 完成。"
+                : "From a free tier to pay-as-you-go, subscriptions, and custom contracts — upgrade as your usage grows. All online purchases run through Stripe."}
             </p>
           </div>
 
@@ -172,7 +357,7 @@ export default function PricesPage() {
             </p>
           ) : null}
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {cards.map((card) => (
               <div
                 key={card.key}
@@ -230,7 +415,11 @@ export default function PricesPage() {
                   <button
                     type="button"
                     onClick={() => void handleCheckout(card)}
-                    className={`w-full rounded-lg py-2 text-xs font-semibold transition-colors ${
+                    // A plan with no Stripe price id is not purchasable yet
+                    // (the catalog row exists but hasn't been wired to a
+                    // Stripe Price). Disable rather than let the click fail.
+                    disabled={!card.billingPlan.stripePriceId}
+                    className={`w-full rounded-lg py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                       card.highlight
                         ? "bg-primary text-white hover:bg-primary-hover"
                         : "border border-surface-border bg-surface-muted text-text hover:bg-surface-hover"
