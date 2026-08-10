@@ -15,7 +15,10 @@ export function startTracing() {
   if (started || process.env.OTEL_SDK_DISABLED === 'true') return
 
   const endpoint = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT?.trim()
-  if (!endpoint) return
+  if (!endpoint) {
+    console.warn('[otel] Console tracing disabled: no OTLP traces endpoint configured')
+    return
+  }
 
   started = true
   const sdk = new NodeSDK({
@@ -29,5 +32,9 @@ export function startTracing() {
     ],
   })
 
+  console.info('[otel] Console tracing SDK starting', {
+    serviceName: process.env.OTEL_SERVICE_NAME?.trim() || 'web-saas-console',
+    sampler: process.env.OTEL_TRACES_SAMPLER || 'default',
+  })
   sdk.start()
 }
