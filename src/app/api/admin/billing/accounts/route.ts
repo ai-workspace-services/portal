@@ -31,7 +31,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const upstream = new URL(`${ACCOUNT_API_BASE}/admin/billing/accounts`);
+  // The account service exposes the protected account directory at /users.
+  // Keep the dashboard contract under /api/admin/billing/accounts while the
+  // billing aggregate endpoint remains account-scoped.
+  const upstream = new URL(`${ACCOUNT_API_BASE}/users`);
   request.nextUrl.searchParams.forEach((value, key) => {
     upstream.searchParams.set(key, value);
   });

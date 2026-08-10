@@ -91,6 +91,33 @@ async function proxyBillingAccountRequest(
   });
   const body = method === "POST" ? await request.text() : undefined;
   if (body !== undefined) {
+    let parsedBody: unknown;
+    try {
+      parsedBody = JSON.parse(body);
+    } catch {
+      return NextResponse.json<ErrorPayload>(
+        { error: "invalid_request" },
+        { status: 400 },
+      );
+    }
+
+    const reason =
+      parsedBody && typeof parsedBody === "object" && "reason" in parsedBody
+        ? (parsedBody as { reason?: unknown }).reason
+        : undefined;
+    if (typeof reason !== "string" || reason.trim().length === 0) {
+      return NextResponse.json<ErrorPayload>(
+        { error: "reason_required" },
+        { status: 400 },
+      );
+    }
+    if (reason.trim().length > 500) {
+      return NextResponse.json<ErrorPayload>(
+        { error: "reason_too_long" },
+        { status: 400 },
+      );
+    }
+
     headers.set(
       "Content-Type",
       request.headers.get("content-type") ?? "application/json",
