@@ -132,6 +132,10 @@ RUN apt-get update \
 COPY --from=builder /app/dashboard/.next/standalone ./
 COPY --from=builder /app/dashboard/.next/static ./static
 COPY --from=builder /app/dashboard/public ./public
+# Next's standalone trace excludes the compiled instrumentation entrypoint.
+# Copy it explicitly so the runtime server executes instrumentation.ts before
+# accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
+COPY --from=builder /app/dashboard/.next/server/instrumentation.js ./.next/server/instrumentation.js
 
 # ---------------------------
 # 额外瘦身（可减少 15–40 MB）
