@@ -39,6 +39,8 @@ import type { LucideIcon } from "lucide-react";
 
 import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { useUserStore } from "@lib/userStore";
+import OpsAuditConsole from "./OpsAuditConsole";
+import OpsPlanCatalog from "./OpsPlanCatalog";
 
 type ManagedUser = {
   id: string;
@@ -389,6 +391,12 @@ export default function OpsAccountTriage() {
   }
 
   if (!isAccountsRoute) {
+    if (pathname === "/panel/ops/billing/plans") {
+      return <OpsPlanCatalog />;
+    }
+    if (pathname === "/panel/ops/audit") {
+      return <OpsAuditConsole />;
+    }
     if (pathname === "/panel/ops/billing/ledger") {
       return <BillingOperationsOverview />;
     }
