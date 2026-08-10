@@ -284,6 +284,8 @@ type AuthLoginTranslation = {
     emailPlaceholder: string
     password: string
     passwordPlaceholder: string
+    showPassword: string
+    hidePassword: string
     remember: string
     submit: string
     submitting?: string
@@ -451,6 +453,8 @@ type UserCenterMfaTranslation = {
   }
   modal: {
     title: string
+    setupTitle: string
+    setupDescription: string
     close: string
   }
   disable: {
@@ -981,6 +985,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
           emailPlaceholder: 'name@example.com',
           password: 'Password',
           passwordPlaceholder: 'Enter your password',
+          showPassword: 'Show password',
+          hidePassword: 'Hide password',
           remember: 'Remember this device',
           submit: 'Sign in',
           mfa: {
@@ -1188,6 +1194,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         modal: {
           title: 'Manage multi-factor authentication',
+          setupTitle: 'Complete multi-factor authentication',
+          setupDescription: 'This security step protects operations, account actions, and billing changes.',
           close: 'Close window',
         },
         disable: {
@@ -1847,6 +1855,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
           emailPlaceholder: 'name@example.com',
           password: '密码',
           passwordPlaceholder: '请输入密码',
+          showPassword: '显示密码',
+          hidePassword: '隐藏密码',
           remember: '记住这台设备',
           submit: '登录',
           mfa: {
@@ -2050,6 +2060,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         modal: {
           title: '管理多因素认证',
+          setupTitle: '完成多因素认证',
+          setupDescription: '完成后才能使用运营管理、账号处置和计费变更等核心功能。',
           close: '关闭窗口',
         },
         disable: {
