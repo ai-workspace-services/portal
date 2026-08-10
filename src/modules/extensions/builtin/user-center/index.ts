@@ -146,7 +146,11 @@ export const userCenterExtension: DashboardExtension = {
       },
       match: "startsWith",
       redirect: { unauthenticated: "/login", forbidden: "/panel" },
-      sidebar: { section: "admin", order: 99, hidden: true },
+      // 对 admin / operator（含由组继承而来的）显示在侧边栏；普通用户看不到，
+      // 也进不去。PanelSidebarContent 对每个带 roles 的路由都会跑一次
+      // resolveAccess，不通过就整条隐藏，所以取消 hidden 不会把入口暴露给
+      // 无权限的人——hidden 原本只是"连有权限的人也不显示"。
+      sidebar: { section: "admin", order: 99 },
     },
   ],
 };
