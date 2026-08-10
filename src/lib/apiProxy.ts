@@ -12,6 +12,11 @@ const DEFAULT_FORWARD_HEADERS = [
   'x-forwarded-for',
   'x-request-id',
   'x-trace-id',
+  // Preserve the caller's W3C context across the Console BFF boundary. The
+  // HTTP instrumentation will create a child span for the outbound request.
+  'traceparent',
+  'tracestate',
+  'baggage',
 ] as const
 
 const RESPONSE_HEADERS_TO_STRIP = new Set([
