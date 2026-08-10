@@ -38,6 +38,11 @@ const MANAGEMENT_RULE = {
   ],
 };
 
+const OPS_RULE = {
+  requireLogin: true,
+  roles: ["admin", "operator"] as UserRole[],
+};
+
 describe("accessControl", () => {
   it("blocks unauthenticated access when login is required", () => {
     expect(
@@ -129,6 +134,30 @@ describe("accessControl", () => {
           MANAGEMENT_RULE,
         ),
       ).toMatchObject({ allowed: false, reason: "forbidden" });
+    });
+  });
+
+  describe("/panel/ops gate", () => {
+    it("admits root, admin, and operator roles", () => {
+      expect(resolveAccess(makeUser({ role: "admin" }), OPS_RULE)).toMatchObject({
+        allowed: true,
+      });
+      expect(resolveAccess(makeUser({ role: "operator" }), OPS_RULE)).toMatchObject({
+        allowed: true,
+      });
+    });
+
+    it("admits a root group inherited by the session user", () => {
+      expect(
+        resolveAccess(makeUser({ groups: ["root"] }), OPS_RULE),
+      ).toMatchObject({ allowed: true });
+    });
+
+    it("rejects ordinary users", () => {
+      expect(resolveAccess(makeUser(), OPS_RULE)).toMatchObject({
+        allowed: false,
+        reason: "forbidden",
+      });
     });
   });
 });

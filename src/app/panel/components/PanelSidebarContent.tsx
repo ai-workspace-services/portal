@@ -105,6 +105,137 @@ export function PanelSidebarContent({
       .filter((value) => Boolean(value)) as NavSection[];
   }, [requiresSetup, user]);
 
+  const primarySections = navSections.filter(
+    (section) => section.id !== "infra",
+  );
+  const resourceSections = navSections.filter(
+    (section) => section.id === "infra",
+  );
+
+  const renderSection = (section: NavSection) => {
+    const sectionDisabled = section.items.every((item) => item.disabled);
+
+    return (
+      <div key={section.id} className="space-y-3">
+        <p
+          className={`text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${
+            sectionDisabled
+              ? "text-[var(--color-text-subtle)] opacity-60"
+              : "text-[var(--color-text-subtle)]"
+          } ${collapsed ? "text-center scale-0 h-0 opacity-0 invisible" : "text-left"}`}
+        >
+          {translations[language].userCenter.sections[
+            section.id as keyof typeof translations.en.userCenter.sections
+          ] || section.title}
+        </p>
+        <div className={`space-y-2 ${sectionDisabled ? "opacity-60" : ""}`}>
+          {section.items.map((item) => {
+            const active = isActive(pathname, item.href);
+            const isDashboard = item.href === "/panel";
+            const { Icon } = item;
+
+            const baseClasses = [
+              "group flex items-center gap-3 rounded-[14px] border px-3 py-3 text-sm transition-all duration-300",
+            ];
+            if (item.disabled) {
+              baseClasses.push(
+                "cursor-not-allowed border-dashed border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)] opacity-60",
+              );
+            } else {
+              baseClasses.push(
+                "border-transparent text-[var(--color-text-subtle)] hover:border-[color:var(--color-primary-border)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)]",
+              );
+            }
+
+            if (active) {
+              baseClasses.push(
+                "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]",
+              );
+            } else if (isDashboard) {
+              // Dashboard visual priority when not active
+              baseClasses.push(
+                "bg-[var(--color-surface-muted)]/45 shadow-[var(--shadow-soft)]",
+              );
+            }
+
+            const iconClasses = [
+              "flex h-8 w-8 items-center justify-center rounded-xl transition-colors",
+            ];
+            if (active) {
+              iconClasses.push(
+                "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]",
+              );
+            } else if (item.disabled) {
+              iconClasses.push(
+                "bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] opacity-60",
+              );
+            } else if (isDashboard) {
+              iconClasses.push(
+                "bg-[var(--color-primary-muted)] text-[var(--color-primary)]",
+              );
+            } else {
+              iconClasses.push(
+                "bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] group-hover:bg-[var(--color-primary-muted)] group-hover:text-[var(--color-primary)]",
+              );
+            }
+
+            const descriptionClasses = [
+              "text-xs transition-colors",
+              item.disabled
+                ? "text-[var(--color-text-subtle)] opacity-60"
+                : "text-[var(--color-text-subtle)] group-hover:text-[var(--color-primary)]",
+            ];
+
+            const content = (
+              <div
+                className={baseClasses.join(" ")}
+                title={collapsed ? item.label : undefined}
+              >
+                <span className={`${iconClasses.join(" ")} shrink-0`}>
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span
+                  className={`flex flex-1 flex-col truncate transition-all duration-300 ${collapsed ? "w-0 opacity-0 invisible overflow-hidden" : "w-auto opacity-100 visible"}`}
+                >
+                  <span className="font-semibold text-left">
+                    {(item.id &&
+                      translations[language].userCenter.items[
+                        item.id as keyof typeof translations.en.userCenter.items
+                      ]) ||
+                      item.label}
+                  </span>
+                  <span
+                    className={`${descriptionClasses.join(" ")} text-left`}
+                  >
+                    {item.description}
+                  </span>
+                </span>
+              </div>
+            );
+
+            if (item.disabled) {
+              return (
+                <div
+                  key={item.href}
+                  aria-disabled={true}
+                  className="select-none"
+                >
+                  {content}
+                </div>
+              );
+            }
+
+            return (
+              <Link key={item.href} href={item.href} onClick={onNavigate}>
+                {content}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <SidebarHeader
@@ -149,136 +280,17 @@ export function PanelSidebarContent({
       </SidebarHeader>
 
       <SidebarContent className="flex flex-col gap-6">
-        {navSections.map((section) => {
-          const sectionDisabled = section.items.every((item) => item.disabled);
-
-          return (
-            <div key={section.id} className="space-y-3">
-              <p
-                className={`text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${
-                  sectionDisabled
-                    ? "text-[var(--color-text-subtle)] opacity-60"
-                    : "text-[var(--color-text-subtle)]"
-                } ${collapsed ? "text-center scale-0 h-0 opacity-0 invisible" : "text-left"}`}
-              >
-                {translations[language].userCenter.sections[
-                  section.id as keyof typeof translations.en.userCenter.sections
-                ] || section.title}
-              </p>
-              <div
-                className={`space-y-2 ${sectionDisabled ? "opacity-60" : ""}`}
-              >
-                {section.items.map((item) => {
-                  const active = isActive(pathname, item.href);
-                  const isDashboard = item.href === "/panel";
-                  const { Icon } = item;
-
-                  const baseClasses = [
-                    "group flex items-center gap-3 rounded-[14px] border px-3 py-3 text-sm transition-all duration-300",
-                  ];
-                  if (item.disabled) {
-                    baseClasses.push(
-                      "cursor-not-allowed border-dashed border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)] opacity-60",
-                    );
-                  } else {
-                    baseClasses.push(
-                      "border-transparent text-[var(--color-text-subtle)] hover:border-[color:var(--color-primary-border)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)]",
-                    );
-                  }
-
-                  if (active) {
-                    baseClasses.push(
-                      "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]",
-                    );
-                  } else if (isDashboard) {
-                    // Dashboard visual priority when not active
-                    baseClasses.push(
-                      "bg-[var(--color-surface-muted)]/45 shadow-[var(--shadow-soft)]",
-                    );
-                  }
-
-                  const iconClasses = [
-                    "flex h-8 w-8 items-center justify-center rounded-xl transition-colors",
-                  ];
-                  if (active) {
-                    iconClasses.push(
-                      "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]",
-                    );
-                  } else if (item.disabled) {
-                    iconClasses.push(
-                      "bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] opacity-60",
-                    );
-                  } else if (isDashboard) {
-                    iconClasses.push(
-                      "bg-[var(--color-primary-muted)] text-[var(--color-primary)]",
-                    );
-                  } else {
-                    iconClasses.push(
-                      "bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] group-hover:bg-[var(--color-primary-muted)] group-hover:text-[var(--color-primary)]",
-                    );
-                  }
-
-                  const descriptionClasses = [
-                    "text-xs transition-colors",
-                    item.disabled
-                      ? "text-[var(--color-text-subtle)] opacity-60"
-                      : "text-[var(--color-text-subtle)] group-hover:text-[var(--color-primary)]",
-                  ];
-
-                  const content = (
-                    <div
-                      className={baseClasses.join(" ")}
-                      title={collapsed ? item.label : undefined}
-                    >
-                      <span className={`${iconClasses.join(" ")} shrink-0`}>
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span
-                        className={`flex flex-1 flex-col truncate transition-all duration-300 ${collapsed ? "w-0 opacity-0 invisible overflow-hidden" : "w-auto opacity-100 visible"}`}
-                      >
-                        <span className="font-semibold text-left">
-                          {(item.id &&
-                            translations[language].userCenter.items[
-                              item.id as keyof typeof translations.en.userCenter.items
-                            ]) ||
-                            item.label}
-                        </span>
-                        <span
-                          className={`${descriptionClasses.join(" ")} text-left`}
-                        >
-                          {item.description}
-                        </span>
-                      </span>
-                    </div>
-                  );
-
-                  if (item.disabled) {
-                    return (
-                      <div
-                        key={item.href}
-                        aria-disabled={true}
-                        className="select-none"
-                      >
-                        {content}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <Link key={item.href} href={item.href} onClick={onNavigate}>
-                      {content}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+        {primarySections.map(renderSection)}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-[color:var(--color-surface-border)] p-4">
+      <SidebarFooter className="border-t border-[color:var(--color-surface-border)] px-1 pb-3 pt-3">
+        {resourceSections.length > 0 ? (
+          <div className="mb-4 border-b border-[color:var(--color-surface-border)] pb-4">
+            {resourceSections.map(renderSection)}
+          </div>
+        ) : null}
         <button
-          className={`tactile-button tactile-button-primary group w-full gap-2 px-4 text-sm font-bold ${collapsed ? "px-0" : ""}`}
+          className={`tactile-button tactile-button-primary group w-full gap-2 px-3 text-sm font-bold ${collapsed ? "px-0" : ""}`}
           title={
             collapsed
               ? language === "zh"
