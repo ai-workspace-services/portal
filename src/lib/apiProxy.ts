@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+import { traceLogFields } from '@/server/observability'
+
 const DEFAULT_FORWARD_HEADERS = [
   'accept',
   'accept-language',
@@ -114,7 +116,7 @@ export async function proxyRequestToUpstream(request: NextRequest, options: Prox
       redirect: 'manual',
     })
   } catch (error) {
-    console.error('Proxy request failed', error)
+    console.error('Proxy request failed', { ...traceLogFields(), error })
     return NextResponse.json({ error: 'upstream_unreachable' }, { status: 502 })
   }
 
