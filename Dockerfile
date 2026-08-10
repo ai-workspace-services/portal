@@ -132,6 +132,10 @@ RUN apt-get update \
 COPY --from=builder /app/dashboard/.next/standalone ./
 COPY --from=builder /app/dashboard/.next/static ./static
 COPY --from=builder /app/dashboard/public ./public
+# Turbopack's compiled instrumentation entrypoint loads server chunks that are
+# not included by the standalone file trace. Keep the matching chunk set with
+# it or the runtime fails before serving any request.
+COPY --from=builder /app/dashboard/.next/server/chunks ./.next/server/chunks
 # Next's standalone trace excludes the compiled instrumentation entrypoint.
 # Copy it explicitly so the runtime server executes instrumentation.ts before
 # accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
