@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   AUTH_CHECKBOX_CLASS,
@@ -27,6 +28,7 @@ export function LoginForm() {
   const userEmail = user?.email ?? "";
   const [identifier, setIdentifier] = useState(() => userEmail);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [totpCode, setTotpCode] = useState("");
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -333,16 +335,40 @@ export function LoginForm() {
                 {authCopy.forgotPassword}
               </Link>
             </div>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder={authCopy.form.passwordPlaceholder}
-              className={AUTH_INPUT_CLASS}
-            />
+            <div className="relative">
+              <input
+                id="login-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={authCopy.form.passwordPlaceholder}
+                className={`${AUTH_INPUT_CLASS} pr-12`}
+              />
+              <button
+                type="button"
+                aria-label={
+                  showPassword
+                    ? authCopy.form.hidePassword
+                    : authCopy.form.showPassword
+                }
+                title={
+                  showPassword
+                    ? authCopy.form.hidePassword
+                    : authCopy.form.showPassword
+                }
+                onClick={() => setShowPassword((visible) => !visible)}
+                onMouseDown={(event) => event.preventDefault()}
+                className="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center text-slate-400 transition hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-inset"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
           {requiresTotpInput ? (
             <div className="space-y-2">

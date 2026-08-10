@@ -122,6 +122,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
+  const provisionInFlightRef = useRef(false)
 
   const setupRequested = searchParams.get('setupMfa') === '1'
   const hasPendingMfa = Boolean(status?.totpPending && !status?.totpEnabled)
@@ -225,6 +226,11 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
   }, [uri])
 
   const handleProvision = useCallback(async () => {
+    if (provisionInFlightRef.current) {
+      return
+    }
+
+    provisionInFlightRef.current = true
     setIsProvisioning(true)
     setError(null)
     try {
@@ -284,6 +290,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       console.warn('Provision TOTP failed', err)
       setError(resolveErrorMessage('account_service_unreachable'))
     } finally {
+      provisionInFlightRef.current = false
       setIsProvisioning(false)
     }
   }, [fetchStatus, resolveErrorMessage, user?.email, user?.name, user?.username])
@@ -347,6 +354,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
   )
 
   const displayStatus = useMemo(() => status ?? user?.mfa ?? null, [status, user?.mfa])
+  const isMandatorySetup = Boolean(requiresSetup && !displayStatus?.totpEnabled)
 
   const lockoutLabel = useMemo(() => {
     if (!displayStatus?.totpLockedUntil || displayStatus?.totpEnabled) {
@@ -523,12 +531,27 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
               ×
             </button>
             <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
-              <h3 className="text-xl font-semibold text-[var(--color-text)]">{copy.modal.title}</h3>
+              <h3 className="text-xl font-semibold text-[var(--color-text)]">
+                {isMandatorySetup ? copy.modal.setupTitle : copy.modal.title}
+              </h3>
               <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-                {displayStatus?.totpEnabled ? copy.enabledHint : copy.subtitle}
+                {isMandatorySetup
+                  ? copy.modal.setupDescription
+                  : displayStatus?.totpEnabled
+                    ? copy.enabledHint
+                    : copy.subtitle}
               </p>
 
               <div className="mt-6 space-y-6">
+                {isMandatorySetup ? (
+                  <div
+                    role="alert"
+                    className="rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-4 text-sm text-[var(--color-warning-foreground)]"
+                  >
+                    <p className="font-semibold">{copy.modal.setupTitle}</p>
+                    <p className="mt-1">{copy.lockedMessage}</p>
+                  </div>
+                ) : null}
                 {displayStatus?.totpEnabled ? (
                   <div className="space-y-5">
                     <div className="rounded-lg border border-[color:var(--color-success-muted)] bg-[var(--color-success-muted)] p-4 text-sm text-[var(--color-success-foreground)]">
