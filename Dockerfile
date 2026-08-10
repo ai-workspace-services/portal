@@ -136,6 +136,19 @@ COPY --from=builder /app/dashboard/public ./public
 # not included by the standalone file trace. Keep the matching chunk set with
 # it or the runtime fails before serving any request.
 COPY --from=builder /app/dashboard/.next/server/chunks ./.next/server/chunks
+# Turbopack externalizes Node-only OpenTelemetry hooks behind hashed aliases
+# under .next/node_modules. Preserve those aliases and their small dependency
+# closure; the standalone file trace does not include instrumentation.ts.
+COPY --from=builder /app/dashboard/.next/node_modules ./.next/node_modules
+COPY --from=builder /app/dashboard/node_modules/require-in-the-middle ./node_modules/require-in-the-middle
+COPY --from=builder /app/dashboard/node_modules/import-in-the-middle ./node_modules/import-in-the-middle
+COPY --from=builder /app/dashboard/node_modules/debug ./node_modules/debug
+COPY --from=builder /app/dashboard/node_modules/module-details-from-path ./node_modules/module-details-from-path
+COPY --from=builder /app/dashboard/node_modules/cjs-module-lexer ./node_modules/cjs-module-lexer
+COPY --from=builder /app/dashboard/node_modules/es-module-lexer ./node_modules/es-module-lexer
+COPY --from=builder /app/dashboard/node_modules/ms ./node_modules/ms
+COPY --from=builder /app/dashboard/node_modules/supports-color ./node_modules/supports-color
+COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
 # Next's standalone trace excludes the compiled instrumentation entrypoint.
 # Copy it explicitly so the runtime server executes instrumentation.ts before
 # accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
