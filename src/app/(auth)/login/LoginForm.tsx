@@ -172,7 +172,7 @@ export function LoginForm() {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          email: trimmedIdentifier,
+          identifier: trimmedIdentifier,
           password,
           totp: sanitizedTotp.length === 6 ? sanitizedTotp : undefined,
           remember,
