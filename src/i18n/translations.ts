@@ -981,8 +981,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         form: {
           title: 'Sign in to your account',
           subtitle: 'Use the email, password, and authenticator code you registered with.',
-          email: 'User email',
-          emailPlaceholder: 'name@example.com',
+          email: 'Username or email',
+          emailPlaceholder: 'name@example.com or admin',
           password: 'Password',
           passwordPlaceholder: 'Enter your password',
           showPassword: 'Show password',
@@ -1851,8 +1851,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         form: {
           title: '登录账号',
           subtitle: '使用注册时的邮箱、密码和动态验证码即可访问。',
-          email: '用户邮箱',
-          emailPlaceholder: 'name@example.com',
+          email: '用户名或邮箱',
+          emailPlaceholder: '邮箱或用户名',
           password: '密码',
           passwordPlaceholder: '请输入密码',
           showPassword: '显示密码',
