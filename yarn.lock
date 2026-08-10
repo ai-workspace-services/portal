@@ -2421,7 +2421,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-http@npm:0.221.0, @opentelemetry/exporter-trace-otlp-http@npm:^0.221.0":
+"@opentelemetry/exporter-trace-otlp-http@npm:0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/exporter-trace-otlp-http@npm:0.221.0"
   dependencies:
@@ -2434,7 +2434,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-proto@npm:0.221.0":
+"@opentelemetry/exporter-trace-otlp-proto@npm:0.221.0, @opentelemetry/exporter-trace-otlp-proto@npm:^0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/exporter-trace-otlp-proto@npm:0.221.0"
   dependencies:
@@ -7605,7 +7605,7 @@ __metadata:
     "@giscus/react": "npm:^3.1.0"
     "@opentelemetry/api": "npm:^1.9.1"
     "@opentelemetry/core": "npm:^2.10.0"
-    "@opentelemetry/exporter-trace-otlp-http": "npm:^0.221.0"
+    "@opentelemetry/exporter-trace-otlp-proto": "npm:^0.221.0"
     "@opentelemetry/instrumentation-http": "npm:^0.221.0"
     "@opentelemetry/instrumentation-undici": "npm:^0.31.0"
     "@opentelemetry/resources": "npm:^2.10.0"
