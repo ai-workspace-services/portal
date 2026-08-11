@@ -63,39 +63,6 @@ hero:
     imageBasePath: /marketing/home-hero
     imageUrl: /marketing/home-hero/ai-workspace-suite-en.png
     alt: XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts
-    connectionNodes:
-      - key: models
-        label: AI Models
-        items:
-          - LLM providers
-          - Local models
-          - Cloud models
-      - key: agents
-        label: AI Agents
-        items:
-          - Code Agent
-          - AI Agent
-          - OpenClaw Agent
-      - key: tools
-        label: Connectors
-        items:
-          - MCP Servers
-          - Connectors
-          - External services
-      - key: workspace
-        label: Workspace Context
-        items:
-          - Context
-          - Memory
-          - Collaboration
-          - Runtime
-      - key: artifacts
-        label: Delivered Results
-        items:
-          - Code
-          - Documents
-          - Reports
-          - Generated results
     productPills:
       - XWorkmate
       - XConnect

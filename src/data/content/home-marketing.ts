@@ -99,55 +99,6 @@ export const homeMarketingContentData = {
         "imageBasePath": "/marketing/home-hero",
         "imageUrl": "/marketing/home-hero/ai-workspace-suite-zh.png",
         "alt": "XWorkmate AI 工作空间，展示模型、连接、工作空间与交付产物",
-        "connectionNodes": [
-          {
-            "key": "models",
-            "label": "AI 模型",
-            "items": [
-              "LLM Providers",
-              "本地模型",
-              "云端模型"
-            ]
-          },
-          {
-            "key": "agents",
-            "label": "AI Agents",
-            "items": [
-              "Code Agent",
-              "AI Agent",
-              "OpenClaw Agent"
-            ]
-          },
-          {
-            "key": "tools",
-            "label": "Connectors",
-            "items": [
-              "MCP Servers",
-              "Connectors",
-              "外部服务"
-            ]
-          },
-          {
-            "key": "workspace",
-            "label": "Workspace Context",
-            "items": [
-              "Context",
-              "Memory",
-              "Collaboration",
-              "Runtime"
-            ]
-          },
-          {
-            "key": "artifacts",
-            "label": "Delivered Results",
-            "items": [
-              "Code",
-              "Documents",
-              "Reports",
-              "Generated results"
-            ]
-          }
-        ],
         "productPills": [
           "XWorkmate",
           "XConnect",
@@ -626,55 +577,6 @@ export const homeMarketingContentData = {
         "imageBasePath": "/marketing/home-hero",
         "imageUrl": "/marketing/home-hero/ai-workspace-suite-en.png",
         "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts",
-        "connectionNodes": [
-          {
-            "key": "models",
-            "label": "AI Models",
-            "items": [
-              "LLM providers",
-              "Local models",
-              "Cloud models"
-            ]
-          },
-          {
-            "key": "agents",
-            "label": "AI Agents",
-            "items": [
-              "Code Agent",
-              "AI Agent",
-              "OpenClaw Agent"
-            ]
-          },
-          {
-            "key": "tools",
-            "label": "Connectors",
-            "items": [
-              "MCP Servers",
-              "Connectors",
-              "External services"
-            ]
-          },
-          {
-            "key": "workspace",
-            "label": "Workspace Context",
-            "items": [
-              "Context",
-              "Memory",
-              "Collaboration",
-              "Runtime"
-            ]
-          },
-          {
-            "key": "artifacts",
-            "label": "Delivered Results",
-            "items": [
-              "Code",
-              "Documents",
-              "Reports",
-              "Generated results"
-            ]
-          }
-        ],
         "productPills": [
           "XWorkmate",
           "XConnect",

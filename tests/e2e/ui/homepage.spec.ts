@@ -37,6 +37,12 @@ test.describe("Marketing homepage experience", () => {
     await expect(page.getByText("产品事实与证明")).toBeVisible();
     await expect(page.getByRole("link", { name: "XConnect" })).toBeVisible();
     await expect(page.getByText("开放的 AI 工作空间")).toBeVisible();
+    const heroFigure = page.locator("figure").first();
+    await expect(heroFigure).not.toContainText("AI 模型");
+    await expect(heroFigure).not.toContainText("AI Agents");
+    await expect(heroFigure).not.toContainText("Connectors");
+    await expect(heroFigure).not.toContainText("Workspace Context");
+    await expect(heroFigure).not.toContainText("Delivered Results");
     await expect(page.locator("figure img").first()).toHaveAttribute(
       "src",
       /ai-workspace-suite-zh\.png$/,
@@ -74,6 +80,11 @@ test.describe("Marketing homepage experience", () => {
     await expect(page.getByText("Product facts and proof")).toBeVisible();
     await expect(page.getByRole("link", { name: "XConnect" })).toBeVisible();
     await expect(page.getByText("Open AI Workspace")).toBeVisible();
+    await expect(heroFigure).not.toContainText("AI Models");
+    await expect(heroFigure).not.toContainText("AI Agents");
+    await expect(heroFigure).not.toContainText("Connectors");
+    await expect(heroFigure).not.toContainText("Workspace Context");
+    await expect(heroFigure).not.toContainText("Delivered Results");
     await expect(page.locator("figure img").first()).toHaveAttribute(
       "src",
       /ai-workspace-suite-en\.png$/,
