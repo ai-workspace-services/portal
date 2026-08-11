@@ -39,7 +39,7 @@ export type HomeMarketingContent = {
       subtitle: string;
       imageBasePath: string;
     };
-    slides?: { src: string; width?: number; height?: number }[];
+    slides?: { src: string; width?: number; height?: number; alt?: string }[];
   };
   featureGrid: {
     icon: "layers" | "globe" | "shield" | "zap";
@@ -55,7 +55,7 @@ export type HomeMarketingContent = {
       description: string;
       href: string;
       learnMore: string;
-      slides?: { src: string; width?: number; height?: number }[];
+      slides?: { src: string; width?: number; height?: number; alt?: string }[];
     }[];
   };
   statsBar: {
@@ -92,4 +92,5 @@ export type HomeMarketingContent = {
 
 import { homeMarketingContentData } from "@/data/content/home-marketing";
 
-export const homeMarketingContent: Record<Language, HomeMarketingContent> = homeMarketingContentData as any;
+export const homeMarketingContent: Record<Language, HomeMarketingContent> =
+  homeMarketingContentData as any;
