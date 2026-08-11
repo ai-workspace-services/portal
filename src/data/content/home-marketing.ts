@@ -98,19 +98,22 @@ export const homeMarketingContentData = {
       },
       "slides": [
         {
-          "src": "/marketing/home-hero/web-workspace-flow.png",
+          "src": "/marketing/home-editions/web-zh.png",
           "width": 1536,
-          "height": 1024
+          "height": 960,
+          "alt": "Web 版 AI 工作空间控制中心"
         },
         {
-          "src": "/marketing/home-hero/desktop-ai-delivery.png",
+          "src": "/marketing/home-editions/desktop-zh.png",
           "width": 1536,
-          "height": 1024
+          "height": 960,
+          "alt": "桌面版 AI 工作空间"
         },
         {
-          "src": "/marketing/home-hero/mobile-session-continuity.png",
+          "src": "/marketing/home-editions/mobile-zh.png",
           "width": 1536,
-          "height": 1024
+          "height": 960,
+          "alt": "移动版 AI 工作空间"
         }
       ]
     },
@@ -407,19 +410,22 @@ export const homeMarketingContentData = {
       },
       "slides": [
         {
-          "src": "/marketing/home-hero/web-workspace-flow.png",
+          "src": "/marketing/home-editions/web-en.png",
           "width": 1536,
-          "height": 1024
+          "height": 960,
+          "alt": "Web Edition AI Workspace Control Center"
         },
         {
-          "src": "/marketing/home-hero/desktop-ai-delivery.png",
+          "src": "/marketing/home-editions/desktop-en.png",
           "width": 1536,
-          "height": 1024
+          "height": 960,
+          "alt": "Desktop Edition AI Workspace"
         },
         {
-          "src": "/marketing/home-hero/mobile-session-continuity.png",
+          "src": "/marketing/home-editions/mobile-en.png",
           "width": 1536,
-          "height": 1024
+          "height": 960,
+          "alt": "Mobile Edition AI Workspace"
         }
       ]
     },
