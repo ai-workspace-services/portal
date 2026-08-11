@@ -98,19 +98,19 @@ export const homeMarketingContentData = {
       },
       "slides": [
         {
-          "src": "/marketing/xworkmate-suite-hero.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-hero/web-workspace-flow.png",
+          "width": 1536,
+          "height": 1024
         },
         {
-          "src": "/marketing/xworkmate/已生成图像 1.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-hero/desktop-ai-delivery.png",
+          "width": 1536,
+          "height": 1024
         },
         {
-          "src": "/marketing/xconnect/homepage.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-hero/mobile-session-continuity.png",
+          "width": 1536,
+          "height": 1024
         }
       ]
     },
@@ -407,19 +407,19 @@ export const homeMarketingContentData = {
       },
       "slides": [
         {
-          "src": "/marketing/xworkmate-suite-hero.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-hero/web-workspace-flow.png",
+          "width": 1536,
+          "height": 1024
         },
         {
-          "src": "/marketing/xworkmate/已生成图像 1.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-hero/desktop-ai-delivery.png",
+          "width": 1536,
+          "height": 1024
         },
         {
-          "src": "/marketing/xconnect/homepage.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-hero/mobile-session-continuity.png",
+          "width": 1536,
+          "height": 1024
         }
       ]
     },
