@@ -167,8 +167,8 @@ export default function HeroSection() {
                 src={encodeURI(imageUrl)}
                 alt={visual.alt}
                 width={1536}
-                height={1024}
-                className="aspect-[3/2] h-auto w-full object-cover"
+                height={864}
+                className="aspect-[16/9] h-auto w-full object-contain"
               />
             </div>
           </div>
