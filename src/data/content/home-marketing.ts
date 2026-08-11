@@ -97,8 +97,8 @@ export const homeMarketingContentData = {
         "title": "Agent、对话、工具与产物在一个连续工作空间协同",
         "subtitle": "从计划到执行，工作上下文始终保持连续。",
         "imageBasePath": "/marketing/home-hero",
-        "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
-        "alt": "XWorkmate AI 工作空间，展示任务、对话、连接与交付产物",
+        "imageUrl": "/marketing/home-hero/ai-workspace-suite-zh.png",
+        "alt": "XWorkmate AI 工作空间，展示模型、连接、工作空间与交付产物",
         "connectionNodes": [
           {
             "key": "models",
@@ -624,7 +624,7 @@ export const homeMarketingContentData = {
         "title": "Agents, conversations, tools, and artifacts working together in one continuous workspace.",
         "subtitle": "From planning to execution, your work keeps its context everywhere.",
         "imageBasePath": "/marketing/home-hero",
-        "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
+        "imageUrl": "/marketing/home-hero/ai-workspace-suite-en.png",
         "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts",
         "connectionNodes": [
           {

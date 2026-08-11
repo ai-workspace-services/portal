@@ -61,7 +61,7 @@ hero:
     title: Agents, conversations, tools, and artifacts working together in one continuous workspace.
     subtitle: From planning to execution, your work keeps its context everywhere.
     imageBasePath: /marketing/home-hero
-    imageUrl: /marketing/home-hero/ai-workspace-suite.png
+    imageUrl: /marketing/home-hero/ai-workspace-suite-en.png
     alt: XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts
     connectionNodes:
       - key: models

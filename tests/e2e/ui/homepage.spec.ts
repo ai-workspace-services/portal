@@ -37,6 +37,10 @@ test.describe("Marketing homepage experience", () => {
     await expect(page.getByText("产品事实与证明")).toBeVisible();
     await expect(page.getByRole("link", { name: "XConnect" })).toBeVisible();
     await expect(page.getByText("开放的 AI 工作空间")).toBeVisible();
+    await expect(page.locator("figure img").first()).toHaveAttribute(
+      "src",
+      /ai-workspace-suite-zh\.png$/,
+    );
 
     await languageToggle.selectOption("en");
 
@@ -70,5 +74,9 @@ test.describe("Marketing homepage experience", () => {
     await expect(page.getByText("Product facts and proof")).toBeVisible();
     await expect(page.getByRole("link", { name: "XConnect" })).toBeVisible();
     await expect(page.getByText("Open AI Workspace")).toBeVisible();
+    await expect(page.locator("figure img").first()).toHaveAttribute(
+      "src",
+      /ai-workspace-suite-en\.png$/,
+    );
   });
 });
