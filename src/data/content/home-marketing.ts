@@ -149,6 +149,93 @@ export const homeMarketingContentData = {
         }
       ]
     },
+    "editions": {
+      "eyebrow": "三端同一工作空间",
+      "title": "在 Web、Desktop、Mobile 之间保持工作连续",
+      "description": "选择最适合当下场景的设备，任务、上下文与交付结果始终保持同步。"
+    },
+    "workflow": {
+      "eyebrow": "真实工作流",
+      "title": "从想法到结果，每一步都可连接、可追踪、可交付",
+      "description": "AI 工作不应该停留在一次对话中。XWorkmate 构建开放的 AI Workspace，将上下文、Agent、工具和执行过程连接起来，让不同 AI 能力协同完成真实工作。",
+      "steps": [
+        {
+          "key": "create",
+          "label": "Create",
+          "title": "创建工作空间与目标",
+          "description": "从一个想法开始，定义目标、范围和交付标准。",
+          "evidence": "项目上下文、任务记录和协作信息统一沉淀在 Workspace 中。"
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "连接 AI、工具与数据",
+          "description": "自由连接不同模型、Agent、服务和本地环境。支持 Code Agent、AI Agent、OpenClaw Gateway 以及各种 Connector。",
+          "evidence": "权限范围、连接状态和上下文来源始终透明可控。"
+        },
+        {
+          "key": "execute",
+          "label": "Execute",
+          "title": "编排执行与协作过程",
+          "description": "让多个 Agent、工具和运行环境协同工作。实时查看执行状态、阶段进度和产生的中间结果。",
+          "evidence": "每一次调用、变化和决策都有记录。"
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "沉淀结果并持续复用",
+          "description": "将代码、文档、数据、报告和其他产物交付到 Workspace。",
+          "evidence": "结果可以跨设备、跨 Agent、跨 AI Workspace 持续使用。"
+        }
+      ]
+    },
+    "controls": {
+      "eyebrow": "可控的 AI 工作空间",
+      "title": "安全、权限、连接与部署，都由你掌控",
+      "description": "开放并不意味着失去边界。每项能力都应知道谁能使用、连接了什么，以及结果如何被记录。",
+      "items": [
+        {
+          "key": "security",
+          "title": "安全访问",
+          "description": "围绕身份、会话和数据边界建立可靠的访问路径。",
+          "evidence": "安全状态与关键操作有明确反馈"
+        },
+        {
+          "key": "permissions",
+          "title": "细粒度权限",
+          "description": "按成员、服务和动作划定可见与可执行的范围。",
+          "evidence": "权限与审批边界可以被审阅"
+        },
+        {
+          "key": "connections",
+          "title": "连接可见",
+          "description": "集中管理模型、服务和本地环境，知道每条连接为何存在。",
+          "evidence": "连接状态、来源与能力清晰展示"
+        },
+        {
+          "key": "deployment",
+          "title": "部署自由",
+          "description": "从托管使用到自建部署，按团队的控制力和架构需要选择。",
+          "evidence": "部署选项与运行边界明确"
+        }
+      ]
+    },
+    "proof": {
+      "eyebrow": "产品事实与证明",
+      "title": "先看见真实能力，再决定如何开始",
+      "description": "用可以直接检查的产品入口和界面证据替代空泛承诺；用户案例和数据将在获得授权后持续补充。",
+      "facts": [
+        { "value": "三端体验", "label": "Web、Desktop、Mobile 的连续工作体验" },
+        { "value": "一个工作空间", "label": "任务、知识、连接和交付的统一上下文" },
+        { "value": "托管 + 自建", "label": "托管使用与自建部署的选择" },
+        { "value": "可追溯", "label": "运行状态、日志与产物可持续跟进" }
+      ],
+      "links": [
+        { "label": "XWorkmate", "href": "/products/xworkmate" },
+        { "label": "AI Workspace", "href": "/products/ai-workspace" },
+        { "label": "Open Platform", "href": "/products/open-platform" }
+      ]
+    },
     "featureGrid": [
       {
         "icon": "layers",
@@ -335,12 +422,10 @@ export const homeMarketingContentData = {
       }
     },
     "finalCta": {
-      "title": "立即开始",
-      "description": "登录控制台，开启您的云原生网络运维之旅。",
-      "cta": {
-        "label": "进入控制台",
-        "href": "/panel"
-      }
+      "title": "开放的 AI 工作空间",
+      "description": "连接一切。构建一切。交付一切。",
+      "primaryCta": { "label": "进入控制台", "href": "/panel" },
+      "secondaryCta": { "label": "查看产品", "href": "/products/xworkmate" }
     }
   },
   "en": {
@@ -491,6 +576,93 @@ export const homeMarketingContentData = {
           "description": "Track runs, synchronize artifacts, and retain a traceable record so the work gets finished.",
           "evidence": ["Runs & progress", "Artifact sync", "Logs & follow-up"]
         }
+      ]
+    },
+    "editions": {
+      "eyebrow": "One workspace, three surfaces",
+      "title": "Keep work continuous across Web, Desktop, and Mobile",
+      "description": "Use the surface that fits the moment while tasks, context, and delivery stay in sync."
+    },
+    "workflow": {
+      "eyebrow": "A real working path",
+      "title": "From ideas to outcomes, every step stays connected, traceable, and deliverable",
+      "description": "AI work should not stop at a single conversation. XWorkmate is an open AI Workspace that connects context, agents, tools, and execution so different AI capabilities can collaborate on real work.",
+      "steps": [
+        {
+          "key": "create",
+          "label": "Create",
+          "title": "Create a workspace and goal",
+          "description": "Start with an idea, then define the goal, scope, and delivery standard.",
+          "evidence": "Project context, task records, and collaboration details settle into the Workspace."
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "Connect AI, tools, and data",
+          "description": "Connect models, agents, services, and local environments freely. Bring Code Agents, AI Agents, OpenClaw Gateway, and any Connector into the work.",
+          "evidence": "Permission scope, connection status, and context sources stay transparent and controllable."
+        },
+        {
+          "key": "execute",
+          "label": "Execute",
+          "title": "Orchestrate execution and collaboration",
+          "description": "Coordinate multiple agents, tools, and runtime environments. See execution status, stage progress, and intermediate results in real time.",
+          "evidence": "Every call, change, and decision is recorded."
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "Keep results reusable",
+          "description": "Deliver code, documents, data, reports, and other artifacts into the Workspace.",
+          "evidence": "Results stay reusable across devices, agents, and AI Workspaces."
+        }
+      ]
+    },
+    "controls": {
+      "eyebrow": "A controllable AI workspace",
+      "title": "Security, permissions, connections, and deployment stay in your hands",
+      "description": "Open does not mean unbounded. Every capability should make its user, connection, and record clear.",
+      "items": [
+        {
+          "key": "security",
+          "title": "Secure access",
+          "description": "Build a reliable path around identity, sessions, and data boundaries.",
+          "evidence": "Security state and sensitive actions have clear feedback"
+        },
+        {
+          "key": "permissions",
+          "title": "Granular permissions",
+          "description": "Define what each person, service, and action can see or execute.",
+          "evidence": "Permission and approval boundaries can be reviewed"
+        },
+        {
+          "key": "connections",
+          "title": "Visible connections",
+          "description": "Manage models, services, and local environments while knowing why each connection exists.",
+          "evidence": "Source, status, and capability are explicit"
+        },
+        {
+          "key": "deployment",
+          "title": "Deployment freedom",
+          "description": "Choose managed service or self-hosted deployment based on the control your team needs.",
+          "evidence": "Deployment options and runtime boundaries are clear"
+        }
+      ]
+    },
+    "proof": {
+      "eyebrow": "Product facts and proof",
+      "title": "See the real capabilities before you decide how to start",
+      "description": "Use inspectable product surfaces and interface evidence instead of vague promises; customer stories and metrics will be added as they are approved.",
+      "facts": [
+        { "value": "3 surfaces", "label": "A continuous experience across Web, Desktop, and Mobile" },
+        { "value": "1 workspace", "label": "One context for tasks, knowledge, connections, and delivery" },
+        { "value": "Managed + self-hosted", "label": "Choose hosted use or your own deployment" },
+        { "value": "Traceable", "label": "Keep following runs, logs, and artifacts over time" }
+      ],
+      "links": [
+        { "label": "XWorkmate", "href": "/products/xworkmate" },
+        { "label": "AI Workspace", "href": "/products/ai-workspace" },
+        { "label": "Open Platform", "href": "/products/open-platform" }
       ]
     },
     "featureGrid": [
@@ -679,12 +851,10 @@ export const homeMarketingContentData = {
       }
     },
     "finalCta": {
-      "title": "Get started today",
-      "description": "Sign in to the console and begin your cloud-native networking journey.",
-      "cta": {
-        "label": "Enter Console",
-        "href": "/panel"
-      }
+      "title": "Open AI Workspace",
+      "description": "Connect anything. Build anything. Deliver anything.",
+      "primaryCta": { "label": "Enter Console", "href": "/panel" },
+      "secondaryCta": { "label": "Explore Product", "href": "/products/xworkmate" }
     }
   }
 };

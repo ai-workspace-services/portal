@@ -21,6 +21,21 @@ test.describe("Marketing homepage experience", () => {
     ).toBeVisible();
     await expect(page.getByText("连接需要的能力")).toBeVisible();
     await expect(page.getByText("把结果可靠交付")).toBeVisible();
+    await expect(page.getByText("三端同一工作空间")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "从想法到结果，每一步都可连接、可追踪、可交付",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "安全、权限、连接与部署，都由你掌控",
+      }),
+    ).toBeVisible();
+    await expect(page.getByText("产品事实与证明")).toBeVisible();
+    await expect(page.getByText("开放的 AI 工作空间")).toBeVisible();
 
     await languageToggle.selectOption("en");
 
@@ -38,5 +53,20 @@ test.describe("Marketing homepage experience", () => {
       page.getByText("Bring in the right capabilities"),
     ).toBeVisible();
     await expect(page.getByText("Turn progress into delivery")).toBeVisible();
+    await expect(page.getByText("One workspace, three surfaces")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "From ideas to outcomes, every step stays connected, traceable, and deliverable",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "Security, permissions, connections, and deployment stay in your hands",
+      }),
+    ).toBeVisible();
+    await expect(page.getByText("Product facts and proof")).toBeVisible();
+    await expect(page.getByText("Open AI Workspace")).toBeVisible();
   });
 });
