@@ -15,7 +15,8 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function FeatureGrid() {
   const { language } = useLanguage();
-  const { featureGrid } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const featureGrid = content.featureGrid;
 
   return (
     <section className={marketingTheme.section.container}>

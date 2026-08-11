@@ -17,7 +17,8 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function ProductGrid() {
   const { language } = useLanguage();
-  const { productGrid } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const productGrid = content.productGrid;
 
   return (
     <section className={`${marketingTheme.section.container} ${marketingTheme.section.spacingY}`}>
