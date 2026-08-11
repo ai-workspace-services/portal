@@ -57,6 +57,13 @@ const ADVANCED_GROUP = [
   "advanced",
 ];
 
+const PRODUCT_ORDER = [
+  "xworkmate",
+  "xconnect",
+  "ai-workspace",
+  "open-platform",
+];
+
 export function DocsSidebarContent({
   collections,
   activePath,
@@ -64,6 +71,14 @@ export function DocsSidebarContent({
 }: DocsSidebarContentProps) {
   // Sort collections: Console first, then others alphabetically
   const sortedCollections = [...collections].sort((a, b) => {
+    const aProductIndex = PRODUCT_ORDER.indexOf(a.slug);
+    const bProductIndex = PRODUCT_ORDER.indexOf(b.slug);
+    if (aProductIndex >= 0 || bProductIndex >= 0) {
+      return (
+        (aProductIndex >= 0 ? aProductIndex : PRODUCT_ORDER.length) -
+        (bProductIndex >= 0 ? bProductIndex : PRODUCT_ORDER.length)
+      );
+    }
     if (a.slug.includes("console")) return -1;
     if (b.slug.includes("console")) return 1;
     return a.title.localeCompare(b.title);

@@ -36,6 +36,8 @@ export type DocCollectionPayload = {
   tags: string[];
   versions: DocVersionPayload[];
   defaultVersionSlug: string;
+  entryHref?: string;
+  articleCount?: number;
   category?: string;
 };
 

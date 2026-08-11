@@ -20,6 +20,7 @@ import docsHomeContent from "@/data/content/docs-home";
 const collectionIcons: Record<string, LucideIcon> = {
   xworkmate: Blocks,
   xconnect: Network,
+  "ai-workspace": Sparkles,
   "open-platform": Boxes,
 };
 
@@ -49,7 +50,8 @@ export default function DocsHome() {
   const collections = content?.collections || [];
   const home = content?.home;
   const articleCount = collections.reduce(
-    (sum: number, collection: any) => sum + (collection.versions?.length || 0),
+    (sum: number, collection: any) =>
+      sum + (collection.articleCount ?? collection.versions?.length ?? 0),
     0,
   );
 
@@ -117,17 +119,18 @@ export default function DocsHome() {
             </span>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-3">
+          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
             {collections.map((collection: any) => {
               const Icon = collectionIcons[collection.slug] || BookCopy;
               return (
                 <Link
                   key={collection.slug}
                   href={
+                    collection.entryHref ||
                     "/docs/" +
-                    collection.slug +
-                    "/" +
-                    collection.defaultVersionSlug
+                      collection.slug +
+                      "/" +
+                      collection.defaultVersionSlug
                   }
                   className="group relative flex min-h-[16rem] flex-col overflow-hidden rounded-[1.15rem] border border-slate-900/10 bg-white/86 p-5 transition duration-200 hover:-translate-y-[2px] hover:border-primary/20 hover:bg-white hover:shadow-[0_18px_34px_rgba(15,23,42,0.07)]"
                 >
@@ -150,7 +153,9 @@ export default function DocsHome() {
                   </div>
                   <div className="mt-6 flex items-center justify-between border-t border-slate-900/8 pt-4">
                     <span className="text-xs font-semibold text-slate-500">
-                      {collection.versions?.length || 0}{" "}
+                      {collection.articleCount ??
+                        collection.versions?.length ??
+                        0}{" "}
                       {isChinese ? "篇文章" : "articles"}
                     </span>
                     <span className="text-xs font-semibold text-primary">
