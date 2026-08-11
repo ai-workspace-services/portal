@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { PublicPageIntro } from "@/components/public/PublicPageShell";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import docsHomeContent from "@/data/content/docs-home";
+import DocsSearch from "./DocsSearch";
 
 const collectionIcons: Record<string, LucideIcon> = {
   xworkmate: Blocks,
@@ -49,6 +50,11 @@ export default function DocsHome() {
   }, [fallbackContent, language]);
   const collections = content?.collections || [];
   const home = content?.home;
+  const firstCollectionHref =
+    collections[0]?.entryHref ||
+    (collections[0]
+      ? `/docs/${collections[0].slug}/${collections[0].defaultVersionSlug}`
+      : "/docs/get-started/overview");
   const articleCount = collections.reduce(
     (sum: number, collection: any) =>
       sum + (collection.articleCount ?? collection.versions?.length ?? 0),
@@ -59,15 +65,34 @@ export default function DocsHome() {
     <div className="space-y-5 sm:space-y-6">
       <section className="relative overflow-hidden rounded-[1.65rem] border border-slate-900/10 bg-[radial-gradient(circle_at_88%_18%,rgba(0,88,189,0.12),transparent_29%),linear-gradient(135deg,#ffffff_0%,#fbfcfd_58%,#f2f6fb_100%)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)] sm:p-7 lg:p-8">
         <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
-          <PublicPageIntro
-            eyebrow={isChinese ? "文档中心" : "Documentation"}
-            title={home?.title || "Documentation"}
-            subtitle={
-              home?.description ||
-              "Unified references for XWork Tech Toolkit services."
-            }
-            titleClassName="editorial-display max-w-5xl text-[2.35rem] tracking-[-0.065em] sm:text-[3rem] lg:text-[3.15rem]"
-          />
+          <div className="min-w-0">
+            <PublicPageIntro
+              eyebrow={isChinese ? "文档中心" : "Documentation"}
+              title={home?.title || "Documentation"}
+              subtitle={
+                home?.description ||
+                "Unified references for XWork Tech Toolkit services."
+              }
+              titleClassName="editorial-display max-w-5xl text-[2.35rem] tracking-[-0.065em] sm:text-[3rem] lg:text-[3.15rem]"
+            />
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <Link
+                href={firstCollectionHref}
+                className="tactile-button tactile-button-primary"
+              >
+                {isChinese ? "开始阅读" : "Start reading"}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+              <a
+                href="#collections"
+                className="tactile-button tactile-button-subtle"
+              >
+                {isChinese ? "浏览合集" : "Browse collections"}
+              </a>
+              <DocsSearch className="sm:w-auto" />
+            </div>
+          </div>
 
           <div className="rounded-[1.25rem] border border-slate-900/10 bg-white/82 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)] backdrop-blur-sm">
             <p className="px-2 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
@@ -102,7 +127,10 @@ export default function DocsHome() {
       </section>
 
       {collections.length > 0 ? (
-        <section className="rounded-[1.35rem] border border-slate-900/10 bg-white/78 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.035)] sm:p-5 lg:p-6">
+        <section
+          id="collections"
+          className="scroll-mt-24 rounded-[1.35rem] border border-slate-900/10 bg-white/78 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.035)] sm:p-5 lg:p-6"
+        >
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
