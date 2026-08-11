@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
@@ -11,6 +12,7 @@ import { PublicPageIntro } from "@/components/public/PublicPageShell";
 import { isFeatureEnabled } from "@lib/featureToggles";
 
 import Feedback from "../../Feedback";
+import DocActions from "../../DocActions";
 import { getDocVersion, getDocVersionParams } from "../../resources.server";
 
 function DocsBreadcrumbs({
@@ -40,8 +42,6 @@ function DocsBreadcrumbs({
     </nav>
   );
 }
-
-export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
@@ -80,8 +80,15 @@ export default async function DocVersionPage({
   }
 
   const { collection, version } = doc;
+  const requestHeaders = await headers();
+  const preferredLanguage =
+    requestHeaders.get("x-language") ??
+    requestHeaders.get("accept-language") ??
+    "";
+  const isChinese =
+    version.language === "zh" || preferredLanguage.toLowerCase().includes("zh");
   const breadcrumbs = [
-    { label: "Documentation", href: "/docs" },
+    { label: isChinese ? "文档中心" : "Documentation", href: "/docs" },
     { label: collection.title, href: `/docs/${collection.slug}` },
     { label: version.title, href: `/docs/${collection.slug}/${version.slug}` },
   ];
@@ -92,7 +99,7 @@ export default async function DocVersionPage({
         <section className="rounded-[1rem] border border-slate-900/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,248,250,0.98))] p-5 shadow-[var(--shadow-soft)] lg:p-6">
           <DocsBreadcrumbs items={breadcrumbs} />
           <PublicPageIntro
-            eyebrow="Documentation"
+            eyebrow={isChinese ? "文档中心" : "Documentation"}
             title={version.title}
             subtitle={version.description}
             titleClassName="text-[2.3rem] tracking-[-0.06em] sm:text-[2.9rem]"
@@ -106,19 +113,54 @@ export default async function DocVersionPage({
           />
         </section>
 
-        <Feedback />
+        <div className="print:hidden">
+          <Feedback isChinese={isChinese} />
+        </div>
       </article>
 
-      <aside className="hidden w-64 shrink-0 lg:block xl:w-72">
+      <aside className="hidden w-64 shrink-0 print:hidden lg:block xl:w-72">
         <div className="sticky top-[100px]">
           <div className="rounded-[0.95rem] border border-slate-900/8 bg-white/88 p-5 shadow-[var(--shadow-soft)]">
+            {version.toc.length > 0 ? (
+              <>
+                <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+                  {isChinese ? "本页目录" : "On this page"}
+                </p>
+                <nav aria-label={isChinese ? "本页目录" : "On this page"}>
+                  <ul className="space-y-1 border-l border-slate-900/8">
+                    {version.toc.map((item) => (
+                      <li key={item.anchor}>
+                        <a
+                          href={`#${item.anchor}`}
+                          className={`block border-l-2 border-transparent py-1.5 pr-2 text-sm leading-5 text-text-muted transition hover:border-primary hover:text-primary ${
+                            item.level === 1 ? "pl-3 font-medium" : "pl-5"
+                          }`}
+                        >
+                          {item.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+                <div className="my-5 border-t border-slate-900/8" />
+              </>
+            ) : null}
             <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
-              Metadata
+              {isChinese ? "页面信息" : "Page details"}
             </p>
             <DocMetaPanel
               description={undefined}
               updatedAt={version.updatedAt}
               tags={version.tags}
+            />
+            <div className="my-5 border-t border-slate-900/8" />
+            <DocActions
+              isChinese={isChinese}
+              collection={collection.slug}
+              slug={version.slug}
+              title={version.title}
+              markdown={version.markdown}
+              editUrl={version.editUrl}
             />
           </div>
         </div>

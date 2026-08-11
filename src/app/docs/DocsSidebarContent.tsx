@@ -89,7 +89,12 @@ function CollectionGroup({
   collection: DocCollection;
   activePath: string;
 }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const isCollectionActive = activePath.startsWith(`/docs/${collection.slug}`);
+  const [isOpen, setIsOpen] = useState(isCollectionActive);
+
+  useEffect(() => {
+    if (isCollectionActive) setIsOpen(true);
+  }, [isCollectionActive]);
 
   // Group versions by category
   const grouped: Record<string, DocVersionOption[]> = {};

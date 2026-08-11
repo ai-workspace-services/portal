@@ -2,10 +2,8 @@ export const dynamic = 'force-dynamic'
 
 import { notFound, redirect } from 'next/navigation'
 
-import { getDocCollections, getDocResource, getDocCollectionsForBuildTime } from '../resources.server'
+import { getDocResource } from '../resources.server'
 import { isFeatureEnabled } from '@lib/featureToggles'
-
-export const dynamicParams = false
 
 export default async function CollectionPage({
   params,
