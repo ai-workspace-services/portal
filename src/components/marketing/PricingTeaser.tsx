@@ -9,7 +9,8 @@ import { marketingTheme } from "@/components/marketing/theme";
 
 export default function PricingTeaser() {
   const { language } = useLanguage();
-  const { pricingTeaser } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const pricingTeaser = content.pricingTeaser;
 
   return (
     <section className={marketingTheme.section.container}>

@@ -9,7 +9,8 @@ import { marketingTheme } from "@/components/marketing/theme";
 
 export default function FinalCta() {
   const { language } = useLanguage();
-  const { finalCta } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const finalCta = content.finalCta;
 
   return (
     <section className={`${marketingTheme.section.container} pb-16 sm:pb-20`}>

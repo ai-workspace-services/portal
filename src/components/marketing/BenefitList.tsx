@@ -15,7 +15,8 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function BenefitList() {
   const { language } = useLanguage();
-  const { benefitList } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const benefitList = content.benefitList;
 
   return (
     <section className={`${marketingTheme.section.container} ${marketingTheme.section.spacingY} space-y-10`}>

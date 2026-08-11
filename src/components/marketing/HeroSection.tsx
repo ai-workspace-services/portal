@@ -74,7 +74,9 @@ function WorkspaceNode({
 
 export default function HeroSection() {
   const { language } = useLanguage();
-  const { hero } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const hero = content?.hero || homeMarketingContent.zh?.hero;
+  const visual = hero?.visual || homeMarketingContent.zh?.hero?.visual;
   const [asset, setAsset] = useState<HomepageHeroAsset>({});
 
   useEffect(() => {
@@ -89,16 +91,18 @@ export default function HeroSection() {
     };
   }, [language]);
 
-  const visual = hero.visual;
   const imageUrl =
     (asset.imageUrl ??
-      resolveHomepageHeroImage(visual.imageBasePath, asset.version)) ||
-    visual.imageUrl;
-  const visualTitle = asset.title ?? visual.title;
-  const visualSubtitle = asset.subtitle ?? visual.subtitle;
-  const visualEyebrow = asset.eyebrow ?? visual.eyebrow;
-  const connectionNodes = visual.connectionNodes ?? [];
-  const productPills = visual.productPills ?? [];
+      (visual?.imageBasePath
+        ? resolveHomepageHeroImage(visual.imageBasePath, asset.version)
+        : "")) ||
+    visual?.imageUrl ||
+    "";
+  const visualTitle = asset.title ?? visual?.title ?? "";
+  const visualSubtitle = asset.subtitle ?? visual?.subtitle ?? "";
+  const visualEyebrow = asset.eyebrow ?? visual?.eyebrow ?? "";
+  const connectionNodes = visual?.connectionNodes ?? [];
+  const productPills = visual?.productPills ?? [];
 
   return (
     <section

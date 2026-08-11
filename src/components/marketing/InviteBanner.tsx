@@ -9,7 +9,8 @@ import { marketingTheme } from "@/components/marketing/theme";
 
 export default function InviteBanner() {
   const { language } = useLanguage();
-  const { inviteBanner } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const inviteBanner = content.inviteBanner;
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {

@@ -17,7 +17,8 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function StatsBar() {
   const { language } = useLanguage();
-  const { statsBar } = homeMarketingContent[language];
+  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
+  const statsBar = content.statsBar;
 
   return (
     <section className={marketingTheme.section.container}>
