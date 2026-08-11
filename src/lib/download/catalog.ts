@@ -12,6 +12,7 @@ export type DownloadAsset = {
   href: string;
   lastModified?: string;
   size?: number;
+  sha256?: string;
 };
 
 export type CatalogPlatform = {
@@ -280,6 +281,7 @@ function flattenFiles(listings: DirListing[]): DownloadAsset[] {
         href: toDownloadUrl(entry.href),
         lastModified: entry.lastModified,
         size: entry.size,
+        sha256: entry.sha256,
         source: `${listing.path}/${entry.name}`.replace(/\/+/g, "/"),
       });
     }
