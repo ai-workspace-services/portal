@@ -14,7 +14,13 @@ type SearchHit = {
   href: string;
 };
 
-export default function DocsSearch({ compact = false }: { compact?: boolean }) {
+export default function DocsSearch({
+  compact = false,
+  className = "",
+}: {
+  compact?: boolean;
+  className?: string;
+}) {
   const router = useRouter();
   const { language } = useLanguage();
   const isChinese = language === "zh";
@@ -105,9 +111,7 @@ export default function DocsSearch({ compact = false }: { compact?: boolean }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`flex items-center gap-2 rounded-[0.8rem] border border-surface-border bg-white/80 text-text-muted transition hover:border-primary/25 hover:text-primary ${
-          compact ? "h-10 w-10 justify-center" : "w-full px-3 py-2.5"
-        }`}
+        className={`flex items-center gap-2 rounded-[0.8rem] border border-surface-border bg-white/80 text-text-muted transition hover:border-primary/25 hover:text-primary ${compact ? "h-10 w-10 justify-center" : "w-full px-3 py-2.5"} ${className}`}
         aria-label={isChinese ? "搜索文档" : "Search documentation"}
       >
         <Search className="h-4 w-4" aria-hidden />
