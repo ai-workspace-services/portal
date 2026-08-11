@@ -44,31 +44,177 @@ nav:
   enterConsole: Enter Console
   logout: Sign out
 hero:
+  eyebrow: XWorkmate · AI Workspace
   title:
-    - Build, Connect, and Control
-    - Your AI Workspace
-  subtitle: A cloud-neutral platform built for stability and freedom. Choose between our managed service or deploy your own infrastructure for ultimate control.
+    - From conversation to delivery,
+    - one AI workspace for
+    - the work that matters
+  subtitle: Bring tasks, knowledge, connections, and delivery together so AI can participate in the work—not just answer questions.
   primaryCta:
     label: Enter Console
     href: /panel
   secondaryCta:
-    label: View Pricing
-    href: /prices
+    label: Explore Product
+    href: /products/xworkmate
   visual:
-    eyebrow: Hero visual placeholder
-    title: Xworkmate / Ai-workspace topology diagram or card artwork goes here
-    subtitle: This area can be swapped from versioned S3 assets without changing the page layout.
+    eyebrow: REAL AI WORKSPACE
+    title: Agents, conversations, tools, and artifacts working together in one continuous workspace.
+    subtitle: From planning to execution, your work keeps its context everywhere.
     imageBasePath: /marketing/home-hero
+    imageUrl: /marketing/home-hero/ai-workspace-suite.png
+    alt: XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts
+    connectionNodes:
+      - key: models
+        label: AI Models
+        items:
+          - LLM providers
+          - Local models
+          - Cloud models
+      - key: agents
+        label: AI Agents
+        items:
+          - Code Agent
+          - AI Agent
+          - OpenClaw Agent
+      - key: tools
+        label: Connectors
+        items:
+          - MCP Servers
+          - Connectors
+          - External services
+      - key: workspace
+        label: Workspace Context
+        items:
+          - Context
+          - Memory
+          - Collaboration
+          - Runtime
+      - key: artifacts
+        label: Delivered Results
+        items:
+          - Code
+          - Documents
+          - Reports
+          - Generated results
+    productPills:
+      - XWorkmate
+      - XConnect
+      - AI Workspace
+      - Open Platform
   slides:
-    - src: /marketing/xworkmate-suite-hero.png
-      width: 1920
-      height: 1080
-    - src: /marketing/xworkmate/已生成图像 1.png
-      width: 1920
-      height: 1080
-    - src: /marketing/xconnect/homepage.png
-      width: 1920
-      height: 1080
+    - src: /marketing/home-editions/web-en.png
+      width: 1536
+      height: 960
+      alt: Web Edition AI Workspace Control Center
+    - src: /marketing/home-editions/desktop-en.png
+      width: 1536
+      height: 960
+      alt: Desktop Edition AI Workspace
+    - src: /marketing/home-editions/mobile-en.png
+      width: 1536
+      height: 960
+      alt: Mobile Edition AI Workspace
+coreCapabilities:
+  eyebrow: One continuous workflow
+  title: Plan, connect, and deliver on the same line of work
+  description: Keep context, execution status, and results together so your team and AI can work toward the same outcome.
+  items:
+    - key: plan
+      label: Plan
+      title: Make the work clear
+      description: Organize tasks, conversations, projects, and knowledge into context that keeps moving forward.
+      evidence:
+        - Tasks & projects
+        - AI conversations
+        - Knowledge context
+    - key: connect
+      label: Connect
+      title: Bring in the right capabilities
+      description: Connect services, models, data, and local workspaces so AI has the right tools for the job.
+      evidence:
+        - Service connections
+        - Models & data
+        - Plugins & local workspaces
+    - key: deliver
+      label: Deliver
+      title: Turn progress into delivery
+      description: Track runs, synchronize artifacts, and retain a traceable record so the work gets finished.
+      evidence:
+        - Runs & progress
+        - Artifact sync
+        - Logs & follow-up
+editions:
+  eyebrow: One workspace, three surfaces
+  title: Keep work continuous across Web, Desktop, and Mobile
+  description: Use the surface that fits the moment while tasks, context, and delivery stay in sync.
+workflow:
+  eyebrow: A real working path
+  title: From ideas to outcomes, every step stays connected, traceable, and deliverable
+  description: AI work should not stop at a single conversation. XWorkmate is an open AI Workspace that connects context, agents, tools, and execution so different AI capabilities can collaborate on real work.
+  steps:
+    - key: create
+      label: Create
+      title: Create a workspace and goal
+      description: Start with an idea, then define the goal, scope, and delivery standard.
+      evidence: Project context, task records, and collaboration details settle into the Workspace.
+    - key: connect
+      label: Connect
+      title: Connect AI, tools, and data
+      description: Connect models, agents, services, and local environments freely. Bring Code Agents, AI Agents, OpenClaw Gateway, and any Connector into the work.
+      evidence: Permission scope, connection status, and context sources stay transparent and controllable.
+    - key: execute
+      label: Execute
+      title: Orchestrate execution and collaboration
+      description: Coordinate multiple agents, tools, and runtime environments. See execution status, stage progress, and intermediate results in real time.
+      evidence: Every call, change, and decision is recorded.
+    - key: deliver
+      label: Deliver
+      title: Keep results reusable
+      description: Deliver code, documents, data, reports, and other artifacts into the Workspace.
+      evidence: Results stay reusable across devices, agents, and AI Workspaces.
+controls:
+  eyebrow: A controllable AI workspace
+  title: Security, permissions, connections, and deployment stay in your hands
+  description: Open does not mean unbounded. Every capability should make its user, connection, and record clear.
+  items:
+    - key: security
+      title: Secure access
+      description: Build a reliable path around identity, sessions, and data boundaries.
+      evidence: Security state and sensitive actions have clear feedback
+    - key: permissions
+      title: Granular permissions
+      description: Define what each person, service, and action can see or execute.
+      evidence: Permission and approval boundaries can be reviewed
+    - key: connections
+      title: Visible connections
+      description: Manage models, services, and local environments while knowing why each connection exists.
+      evidence: Source, status, and capability are explicit
+    - key: deployment
+      title: Deployment freedom
+      description: Choose managed service or self-hosted deployment based on the control your team needs.
+      evidence: Deployment options and runtime boundaries are clear
+proof:
+  eyebrow: Product facts and proof
+  title: See the real capabilities before you decide how to start
+  description: Use inspectable product surfaces and interface evidence instead of vague promises; customer stories and metrics will be added as they are approved.
+  facts:
+    - value: 3 surfaces
+      label: A continuous experience across Web, Desktop, and Mobile
+    - value: 1 workspace
+      label: One context for tasks, knowledge, connections, and delivery
+    - value: Managed + self-hosted
+      label: Choose hosted use or your own deployment
+    - value: Traceable
+      label: Keep following runs, logs, and artifacts over time
+  links:
+    - label: XWorkmate
+      href: /products/xworkmate
+    - label: XConnect
+      href: /products/xconnect
+    - label: AI Workspace
+      href: /products/ai-workspace
+    - label: Open Platform
+      href: /products/open-platform
 featureGrid:
   - icon: layers
     title: Unified Platform
@@ -188,11 +334,14 @@ pricingTeaser:
     label: View pricing details
     href: /prices
 finalCta:
-  title: Get started today
-  description: Sign in to the console and begin your cloud-native networking journey.
-  cta:
+  title: Open AI Workspace
+  description: Connect anything. Build anything. Deliver anything.
+  primaryCta:
     label: Enter Console
     href: /panel
+  secondaryCta:
+    label: Explore Product
+    href: /products/xworkmate
 ---
 
 ## Marketing Content (EN)

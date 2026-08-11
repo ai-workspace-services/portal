@@ -41,6 +41,12 @@ export type HomeMarketingContent = {
       imageBasePath: string;
       imageUrl: string;
       alt: string;
+      connectionNodes?: {
+        key: "models" | "agents" | "tools" | "workspace" | "artifacts";
+        label: string;
+        items: string[];
+      }[];
+      productPills?: string[];
     };
     slides?: { src: string; width?: number; height?: number; alt?: string }[];
   };

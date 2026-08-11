@@ -93,12 +93,67 @@ export const homeMarketingContentData = {
         "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "真实工作界面",
-        "title": "任务、对话、工具与产物在一个工作空间持续协作",
-        "subtitle": "从计划到执行，从桌面到移动端，工作上下文始终连续。",
+        "eyebrow": "真实 AI Workspace",
+        "title": "Agent、对话、工具与产物在一个连续工作空间协同",
+        "subtitle": "从计划到执行，工作上下文始终保持连续。",
         "imageBasePath": "/marketing/home-hero",
         "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
-        "alt": "XWorkmate AI 工作空间，展示任务、对话、连接与交付产物"
+        "alt": "XWorkmate AI 工作空间，展示任务、对话、连接与交付产物",
+        "connectionNodes": [
+          {
+            "key": "models",
+            "label": "AI 模型",
+            "items": [
+              "LLM Providers",
+              "本地模型",
+              "云端模型"
+            ]
+          },
+          {
+            "key": "agents",
+            "label": "AI Agents",
+            "items": [
+              "Code Agent",
+              "AI Agent",
+              "OpenClaw Agent"
+            ]
+          },
+          {
+            "key": "tools",
+            "label": "Connectors",
+            "items": [
+              "MCP Servers",
+              "Connectors",
+              "外部服务"
+            ]
+          },
+          {
+            "key": "workspace",
+            "label": "Workspace Context",
+            "items": [
+              "Context",
+              "Memory",
+              "Collaboration",
+              "Runtime"
+            ]
+          },
+          {
+            "key": "artifacts",
+            "label": "Delivered Results",
+            "items": [
+              "Code",
+              "Documents",
+              "Reports",
+              "Generated results"
+            ]
+          }
+        ],
+        "productPills": [
+          "XWorkmate",
+          "XConnect",
+          "AI Workspace",
+          "Open Platform"
+        ]
       },
       "slides": [
         {
@@ -131,21 +186,33 @@ export const homeMarketingContentData = {
           "label": "Plan",
           "title": "把工作计划清楚",
           "description": "将任务、对话、项目与知识组织为可持续推进的工作上下文。",
-          "evidence": ["任务与项目", "AI 对话", "知识上下文"]
+          "evidence": [
+            "任务与项目",
+            "AI 对话",
+            "知识上下文"
+          ]
         },
         {
           "key": "connect",
           "label": "Connect",
           "title": "连接需要的能力",
           "description": "按需接入服务、模型、数据和本地工作空间，让 AI 获得正确工具。",
-          "evidence": ["服务连接", "模型与数据", "插件与本地空间"]
+          "evidence": [
+            "服务连接",
+            "模型与数据",
+            "插件与本地空间"
+          ]
         },
         {
           "key": "deliver",
           "label": "Deliver",
           "title": "把结果可靠交付",
           "description": "跟进运行状态、同步产物并保留可追溯记录，让每项工作真正完成。",
-          "evidence": ["运行与进度", "产物同步", "日志与跟进"]
+          "evidence": [
+            "运行与进度",
+            "产物同步",
+            "日志与跟进"
+          ]
         }
       ]
     },
@@ -225,15 +292,40 @@ export const homeMarketingContentData = {
       "title": "先看见真实能力，再决定如何开始",
       "description": "用可以直接检查的产品入口和界面证据替代空泛承诺；用户案例和数据将在获得授权后持续补充。",
       "facts": [
-        { "value": "三端体验", "label": "Web、Desktop、Mobile 的连续工作体验" },
-        { "value": "一个工作空间", "label": "任务、知识、连接和交付的统一上下文" },
-        { "value": "托管 + 自建", "label": "托管使用与自建部署的选择" },
-        { "value": "可追溯", "label": "运行状态、日志与产物可持续跟进" }
+        {
+          "value": "三端体验",
+          "label": "Web、Desktop、Mobile 的连续工作体验"
+        },
+        {
+          "value": "一个工作空间",
+          "label": "任务、知识、连接和交付的统一上下文"
+        },
+        {
+          "value": "托管 + 自建",
+          "label": "托管使用与自建部署的选择"
+        },
+        {
+          "value": "可追溯",
+          "label": "运行状态、日志与产物可持续跟进"
+        }
       ],
       "links": [
-        { "label": "XWorkmate", "href": "/products/xworkmate" },
-        { "label": "AI Workspace", "href": "/products/ai-workspace" },
-        { "label": "Open Platform", "href": "/products/open-platform" }
+        {
+          "label": "XWorkmate",
+          "href": "/products/xworkmate"
+        },
+        {
+          "label": "XConnect",
+          "href": "/products/xconnect"
+        },
+        {
+          "label": "AI Workspace",
+          "href": "/products/ai-workspace"
+        },
+        {
+          "label": "Open Platform",
+          "href": "/products/open-platform"
+        }
       ]
     },
     "featureGrid": [
@@ -424,8 +516,14 @@ export const homeMarketingContentData = {
     "finalCta": {
       "title": "开放的 AI 工作空间",
       "description": "连接一切。构建一切。交付一切。",
-      "primaryCta": { "label": "进入控制台", "href": "/panel" },
-      "secondaryCta": { "label": "查看产品", "href": "/products/xworkmate" }
+      "primaryCta": {
+        "label": "进入控制台",
+        "href": "/panel"
+      },
+      "secondaryCta": {
+        "label": "查看产品",
+        "href": "/products/xworkmate"
+      }
     }
   },
   "en": {
@@ -522,12 +620,67 @@ export const homeMarketingContentData = {
         "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "Real product workspace",
-        "title": "Tasks, conversations, tools, and artifacts working in one continuous space",
-        "subtitle": "From planning to execution and from desktop to mobile, your work keeps its context.",
+        "eyebrow": "REAL AI WORKSPACE",
+        "title": "Agents, conversations, tools, and artifacts working together in one continuous workspace.",
+        "subtitle": "From planning to execution, your work keeps its context everywhere.",
         "imageBasePath": "/marketing/home-hero",
         "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
-        "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts"
+        "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts",
+        "connectionNodes": [
+          {
+            "key": "models",
+            "label": "AI Models",
+            "items": [
+              "LLM providers",
+              "Local models",
+              "Cloud models"
+            ]
+          },
+          {
+            "key": "agents",
+            "label": "AI Agents",
+            "items": [
+              "Code Agent",
+              "AI Agent",
+              "OpenClaw Agent"
+            ]
+          },
+          {
+            "key": "tools",
+            "label": "Connectors",
+            "items": [
+              "MCP Servers",
+              "Connectors",
+              "External services"
+            ]
+          },
+          {
+            "key": "workspace",
+            "label": "Workspace Context",
+            "items": [
+              "Context",
+              "Memory",
+              "Collaboration",
+              "Runtime"
+            ]
+          },
+          {
+            "key": "artifacts",
+            "label": "Delivered Results",
+            "items": [
+              "Code",
+              "Documents",
+              "Reports",
+              "Generated results"
+            ]
+          }
+        ],
+        "productPills": [
+          "XWorkmate",
+          "XConnect",
+          "AI Workspace",
+          "Open Platform"
+        ]
       },
       "slides": [
         {
@@ -560,21 +713,33 @@ export const homeMarketingContentData = {
           "label": "Plan",
           "title": "Make the work clear",
           "description": "Organize tasks, conversations, projects, and knowledge into context that keeps moving forward.",
-          "evidence": ["Tasks & projects", "AI conversations", "Knowledge context"]
+          "evidence": [
+            "Tasks & projects",
+            "AI conversations",
+            "Knowledge context"
+          ]
         },
         {
           "key": "connect",
           "label": "Connect",
           "title": "Bring in the right capabilities",
           "description": "Connect services, models, data, and local workspaces so AI has the right tools for the job.",
-          "evidence": ["Service connections", "Models & data", "Plugins & local workspaces"]
+          "evidence": [
+            "Service connections",
+            "Models & data",
+            "Plugins & local workspaces"
+          ]
         },
         {
           "key": "deliver",
           "label": "Deliver",
           "title": "Turn progress into delivery",
           "description": "Track runs, synchronize artifacts, and retain a traceable record so the work gets finished.",
-          "evidence": ["Runs & progress", "Artifact sync", "Logs & follow-up"]
+          "evidence": [
+            "Runs & progress",
+            "Artifact sync",
+            "Logs & follow-up"
+          ]
         }
       ]
     },
@@ -654,15 +819,40 @@ export const homeMarketingContentData = {
       "title": "See the real capabilities before you decide how to start",
       "description": "Use inspectable product surfaces and interface evidence instead of vague promises; customer stories and metrics will be added as they are approved.",
       "facts": [
-        { "value": "3 surfaces", "label": "A continuous experience across Web, Desktop, and Mobile" },
-        { "value": "1 workspace", "label": "One context for tasks, knowledge, connections, and delivery" },
-        { "value": "Managed + self-hosted", "label": "Choose hosted use or your own deployment" },
-        { "value": "Traceable", "label": "Keep following runs, logs, and artifacts over time" }
+        {
+          "value": "3 surfaces",
+          "label": "A continuous experience across Web, Desktop, and Mobile"
+        },
+        {
+          "value": "1 workspace",
+          "label": "One context for tasks, knowledge, connections, and delivery"
+        },
+        {
+          "value": "Managed + self-hosted",
+          "label": "Choose hosted use or your own deployment"
+        },
+        {
+          "value": "Traceable",
+          "label": "Keep following runs, logs, and artifacts over time"
+        }
       ],
       "links": [
-        { "label": "XWorkmate", "href": "/products/xworkmate" },
-        { "label": "AI Workspace", "href": "/products/ai-workspace" },
-        { "label": "Open Platform", "href": "/products/open-platform" }
+        {
+          "label": "XWorkmate",
+          "href": "/products/xworkmate"
+        },
+        {
+          "label": "XConnect",
+          "href": "/products/xconnect"
+        },
+        {
+          "label": "AI Workspace",
+          "href": "/products/ai-workspace"
+        },
+        {
+          "label": "Open Platform",
+          "href": "/products/open-platform"
+        }
       ]
     },
     "featureGrid": [
@@ -853,8 +1043,14 @@ export const homeMarketingContentData = {
     "finalCta": {
       "title": "Open AI Workspace",
       "description": "Connect anything. Build anything. Deliver anything.",
-      "primaryCta": { "label": "Enter Console", "href": "/panel" },
-      "secondaryCta": { "label": "Explore Product", "href": "/products/xworkmate" }
+      "primaryCta": {
+        "label": "Enter Console",
+        "href": "/panel"
+      },
+      "secondaryCta": {
+        "label": "Explore Product",
+        "href": "/products/xworkmate"
+      }
     }
   }
 };
