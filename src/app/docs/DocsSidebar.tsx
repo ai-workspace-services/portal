@@ -53,7 +53,11 @@ export default function DocsSidebar({
       <div className="mb-5 shrink-0">
         <DocsSearch />
       </div>
-      <DocsSidebarContent collections={collections} activePath={pathname} />
+      <DocsSidebarContent
+        collections={collections}
+        activePath={pathname}
+        language={language}
+      />
     </SidebarRoot>
   );
 }

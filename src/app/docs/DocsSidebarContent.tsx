@@ -24,6 +24,7 @@ import { SidebarContent } from "../../components/layout/SidebarRoot";
 interface DocsSidebarContentProps {
   collections: DocCollection[];
   activePath: string;
+  language?: string;
 }
 
 // Helper to humanize category names
@@ -59,6 +60,7 @@ const ADVANCED_GROUP = [
 export function DocsSidebarContent({
   collections,
   activePath,
+  language,
 }: DocsSidebarContentProps) {
   // Sort collections: Console first, then others alphabetically
   const sortedCollections = [...collections].sort((a, b) => {
@@ -75,6 +77,7 @@ export function DocsSidebarContent({
             key={collection.slug}
             collection={collection}
             activePath={activePath}
+            isChinese={language === "zh"}
           />
         ))}
       </nav>
@@ -85,9 +88,11 @@ export function DocsSidebarContent({
 function CollectionGroup({
   collection,
   activePath,
+  isChinese,
 }: {
   collection: DocCollection;
   activePath: string;
+  isChinese: boolean;
 }) {
   const isCollectionActive = activePath.startsWith(`/docs/${collection.slug}`);
   const [isOpen, setIsOpen] = useState(isCollectionActive);
@@ -140,6 +145,7 @@ function CollectionGroup({
                   version={v}
                   collectionSlug={collection.slug}
                   activePath={activePath}
+                  isChinese={isChinese}
                 />
               ))}
             </ul>
@@ -157,6 +163,7 @@ function CollectionGroup({
                   versions={versions}
                   collectionSlug={collection.slug}
                   activePath={activePath}
+                  isChinese={isChinese}
                 />
               ))}
           </div>
@@ -167,6 +174,7 @@ function CollectionGroup({
               grouped={grouped}
               collectionSlug={collection.slug}
               activePath={activePath}
+              isChinese={isChinese}
             />
           )}
         </div>
@@ -180,11 +188,13 @@ function CategorySection({
   versions,
   collectionSlug,
   activePath,
+  isChinese,
 }: {
   title: string;
   versions: DocVersionOption[];
   collectionSlug: string;
   activePath: string;
+  isChinese: boolean;
 }) {
   const Icon = ICON_MAP[title] || Book;
 
@@ -210,6 +220,7 @@ function CategorySection({
             version={v}
             collectionSlug={collectionSlug}
             activePath={activePath}
+            isChinese={isChinese}
           />
         ))}
       </ul>
@@ -221,10 +232,12 @@ function AdvancedSection({
   grouped,
   collectionSlug,
   activePath,
+  isChinese,
 }: {
   grouped: Record<string, DocVersionOption[]>;
   collectionSlug: string;
   activePath: string;
+  isChinese: boolean;
 }) {
   // Check if anything inside is active to auto-expand
   const isInsideActive = ADVANCED_GROUP.some((k) =>
@@ -269,6 +282,7 @@ function AdvancedSection({
                         version={v}
                         collectionSlug={collectionSlug}
                         activePath={activePath}
+                        isChinese={isChinese}
                       />
                     ))}
                   </ul>
@@ -285,13 +299,17 @@ function SidebarLink({
   version,
   collectionSlug,
   activePath,
+  isChinese,
 }: {
   version: DocVersionOption;
   collectionSlug: string;
   activePath: string;
+  isChinese: boolean;
 }) {
   const href = `/docs/${collectionSlug}/${version.slug}`;
   const isPageActive = activePath === href;
+  const pageOutline = (version.toc ?? []).filter((item) => item.level > 1);
+  const visibleOutline = pageOutline.slice(0, 6);
 
   return (
     <li>
@@ -311,6 +329,35 @@ function SidebarLink({
           <ChevronRight className="ml-auto h-3 w-3 opacity-0 transition-all -translate-x-2 group-hover:opacity-30 group-hover:translate-x-0" />
         )}
       </Link>
+      {isPageActive && visibleOutline.length > 0 ? (
+        <div className="ml-3 mt-1 border-l border-primary/20 pl-3">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
+            {isChinese ? "目录预览" : "Page outline"}
+          </p>
+          <ul className="max-h-36 space-y-0.5 overflow-y-auto pr-1">
+            {visibleOutline.map((item) => (
+              <li key={item.anchor}>
+                <a
+                  href={`#${item.anchor}`}
+                  className={`block truncate rounded-md py-1 text-xs leading-4 text-text-muted transition hover:bg-primary/5 hover:text-primary ${
+                    item.level > 2 ? "pl-2" : ""
+                  }`}
+                  title={item.title}
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+          {pageOutline.length > visibleOutline.length ? (
+            <p className="mt-1 text-[10px] text-text-subtle">
+              {isChinese
+                ? `+${pageOutline.length - visibleOutline.length} 个章节`
+                : `+${pageOutline.length - visibleOutline.length} sections`}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </li>
   );
 }
