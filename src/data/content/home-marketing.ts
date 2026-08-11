@@ -77,24 +77,28 @@ export const homeMarketingContentData = {
       "logout": "退出登录"
     },
     "hero": {
+      "eyebrow": "XWorkmate · AI Workspace",
       "title": [
-        "构建、连接并掌控你的",
-        "AI 工作空间平台"
+        "从对话到交付，",
+        "一个 AI 工作空间",
+        "完成全部工作"
       ],
-      "subtitle": "兼顾稳定性、可控性与架构自由。支持托管使用，也支持自建部署，在易用性与控制力之间自由选择。",
+      "subtitle": "统一任务、知识、连接与交付，让 AI 真正参与工作，而不只是回答问题。",
       "primaryCta": {
         "label": "进入控制台",
         "href": "/panel"
       },
       "secondaryCta": {
-        "label": "查看定价",
-        "href": "/prices"
+        "label": "查看产品",
+        "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "主视觉插画占位符",
-        "title": "此处放置 Xworkmate/Ai-workspace 的连线拓扑图/卡片图片",
-        "subtitle": "这些内容可由 S3 上的版本化资源动态覆盖，支持按发布批次平滑切换。",
-        "imageBasePath": "/marketing/home-hero"
+        "eyebrow": "真实工作界面",
+        "title": "任务、对话、工具与产物在一个工作空间持续协作",
+        "subtitle": "从计划到执行，从桌面到移动端，工作上下文始终连续。",
+        "imageBasePath": "/marketing/home-hero",
+        "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
+        "alt": "XWorkmate AI 工作空间，展示任务、对话、连接与交付产物"
       },
       "slides": [
         {
@@ -114,6 +118,34 @@ export const homeMarketingContentData = {
           "width": 1536,
           "height": 960,
           "alt": "移动版 AI 工作空间"
+        }
+      ]
+    },
+    "coreCapabilities": {
+      "eyebrow": "完整工作闭环",
+      "title": "计划、连接、交付，在同一条工作线上持续推进",
+      "description": "每一步都保留上下文、执行状态和结果，让团队与 AI 围绕同一目标协作。",
+      "items": [
+        {
+          "key": "plan",
+          "label": "Plan",
+          "title": "把工作计划清楚",
+          "description": "将任务、对话、项目与知识组织为可持续推进的工作上下文。",
+          "evidence": ["任务与项目", "AI 对话", "知识上下文"]
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "连接需要的能力",
+          "description": "按需接入服务、模型、数据和本地工作空间，让 AI 获得正确工具。",
+          "evidence": ["服务连接", "模型与数据", "插件与本地空间"]
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "把结果可靠交付",
+          "description": "跟进运行状态、同步产物并保留可追溯记录，让每项工作真正完成。",
+          "evidence": ["运行与进度", "产物同步", "日志与跟进"]
         }
       ]
     },
@@ -389,24 +421,28 @@ export const homeMarketingContentData = {
       "logout": "Sign out"
     },
     "hero": {
+      "eyebrow": "XWorkmate · AI Workspace",
       "title": [
-        "Build, Connect, and Control",
-        "Your AI Workspace"
+        "From conversation to delivery,",
+        "one AI workspace for",
+        "the work that matters"
       ],
-      "subtitle": "A cloud-neutral platform built for stability and freedom. Choose between our managed service or deploy your own infrastructure for ultimate control.",
+      "subtitle": "Bring tasks, knowledge, connections, and delivery together so AI can participate in the work—not just answer questions.",
       "primaryCta": {
         "label": "Enter Console",
         "href": "/panel"
       },
       "secondaryCta": {
-        "label": "View Pricing",
-        "href": "/prices"
+        "label": "Explore Product",
+        "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "Hero visual placeholder",
-        "title": "Xworkmate / Ai-workspace topology diagram or card artwork goes here",
-        "subtitle": "This area can be swapped from versioned S3 assets without changing the page layout.",
-        "imageBasePath": "/marketing/home-hero"
+        "eyebrow": "Real product workspace",
+        "title": "Tasks, conversations, tools, and artifacts working in one continuous space",
+        "subtitle": "From planning to execution and from desktop to mobile, your work keeps its context.",
+        "imageBasePath": "/marketing/home-hero",
+        "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
+        "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts"
       },
       "slides": [
         {
@@ -426,6 +462,34 @@ export const homeMarketingContentData = {
           "width": 1536,
           "height": 960,
           "alt": "Mobile Edition AI Workspace"
+        }
+      ]
+    },
+    "coreCapabilities": {
+      "eyebrow": "One continuous workflow",
+      "title": "Plan, connect, and deliver on the same line of work",
+      "description": "Keep context, execution status, and results together so your team and AI can work toward the same outcome.",
+      "items": [
+        {
+          "key": "plan",
+          "label": "Plan",
+          "title": "Make the work clear",
+          "description": "Organize tasks, conversations, projects, and knowledge into context that keeps moving forward.",
+          "evidence": ["Tasks & projects", "AI conversations", "Knowledge context"]
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "Bring in the right capabilities",
+          "description": "Connect services, models, data, and local workspaces so AI has the right tools for the job.",
+          "evidence": ["Service connections", "Models & data", "Plugins & local workspaces"]
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "Turn progress into delivery",
+          "description": "Track runs, synchronize artifacts, and retain a traceable record so the work gets finished.",
+          "evidence": ["Runs & progress", "Artifact sync", "Logs & follow-up"]
         }
       ]
     },

@@ -29,6 +29,7 @@ export type HomeMarketingContent = {
     logout: string;
   };
   hero: {
+    eyebrow: string;
     title: string[];
     subtitle: string;
     primaryCta: { label: string; href: string };
@@ -38,8 +39,22 @@ export type HomeMarketingContent = {
       title: string;
       subtitle: string;
       imageBasePath: string;
+      imageUrl: string;
+      alt: string;
     };
     slides?: { src: string; width?: number; height?: number; alt?: string }[];
+  };
+  coreCapabilities: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    items: {
+      key: "plan" | "connect" | "deliver";
+      label: string;
+      title: string;
+      description: string;
+      evidence: string[];
+    }[];
   };
   featureGrid: {
     icon: "layers" | "globe" | "shield" | "zap";

@@ -12,7 +12,6 @@ import {
   resolveHomepageHeroImage,
   type HomepageHeroAsset,
 } from "@/components/marketing/homeHeroAsset";
-import Carousel from "@/components/marketing/Carousel";
 
 export default function HeroSection() {
   const { language } = useLanguage();
@@ -33,26 +32,31 @@ export default function HeroSection() {
 
   const visual = hero.visual;
   const imageUrl =
-    asset.imageUrl ??
-    resolveHomepageHeroImage(visual.imageBasePath, asset.version);
+    (asset.imageUrl ??
+      resolveHomepageHeroImage(visual.imageBasePath, asset.version)) ||
+    visual.imageUrl;
   const visualTitle = asset.title ?? visual.title;
   const visualSubtitle = asset.subtitle ?? visual.subtitle;
   const visualEyebrow = asset.eyebrow ?? visual.eyebrow;
 
   return (
     <section
-      className={`${marketingTheme.section.container} pt-14 pb-10 sm:pt-20`}
+      className={`${marketingTheme.section.container} pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pt-24`}
     >
-      <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+      <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
         <div>
-          <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+            <Sparkles className="h-4 w-4" aria-hidden />
+            {hero.eyebrow}
+          </div>
+          <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl lg:text-[3.5rem]">
             {hero.title.map((line) => (
-              <span key={line} className="sm:block">
-                {line}{" "}
+              <span key={line} className="block">
+                {line}
               </span>
             ))}
           </h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-500 sm:text-lg">
+          <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             {hero.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -72,13 +76,33 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div className="relative mx-auto hidden w-full max-w-[38rem] sm:block">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[2rem] shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
-            <Carousel
-              images={hero.slides ?? []}
+        <figure className="mx-auto w-full max-w-[42rem]">
+          <div className="overflow-hidden rounded-[2rem] border border-slate-900/10 bg-slate-50 shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
+            <img
+              src={encodeURI(imageUrl)}
+              alt={visual.alt}
+              width={1536}
+              height={1024}
+              className="aspect-[3/2] h-auto w-full object-cover"
             />
           </div>
-        </div>
+          <figcaption className="mt-5 flex items-start gap-3 px-2">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles className="h-4 w-4" aria-hidden />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                {visualEyebrow}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {visualTitle}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                {visualSubtitle}
+              </p>
+            </div>
+          </figcaption>
+        </figure>
       </div>
     </section>
   );

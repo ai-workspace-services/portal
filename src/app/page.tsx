@@ -5,8 +5,8 @@ export const dynamic = "error";
 import Footer from "@/components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import HeroSection from "@/components/marketing/HeroSection";
+import CoreCapabilitiesSection from "@/components/marketing/CoreCapabilitiesSection";
 import ProductGrid from "@/components/marketing/ProductGrid";
-import StatsBar from "@/components/marketing/StatsBar";
 import BenefitList from "@/components/marketing/BenefitList";
 import InviteBanner from "@/components/marketing/InviteBanner";
 import PricingTeaser from "@/components/marketing/PricingTeaser";
@@ -17,7 +17,7 @@ export default function HomePage() {
       <MarketingNav />
       <main>
         <HeroSection />
-        <StatsBar />
+        <CoreCapabilitiesSection />
         <ProductGrid />
         <BenefitList />
         <InviteBanner />
