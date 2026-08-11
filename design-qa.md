@@ -42,3 +42,39 @@ No P0/P1/P2 visual iteration was run because the first implementation comparison
 - [ ] Re-run interaction and console-error checks.
 
 final result: blocked
+
+---
+
+# Homepage marketing carousel design QA
+
+**Source visual truth**: the Web, Desktop App, and Mobile App screenshots supplied in this task, plus the generated carousel assets in `public/marketing/home-hero/`.
+
+**Implementation screenshot**: not captured. Starting the local homepage at `http://localhost:3001/` stops at the Next.js build overlay because the existing project lacks OpenTelemetry modules (`@opentelemetry/exporter-trace-otlp-proto`, `@opentelemetry/instrumentation-http`, `@opentelemetry/instrumentation-undici`, and `@opentelemetry/sdk-node`).
+
+**Viewport**: intended desktop homepage viewport; no browser-rendered implementation viewport is available while the build is blocked.
+
+**State**: homepage, Chinese locale, first hero slide, with desktop screenshot grid.
+
+## Comparison evidence
+
+- Full-view source: three new 1536 × 1024 carousel assets represent one shared task session across Web, Desktop App, and Mobile App.
+- Implementation capture: blocked by the existing dependency failure before the homepage renders.
+- Static verification: both Chinese and English hero configurations point at the three generated assets; the screenshot grid uses `lg:grid-cols-4` and preserves the mobile horizontal scroller.
+
+## Findings
+
+- [P0] Browser-rendered homepage capture is unavailable.
+  Location: local homepage preview.
+  Evidence: Next.js reports missing OpenTelemetry dependencies before route rendering.
+  Impact: the generated images and four-column layout cannot be visually compared in the browser.
+  Fix: restore the missing dependencies, restart the local server, then capture and review the homepage at the target desktop and mobile breakpoints.
+
+## Implementation checklist
+
+- [x] Add Web, Desktop App, and Mobile App carousel images.
+- [x] Update both locale configurations with the new three-slide sequence.
+- [x] Make the product screenshot section four columns at the large desktop breakpoint.
+- [x] Preserve mobile horizontal scrolling and all existing product links.
+- [ ] Restore local dependencies and complete browser-rendered visual QA.
+
+final result: blocked
