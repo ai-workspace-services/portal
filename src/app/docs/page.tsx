@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { PublicPageIntro } from "@/components/public/PublicPageShell";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -19,25 +20,45 @@ import docsHomeContent from "@/data/content/docs-home";
 const collectionIcons: Record<string, LucideIcon> = {
   xworkmate: Blocks,
   xconnect: Network,
+  "ai-workspace": Sparkles,
   "open-platform": Boxes,
 };
 
 export default function DocsHome() {
   const { language } = useLanguage();
   const isChinese = language === "zh";
-  const content =
+  const fallbackContent =
     (docsHomeContent as any)[language] || (docsHomeContent as any).zh;
+  const [content, setContent] = useState(fallbackContent);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setContent(fallbackContent);
+    fetch("/api/docs/catalog", { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("catalog unavailable");
+        return response.json();
+      })
+      .then((nextContent) => setContent(nextContent))
+      .catch((error) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setContent(fallbackContent);
+        }
+      });
+    return () => controller.abort();
+  }, [fallbackContent, language]);
   const collections = content?.collections || [];
   const home = content?.home;
   const articleCount = collections.reduce(
-    (sum: number, collection: any) => sum + (collection.versions?.length || 0),
+    (sum: number, collection: any) =>
+      sum + (collection.articleCount ?? collection.versions?.length ?? 0),
     0,
   );
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <section className="relative overflow-hidden rounded-[1.65rem] border border-slate-900/10 bg-[radial-gradient(circle_at_88%_18%,rgba(0,88,189,0.12),transparent_29%),linear-gradient(135deg,#ffffff_0%,#fbfcfd_58%,#f2f6fb_100%)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
-        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
+      <section className="relative overflow-hidden rounded-[1.65rem] border border-slate-900/10 bg-[radial-gradient(circle_at_88%_18%,rgba(0,88,189,0.12),transparent_29%),linear-gradient(135deg,#ffffff_0%,#fbfcfd_58%,#f2f6fb_100%)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)] sm:p-7 lg:p-8">
+        <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
           <PublicPageIntro
             eyebrow={isChinese ? "文档中心" : "Documentation"}
             title={home?.title || "Documentation"}
@@ -45,33 +66,33 @@ export default function DocsHome() {
               home?.description ||
               "Unified references for XWork Tech Toolkit services."
             }
-            titleClassName="editorial-display text-[2.8rem] tracking-[-0.07em] sm:text-[3.6rem]"
+            titleClassName="editorial-display max-w-5xl text-[2.35rem] tracking-[-0.065em] sm:text-[3rem] lg:text-[3.15rem]"
           />
 
           <div className="rounded-[1.25rem] border border-slate-900/10 bg-white/82 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.04)] backdrop-blur-sm">
             <p className="px-2 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {isChinese ? "内容概览" : "Library snapshot"}
             </p>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-              <div className="rounded-[0.95rem] border border-slate-900/8 bg-white/90 p-4">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="rounded-[0.95rem] border border-slate-900/8 bg-white/90 p-3.5">
                 <div className="flex items-center gap-2 text-slate-900">
                   <BookCopy className="h-4 w-4 text-primary" aria-hidden />
                   <span className="text-sm font-semibold">
                     {isChinese ? "内容集合" : "Collections"}
                   </span>
                 </div>
-                <p className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-900">
+                <p className="mt-1.5 text-2xl font-semibold tracking-[-0.05em] text-slate-900">
                   {collections.length}
                 </p>
               </div>
-              <div className="rounded-[0.95rem] border border-slate-900/8 bg-white/90 p-4">
+              <div className="rounded-[0.95rem] border border-slate-900/8 bg-white/90 p-3.5">
                 <div className="flex items-center gap-2 text-slate-900">
                   <Files className="h-4 w-4 text-primary" aria-hidden />
                   <span className="text-sm font-semibold">
                     {isChinese ? "文档文章" : "Articles"}
                   </span>
                 </div>
-                <p className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-slate-900">
+                <p className="mt-1.5 text-2xl font-semibold tracking-[-0.05em] text-slate-900">
                   {articleCount}
                 </p>
               </div>
@@ -98,17 +119,18 @@ export default function DocsHome() {
             </span>
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-3">
+          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-4">
             {collections.map((collection: any) => {
               const Icon = collectionIcons[collection.slug] || BookCopy;
               return (
                 <Link
                   key={collection.slug}
                   href={
+                    collection.entryHref ||
                     "/docs/" +
-                    collection.slug +
-                    "/" +
-                    collection.defaultVersionSlug
+                      collection.slug +
+                      "/" +
+                      collection.defaultVersionSlug
                   }
                   className="group relative flex min-h-[16rem] flex-col overflow-hidden rounded-[1.15rem] border border-slate-900/10 bg-white/86 p-5 transition duration-200 hover:-translate-y-[2px] hover:border-primary/20 hover:bg-white hover:shadow-[0_18px_34px_rgba(15,23,42,0.07)]"
                 >
@@ -131,7 +153,9 @@ export default function DocsHome() {
                   </div>
                   <div className="mt-6 flex items-center justify-between border-t border-slate-900/8 pt-4">
                     <span className="text-xs font-semibold text-slate-500">
-                      {collection.versions?.length || 0}{" "}
+                      {collection.articleCount ??
+                        collection.versions?.length ??
+                        0}{" "}
                       {isChinese ? "篇文章" : "articles"}
                     </span>
                     <span className="text-xs font-semibold text-primary">
