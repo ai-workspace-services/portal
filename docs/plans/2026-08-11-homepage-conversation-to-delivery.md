@@ -6,6 +6,13 @@
 
 设计基线见 [首页设计语言：从对话到交付](../design/homepage-conversation-to-delivery.md)。
 
+## 实施状态
+
+- P1 已完成并合并：首屏价值主张、Plan / Connect / Deliver 三项核心能力。
+- P2 已完成：Web / Desktop / Mobile 三端轮播与创建 → 连接 → 执行 → 交付工作流。
+- P3 已完成：安全、权限、连接、部署控制能力，产品事实区和最终双 CTA。
+- 文档侧栏预目录需求已撤回，本次不修改 `/docs` 左侧导航。
+
 ## 现状与改造边界
 
 当前首页按 `HeroSection → StatsBar → ProductGrid → BenefitList → InviteBanner → PricingTeaser` 排列。它已具备语言状态、营销主题和轮播组件，但区块内容仍按产品/泛用卖点分散组织。

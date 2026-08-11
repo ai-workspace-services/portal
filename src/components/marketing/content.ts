@@ -56,6 +56,41 @@ export type HomeMarketingContent = {
       evidence: string[];
     }[];
   };
+  editions: {
+    eyebrow: string;
+    title: string;
+    description: string;
+  };
+  workflow: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    steps: {
+      key: "create" | "connect" | "execute" | "deliver";
+      label: string;
+      title: string;
+      description: string;
+      evidence: string;
+    }[];
+  };
+  controls: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    items: {
+      key: "security" | "permissions" | "connections" | "deployment";
+      title: string;
+      description: string;
+      evidence: string;
+    }[];
+  };
+  proof: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    facts: { value: string; label: string }[];
+    links: { label: string; href: string }[];
+  };
   featureGrid: {
     icon: "layers" | "globe" | "shield" | "zap";
     title: string;
@@ -101,7 +136,8 @@ export type HomeMarketingContent = {
   finalCta: {
     title: string;
     description: string;
-    cta: { label: string; href: string };
+    primaryCta: { label: string; href: string };
+    secondaryCta: { label: string; href: string };
   };
 };
 
