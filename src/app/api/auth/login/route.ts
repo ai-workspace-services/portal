@@ -17,6 +17,7 @@ import {
 const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
 
 type LoginPayload = {
+  identifier?: string;
   email?: string;
   password?: string;
   remember?: boolean;
@@ -36,8 +37,8 @@ type AccountLoginResponse = {
   mfaEnabled?: boolean;
 };
 
-function normalizeEmail(value: unknown) {
-  return typeof value === "string" ? value.trim().toLowerCase() : "";
+function normalizeIdentifier(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function normalizeCode(value: unknown) {
@@ -56,23 +57,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const email = normalizeEmail(payload?.email);
+  const identifier = normalizeIdentifier(payload?.identifier ?? payload?.email);
   const password =
     typeof payload?.password === "string" ? payload.password : "";
   const totpCode = normalizeCode(payload?.totp ?? payload?.code);
   const remember = Boolean(payload?.remember);
 
-  if (!email || !password) {
+  if (!identifier || !password) {
     return NextResponse.json(
       { success: false, error: "missing_credentials", needMfa: false },
       { status: 400 },
     );
   }
 
+  const requestHost = request.headers.get("host");
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
+
   if (
     isSelfReferentialServiceTarget(
-      ACCOUNT_API_BASE,
-      request.headers.get("host"),
+      accountApiBase,
+      requestHost,
     )
   ) {
     return NextResponse.json(
@@ -86,12 +90,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const loginBody: Record<string, string> = { email, password };
+    const loginBody: Record<string, string> = { identifier, password };
     if (totpCode) {
       loginBody.totpCode = totpCode;
     }
 
-    const response = await fetch(`${ACCOUNT_API_BASE}/login`, {
+    const response = await fetch(`${accountApiBase}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

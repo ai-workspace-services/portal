@@ -284,6 +284,8 @@ type AuthLoginTranslation = {
     emailPlaceholder: string
     password: string
     passwordPlaceholder: string
+    showPassword: string
+    hidePassword: string
     remember: string
     submit: string
     submitting?: string
@@ -451,6 +453,8 @@ type UserCenterMfaTranslation = {
   }
   modal: {
     title: string
+    setupTitle: string
+    setupDescription: string
     close: string
   }
   disable: {
@@ -470,6 +474,79 @@ type UserCenterMfaTranslation = {
     disableFailed: string
   }
   error: string
+}
+
+type UserCenterAccountTranslation = {
+  breadcrumbs: {
+    dashboard: string
+    account: string
+  }
+  serviceReadiness: {
+    loading: string
+    error: string
+    readyTitle: string
+    readyBody: string
+    eyebrow: string
+    title: string
+    description: string
+    refresh: string
+    currentStep: string
+    complete: string
+    continue: string
+    newPasswordLabel: string
+    newPasswordPlaceholder: string
+    saving: string
+    setPassword: string
+    passwordTooShort: string
+  }
+  subscription: {
+    title: string
+    description: string
+    manageBilling: string
+    openingBilling: string
+    portalError: string
+    cancelError: string
+    cancelRequestError: string
+    usage: string
+    usageDescription: string
+    source: string
+    monthlyQuota: string
+    used: string
+    periodReset: string
+    balanceQuota: string
+    remainingQuota: string
+    package: string
+    rules: string
+    policySync: string
+    syncDelay: string
+    eligibleGroups: string
+    status: string
+    arrears: string
+    normal: string
+    recentLedger: string
+    recentLedgerDescription: string
+    overviewTab: string
+    detailTab: string
+    last1Hour: string
+    last24Hours: string
+    monthToDate: string
+    loading: string
+    empty: string
+    subscriptionRecords: string
+    paymentMethod: string
+    plan: string
+    externalId: string
+    created: string
+    updated: string
+    starts: string
+    expires: string
+    cancelled: string
+    note: string
+    historical: string
+    cancelledAction: string
+    processing: string
+    stop: string
+  }
 }
 
 type UserCenterTranslation = {
@@ -496,6 +573,7 @@ type UserCenterTranslation = {
   }
   overview: UserCenterOverviewTranslation
   mfa: UserCenterMfaTranslation
+  account: UserCenterAccountTranslation
 }
 
 type AboutTranslation = {
@@ -638,7 +716,7 @@ export type Translation = {
 export const translations: Record<'en' | 'zh', Translation> = {
   en: {
     hero: {
-      title: 'Cloud-Neutral',
+      title: 'XWork Tech',
       description: 'Unified tools for building and managing your cloud native stack.',
       start: 'Get Started',
       learn: 'Learn More',
@@ -696,7 +774,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     login: {
       title: 'Account Login',
-      description: 'Sign in to personalize your Cloud-Neutral experience.',
+      description: 'Sign in to personalize your XWork Tech experience.',
       usernameLabel: 'Username',
       passwordLabel: 'Password',
       submit: 'Sign in',
@@ -793,7 +871,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     auth: {
       register: {
         badge: 'Create account',
-        title: 'Join Cloud-Neutral',
+        title: 'Join XWork Tech',
 
         subtitle: 'We’ll email a verification code so you can confirm your address before accessing the workspace.',
 
@@ -903,10 +981,12 @@ export const translations: Record<'en' | 'zh', Translation> = {
         form: {
           title: 'Sign in to your account',
           subtitle: 'Use the email, password, and authenticator code you registered with.',
-          email: 'User email',
-          emailPlaceholder: 'name@example.com',
+          email: 'Username or email',
+          emailPlaceholder: 'name@example.com or admin',
           password: 'Password',
           passwordPlaceholder: 'Enter your password',
+          showPassword: 'Show password',
+          hidePassword: 'Hide password',
           remember: 'Remember this device',
           submit: 'Sign in',
           mfa: {
@@ -924,7 +1004,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           wechat: 'Continue with WeChat',
         },
         registerPrompt: {
-          text: 'New to Cloud-Neutral?',
+          text: 'New to XWork Tech?',
           link: 'Create an account',
         },
         alerts: {
@@ -986,7 +1066,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         preferences: 'Preferences',
       },
       items: {
-        dashboard: 'Dashboard',
+        dashboard: 'Overview',
         agents: 'Agents',
         apis: 'APIs',
         accounts: 'Accounts',
@@ -1114,6 +1194,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         modal: {
           title: 'Manage multi-factor authentication',
+          setupTitle: 'Complete multi-factor authentication',
+          setupDescription: 'This security step protects operations, account actions, and billing changes.',
           close: 'Close window',
         },
         disable: {
@@ -1133,6 +1215,75 @@ export const translations: Record<'en' | 'zh', Translation> = {
           disableFailed: 'We could not reset MFA. Please try again later.',
         },
         error: 'We could not complete the request. Please try again.',
+      },
+      account: {
+        breadcrumbs: { dashboard: 'Dashboard', account: 'Account' },
+        serviceReadiness: {
+          loading: 'Loading account readiness…',
+          error: 'We could not load your account readiness. Please try again.',
+          readyTitle: 'Advanced services unlocked',
+          readyBody: 'Your account meets the email, password, and MFA requirements.',
+          eyebrow: 'Advanced services',
+          title: 'Finish account security setup',
+          description: 'Dedicated resources and advanced automations unlock after these three security checks are complete.',
+          refresh: 'Refresh',
+          currentStep: 'CURRENT STEP',
+          complete: 'Complete',
+          continue: 'Continue',
+          newPasswordLabel: 'New account password',
+          newPasswordPlaceholder: 'New password (8+ characters)',
+          saving: 'Saving…',
+          setPassword: 'Set password',
+          passwordTooShort: 'Use at least 8 characters for your password.',
+        },
+        subscription: {
+          title: 'Subscriptions & billing',
+          description: 'Review Stripe purchases and subscription status, or manage billing in the customer portal.',
+          manageBilling: 'Manage Stripe billing',
+          openingBilling: 'Opening…',
+          portalError: 'The Stripe customer portal is temporarily unavailable.',
+          cancelError: 'Could not cancel the subscription. Please try again.',
+          cancelRequestError: 'An error occurred while cancelling the subscription.',
+          usage: 'Authoritative usage',
+          usageDescription: 'Usage is aggregated by accounts.svc.plus, not counted by the local client.',
+          source: 'Source',
+          monthlyQuota: 'Monthly quota',
+          used: 'Used',
+          periodReset: 'Period reset',
+          balanceQuota: 'Balance / quota',
+          remainingQuota: 'Remaining quota',
+          package: 'Package',
+          rules: 'Rules',
+          policySync: 'Policy / sync',
+          syncDelay: 'Sync delay',
+          eligibleGroups: 'Eligible groups',
+          status: 'Status',
+          arrears: 'In arrears',
+          normal: 'Normal',
+          recentLedger: 'Recent billing ledger',
+          recentLedgerDescription: 'Latest usage-based billing entries returned by accounts.svc.plus.',
+          overviewTab: 'Overview',
+          detailTab: 'Details',
+          last1Hour: 'Last 1 hour',
+          last24Hours: 'Last 24 hours',
+          monthToDate: 'Month to date',
+          loading: 'Loading subscriptions…',
+          empty: 'No subscription records yet.',
+          subscriptionRecords: 'Subscription records',
+          paymentMethod: 'Payment method',
+          plan: 'Plan',
+          externalId: 'External ID',
+          created: 'Created',
+          updated: 'Updated',
+          starts: 'Starts',
+          expires: 'Expires',
+          cancelled: 'Cancelled',
+          note: 'Note',
+          historical: 'Historical record',
+          cancelledAction: 'Cancelled',
+          processing: 'Processing…',
+          stop: 'Cancel subscription',
+        },
       },
     },
     marketing: {
@@ -1202,7 +1353,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           ],
         },
         stats: [
-          { value: '0+', label: 'Integration of Cloud-Neutral Toolkit applications' },
+          { value: '0+', label: 'Integration of XWork Tech Toolkit applications' },
           { value: '0+', label: 'Recent 24h Visits' },
           { value: '7', label: 'View our examples and guides' },
         ],
@@ -1214,20 +1365,20 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         shortcuts: {
           title: 'More shortcuts',
-          subtitle: 'Save time when integrating Cloud-Neutral Toolkit',
+          subtitle: 'Save time when integrating XWork Tech Toolkit',
           buttons: {
             start: 'Get Started',
             docs: 'Docs',
             guides: 'Guides',
           },
           items: [
-            { title: 'Get started', description: 'An overview of using Cloud-Neutral Toolkit' },
-            { title: 'Creating your application', description: 'Integrate Cloud-Neutral Toolkit into your application' },
-            { title: 'More about Authentication', description: 'Understand all about authenticating with Cloud-Neutral Toolkit' },
-            { title: 'Understanding Authorization', description: 'Scope out all about authorization using Cloud-Neutral Toolkit' },
-            { title: 'Machine-to-Machine', description: 'Integrate Cloud-Neutral Toolkit into your services' },
-            { title: 'Connect via CLI', description: 'Connect Cloud-Neutral Toolkit with your application via CLI' },
-            { title: 'REST & Admin APIs', description: 'Programmatically integrate Cloud-Neutral Toolkit into your application' },
+            { title: 'Get started', description: 'An overview of using XWork Tech Toolkit' },
+            { title: 'Creating your application', description: 'Integrate XWork Tech Toolkit into your application' },
+            { title: 'More about Authentication', description: 'Understand all about authenticating with XWork Tech Toolkit' },
+            { title: 'Understanding Authorization', description: 'Scope out all about authorization using XWork Tech Toolkit' },
+            { title: 'Machine-to-Machine', description: 'Integrate XWork Tech Toolkit into your services' },
+            { title: 'Connect via CLI', description: 'Connect XWork Tech Toolkit with your application via CLI' },
+            { title: 'REST & Admin APIs', description: 'Programmatically integrate XWork Tech Toolkit into your application' },
           ],
         },
         tabsLabel: 'Product Matrix',
@@ -1380,17 +1531,17 @@ export const translations: Record<'en' | 'zh', Translation> = {
             secondaryCtaLabel: 'Download',
             tertiaryCtaLabel: 'Documentation',
           },
-          xstream: {
-            tagline: 'Global network accelerator',
+          xconnect: {
+            tagline: 'AI workspace connector',
             description:
-              'Build a programmable worldwide network to keep cross-region applications and data sync low-latency and reliable.',
+              'Connect AI workspaces with secure access and acceleration for real work.',
             features: [
-              'Dynamic path optimization and bandwidth scheduling',
-              'Zero-trust security and access control built in',
-              'Connect with leading CDNs and edge locations',
+              'Workspace connection for self-hosted and managed deployments',
+              'AI acceleration and secure access built in',
+              'Unified routing for collaboration-ready workflows',
             ],
             bodyHtml:
-              '<p>XStream applies software-defined acceleration to deliver stable global links for real-time interaction, media streaming, and data distribution.</p>',
+              '<p>XConnect is the connector for AI workspaces, combining secure access, acceleration, and workflow-ready connectivity in one product.</p>',
             primaryCtaLabel: 'Try now',
             secondaryCtaLabel: 'Download',
             tertiaryCtaLabel: 'Documentation',
@@ -1509,7 +1660,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     login: {
       title: '账户登录',
-      description: '登录以获得个性化的 Cloud-Neutral 体验。',
+      description: '登录以获得个性化的 XWork Tech 体验。',
       usernameLabel: '用户名',
       passwordLabel: '密码',
       submit: '立即登录',
@@ -1605,7 +1756,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     auth: {
       register: {
         badge: '立即注册',
-        title: '加入 Cloud-Neutral',
+        title: '加入 XWork Tech',
         subtitle: '我们会先向你的邮箱发送验证码，确认地址后即可进入工作台。',
 
         highlights: [
@@ -1700,10 +1851,12 @@ export const translations: Record<'en' | 'zh', Translation> = {
         form: {
           title: '登录账号',
           subtitle: '使用注册时的邮箱、密码和动态验证码即可访问。',
-          email: '用户邮箱',
-          emailPlaceholder: 'name@example.com',
+          email: '用户名或邮箱',
+          emailPlaceholder: '邮箱或用户名',
           password: '密码',
           passwordPlaceholder: '请输入密码',
+          showPassword: '显示密码',
+          hidePassword: '隐藏密码',
           remember: '记住这台设备',
           submit: '登录',
           mfa: {
@@ -1783,7 +1936,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         preferences: '偏好设置',
       },
       items: {
-        dashboard: '仪表盘',
+        dashboard: '总览',
         agents: '运行节点',
         apis: '接口集成',
         accounts: '账户中心',
@@ -1907,6 +2060,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         modal: {
           title: '管理多因素认证',
+          setupTitle: '完成多因素认证',
+          setupDescription: '完成后才能使用运营管理、账号处置和计费变更等核心功能。',
           close: '关闭窗口',
         },
         disable: {
@@ -1926,6 +2081,75 @@ export const translations: Record<'en' | 'zh', Translation> = {
           disableFailed: '无法重置多因素认证，请稍后再试。',
         },
         error: '操作失败，请稍后再试。',
+      },
+      account: {
+        breadcrumbs: { dashboard: '控制台', account: '账户' },
+        serviceReadiness: {
+          loading: '正在加载账户状态…',
+          error: '无法加载账户状态，请稍后重试。',
+          readyTitle: '高级服务已解锁',
+          readyBody: '您的账户已满足邮箱、密码和多因素认证要求。',
+          eyebrow: '高级服务',
+          title: '完成账户安全设置',
+          description: '完成这三项安全检查后，即可解锁专属资源和高级自动化功能。',
+          refresh: '刷新',
+          currentStep: '当前步骤',
+          complete: '已完成',
+          continue: '继续',
+          newPasswordLabel: '新账户密码',
+          newPasswordPlaceholder: '新密码（至少 8 个字符）',
+          saving: '保存中…',
+          setPassword: '设置密码',
+          passwordTooShort: '密码至少需要 8 个字符。',
+        },
+        subscription: {
+          title: '订阅与计费',
+          description: '查看 Stripe 购买记录和当前订阅状态，或进入客户门户管理账单。',
+          manageBilling: '管理 Stripe 账单',
+          openingBilling: '跳转中…',
+          portalError: '暂时无法打开 Stripe 客户门户。',
+          cancelError: '取消订阅失败，请稍后重试。',
+          cancelRequestError: '取消订阅时发生错误。',
+          usage: '权威用量',
+          usageDescription: '用量由 accounts.svc.plus 汇总，不以本地客户端计数为准。',
+          source: '数据源',
+          monthlyQuota: '月度配额',
+          used: '已用',
+          periodReset: '本期重置',
+          balanceQuota: '余额 / 配额',
+          remainingQuota: '剩余配额',
+          package: '套餐',
+          rules: '规则',
+          policySync: '策略 / 同步',
+          syncDelay: '统计延迟约',
+          eligibleGroups: '策略组',
+          status: '状态',
+          arrears: '欠费',
+          normal: '正常',
+          recentLedger: '近期计费分录',
+          recentLedgerDescription: '展示 accounts.svc.plus 返回的最新按量计费分录。',
+          overviewTab: '概览',
+          detailTab: '详情',
+          last1Hour: '最近 1 小时',
+          last24Hours: '最近 24 小时',
+          monthToDate: '本月合计',
+          loading: '加载订阅中…',
+          empty: '暂无订阅记录。',
+          subscriptionRecords: '订阅记录',
+          paymentMethod: '付款方式',
+          plan: '套餐',
+          externalId: '外部 ID',
+          created: '创建时间',
+          updated: '更新时间',
+          starts: '开始时间',
+          expires: '到期时间',
+          cancelled: '取消时间',
+          note: '备注',
+          historical: '历史记录',
+          cancelledAction: '已取消',
+          processing: '处理中…',
+          stop: '停止订阅',
+        },
       },
     },
     marketing: {
@@ -1995,7 +2219,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           ],
         },
         stats: [
-          { value: '0+', label: '集成 Cloud-Neutral Toolkit 的应用程序' },
+          { value: '0+', label: '集成 XWork Tech Toolkit 的应用程序' },
           { value: '0+', label: '最近24小时访量' },
           { value: '7', label: '查看我们的示例和指南' },
         ],
@@ -2007,20 +2231,20 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         shortcuts: {
           title: '更多快捷方式',
-          subtitle: '在集成 Cloud-Neutral Toolkit 时节省时间',
+          subtitle: '在集成 XWork Tech Toolkit 时节省时间',
           buttons: {
             start: '开始使用',
             docs: '文档',
             guides: '指南',
           },
           items: [
-            { title: '开始使用', description: 'Cloud-Neutral Toolkit 使用概览' },
-            { title: '创建您的应用程序', description: '将 Cloud-Neutral Toolkit 集成到您的应用程序中' },
-            { title: '关于身份验证', description: '了解有关使用 Cloud-Neutral Toolkit 进行身份验证的所有信息' },
-            { title: '了解授权', description: '了解有关使用 Cloud-Neutral Toolkit 进行授权的所有信息' },
-            { title: '机器对机器', description: '将 Cloud-Neutral Toolkit 集成到您的服务中' },
-            { title: '通过 CLI 连接', description: '通过 CLI 将 Cloud-Neutral Toolkit 连接到您的应用程序' },
-            { title: 'REST & Admin APIs', description: '通过编程将 Cloud-Neutral Toolkit 集成到您的应用程序中' },
+            { title: '开始使用', description: 'XWork Tech Toolkit 使用概览' },
+            { title: '创建您的应用程序', description: '将 XWork Tech Toolkit 集成到您的应用程序中' },
+            { title: '关于身份验证', description: '了解有关使用 XWork Tech Toolkit 进行身份验证的所有信息' },
+            { title: '了解授权', description: '了解有关使用 XWork Tech Toolkit 进行授权的所有信息' },
+            { title: '机器对机器', description: '将 XWork Tech Toolkit 集成到您的服务中' },
+            { title: '通过 CLI 连接', description: '通过 CLI 将 XWork Tech Toolkit 连接到您的应用程序' },
+            { title: 'REST & Admin APIs', description: '通过编程将 XWork Tech Toolkit 集成到您的应用程序中' },
           ],
         },
         tabsLabel: '产品矩阵',

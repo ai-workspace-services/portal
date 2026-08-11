@@ -2,6 +2,7 @@ import {
   Code,
   CreditCard,
   Home,
+  LayoutDashboard,
   Palette,
   Server,
   Settings,
@@ -17,7 +18,7 @@ export const userCenterExtension: DashboardExtension = {
     title: "用户中心",
     description: "核心控制台能力，包括账户、管理与观测功能。",
     version: "1.0.0",
-    author: "Cloud-Neutral",
+    author: "XWork Tech",
     keywords: ["dashboard", "accounts", "management"],
   },
   routes: [
@@ -78,7 +79,7 @@ export const userCenterExtension: DashboardExtension = {
       loader: () => import("./routes/account"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
-      sidebar: { section: "management", order: 20 },
+      sidebar: { section: "management", order: 20, hidden: true },
     },
     {
       id: "subscription",
@@ -135,7 +136,7 @@ export const userCenterExtension: DashboardExtension = {
       loader: () => import("./routes/management"),
       guard: {
         requireLogin: true,
-        roles: ["admin", "operator"],
+        roles: ["admin", "operator"] as Array<"admin" | "operator">,
         permissions: [
           "admin.settings.read",
           "admin.users.metrics.read",
@@ -146,7 +147,56 @@ export const userCenterExtension: DashboardExtension = {
       },
       match: "startsWith",
       redirect: { unauthenticated: "/login", forbidden: "/panel" },
-      sidebar: { section: "admin", order: 99, hidden: true },
+      // 对 admin / operator（含由组继承而来的）显示在侧边栏；普通用户看不到，
+      // 也进不去。PanelSidebarContent 对每个带 roles 的路由都会跑一次
+      // resolveAccess，不通过就整条隐藏，所以取消 hidden 不会把入口暴露给
+      // 无权限的人——hidden 原本只是"连有权限的人也不显示"。
+      sidebar: { section: "admin", order: 99 },
     },
+    {
+      id: "ops",
+      path: "/panel/ops",
+      label: "运营工作台",
+      description: "经营状态与账号处置",
+      icon: LayoutDashboard,
+      loader: () => import("./routes/ops"),
+      match: "startsWith",
+      guard: {
+        requireLogin: true,
+        roles: ["admin", "operator"] as Array<"admin" | "operator">,
+      },
+      redirect: { unauthenticated: "/login", forbidden: "/panel" },
+      sidebar: { section: "admin", order: 10 },
+    },
+    {
+      id: "ops-accounts",
+      path: "/panel/ops/accounts",
+      label: "账号处置台",
+      description: "检索账号并执行运营处置",
+      icon: LayoutDashboard,
+      loader: () => import("./routes/ops"),
+      match: "startsWith",
+      guard: {
+        requireLogin: true,
+        roles: ["admin", "operator"] as Array<"admin" | "operator">,
+      },
+      redirect: { unauthenticated: "/login", forbidden: "/panel" },
+      sidebar: { section: "admin", order: 11, hidden: true },
+    },
+    ...["billing/plans", "billing/ledger", "audit", "system"].map((suffix) => ({
+      id: `ops-${suffix.replace("/", "-")}`,
+      path: `/panel/ops/${suffix}`,
+      label: suffix === "audit" ? "审计与系统" : suffix === "system" ? "系统管理" : suffix === "billing/plans" ? "套餐与订阅" : "账单与对账",
+      description: "运营工作台子模块",
+      icon: LayoutDashboard,
+      loader: () => import("./routes/ops"),
+      match: "startsWith" as const,
+      guard: {
+        requireLogin: true,
+        roles: ["admin", "operator"] as Array<"admin" | "operator">,
+      },
+      redirect: { unauthenticated: "/login", forbidden: "/panel" },
+      sidebar: { section: "admin", order: 12, hidden: true },
+    })),
   ],
 };

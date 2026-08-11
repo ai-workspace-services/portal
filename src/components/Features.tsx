@@ -21,11 +21,11 @@ type EcosystemNode = {
 const featureCopy: Record<PageVariant, Record<'zh' | 'en', { title: string; subtitle: string }>> = {
   homepage: {
     zh: {
-      title: '构建一体化的 Cloud-Neutral 云原生生态',
+      title: '构建一体化的 XWork Tech 云原生生态',
       subtitle: '通过统一治理、自动化与可观测能力，连接团队、工具与环境。',
     },
     en: {
-      title: 'Build a unified Cloud-Neutral cloud-native ecosystem',
+      title: 'Build a unified XWork Tech cloud-native ecosystem',
       subtitle: 'Connect teams, toolchains, and environments with shared governance, automation, and observability.',
     },
   },
@@ -59,8 +59,8 @@ const ecosystemNodes: Record<'zh' | 'en', EcosystemNode[]> = {
       accent: 'from-indigo-100/80',
     },
     {
-      title: 'XStream — 网络加速与安全通信',
-      description: '覆盖边缘与中心的安全连接网络，让混合云与多集群的体验保持一致。',
+      title: 'XConnect — AI 工作空间连接器与加速',
+      description: '覆盖自建与预置工作区的安全连接，让混合部署与多团队协作保持一致。',
       accent: 'from-sky-100/80',
     },
   ],
@@ -76,8 +76,8 @@ const ecosystemNodes: Record<'zh' | 'en', EcosystemNode[]> = {
       accent: 'from-indigo-100/80',
     },
     {
-      title: 'XStream — Network acceleration & secure communications',
-      description: 'An intelligent connectivity layer spanning edge and core keeps hybrid footprints performant and safe.',
+      title: 'XConnect — AI workspace connector & acceleration',
+      description: 'An intelligent connectivity layer for AI workspaces keeps hybrid deployments fast and safe.',
       accent: 'from-sky-100/80',
     },
   ],

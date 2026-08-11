@@ -1,9 +1,8 @@
-export const homeMarketingContentData = 
-{
+export const homeMarketingContentData = {
   "zh": {
     "brand": {
       "name": "SVC+",
-      "tagline": "Cloud-Neutral"
+      "tagline": "AI 工作空间平台"
     },
     "nav": {
       "dropdowns": [
@@ -11,19 +10,24 @@ export const homeMarketingContentData =
           "label": "产品与服务",
           "columns": [
             {
-              "label": "AI Workspace",
-              "description": "让 AI 真正参与你的工作，而不是停留在对话中",
+              "label": "XWorkmate",
+              "description": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中",
               "href": "/products/xworkmate"
             },
             {
-              "label": "Platform & Infrastructure",
-              "description": "为 AI Workspace 提供可控、可扩展的基础支撑",
-              "href": "/products/open-platform"
+              "label": "XConnect",
+              "description": "AI Connectivity · 为 AI Workspace 提供稳定、安全的连接能力",
+              "href": "/products/xconnect"
             },
             {
-              "label": "AI Connectivity",
-              "description": "为 AI Workspace 提供稳定、安全的连接能力",
-              "href": "/products/xstream"
+              "label": "AI Workspace",
+              "description": "立即进入你的智能工作台，开始对话、任务与交付",
+              "href": "/products/ai-workspace"
+            },
+            {
+              "label": "Open Platform",
+              "description": "开源、可控、可扩展的基础设施支撑，支持自建部署",
+              "href": "/products/open-platform"
             }
           ]
         },
@@ -73,40 +77,254 @@ export const homeMarketingContentData =
       "logout": "退出登录"
     },
     "hero": {
+      "eyebrow": "XWorkmate · AI Workspace",
       "title": [
-        "构建、连接并掌控你的",
-        "AI 工作空间平台"
+        "从对话到交付，",
+        "一个 AI 工作空间",
+        "完成全部工作"
       ],
-      "subtitle": "兼顾稳定性、可控性与架构自由。支持托管使用，也支持自建部署，在易用性与控制力之间自由选择。",
+      "subtitle": "统一任务、知识、连接与交付，让 AI 真正参与工作，而不只是回答问题。",
       "primaryCta": {
         "label": "进入控制台",
         "href": "/panel"
       },
       "secondaryCta": {
-        "label": "查看定价",
-        "href": "/prices"
+        "label": "查看产品",
+        "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "主视觉插画占位符",
-        "title": "此处放置 Xworkmate/Ai-workspace 的连线拓扑图/卡片图片",
-        "subtitle": "这些内容可由 S3 上的版本化资源动态覆盖，支持按发布批次平滑切换。",
-        "imageBasePath": "/marketing/home-hero"
+        "eyebrow": "真实 AI Workspace",
+        "title": "Agent、对话、工具与产物在一个连续工作空间协同",
+        "subtitle": "从计划到执行，工作上下文始终保持连续。",
+        "imageBasePath": "/marketing/home-hero",
+        "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
+        "alt": "XWorkmate AI 工作空间，展示任务、对话、连接与交付产物",
+        "connectionNodes": [
+          {
+            "key": "models",
+            "label": "AI 模型",
+            "items": [
+              "LLM Providers",
+              "本地模型",
+              "云端模型"
+            ]
+          },
+          {
+            "key": "agents",
+            "label": "AI Agents",
+            "items": [
+              "Code Agent",
+              "AI Agent",
+              "OpenClaw Agent"
+            ]
+          },
+          {
+            "key": "tools",
+            "label": "Connectors",
+            "items": [
+              "MCP Servers",
+              "Connectors",
+              "外部服务"
+            ]
+          },
+          {
+            "key": "workspace",
+            "label": "Workspace Context",
+            "items": [
+              "Context",
+              "Memory",
+              "Collaboration",
+              "Runtime"
+            ]
+          },
+          {
+            "key": "artifacts",
+            "label": "Delivered Results",
+            "items": [
+              "Code",
+              "Documents",
+              "Reports",
+              "Generated results"
+            ]
+          }
+        ],
+        "productPills": [
+          "XWorkmate",
+          "XConnect",
+          "AI Workspace",
+          "Open Platform"
+        ]
       },
       "slides": [
         {
-          "src": "/marketing/xworkmate-suite-hero.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-editions/web-zh.png",
+          "width": 1536,
+          "height": 960,
+          "alt": "Web 版 AI 工作空间控制中心"
         },
         {
-          "src": "/marketing/xworkmate/已生成图像 1.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-editions/desktop-zh.png",
+          "width": 1536,
+          "height": 960,
+          "alt": "桌面版 AI 工作空间"
         },
         {
-          "src": "/marketing/xstream/homepage.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-editions/mobile-zh.png",
+          "width": 1536,
+          "height": 960,
+          "alt": "移动版 AI 工作空间"
+        }
+      ]
+    },
+    "coreCapabilities": {
+      "eyebrow": "完整工作闭环",
+      "title": "计划、连接、交付，在同一条工作线上持续推进",
+      "description": "每一步都保留上下文、执行状态和结果，让团队与 AI 围绕同一目标协作。",
+      "items": [
+        {
+          "key": "plan",
+          "label": "Plan",
+          "title": "把工作计划清楚",
+          "description": "将任务、对话、项目与知识组织为可持续推进的工作上下文。",
+          "evidence": [
+            "任务与项目",
+            "AI 对话",
+            "知识上下文"
+          ]
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "连接需要的能力",
+          "description": "按需接入服务、模型、数据和本地工作空间，让 AI 获得正确工具。",
+          "evidence": [
+            "服务连接",
+            "模型与数据",
+            "插件与本地空间"
+          ]
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "把结果可靠交付",
+          "description": "跟进运行状态、同步产物并保留可追溯记录，让每项工作真正完成。",
+          "evidence": [
+            "运行与进度",
+            "产物同步",
+            "日志与跟进"
+          ]
+        }
+      ]
+    },
+    "editions": {
+      "eyebrow": "三端同一工作空间",
+      "title": "在 Web、Desktop、Mobile 之间保持工作连续",
+      "description": "选择最适合当下场景的设备，任务、上下文与交付结果始终保持同步。"
+    },
+    "workflow": {
+      "eyebrow": "真实工作流",
+      "title": "从想法到结果，每一步都可连接、可追踪、可交付",
+      "description": "AI 工作不应该停留在一次对话中。XWorkmate 构建开放的 AI Workspace，将上下文、Agent、工具和执行过程连接起来，让不同 AI 能力协同完成真实工作。",
+      "steps": [
+        {
+          "key": "create",
+          "label": "Create",
+          "title": "创建工作空间与目标",
+          "description": "从一个想法开始，定义目标、范围和交付标准。",
+          "evidence": "项目上下文、任务记录和协作信息统一沉淀在 Workspace 中。"
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "连接 AI、工具与数据",
+          "description": "自由连接不同模型、Agent、服务和本地环境。支持 Code Agent、AI Agent、OpenClaw Gateway 以及各种 Connector。",
+          "evidence": "权限范围、连接状态和上下文来源始终透明可控。"
+        },
+        {
+          "key": "execute",
+          "label": "Execute",
+          "title": "编排执行与协作过程",
+          "description": "让多个 Agent、工具和运行环境协同工作。实时查看执行状态、阶段进度和产生的中间结果。",
+          "evidence": "每一次调用、变化和决策都有记录。"
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "沉淀结果并持续复用",
+          "description": "将代码、文档、数据、报告和其他产物交付到 Workspace。",
+          "evidence": "结果可以跨设备、跨 Agent、跨 AI Workspace 持续使用。"
+        }
+      ]
+    },
+    "controls": {
+      "eyebrow": "可控的 AI 工作空间",
+      "title": "安全、权限、连接与部署，都由你掌控",
+      "description": "开放并不意味着失去边界。每项能力都应知道谁能使用、连接了什么，以及结果如何被记录。",
+      "items": [
+        {
+          "key": "security",
+          "title": "安全访问",
+          "description": "围绕身份、会话和数据边界建立可靠的访问路径。",
+          "evidence": "安全状态与关键操作有明确反馈"
+        },
+        {
+          "key": "permissions",
+          "title": "细粒度权限",
+          "description": "按成员、服务和动作划定可见与可执行的范围。",
+          "evidence": "权限与审批边界可以被审阅"
+        },
+        {
+          "key": "connections",
+          "title": "连接可见",
+          "description": "集中管理模型、服务和本地环境，知道每条连接为何存在。",
+          "evidence": "连接状态、来源与能力清晰展示"
+        },
+        {
+          "key": "deployment",
+          "title": "部署自由",
+          "description": "从托管使用到自建部署，按团队的控制力和架构需要选择。",
+          "evidence": "部署选项与运行边界明确"
+        }
+      ]
+    },
+    "proof": {
+      "eyebrow": "产品事实与证明",
+      "title": "先看见真实能力，再决定如何开始",
+      "description": "用可以直接检查的产品入口和界面证据替代空泛承诺；用户案例和数据将在获得授权后持续补充。",
+      "facts": [
+        {
+          "value": "三端体验",
+          "label": "Web、Desktop、Mobile 的连续工作体验"
+        },
+        {
+          "value": "一个工作空间",
+          "label": "任务、知识、连接和交付的统一上下文"
+        },
+        {
+          "value": "托管 + 自建",
+          "label": "托管使用与自建部署的选择"
+        },
+        {
+          "value": "可追溯",
+          "label": "运行状态、日志与产物可持续跟进"
+        }
+      ],
+      "links": [
+        {
+          "label": "XWorkmate",
+          "href": "/products/xworkmate"
+        },
+        {
+          "label": "XConnect",
+          "href": "/products/xconnect"
+        },
+        {
+          "label": "AI Workspace",
+          "href": "/products/ai-workspace"
+        },
+        {
+          "label": "Open Platform",
+          "href": "/products/open-platform"
         }
       ]
     },
@@ -134,12 +352,12 @@ export const homeMarketingContentData =
     ],
     "productGrid": {
       "title": "一个平台，全面覆盖",
-      "subtitle": "三者协同，让 AI 从工具变成真正可用的工作系统。",
+      "subtitle": "XWorkmate、XConnect 与 Open Platform 协同，让 AI 从工具变成真正可用的工作系统。",
       "items": [
         {
           "icon": "refresh",
-          "name": "AI Workspace",
-          "description": "让 AI 真正参与你的工作，而不是停留在对话中。将对话、任务和工具整合，持续产出可交付的结果。",
+          "name": "XWorkmate",
+          "description": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中。将对话、任务和工具整合，持续产出可交付的结果。",
           "href": "/products/xworkmate",
           "learnMore": "了解更多",
           "slides": [
@@ -161,9 +379,52 @@ export const homeMarketingContentData =
           ]
         },
         {
+          "icon": "shield",
+          "name": "XConnect",
+          "description": "AI Connectivity · 为你的 AI Workspace 提供稳定、安全的连接能力。优化连接策略，提升访问全球 AI 服务的稳定性。",
+          "href": "/products/xconnect",
+          "learnMore": "了解更多",
+          "slides": [
+            {
+              "src": "/marketing/xconnect/homepage.png",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "src": "/marketing/xconnect/panel.png",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "src": "/marketing/xconnect/pricing.png",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "src": "/marketing/xconnect/product.png",
+              "width": 1920,
+              "height": 1080
+            }
+          ]
+        },
+        {
+          "icon": "cloud",
+          "name": "AI Workspace",
+          "description": "XWorkmate 与 XConnect 共同组成开放的 AI 工作空间：对话、任务与连接一体化，立即进入体验。",
+          "href": "/products/ai-workspace",
+          "learnMore": "进入工作空间",
+          "slides": [
+            {
+              "src": "/marketing/xworkmate-suite-hero.png",
+              "width": 1920,
+              "height": 1080
+            }
+          ]
+        },
+        {
           "icon": "eye",
-          "name": "Platform & Infrastructure",
-          "description": "提供可控、可扩展的基础支撑，支持从托管到自建的灵活部署选项，让你逐步掌控基础设施。",
+          "name": "Open Platform",
+          "description": "Platform & Infrastructure · 提供可控、可扩展的开源基础设施支撑，支持从托管到自建的灵活部署选项，让你逐步掌控基础设施。",
           "href": "/products/open-platform",
           "learnMore": "了解更多",
           "slides": [
@@ -183,53 +444,29 @@ export const homeMarketingContentData =
               "height": 1080
             }
           ]
-        },
-        {
-          "icon": "shield",
-          "name": "AI Connectivity",
-          "description": "为你的 AI Workspace 提供稳定、安全的连接能力。优化连接策略，提升访问全球 AI 服务的稳定性。",
-          "href": "/products/xstream",
-          "learnMore": "了解更多",
-          "slides": [
-            {
-              "src": "/marketing/xstream/homepage.png",
-              "width": 1920,
-              "height": 1080
-            },
-            {
-              "src": "/marketing/xstream/panel.png",
-              "width": 1920,
-              "height": 1080
-            },
-            {
-              "src": "/marketing/xstream/pricing.png",
-              "width": 1920,
-              "height": 1080
-            },
-            {
-              "src": "/marketing/xstream/product.png",
-              "width": 1920,
-              "height": 1080
-            }
-          ]
         }
       ]
     },
     "statsBar": [
       {
         "icon": "refresh",
-        "value": "AI Workspace",
-        "label": "让 AI 真正参与你的工作，而不是停留在对话中。"
+        "value": "XWorkmate",
+        "label": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中。"
       },
       {
         "icon": "shield",
-        "value": "AI Connectivity",
-        "label": "为你的 AI Workspace 提供稳定、安全的连接能力。"
+        "value": "XConnect",
+        "label": "AI Connectivity · 为你的 AI Workspace 提供稳定、安全的连接能力。"
+      },
+      {
+        "icon": "globe",
+        "value": "AI Workspace",
+        "label": "对话、任务与工具一体化，持续产出可交付成果。"
       },
       {
         "icon": "eye",
-        "value": "Platform & Infrastructure",
-        "label": "提供可控、可扩展的基础支撑，支持从托管到自建的灵活部署。"
+        "value": "Open Platform",
+        "label": "Platform & Infrastructure · 提供可控、可扩展的基础支撑，支持从托管到自建。"
       }
     ],
     "benefitList": [
@@ -277,18 +514,22 @@ export const homeMarketingContentData =
       }
     },
     "finalCta": {
-      "title": "立即开始",
-      "description": "登录控制台，开启您的云原生网络运维之旅。",
-      "cta": {
+      "title": "开放的 AI 工作空间",
+      "description": "连接一切。构建一切。交付一切。",
+      "primaryCta": {
         "label": "进入控制台",
         "href": "/panel"
+      },
+      "secondaryCta": {
+        "label": "查看产品",
+        "href": "/products/xworkmate"
       }
     }
   },
   "en": {
     "brand": {
       "name": "SVC+",
-      "tagline": "Cloud-Neutral"
+      "tagline": "AI Workspace Platform"
     },
     "nav": {
       "dropdowns": [
@@ -296,19 +537,24 @@ export const homeMarketingContentData =
           "label": "Products & Services",
           "columns": [
             {
-              "label": "AI Workspace",
-              "description": "Make AI a true part of your workflow",
+              "label": "XWorkmate",
+              "description": "AI Workspace · Make AI a true part of your workflow",
               "href": "/products/xworkmate"
             },
             {
-              "label": "Platform & Infrastructure",
-              "description": "Complete control over your AI foundation",
-              "href": "/products/open-platform"
+              "label": "XConnect",
+              "description": "AI Connectivity · Stable and secure access for your AI Workspace",
+              "href": "/products/xconnect"
             },
             {
-              "label": "AI Connectivity",
-              "description": "Stable and secure AI access",
-              "href": "/products/xstream"
+              "label": "AI Workspace",
+              "description": "Jump into your workspace — chat, tasks, and delivery",
+              "href": "/products/ai-workspace"
+            },
+            {
+              "label": "Open Platform",
+              "description": "Open-source, controllable, extensible infrastructure — self-host anytime",
+              "href": "/products/open-platform"
             }
           ]
         },
@@ -358,40 +604,254 @@ export const homeMarketingContentData =
       "logout": "Sign out"
     },
     "hero": {
+      "eyebrow": "XWorkmate · AI Workspace",
       "title": [
-        "Build, Connect, and Control",
-        "Your AI Workspace"
+        "From conversation to delivery,",
+        "one AI workspace for",
+        "the work that matters"
       ],
-      "subtitle": "A cloud-neutral platform built for stability and freedom. Choose between our managed service or deploy your own infrastructure for ultimate control.",
+      "subtitle": "Bring tasks, knowledge, connections, and delivery together so AI can participate in the work—not just answer questions.",
       "primaryCta": {
         "label": "Enter Console",
         "href": "/panel"
       },
       "secondaryCta": {
-        "label": "View Pricing",
-        "href": "/prices"
+        "label": "Explore Product",
+        "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "Hero visual placeholder",
-        "title": "Xworkmate / Ai-workspace topology diagram or card artwork goes here",
-        "subtitle": "This area can be swapped from versioned S3 assets without changing the page layout.",
-        "imageBasePath": "/marketing/home-hero"
+        "eyebrow": "REAL AI WORKSPACE",
+        "title": "Agents, conversations, tools, and artifacts working together in one continuous workspace.",
+        "subtitle": "From planning to execution, your work keeps its context everywhere.",
+        "imageBasePath": "/marketing/home-hero",
+        "imageUrl": "/marketing/home-hero/ai-workspace-suite.png",
+        "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts",
+        "connectionNodes": [
+          {
+            "key": "models",
+            "label": "AI Models",
+            "items": [
+              "LLM providers",
+              "Local models",
+              "Cloud models"
+            ]
+          },
+          {
+            "key": "agents",
+            "label": "AI Agents",
+            "items": [
+              "Code Agent",
+              "AI Agent",
+              "OpenClaw Agent"
+            ]
+          },
+          {
+            "key": "tools",
+            "label": "Connectors",
+            "items": [
+              "MCP Servers",
+              "Connectors",
+              "External services"
+            ]
+          },
+          {
+            "key": "workspace",
+            "label": "Workspace Context",
+            "items": [
+              "Context",
+              "Memory",
+              "Collaboration",
+              "Runtime"
+            ]
+          },
+          {
+            "key": "artifacts",
+            "label": "Delivered Results",
+            "items": [
+              "Code",
+              "Documents",
+              "Reports",
+              "Generated results"
+            ]
+          }
+        ],
+        "productPills": [
+          "XWorkmate",
+          "XConnect",
+          "AI Workspace",
+          "Open Platform"
+        ]
       },
       "slides": [
         {
-          "src": "/marketing/xworkmate-suite-hero.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-editions/web-en.png",
+          "width": 1536,
+          "height": 960,
+          "alt": "Web Edition AI Workspace Control Center"
         },
         {
-          "src": "/marketing/xworkmate/已生成图像 1.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-editions/desktop-en.png",
+          "width": 1536,
+          "height": 960,
+          "alt": "Desktop Edition AI Workspace"
         },
         {
-          "src": "/marketing/xstream/homepage.png",
-          "width": 1920,
-          "height": 1080
+          "src": "/marketing/home-editions/mobile-en.png",
+          "width": 1536,
+          "height": 960,
+          "alt": "Mobile Edition AI Workspace"
+        }
+      ]
+    },
+    "coreCapabilities": {
+      "eyebrow": "One continuous workflow",
+      "title": "Plan, connect, and deliver on the same line of work",
+      "description": "Keep context, execution status, and results together so your team and AI can work toward the same outcome.",
+      "items": [
+        {
+          "key": "plan",
+          "label": "Plan",
+          "title": "Make the work clear",
+          "description": "Organize tasks, conversations, projects, and knowledge into context that keeps moving forward.",
+          "evidence": [
+            "Tasks & projects",
+            "AI conversations",
+            "Knowledge context"
+          ]
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "Bring in the right capabilities",
+          "description": "Connect services, models, data, and local workspaces so AI has the right tools for the job.",
+          "evidence": [
+            "Service connections",
+            "Models & data",
+            "Plugins & local workspaces"
+          ]
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "Turn progress into delivery",
+          "description": "Track runs, synchronize artifacts, and retain a traceable record so the work gets finished.",
+          "evidence": [
+            "Runs & progress",
+            "Artifact sync",
+            "Logs & follow-up"
+          ]
+        }
+      ]
+    },
+    "editions": {
+      "eyebrow": "One workspace, three surfaces",
+      "title": "Keep work continuous across Web, Desktop, and Mobile",
+      "description": "Use the surface that fits the moment while tasks, context, and delivery stay in sync."
+    },
+    "workflow": {
+      "eyebrow": "A real working path",
+      "title": "From ideas to outcomes, every step stays connected, traceable, and deliverable",
+      "description": "AI work should not stop at a single conversation. XWorkmate is an open AI Workspace that connects context, agents, tools, and execution so different AI capabilities can collaborate on real work.",
+      "steps": [
+        {
+          "key": "create",
+          "label": "Create",
+          "title": "Create a workspace and goal",
+          "description": "Start with an idea, then define the goal, scope, and delivery standard.",
+          "evidence": "Project context, task records, and collaboration details settle into the Workspace."
+        },
+        {
+          "key": "connect",
+          "label": "Connect",
+          "title": "Connect AI, tools, and data",
+          "description": "Connect models, agents, services, and local environments freely. Bring Code Agents, AI Agents, OpenClaw Gateway, and any Connector into the work.",
+          "evidence": "Permission scope, connection status, and context sources stay transparent and controllable."
+        },
+        {
+          "key": "execute",
+          "label": "Execute",
+          "title": "Orchestrate execution and collaboration",
+          "description": "Coordinate multiple agents, tools, and runtime environments. See execution status, stage progress, and intermediate results in real time.",
+          "evidence": "Every call, change, and decision is recorded."
+        },
+        {
+          "key": "deliver",
+          "label": "Deliver",
+          "title": "Keep results reusable",
+          "description": "Deliver code, documents, data, reports, and other artifacts into the Workspace.",
+          "evidence": "Results stay reusable across devices, agents, and AI Workspaces."
+        }
+      ]
+    },
+    "controls": {
+      "eyebrow": "A controllable AI workspace",
+      "title": "Security, permissions, connections, and deployment stay in your hands",
+      "description": "Open does not mean unbounded. Every capability should make its user, connection, and record clear.",
+      "items": [
+        {
+          "key": "security",
+          "title": "Secure access",
+          "description": "Build a reliable path around identity, sessions, and data boundaries.",
+          "evidence": "Security state and sensitive actions have clear feedback"
+        },
+        {
+          "key": "permissions",
+          "title": "Granular permissions",
+          "description": "Define what each person, service, and action can see or execute.",
+          "evidence": "Permission and approval boundaries can be reviewed"
+        },
+        {
+          "key": "connections",
+          "title": "Visible connections",
+          "description": "Manage models, services, and local environments while knowing why each connection exists.",
+          "evidence": "Source, status, and capability are explicit"
+        },
+        {
+          "key": "deployment",
+          "title": "Deployment freedom",
+          "description": "Choose managed service or self-hosted deployment based on the control your team needs.",
+          "evidence": "Deployment options and runtime boundaries are clear"
+        }
+      ]
+    },
+    "proof": {
+      "eyebrow": "Product facts and proof",
+      "title": "See the real capabilities before you decide how to start",
+      "description": "Use inspectable product surfaces and interface evidence instead of vague promises; customer stories and metrics will be added as they are approved.",
+      "facts": [
+        {
+          "value": "3 surfaces",
+          "label": "A continuous experience across Web, Desktop, and Mobile"
+        },
+        {
+          "value": "1 workspace",
+          "label": "One context for tasks, knowledge, connections, and delivery"
+        },
+        {
+          "value": "Managed + self-hosted",
+          "label": "Choose hosted use or your own deployment"
+        },
+        {
+          "value": "Traceable",
+          "label": "Keep following runs, logs, and artifacts over time"
+        }
+      ],
+      "links": [
+        {
+          "label": "XWorkmate",
+          "href": "/products/xworkmate"
+        },
+        {
+          "label": "XConnect",
+          "href": "/products/xconnect"
+        },
+        {
+          "label": "AI Workspace",
+          "href": "/products/ai-workspace"
+        },
+        {
+          "label": "Open Platform",
+          "href": "/products/open-platform"
         }
       ]
     },
@@ -419,12 +879,12 @@ export const homeMarketingContentData =
     ],
     "productGrid": {
       "title": "One Platform, Full Coverage",
-      "subtitle": "Everything you need to turn AI from a simple tool into a real working system.",
+      "subtitle": "XWorkmate, XConnect, and Open Platform work together to turn AI from a simple tool into a real working system.",
       "items": [
         {
           "icon": "refresh",
-          "name": "AI Workspace",
-          "description": "Bring your conversations, tasks, and tools into a single, unified workspace. Stop context switching and generate real, deliverable outputs with AI.",
+          "name": "XWorkmate",
+          "description": "AI Workspace · Bring your conversations, tasks, and tools into a single, unified workspace. Stop context switching and generate real, deliverable outputs with AI.",
           "href": "/products/xworkmate",
           "learnMore": "Learn more",
           "slides": [
@@ -446,9 +906,52 @@ export const homeMarketingContentData =
           ]
         },
         {
+          "icon": "shield",
+          "name": "XConnect",
+          "description": "AI Connectivity · Experience reliable AI access with intelligent routing and network optimization. We ensure your workspace stays connected with maximum stability.",
+          "href": "/products/xconnect",
+          "learnMore": "Learn more",
+          "slides": [
+            {
+              "src": "/marketing/xconnect/homepage.png",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "src": "/marketing/xconnect/panel.png",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "src": "/marketing/xconnect/pricing.png",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "src": "/marketing/xconnect/product.png",
+              "width": 1920,
+              "height": 1080
+            }
+          ]
+        },
+        {
+          "icon": "cloud",
+          "name": "AI Workspace",
+          "description": "XWorkmate and XConnect together form an open AI workspace — conversations, tasks, and connectivity in one place. Jump in now.",
+          "href": "/products/ai-workspace",
+          "learnMore": "Enter workspace",
+          "slides": [
+            {
+              "src": "/marketing/xworkmate-suite-hero.png",
+              "width": 1920,
+              "height": 1080
+            }
+          ]
+        },
+        {
           "icon": "eye",
-          "name": "Platform & Infrastructure",
-          "description": "Built on a cloud-neutral architecture that scales with you. Start easily with our managed service, or self-host your own infrastructure.",
+          "name": "Open Platform",
+          "description": "Platform & Infrastructure · Built on a cloud-neutral, open-source architecture that scales with you. Start easily with our managed service, or self-host your own infrastructure.",
           "href": "/products/open-platform",
           "learnMore": "Learn more",
           "slides": [
@@ -468,53 +971,29 @@ export const homeMarketingContentData =
               "height": 1080
             }
           ]
-        },
-        {
-          "icon": "shield",
-          "name": "AI Connectivity",
-          "description": "Experience reliable AI access with intelligent routing and network optimization. We ensure your workspace stays connected with maximum stability.",
-          "href": "/products/xstream",
-          "learnMore": "Learn more",
-          "slides": [
-            {
-              "src": "/marketing/xstream/homepage.png",
-              "width": 1920,
-              "height": 1080
-            },
-            {
-              "src": "/marketing/xstream/panel.png",
-              "width": 1920,
-              "height": 1080
-            },
-            {
-              "src": "/marketing/xstream/pricing.png",
-              "width": 1920,
-              "height": 1080
-            },
-            {
-              "src": "/marketing/xstream/product.png",
-              "width": 1920,
-              "height": 1080
-            }
-          ]
         }
       ]
     },
     "statsBar": [
       {
         "icon": "refresh",
-        "value": "AI Workspace",
-        "label": "Make AI a true part of your workflow, not just a chat window."
+        "value": "XWorkmate",
+        "label": "AI Workspace · Make AI a true part of your workflow, not just a chat window."
       },
       {
         "icon": "shield",
-        "value": "AI Connectivity",
-        "label": "Keep your connection to global AI services stable and secure."
+        "value": "XConnect",
+        "label": "AI Connectivity · Keep your connection to global AI services stable and secure."
+      },
+      {
+        "icon": "globe",
+        "value": "AI Workspace",
+        "label": "Conversations, tasks, and tools in one place — real deliverable outputs."
       },
       {
         "icon": "eye",
-        "value": "Platform & Infrastructure",
-        "label": "Gain complete control over your AI foundation."
+        "value": "Open Platform",
+        "label": "Platform & Infrastructure · Gain complete, extensible control over your AI foundation."
       }
     ],
     "benefitList": [
@@ -562,11 +1041,15 @@ export const homeMarketingContentData =
       }
     },
     "finalCta": {
-      "title": "Get started today",
-      "description": "Sign in to the console and begin your cloud-native networking journey.",
-      "cta": {
+      "title": "Open AI Workspace",
+      "description": "Connect anything. Build anything. Deliver anything.",
+      "primaryCta": {
         "label": "Enter Console",
         "href": "/panel"
+      },
+      "secondaryCta": {
+        "label": "Explore Product",
+        "href": "/products/xworkmate"
       }
     }
   }

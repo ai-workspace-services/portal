@@ -113,6 +113,12 @@ export default function UserCenterManagementRoute() {
   const [pendingRoleUpdates, setPendingRoleUpdates] = useState<Set<string>>(
     new Set(),
   );
+  const [pendingGroupUpdates, setPendingGroupUpdates] = useState<
+    Set<string>
+  >(new Set());
+  const [groupsUpdateMessage, setGroupsUpdateMessage] = useState<
+    string | undefined
+  >();
   const [isBlacklistOpen, setIsBlacklistOpen] = useState(false);
   const [homepageVideoSaving, setHomepageVideoSaving] = useState(false);
   const [homepageVideoStatus, setHomepageVideoStatus] = useState<
@@ -265,6 +271,47 @@ export default function UserCenterManagementRoute() {
       return next;
     });
   }, []);
+
+  const markGroupsPending = useCallback((userId: string, pending: boolean) => {
+    setPendingGroupUpdates((prev) => {
+      const next = new Set(prev);
+      if (pending) {
+        next.add(userId);
+      } else {
+        next.delete(userId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleGroupsChange = useCallback(
+    async (userId: string, groups: string[]) => {
+      if (!canEditRoles) {
+        return;
+      }
+      setGroupsUpdateMessage(undefined);
+      markGroupsPending(userId, true);
+      try {
+        await jsonFetcher(`/api/admin/users/${userId}/groups`, {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ groups }),
+        });
+        usersSWR.mutate();
+      } catch (error) {
+        setGroupsUpdateMessage(
+          error instanceof Error ? error.message : "更新失败",
+        );
+      } finally {
+        markGroupsPending(userId, false);
+      }
+    },
+    [canEditRoles, markGroupsPending, usersSWR],
+  );
 
   const handleRoleChange = useCallback(
     async (userId: string, role: string) => {
@@ -502,6 +549,9 @@ export default function UserCenterManagementRoute() {
         errorMessage={homepageVideoError}
         onSave={handleSaveHomepageVideo}
       />
+      {groupsUpdateMessage ? (
+        <p className="text-sm text-red-600">{groupsUpdateMessage}</p>
+      ) : null}
       <UserGroupManagement
         users={usersSWR.data}
         isLoading={usersLoading}
@@ -515,6 +565,8 @@ export default function UserCenterManagementRoute() {
         onRenewUuid={handleRenewUuid}
         onCreateCustomUser={handleCreateCustomUser}
         onManageBlacklist={() => setIsBlacklistOpen(true)}
+        onGroupsChange={handleGroupsChange}
+        pendingGroupUserIds={pendingGroupUpdates}
       />
       <EmailBlacklist
         isOpen={isBlacklistOpen}

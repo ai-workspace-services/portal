@@ -6,8 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import { getExtensionRegistry } from "@extensions/loader";
-import { useLanguage } from "@i18n/LanguageProvider";
-import { translations } from "@i18n/translations";
 import { resolveAccess, type AccessRule } from "@lib/accessControl";
 import { useUserStore } from "@lib/userStore";
 
@@ -32,14 +30,8 @@ export default function PanelLayout({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { language } = useLanguage();
-  const copy = translations[language].userCenter.mfa;
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
-  const logout = useUserStore((state) => state.logout);
-  const requiresSetup = Boolean(
-    user && !user.isReadOnly && (!user.mfaEnabled || user.mfaPending),
-  );
 
   const routeGuards = useMemo<RouteGuard[]>(() => {
     return registry.routes
@@ -80,19 +72,6 @@ export default function PanelLayout({
     }
   }, [isLoading, pathname, routeGuards, router, user]);
 
-  useEffect(() => {
-    if (!requiresSetup || pathname.startsWith("/panel/account")) {
-      return;
-    }
-    router.replace("/panel/account?setupMfa=1");
-  }, [pathname, requiresSetup, router]);
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace("/login");
-    router.refresh();
-  };
-
   return (
     <div className="relative flex min-h-screen bg-gradient-to-br from-[var(--gradient-app-from)] via-[var(--gradient-app-via)] to-[var(--gradient-app-to)] text-[var(--color-text)]">
       <Sidebar
@@ -117,40 +96,6 @@ export default function PanelLayout({
           isCollapsed={isCollapsed}
         />
         <main className="flex flex-1 flex-col space-y-3 bg-transparent px-2 py-3 text-[var(--color-text)] transition-colors sm:px-3 md:px-4 lg:px-5">
-          {requiresSetup ? (
-            <div className="rounded-[6px] border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)]/92 p-3 text-[13px] text-[var(--color-warning-foreground)] shadow-[var(--shadow-soft)] transition-colors">
-              <p className="text-[13px]">{copy.lockedMessage}</p>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => router.replace("/panel/account?setupMfa=1")}
-                  className="tactile-button tactile-button-primary px-3 text-[13px]"
-                >
-                  {copy.actions.setup}
-                </button>
-                <a
-                  href={copy.actions.docsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="tactile-button tactile-button-soft border border-[color:var(--color-primary-border)] px-3 text-[13px] text-[var(--color-primary)]"
-                >
-                  {copy.actions.docs}
-                </a>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="tactile-button tactile-button-subtle px-3 text-[13px] text-[var(--color-warning-foreground)]"
-                >
-                  {copy.actions.logout}
-                </button>
-                {isLoading ? (
-                  <span className="inline-flex min-h-8 items-center rounded-[8px] border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] px-3 py-1.5 text-xs text-[var(--color-warning-foreground)]">
-                    …
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
           <div className="flex w-full flex-1 flex-col gap-3 rounded-[6px] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)] p-3 text-[var(--color-text)] shadow-[var(--shadow-soft)] backdrop-blur md:gap-4 md:p-4">
             {children}
           </div>

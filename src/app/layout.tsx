@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-page-custom-font */
 
-export const dynamic = 'error'
 
 import './globals.css'
 import type { Metadata } from 'next'
@@ -10,24 +9,37 @@ import { AppProviders } from './AppProviders'
 import { resolveWebReleaseMetadata } from '@/lib/webReleaseMetadata'
 import { getConsoleIntegrationDefaults } from '@/server/consoleIntegrations'
 
-const DEFAULT_TITLE = 'Cloud-Neutral Console | Unified Cloud Native Tools'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://console.xworktech.com'
+const SITE_HOST = new URL(SITE_URL).host
+const DEFAULT_TITLE = 'XWorkmate · XConnect · AI Workspace | XWork Technologies'
 const DEFAULT_DESCRIPTION =
-  'Cloud-Neutral Console unifies cloud-native operations. Manage infrastructure, deployment, identity, and observability across providers from one control plane.'
-const DEFAULT_OG_IMAGE = '/icons/webchat.jpg'
+  'XWork Technologies 打造开放的 AI 工作空间平台:XWorkmate 让 AI 真正参与你的工作,XConnect 提供稳定安全的连接能力,Open Platform 提供开源、可控、可扩展的基础设施支撑。支持托管使用,也支持自建部署。'
+const DEFAULT_OG_IMAGE = '/marketing/xworkmate-suite-hero.png'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.svc.plus'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: DEFAULT_TITLE,
-    template: '%s | Cloud-Neutral',
+    template: '%s | XWork Technologies',
   },
   description: DEFAULT_DESCRIPTION,
-  applicationName: 'Cloud-Neutral Console',
+  applicationName: 'XWorkmate',
   category: 'technology',
-  keywords: ['cloud native', 'kubernetes', 'infrastructure', 'devops', 'cloud management', 'multi-cloud', 'platform engineering'],
-  authors: [{ name: 'Cloud-Neutral Team' }],
-  creator: 'Cloud-Neutral',
-  publisher: 'Cloud-Neutral',
+  keywords: [
+    'XWorkmate',
+    'XConnect',
+    'AI Workspace',
+    'Open Platform',
+    'XWork Technologies',
+    'AI 工作空间平台',
+    'AI 协作工具',
+    '开源云原生平台',
+    'cloud-neutral infrastructure',
+    'self-hosted AI platform',
+  ],
+  authors: [{ name: 'XWork Technologies' }],
+  creator: 'XWork Technologies',
+  publisher: 'XWork Technologies LLC',
   alternates: {
     canonical: '/',
   },
@@ -38,17 +50,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
+    locale: 'zh_CN',
     url: '/',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    siteName: 'Cloud-Neutral',
+    siteName: 'XWork Technologies',
     images: [
       {
         url: DEFAULT_OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: 'Cloud-Neutral Console',
+        width: 1920,
+        height: 1080,
+        alt: 'XWorkmate · XConnect · AI Workspace — XWork Technologies Open Platform',
       },
     ],
   },
@@ -71,7 +83,7 @@ export const metadata: Metadata = {
   },
 }
 
-const htmlAttributes = { lang: 'en' }
+const htmlAttributes = { lang: 'zh' }
 const bodyClassName = 'bg-[var(--color-background)] text-[var(--color-text)]'
 const GA_ID = 'G-T4VM8G4Q42'
 
@@ -98,9 +110,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'Cloud-Neutral',
-              url: 'https://www.svc.plus',
-              logo: 'https://www.svc.plus/icons/cloudnative_32.png',
+              name: 'XWork Technologies',
+              url: SITE_URL,
+              logo: `${SITE_URL}/icons/cloudnative_32.png`,
               description: DEFAULT_DESCRIPTION,
             }).replace(/</g, '\\u003c'),
           }}
@@ -111,8 +123,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'Cloud-Neutral',
-              url: 'https://www.svc.plus',
+              name: 'XWork Technologies',
+              url: SITE_URL,
               description: DEFAULT_DESCRIPTION,
             }).replace(/</g, '\\u003c'),
           }}
@@ -133,6 +145,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           strategy="afterInteractive"
         />
         {/* End Cloudflare Web Analytics */}
+        <Script
+          src="https://datafa.st/js/script.js"
+          data-website-id="dfid_RRpFATHOgNffArMsKNpYT"
+          data-domain={SITE_HOST}
+          strategy="afterInteractive"
+        />
       </head>
       <body className={bodyClassName}>
         <AppProviders assistantDefaults={assistantDefaults}>{children}</AppProviders>

@@ -79,7 +79,7 @@ const DEFAULT_FEATURES: FeatureSet = {
 }
 
 const FEATURE_LIBRARY: Record<string, FeatureSet> = {
-  xstream: DEFAULT_FEATURES,
+  xconnect: DEFAULT_FEATURES,
   xscopehub: {
     zh: [
       {

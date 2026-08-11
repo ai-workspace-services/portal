@@ -50,8 +50,8 @@ export default function BrandCTA({
           src="/icons/webchat.jpg"
           alt={
             lang === "zh"
-              ? "Cloud-Neutral 微信二维码"
-              : "Cloud-Neutral WeChat QR code"
+              ? "XWork Tech 微信二维码"
+              : "XWork Tech WeChat QR code"
           }
           width={imageSize}
           height={imageSize}

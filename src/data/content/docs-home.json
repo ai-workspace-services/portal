@@ -8,11 +8,12 @@
     "collections": [
       {
         "slug": "xworkmate",
-        "title": "Xworkmate/Ai-workspace",
-        "description": "AI 核心链路域，涵盖 App LiteLLM、OpenClaw、QMD 等智能代理与模型路由调度。",
-        "defaultVersionSlug": "latest",
+        "title": "XWorkmate",
+        "description": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中。",
+        "entryHref": "/docs/get-started/overview",
+        "defaultVersionSlug": "overview",
         "versions": [
-          "latest"
+          "overview"
         ],
         "tags": [
           "AI",
@@ -21,12 +22,13 @@
         ]
       },
       {
-        "slug": "xstream",
-        "title": "Xstream Platform",
-        "description": "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。",
-        "defaultVersionSlug": "latest",
+        "slug": "xconnect",
+        "title": "XConnect",
+        "description": "AI Connectivity · 为你的 AI Workspace 提供稳定、安全的连接能力。",
+        "entryHref": "/docs/integrations/overview",
+        "defaultVersionSlug": "overview",
         "versions": [
-          "latest"
+          "overview"
         ],
         "tags": [
           "Network",
@@ -35,17 +37,33 @@
         ]
       },
       {
-        "slug": "open-platform",
-        "title": "Open-platform",
-        "description": "开源解决方案，涵盖 IAC，DevOPS、安全、IAM (Zitadel) 以及全局可观测性的平台解决方案。",
-        "defaultVersionSlug": "latest",
+        "slug": "ai-workspace",
+        "title": "AI Workspace",
+        "description": "对话、任务与工具一体化，持续产出可交付成果。",
+        "entryHref": "/docs/core-concepts/overview",
+        "defaultVersionSlug": "overview",
         "versions": [
-          "latest"
+          "overview"
         ],
         "tags": [
-          "Open Source",
-          "IaC",
-          "DevOps"
+          "AI",
+          "Workspace",
+          "Delivery"
+        ]
+      },
+      {
+        "slug": "open-platform",
+        "title": "Open Platform",
+        "description": "Platform & Infrastructure · 提供可控、可扩展的基础支撑，支持从托管到自建。",
+        "entryHref": "/docs/04-postgresql/overview",
+        "defaultVersionSlug": "overview",
+        "versions": [
+          "overview"
+        ],
+        "tags": [
+          "Platform",
+          "Infrastructure",
+          "Open Source"
         ]
       }
     ]
@@ -59,11 +77,12 @@
     "collections": [
       {
         "slug": "xworkmate",
-        "title": "Xworkmate/Ai-workspace",
-        "description": "AI Core Link Domain covering App LiteLLM, OpenClaw, QMD & model routing.",
-        "defaultVersionSlug": "latest",
+        "title": "XWorkmate",
+        "description": "AI Workspace · Bring AI into real work instead of keeping it in conversation.",
+        "entryHref": "/docs/get-started/overview",
+        "defaultVersionSlug": "overview",
         "versions": [
-          "latest"
+          "overview"
         ],
         "tags": [
           "AI",
@@ -72,12 +91,13 @@
         ]
       },
       {
-        "slug": "xstream",
-        "title": "Xstream Platform",
-        "description": "Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.",
-        "defaultVersionSlug": "latest",
+        "slug": "xconnect",
+        "title": "XConnect",
+        "description": "AI Connectivity · Stable, secure connectivity for your AI Workspace.",
+        "entryHref": "/docs/integrations/overview",
+        "defaultVersionSlug": "overview",
         "versions": [
-          "latest"
+          "overview"
         ],
         "tags": [
           "Network",
@@ -86,17 +106,33 @@
         ]
       },
       {
-        "slug": "open-platform",
-        "title": "Open-platform",
-        "description": "Open-source solutions covering Gitea, Vault, IAM, and global observability stack.",
-        "defaultVersionSlug": "latest",
+        "slug": "ai-workspace",
+        "title": "AI Workspace",
+        "description": "Conversations, tasks, and tools in one place—continuously producing deliverables.",
+        "entryHref": "/docs/core-concepts/overview",
+        "defaultVersionSlug": "overview",
         "versions": [
-          "latest"
+          "overview"
         ],
         "tags": [
-          "Open Source",
-          "IaC",
-          "DevOps"
+          "AI",
+          "Workspace",
+          "Delivery"
+        ]
+      },
+      {
+        "slug": "open-platform",
+        "title": "Open Platform",
+        "description": "Platform & Infrastructure · Controlled, extensible foundations from managed services to self-hosting.",
+        "entryHref": "/docs/04-postgresql/overview",
+        "defaultVersionSlug": "overview",
+        "versions": [
+          "overview"
+        ],
+        "tags": [
+          "Platform",
+          "Infrastructure",
+          "Open Source"
         ]
       }
     ]

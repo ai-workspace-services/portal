@@ -23,10 +23,10 @@
         "href": "https://www.svc.plus/xscopehub"
       },
       {
-        "label": "XStream",
+        "label": "XConnect",
         "headline": "安全与合规自动化",
         "description": "策略即代码守护交付流水线，为全球团队提供网络加速、合规审计与安全基线。",
-        "href": "https://www.svc.plus/xstream"
+        "href": "https://www.svc.plus/xconnect"
       }
     ]
   },
@@ -54,10 +54,10 @@
         "href": "https://www.svc.plus/xscopehub"
       },
       {
-        "label": "XStream",
+        "label": "XConnect",
         "headline": "Security & compliance automation",
         "description": "Policy-as-code guardrails with global acceleration that keep distributed releases fast, auditable, and compliant.",
-        "href": "https://www.svc.plus/xstream"
+        "href": "https://www.svc.plus/xconnect"
       }
     ]
   }

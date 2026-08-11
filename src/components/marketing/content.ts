@@ -29,6 +29,7 @@ export type HomeMarketingContent = {
     logout: string;
   };
   hero: {
+    eyebrow: string;
     title: string[];
     subtitle: string;
     primaryCta: { label: string; href: string };
@@ -38,8 +39,63 @@ export type HomeMarketingContent = {
       title: string;
       subtitle: string;
       imageBasePath: string;
+      imageUrl: string;
+      alt: string;
+      connectionNodes?: {
+        key: "models" | "agents" | "tools" | "workspace" | "artifacts";
+        label: string;
+        items: string[];
+      }[];
+      productPills?: string[];
     };
-    slides?: { src: string; width?: number; height?: number }[];
+    slides?: { src: string; width?: number; height?: number; alt?: string }[];
+  };
+  coreCapabilities: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    items: {
+      key: "plan" | "connect" | "deliver";
+      label: string;
+      title: string;
+      description: string;
+      evidence: string[];
+    }[];
+  };
+  editions: {
+    eyebrow: string;
+    title: string;
+    description: string;
+  };
+  workflow: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    steps: {
+      key: "create" | "connect" | "execute" | "deliver";
+      label: string;
+      title: string;
+      description: string;
+      evidence: string;
+    }[];
+  };
+  controls: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    items: {
+      key: "security" | "permissions" | "connections" | "deployment";
+      title: string;
+      description: string;
+      evidence: string;
+    }[];
+  };
+  proof: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    facts: { value: string; label: string }[];
+    links: { label: string; href: string }[];
   };
   featureGrid: {
     icon: "layers" | "globe" | "shield" | "zap";
@@ -55,7 +111,7 @@ export type HomeMarketingContent = {
       description: string;
       href: string;
       learnMore: string;
-      slides?: { src: string; width?: number; height?: number }[];
+      slides?: { src: string; width?: number; height?: number; alt?: string }[];
     }[];
   };
   statsBar: {
@@ -86,10 +142,12 @@ export type HomeMarketingContent = {
   finalCta: {
     title: string;
     description: string;
-    cta: { label: string; href: string };
+    primaryCta: { label: string; href: string };
+    secondaryCta: { label: string; href: string };
   };
 };
 
 import { homeMarketingContentData } from "@/data/content/home-marketing";
 
-export const homeMarketingContent: Record<Language, HomeMarketingContent> = homeMarketingContentData as any;
+export const homeMarketingContent: Record<Language, HomeMarketingContent> =
+  homeMarketingContentData as any;

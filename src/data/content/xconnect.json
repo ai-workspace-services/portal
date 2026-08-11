@@ -1,0 +1,54 @@
+{
+  "zh": {
+    "hero": {
+      "badge": "AI 工作空间连接器与加速",
+      "title": "XConnect",
+      "subtitle": "面向自建与预置 AI 工作空间的连接器，为工作流、协作与访问提供统一入口。",
+      "cta": {
+        "label": "立即体验",
+        "href": "/panel"
+      }
+    },
+    "showcases": [
+      {
+        "title": "工作空间连接",
+        "description": "统一连接自建、组织预置和托管工作区，让用户在一个入口里进入真实工作流。",
+        "icon": "network",
+        "image": "/marketing/xconnect/product.png"
+      },
+      {
+        "title": "AI 加速能力",
+        "description": "为高频任务、实时交互和跨区域访问提供加速路径与稳定体验。",
+        "icon": "activity",
+        "image": "/marketing/xconnect/panel.png",
+        "reverse": true
+      }
+    ]
+  },
+  "en": {
+    "hero": {
+      "badge": "AI workspace connector & acceleration",
+      "title": "XConnect",
+      "subtitle": "A connector for self-hosted and provisioned AI workspaces, with unified access for real work.",
+      "cta": {
+        "label": "Experience now",
+        "href": "/panel"
+      }
+    },
+    "showcases": [
+      {
+        "title": "Workspace connection",
+        "description": "Connect self-hosted, organization-provisioned, and managed workspaces from one entry point.",
+        "icon": "network",
+        "image": "/marketing/xconnect/product.png"
+      },
+      {
+        "title": "AI acceleration",
+        "description": "Provide a fast, stable path for high-frequency tasks, live collaboration, and cross-region access.",
+        "icon": "activity",
+        "image": "/marketing/xconnect/panel.png",
+        "reverse": true
+      }
+    ]
+  }
+}

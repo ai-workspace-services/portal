@@ -43,7 +43,7 @@ export default function Navbar() {
     ? [
         "/login",
         "/register",
-        "/xstream",
+        "/xconnect",
         "/xcloudflow",
         "/xscopehub",
         "/blogs",
@@ -244,7 +244,7 @@ export default function Navbar() {
   };
 
   const openSourceProjects = [
-    { key: "xstream", label: "XStream", href: "/xstream" },
+    { key: "xconnect", label: "XConnect", href: "/xconnect" },
     { key: "xcloudflow", label: "XCloudFlow", href: "/xcloudflow" },
     { key: "xscopehub", label: "XScopeHub", href: "/xscopehub" },
   ];

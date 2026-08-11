@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Cloud, Eye, RefreshCw, ShieldCheck, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Cloud,
+  Eye,
+  RefreshCw,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
@@ -21,15 +28,19 @@ export default function ProductGrid() {
   const productGrid = content.productGrid;
 
   return (
-    <section className={`${marketingTheme.section.container} ${marketingTheme.section.spacingY}`}>
+    <section
+      className={`${marketingTheme.section.container} ${marketingTheme.section.spacingY}`}
+    >
       <div className="text-center">
         <h2 className={marketingTheme.heading.section}>{productGrid.title}</h2>
-        <p className={`${marketingTheme.heading.sectionSubtitle} mx-auto max-w-xl`}>
+        <p
+          className={`${marketingTheme.heading.sectionSubtitle} mx-auto max-w-xl`}
+        >
           {productGrid.subtitle}
         </p>
       </div>
 
-      <div className="mt-10 flex w-full gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+      <div className="mt-10 grid w-full grid-flow-col auto-cols-[85vw] gap-6 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
         {productGrid.items.map((item, index) => {
           const Icon = ICONS[item.icon] ?? Cloud;
           // Different placeholder colors for visual distinction
@@ -44,20 +55,25 @@ export default function ProductGrid() {
           return (
             <div
               key={item.name}
-              className={`relative flex-none w-[85vw] max-w-md snap-center sm:w-[400px] ${marketingTheme.card.base} ${marketingTheme.card.hover} overflow-hidden`}
+              className={`relative min-w-0 snap-center ${marketingTheme.card.base} ${marketingTheme.card.hover} overflow-hidden`}
             >
               {/* Image Placeholder Area for the "Topology Diagram or Card Image" */}
-              <div className={`h-48 w-full border-b flex items-center justify-center ${colorClass}`}>
-                 {item.slides && item.slides.length > 0 ? (
-                   <Carousel images={item.slides} />
-                 ) : (
-                   <div className="text-center">
-                     <Icon className="h-10 w-10 mx-auto mb-2 opacity-50" aria-hidden />
-                     <span className="text-sm font-medium opacity-70">
-                       [此处放置 {item.name} 的连线拓扑图/卡片图片]
-                     </span>
-                   </div>
-                 )}
+              <div
+                className={`aspect-[1.4/1] w-full border-b flex items-center justify-center ${colorClass}`}
+              >
+                {item.slides && item.slides.length > 0 ? (
+                  <Carousel images={item.slides} />
+                ) : (
+                  <div className="text-center">
+                    <Icon
+                      className="h-10 w-10 mx-auto mb-2 opacity-50"
+                      aria-hidden
+                    />
+                    <span className="text-sm font-medium opacity-70">
+                      [此处放置 {item.name} 的连线拓扑图/卡片图片]
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="p-6">

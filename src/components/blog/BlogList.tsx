@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, Clock3, Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import BrandCTA from "@components/BrandCTA";
@@ -33,15 +33,7 @@ function formatDate(
 
   const date = new Date(dateStr);
 
-  if (language === "zh") {
-    return date.toLocaleDateString("zh-CN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
-
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(language === "zh" ? "zh-CN" : "en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -94,27 +86,42 @@ export default function BlogList({ posts, categories }: BlogListProps) {
   }, [posts, selectedCategory]);
 
   const postsPerPage = 10;
-  const currentPage = useMemo(() => {
-    const parsed = Number(page || "1");
-    if (!Number.isFinite(parsed) || parsed < 1) return 1;
-    const totalPages = Math.max(
-      1,
-      Math.ceil(filteredPosts.length / postsPerPage),
-    );
-    return Math.min(parsed, totalPages);
-  }, [page, filteredPosts.length]);
   const totalPages = Math.max(
     1,
     Math.ceil(filteredPosts.length / postsPerPage),
   );
-  const startIndex = (currentPage - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+  const currentPage = useMemo(() => {
+    const parsed = Number(page || "1");
+    if (!Number.isFinite(parsed) || parsed < 1) return 1;
+    return Math.min(parsed, totalPages);
+  }, [page, totalPages]);
+  const paginatedPosts = filteredPosts.slice(
+    (currentPage - 1) * postsPerPage,
+    currentPage * postsPerPage,
+  );
+  const featuredPost =
+    !selectedCategory && currentPage === 1 ? paginatedPosts[0] : undefined;
+  const secondaryPosts = featuredPost
+    ? paginatedPosts.slice(1)
+    : paginatedPosts;
+
+  const getCategoryHref = (key: string, isActive: boolean) =>
+    "/blogs" + (isActive ? "" : "?category=" + key);
+  const getPageHref = (pageNumber: number) =>
+    "/blogs?page=" +
+    pageNumber +
+    (selectedCategory ? "&category=" + selectedCategory : "");
+  const getPillClass = (isActive: boolean) =>
+    isActive
+      ? "border-slate-900/10 bg-slate-950 text-white"
+      : "border-transparent bg-transparent text-slate-700 hover:border-slate-900/10 hover:bg-[#fcfbf8]";
+  const getPillCountClass = (isActive: boolean) =>
+    isActive ? "bg-white/20 text-white" : "bg-[#f8f4ec] text-slate-700";
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
+    <div className="space-y-5 sm:space-y-6">
+      <section className="overflow-hidden rounded-[1.65rem] border border-slate-900/10 bg-[linear-gradient(135deg,#ffffff_0%,#fbfaf7_62%,#f1f5fb_100%)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
+        <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-end">
           <PublicPageIntro
             eyebrow={isChinese ? "博客与动态" : "Editorial notes"}
             title={
@@ -123,20 +130,20 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             subtitle={
               isChinese
                 ? "把产品更新、发布日志和架构观察收进同一套公开页阅读语法。"
-                : "A calmer feed for releases, essays, and field notes across the Cloud-Neutral stack."
+                : "A calmer feed for releases, essays, and field notes across the XWork Tech stack."
             }
             titleClassName={
               isChinese
-                ? "text-[2.7rem] tracking-[-0.08em] sm:text-[3.4rem]"
+                ? "text-[2.65rem] tracking-[-0.08em] sm:text-[3.5rem]"
                 : "editorial-display text-[2.9rem] tracking-[-0.06em] sm:text-[3.6rem]"
             }
           />
 
-          <div className="rounded-[1.75rem] border border-slate-900/10 bg-white/85 p-5">
+          <div className="rounded-[1.25rem] border border-slate-900/10 bg-white/80 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] backdrop-blur-sm">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {isChinese ? "搜索文章" : "Search notes"}
             </p>
-            <div className="mt-4">
+            <div className="mt-3">
               <SearchComponent
                 className="max-w-none"
                 inputClassName="w-full rounded-full border border-slate-900/10 bg-[#fcfbf8] py-3 pl-5 pr-12 text-sm text-slate-700 shadow-none focus:border-slate-900/15 focus:bg-white focus:ring-2 focus:ring-primary/15"
@@ -147,23 +154,24 @@ export default function BlogList({ posts, categories }: BlogListProps) {
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-slate-900/10 bg-white/92 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
-        <div className="flex flex-wrap items-center gap-3">
+      <section className="rounded-[1.25rem] border border-slate-900/10 bg-white/80 p-2 shadow-[0_12px_28px_rgba(15,23,42,0.035)] sm:p-3">
+        <nav
+          aria-label={isChinese ? "博客分类" : "Blog categories"}
+          className="flex min-w-max gap-2 overflow-x-auto pb-0.5"
+        >
           <Link
             href="/blogs"
-            className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              !selectedCategory
-                ? "border-slate-900/10 bg-slate-950 text-white"
-                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]"
-            }`}
+            className={
+              "flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition " +
+              getPillClass(!selectedCategory)
+            }
           >
             {isChinese ? "全部" : "All"}
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-                !selectedCategory
-                  ? "bg-white/20 text-white"
-                  : "bg-[#f8f4ec] text-slate-700"
-              }`}
+              className={
+                "rounded-full px-2 py-0.5 text-xs font-bold " +
+                getPillCountClass(!selectedCategory)
+              }
             >
               {posts.length}
             </span>
@@ -174,22 +182,20 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             return (
               <Link
                 key={tab.key}
-                href={`/blogs${isActive ? "" : `?category=${tab.key}`}`}
-                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? "border-slate-900/10 bg-slate-950 text-white"
-                    : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]"
-                }`}
+                href={getCategoryHref(tab.key, isActive)}
+                className={
+                  "flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition " +
+                  getPillClass(isActive)
+                }
                 aria-current={isActive ? "page" : undefined}
               >
                 <span>{tab.label}</span>
                 {labelWithCount ? (
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : "bg-[#f8f4ec] text-slate-700"
-                    }`}
+                    className={
+                      "rounded-full px-2 py-0.5 text-xs font-bold " +
+                      getPillCountClass(isActive)
+                    }
                   >
                     {labelWithCount}
                   </span>
@@ -197,80 +203,153 @@ export default function BlogList({ posts, categories }: BlogListProps) {
               </Link>
             );
           })}
-        </div>
+        </nav>
       </section>
 
       {filteredPosts.length === 0 ? (
-        <div className="rounded-[1.8rem] border border-dashed border-slate-900/12 bg-white/80 py-20 text-center text-sm text-slate-500">
+        <div className="rounded-[1.25rem] border border-dashed border-slate-900/12 bg-white/80 py-20 text-center text-sm text-slate-500">
           {isChinese ? "暂无博客文章" : "No posts found."}
         </div>
       ) : (
-        <div className="grid gap-4">
-          {paginatedPosts.map((post) => (
-            <article
-              key={post.slug}
-              className="rounded-[1.9rem] border border-slate-900/10 bg-white/92 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-[1px] hover:bg-white"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600">
-                  {post.category?.label ?? "Blog"}
-                </span>
-                {post.date ? (
-                  <time className="text-sm text-slate-500">
-                    {formatDate(post.date, language)}
-                  </time>
-                ) : null}
-              </div>
+        <>
+          <div className="flex items-center justify-between gap-4 px-1 text-sm text-slate-500">
+            <p className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" aria-hidden />
+              {isChinese
+                ? "共 " + filteredPosts.length + " 篇文章"
+                : filteredPosts.length + " notes in this view"}
+            </p>
+            {totalPages > 1 ? (
+              <span>
+                {isChinese
+                  ? "第 " + currentPage + " / " + totalPages + " 页"
+                  : "Page " + currentPage + " of " + totalPages}
+              </span>
+            ) : null}
+          </div>
 
-              <div className="mt-5 space-y-3">
-                <h2 className="text-[1.65rem] font-semibold leading-[1.05] tracking-[-0.04em] text-slate-900">
-                  {post.title}
+          {featuredPost ? (
+            <article className="group relative overflow-hidden rounded-[1.5rem] bg-slate-950 p-6 text-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:p-8 lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(15rem,0.65fr)] lg:gap-10 lg:p-9">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+              <div className="relative flex flex-col">
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
+                  <span className="rounded-full bg-white/12 px-3 py-1 text-white/90">
+                    {isChinese ? "本期精选" : "Featured note"}
+                  </span>
+                  <span className="text-white/55">
+                    {featuredPost.category?.label ?? "Blog"}
+                  </span>
+                  {featuredPost.date ? (
+                    <time className="text-white/55">
+                      {formatDate(featuredPost.date, language)}
+                    </time>
+                  ) : null}
+                </div>
+                <h2 className="mt-6 max-w-3xl text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.05em] sm:text-[2.45rem]">
+                  {featuredPost.title}
                 </h2>
-                {post.author ? (
-                  <p className="text-sm text-slate-500">
-                    {isChinese ? "作者" : "By"} {post.author}
-                  </p>
-                ) : null}
-                <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                  {post.excerpt}
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65 sm:text-base">
+                  {featuredPost.excerpt}
                 </p>
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                {post.tags && post.tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {post.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-3 py-1 text-xs font-medium text-slate-600"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
                 <Link
-                  href={`/blogs/${post.slug}`}
-                  className="ml-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary-hover"
+                  href={"/blogs/" + featuredPost.slug}
+                  className="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-primary hover:text-white"
                 >
-                  {isChinese ? "继续阅读" : "Read more"}
+                  {isChinese ? "阅读精选" : "Read featured note"}
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </div>
+
+              <div className="relative mt-8 rounded-[1.15rem] border border-white/12 bg-white/8 p-5 lg:mt-0 lg:self-end">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
+                  <Sparkles className="h-4 w-4 text-sky-300" aria-hidden />
+                  {isChinese ? "从现场出发" : "From the field"}
+                </div>
+                <p className="mt-4 text-sm leading-7 text-white/70">
+                  {isChinese
+                    ? "产品更新、工程实践与真实交付经验，按主题持续整理。"
+                    : "Product updates, engineering practice, and real delivery lessons — kept close to the work."}
+                </p>
+              </div>
             </article>
-          ))}
-        </div>
+          ) : null}
+
+          {secondaryPosts.length > 0 ? (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {secondaryPosts.map((post) => (
+                <article
+                  key={post.slug}
+                  className="group flex h-full flex-col rounded-[1.25rem] border border-slate-900/10 bg-white/88 p-5 shadow-[0_12px_28px_rgba(15,23,42,0.035)] transition duration-200 hover:-translate-y-[2px] hover:border-primary/20 hover:bg-white hover:shadow-[0_18px_34px_rgba(15,23,42,0.07)] sm:p-6"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600">
+                      {post.category?.label ?? "Blog"}
+                    </span>
+                    {post.date ? (
+                      <time className="flex items-center gap-1.5 text-xs text-slate-500">
+                        <Clock3 className="h-3.5 w-3.5" aria-hidden />
+                        {formatDate(post.date, language)}
+                      </time>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-5 flex-1 space-y-3">
+                    <h2 className="text-[1.35rem] font-semibold leading-[1.1] tracking-[-0.04em] text-slate-900">
+                      {post.title}
+                    </h2>
+                    {post.author ? (
+                      <p className="text-xs font-medium text-slate-500">
+                        {isChinese ? "作者" : "By"} {post.author}
+                      </p>
+                    ) : null}
+                    <p className="text-sm leading-7 text-slate-600">
+                      {post.excerpt}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex items-end justify-between gap-4 border-t border-slate-900/8 pt-4">
+                    {post.tags && post.tags.length > 0 ? (
+                      <div className="flex min-w-0 flex-wrap gap-1.5">
+                        {post.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-2.5 py-1 text-[11px] font-medium text-slate-600"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span />
+                    )}
+                    <Link
+                      href={"/blogs/" + post.slug}
+                      className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5 hover:text-primary-hover"
+                    >
+                      {isChinese ? "继续阅读" : "Read more"}
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </>
       )}
 
       {totalPages > 1 ? (
-        <nav className="flex flex-wrap items-center justify-center gap-2">
+        <nav
+          aria-label={isChinese ? "博客分页" : "Blog pagination"}
+          className="flex flex-wrap items-center justify-center gap-2 pt-2"
+        >
           <Link
-            href={`/blogs?page=${Math.max(1, currentPage - 1)}${selectedCategory ? `&category=${selectedCategory}` : ""}`}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              currentPage === 1
+            href={getPageHref(Math.max(1, currentPage - 1))}
+            className={
+              "rounded-full border px-4 py-2 text-sm font-semibold transition " +
+              (currentPage === 1
                 ? "pointer-events-none border-slate-900/8 bg-white text-slate-300"
-                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]"
-            }`}
+                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]")
+            }
             aria-disabled={currentPage === 1}
           >
             {isChinese ? "上一页" : "Previous"}
@@ -280,12 +359,14 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             (pageNumber) => (
               <Link
                 key={pageNumber}
-                href={`/blogs?page=${pageNumber}${selectedCategory ? `&category=${selectedCategory}` : ""}`}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  pageNumber === currentPage
+                href={getPageHref(pageNumber)}
+                className={
+                  "rounded-full border px-4 py-2 text-sm font-semibold transition " +
+                  (pageNumber === currentPage
                     ? "border-slate-900/10 bg-slate-950 text-white"
-                    : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]"
-                }`}
+                    : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]")
+                }
+                aria-current={pageNumber === currentPage ? "page" : undefined}
               >
                 {pageNumber}
               </Link>
@@ -293,12 +374,13 @@ export default function BlogList({ posts, categories }: BlogListProps) {
           )}
 
           <Link
-            href={`/blogs?page=${Math.min(totalPages, currentPage + 1)}${selectedCategory ? `&category=${selectedCategory}` : ""}`}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              currentPage === totalPages
+            href={getPageHref(Math.min(totalPages, currentPage + 1))}
+            className={
+              "rounded-full border px-4 py-2 text-sm font-semibold transition " +
+              (currentPage === totalPages
                 ? "pointer-events-none border-slate-900/8 bg-white text-slate-300"
-                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]"
-            }`}
+                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]")
+            }
             aria-disabled={currentPage === totalPages}
           >
             {isChinese ? "下一页" : "Next"}
