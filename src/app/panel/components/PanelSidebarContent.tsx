@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, type ComponentType } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 
-import { Plus, type LucideIcon } from "lucide-react";
+import { ChevronDown, Plus, Settings2, type LucideIcon } from "lucide-react";
 
 import { getExtensionRegistry } from "@extensions/loader";
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -53,11 +53,8 @@ export function PanelSidebarContent({
 }: PanelSidebarContentProps) {
   const pathname = usePathname();
   const { language } = useLanguage();
-  const copy = translations[language].userCenter.mfa;
   const user = useUserStore((state) => state.user);
-  const requiresSetup = Boolean(
-    user && !user.isReadOnly && (!user.mfaEnabled || user.mfaPending),
-  );
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const navSections = useMemo<NavSection[]>(() => {
     return registry.sidebar
@@ -74,10 +71,7 @@ export function PanelSidebarContent({
             }
 
             const disabledByGuard = !requiresRole && !guardResult.allowed;
-            const disabled =
-              item.disabled ||
-              disabledByGuard ||
-              (requiresSetup && route.path !== "/panel/account");
+            const disabled = item.disabled || disabledByGuard;
 
             const Icon = route.icon ?? PlaceholderIcon;
 
@@ -103,7 +97,7 @@ export function PanelSidebarContent({
         };
       })
       .filter((value) => Boolean(value)) as NavSection[];
-  }, [requiresSetup, user]);
+  }, [user]);
 
   const primarySections = navSections.filter(
     (section) => section.id !== "infra",
@@ -111,6 +105,12 @@ export function PanelSidebarContent({
   const resourceSections = navSections.filter(
     (section) => section.id === "infra",
   );
+  const advancedLabel =
+    language === "zh" ? "用户高级配置选型" : "Advanced configuration";
+  const advancedDescription =
+    language === "zh"
+      ? "部署、资源、密钥与可观测性"
+      : "Deployments, resources, keys, and observability";
 
   const renderSection = (section: NavSection) => {
     const sectionDisabled = section.items.every((item) => item.disabled);
@@ -204,9 +204,7 @@ export function PanelSidebarContent({
                       ]) ||
                       item.label}
                   </span>
-                  <span
-                    className={`${descriptionClasses.join(" ")} text-left`}
-                  >
+                  <span className={`${descriptionClasses.join(" ")} text-left`}>
                     {item.description}
                   </span>
                 </span>
@@ -253,42 +251,46 @@ export function PanelSidebarContent({
             ? "在同一处掌控权限与功能特性。"
             : "Manage permissions and features in one place."}
         </p>
-
-        {requiresSetup ? (
-          <div className="mt-4 rounded-[14px] border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)]/92 p-3 text-xs text-[var(--color-warning-foreground)] shadow-[var(--shadow-soft)] transition-colors">
-            <p className="font-semibold">{copy.pendingHint}</p>
-            <p className="mt-1">{copy.lockedMessage}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Link
-                href="/panel/account?setupMfa=1"
-                onClick={onNavigate}
-                className="tactile-button tactile-button-primary min-h-9 px-3 text-xs"
-              >
-                {copy.actions.setup}
-              </Link>
-              <a
-                href={copy.actions.docsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="tactile-button tactile-button-soft min-h-9 border border-[color:var(--color-primary-border)] px-3 text-xs text-[var(--color-primary)]"
-              >
-                {copy.actions.docs}
-              </a>
-            </div>
-          </div>
-        ) : null}
       </SidebarHeader>
 
       <SidebarContent className="flex flex-col gap-6">
         {primarySections.map(renderSection)}
+        {resourceSections.length > 0 ? (
+          <div className="border-t border-[color:var(--color-surface-border)] pt-4">
+            <button
+              type="button"
+              onClick={() => setAdvancedOpen((value) => !value)}
+              aria-expanded={advancedOpen}
+              aria-controls="advanced-configuration"
+              title={collapsed ? advancedLabel : undefined}
+              className={`group flex w-full items-center gap-3 rounded-[14px] border border-transparent px-3 py-3 text-left text-sm text-[var(--color-text-subtle)] transition-all duration-300 hover:border-[color:var(--color-primary-border)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-primary)] ${collapsed ? "justify-center px-0" : ""}`}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] transition-colors group-hover:bg-[var(--color-primary-muted)] group-hover:text-[var(--color-primary)]">
+                <Settings2 className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <span
+                className={`min-w-0 flex-1 transition-all duration-300 ${collapsed ? "w-0 overflow-hidden opacity-0 invisible" : "w-auto opacity-100 visible"}`}
+              >
+                <span className="block font-semibold">{advancedLabel}</span>
+                <span className="mt-0.5 block truncate text-xs text-[var(--color-text-subtle)]">
+                  {advancedDescription}
+                </span>
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${advancedOpen ? "rotate-180" : ""} ${collapsed ? "hidden" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+            {advancedOpen ? (
+              <div id="advanced-configuration" className="mt-3 space-y-5">
+                {resourceSections.map(renderSection)}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-[color:var(--color-surface-border)] px-1 pb-3 pt-3">
-        {resourceSections.length > 0 ? (
-          <div className="mb-4 border-b border-[color:var(--color-surface-border)] pb-4">
-            {resourceSections.map(renderSection)}
-          </div>
-        ) : null}
         <button
           className={`tactile-button tactile-button-primary group w-full gap-2 px-3 text-sm font-bold ${collapsed ? "px-0" : ""}`}
           title={

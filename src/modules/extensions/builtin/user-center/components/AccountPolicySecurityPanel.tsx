@@ -56,7 +56,7 @@ export default function AccountPolicySecurityPanel({
             <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
               {securityReady
                 ? "动态验证码已保护控制台登录。"
-                : "完成 MFA 后可解锁受保护的控制台服务。"}
+                : "绑定认证器可为登录和支付操作增加额外保护。"}
             </p>
           </div>
           <span

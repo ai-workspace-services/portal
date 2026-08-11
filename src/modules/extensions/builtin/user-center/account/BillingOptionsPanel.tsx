@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import CheckoutStatusBanner from "@components/billing/CheckoutStatusBanner";
+import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
 import { startStripeCheckout } from "@components/billing/stripe-client";
 import Card from "../components/Card";
 import type { BillingPlan, ProductConfig } from "@modules/products/registry";
@@ -20,6 +21,7 @@ const kindLabel: Record<"paygo" | "subscription", string> = {
 };
 
 export default function BillingOptionsPanel() {
+  const requiresMfa = usePaymentMfaRequired();
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<string | null>(null);
 
@@ -41,6 +43,10 @@ export default function BillingOptionsPanel() {
   }, []);
 
   const handleCheckout = async (option: ProductOption) => {
+    if (requiresMfa) {
+      setStatusMessage("请先绑定 MFA，才能发起安全支付。");
+      return;
+    }
     if (!option.plan.planId || !option.plan.stripePriceId) {
       setStatusMessage("该套餐尚未配置 Stripe price_id。");
       return;
@@ -114,14 +120,16 @@ export default function BillingOptionsPanel() {
               <button
                 type="button"
                 onClick={() => handleCheckout(option)}
-                disabled={submitting === option.plan.planId}
+                disabled={requiresMfa || submitting === option.plan.planId}
                 className="inline-flex w-full items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {submitting === option.plan.planId
                   ? "跳转中…"
-                  : option.kind === "subscription"
-                    ? "使用 Stripe 订阅"
-                    : "使用 Stripe 购买"}
+                  : requiresMfa
+                    ? "绑定 MFA 后可支付"
+                    : option.kind === "subscription"
+                      ? "使用 Stripe 订阅"
+                      : "使用 Stripe 购买"}
               </button>
               {!option.plan.stripePriceId ? (
                 <p className="text-xs text-[var(--color-text-subtle)]">

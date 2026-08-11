@@ -4,6 +4,7 @@ import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import Card from "../components/Card";
 import BillingOptionsPanel from "../account/BillingOptionsPanel";
 import SubscriptionPanel from "../account/SubscriptionPanel";
+import PaymentMfaNotice from "@components/billing/PaymentMfaNotice";
 import { useUserStore } from "@lib/userStore";
 
 export default function UserCenterSubscriptionRoute() {
@@ -71,8 +72,9 @@ export default function UserCenterSubscriptionRoute() {
           </div>
         </div>
       </Card>
+      <PaymentMfaNotice />
       <BillingOptionsPanel />
-      <SubscriptionPanel />
+      <SubscriptionPanel showPaymentMfaNotice={false} />
     </div>
   );
 }
