@@ -87,7 +87,7 @@ export const homeMarketingContentData = {
       "trialNote": "",
       "primaryCta": {
         "label": "免费试用",
-        "href": "/register"
+        "href": "/ai-workspace?entry=trial"
       },
       "secondaryCta": {
         "label": "查看产品演示",
@@ -470,7 +470,7 @@ export const homeMarketingContentData = {
       "description": "创建工作空间，连接已有模型和工具，产出第一份可下载结果。",
       "primaryCta": {
         "label": "免费试用进入工作台",
-        "href": "/register"
+        "href": "/ai-workspace?entry=trial"
       },
       "secondaryCta": {
         "label": "联系团队部署",
@@ -566,7 +566,7 @@ export const homeMarketingContentData = {
       "trialNote": "",
       "primaryCta": {
         "label": "Try it free",
-        "href": "/register"
+        "href": "/ai-workspace?entry=trial"
       },
       "secondaryCta": {
         "label": "See the product demo",
@@ -949,7 +949,7 @@ export const homeMarketingContentData = {
       "description": "Create a workspace, connect the models and tools you already use, and produce your first downloadable result.",
       "primaryCta": {
         "label": "Try it free in the workspace",
-        "href": "/register"
+        "href": "/ai-workspace?entry=trial"
       },
       "secondaryCta": {
         "label": "Talk to us about deployment",
