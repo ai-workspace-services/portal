@@ -34,6 +34,7 @@ export type HomeMarketingContent = {
     title: string[];
     line: string;
     subtitle: string;
+    tagline?: string;
     trialNote: string;
     primaryCta: { label: string; href: string };
     secondaryCta: { label: string; href: string };
