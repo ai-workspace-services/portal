@@ -265,12 +265,14 @@ export default function MarketingNav() {
               {content.nav.login}
             </Link>
           )}
-          <Link
-            href={isAuthenticated ? consoleHref : content.hero.primaryCta.href}
-            className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
-          >
-            {isAuthenticated ? content.nav.enterConsole : content.hero.primaryCta.label}
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href={consoleHref}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
+            >
+              {content.nav.enterConsole}
+            </Link>
+          ) : null}
         </div>
 
         <button
@@ -343,13 +345,15 @@ export default function MarketingNav() {
                 {content.nav.login}
               </Link>
             )}
-            <Link
-              href={isAuthenticated ? consoleHref : content.hero.primaryCta.href}
-              className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
-              onClick={() => setMobileOpen(false)}
-            >
-              {isAuthenticated ? content.nav.enterConsole : content.hero.primaryCta.label}
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href={consoleHref}
+                className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                {content.nav.enterConsole}
+              </Link>
+            ) : null}
           </div>
         </div>
       )}

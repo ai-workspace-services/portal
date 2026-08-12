@@ -562,8 +562,9 @@ export const homeMarketingContentData = {
       "title": [
         "An open AI workspace"
       ],
-      "line": "Connect everything, Orchestrate everything, Deliver everything, From idea to artifact, in one Workspace!",
-      "subtitle": "",
+      "line": "Say goodbye to fragmented AI tools. One Workspace connects all your AI.",
+      "subtitle": "Stop switching between ChatGPT, Claude, Gemini, agents, plugins, and other tools. XWorkmate brings AI models, assistants, tools, and data into one unified workspace, so you can go from idea to outcome in one place.",
+      "tagline": "One AI Workspace for all your AI.",
       "trialNote": "",
       "primaryCta": {
         "label": "Try it free",
