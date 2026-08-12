@@ -90,8 +90,8 @@ export const homeMarketingContentData = {
         "href": "/register"
       },
       "secondaryCta": {
-        "label": "查看产品",
-        "href": "/products/xworkmate"
+        "label": "进入控制台",
+        "href": "/panel"
       },
       "visual": {
         "eyebrow": "一个空间，所有 AI",
@@ -569,8 +569,8 @@ export const homeMarketingContentData = {
         "href": "/register"
       },
       "secondaryCta": {
-        "label": "Explore Product",
-        "href": "/products/xworkmate"
+        "label": "Enter Console",
+        "href": "/panel"
       },
       "visual": {
         "eyebrow": "ONE SPACE, EVERY AI",
