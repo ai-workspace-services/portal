@@ -78,24 +78,25 @@ export const homeMarketingContentData = {
     },
     "hero": {
       "eyebrow": "XWorkmate · AI Workspace",
+      "logoLabel": "AI 模型与智能体",
       "title": [
-        "从对话到交付，",
-        "一个 AI 工作空间",
-        "完成全部工作"
+        "一个 AI 工作空间，",
+        "容纳你所有的 AI 智能体。"
       ],
-      "subtitle": "统一任务、知识、连接与交付，让 AI 真正参与工作，而不只是回答问题。",
+      "subtitle": "把你的模型、智能体、工具与工作流汇聚在同一个空间。",
+      "trialNote": "免费注册，即刻开始体验",
       "primaryCta": {
-        "label": "进入控制台",
-        "href": "/panel"
+        "label": "免费试用",
+        "href": "/register"
       },
       "secondaryCta": {
         "label": "查看产品",
         "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "真实 AI Workspace",
-        "title": "Agent、对话、工具与产物在一个连续工作空间协同",
-        "subtitle": "从计划到执行，工作上下文始终保持连续。",
+        "eyebrow": "一个空间，所有 AI",
+        "title": "从模型到智能体，围绕同一份工作持续协作",
+        "subtitle": "无需在不同 AI 工具之间来回切换，工作上下文始终留在一起。",
         "imageBasePath": "/marketing/home-hero",
         "imageUrl": "/marketing/home-hero/ai-workspace-suite-zh.png",
         "alt": "XWorkmate AI 工作空间，展示模型、连接、工作空间与交付产物",
@@ -556,24 +557,25 @@ export const homeMarketingContentData = {
     },
     "hero": {
       "eyebrow": "XWorkmate · AI Workspace",
+      "logoLabel": "AI models & agents",
       "title": [
-        "From conversation to delivery,",
-        "one AI workspace for",
-        "the work that matters"
+        "One AI Workspace",
+        "for all your AI Agents."
       ],
-      "subtitle": "Bring tasks, knowledge, connections, and delivery together so AI can participate in the work—not just answer questions.",
+      "subtitle": "Bring your models, agents, tools, and workflows together in one place.",
+      "trialNote": "Create a free account and start exploring",
       "primaryCta": {
-        "label": "Enter Console",
-        "href": "/panel"
+        "label": "Try it free",
+        "href": "/register"
       },
       "secondaryCta": {
         "label": "Explore Product",
         "href": "/products/xworkmate"
       },
       "visual": {
-        "eyebrow": "REAL AI WORKSPACE",
-        "title": "Agents, conversations, tools, and artifacts working together in one continuous workspace.",
-        "subtitle": "From planning to execution, your work keeps its context everywhere.",
+        "eyebrow": "ONE SPACE, EVERY AI",
+        "title": "Models and agents work around the same shared context.",
+        "subtitle": "Keep the work moving without jumping between disconnected AI tools.",
         "imageBasePath": "/marketing/home-hero",
         "imageUrl": "/marketing/home-hero/ai-workspace-suite-en.png",
         "alt": "XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts",

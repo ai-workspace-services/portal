@@ -50,7 +50,9 @@ function syncDocumentLanguage(language: Language) {
 }
 
 export const useLanguageStore = create<LanguageState>((set) => ({
-  language: detectPreferredLanguage(),
+  // Keep the server and the first client render deterministic. The persisted
+  // browser preference is applied by LanguageProvider after hydration.
+  language: 'zh',
   setLanguage: (language) => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(STORAGE_KEY, language)

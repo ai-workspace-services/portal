@@ -30,8 +30,10 @@ export type HomeMarketingContent = {
   };
   hero: {
     eyebrow: string;
+    logoLabel: string;
     title: string[];
     subtitle: string;
+    trialNote: string;
     primaryCta: { label: string; href: string };
     secondaryCta: { label: string; href: string };
     visual: {
