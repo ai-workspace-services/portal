@@ -16,7 +16,7 @@ export default function WorkflowSection() {
       className="border-y border-slate-900/8 bg-slate-50/80"
     >
       <div className={`${marketingTheme.section.container} py-16 sm:py-24`}>
-        <div className="max-w-2xl">
+        <div className="mx-auto max-w-3xl text-center">
           <p className={marketingTheme.heading.eyebrow}>{content.eyebrow}</p>
           <h2
             id="workflow-title"
@@ -24,7 +24,7 @@ export default function WorkflowSection() {
           >
             {content.title}
           </h2>
-          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
             {content.description}
           </p>
         </div>
