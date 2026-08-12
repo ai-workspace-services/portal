@@ -51,11 +51,11 @@ hero:
     - the work that matters
   subtitle: Bring tasks, knowledge, connections, and delivery together so AI can participate in the work—not just answer questions.
   primaryCta:
+    label: Try it free
+    href: /register
+  secondaryCta:
     label: Enter Console
     href: /panel
-  secondaryCta:
-    label: Explore Product
-    href: /products/xworkmate
   visual:
     eyebrow: REAL AI WORKSPACE
     title: Agents, conversations, tools, and artifacts working together in one continuous workspace.
@@ -304,11 +304,11 @@ finalCta:
   title: Open AI Workspace
   description: Connect anything. Build anything. Deliver anything.
   primaryCta:
+    label: Try it free
+    href: /register
+  secondaryCta:
     label: Enter Console
     href: /panel
-  secondaryCta:
-    label: Explore Product
-    href: /products/xworkmate
 ---
 
 ## Marketing Content (EN)

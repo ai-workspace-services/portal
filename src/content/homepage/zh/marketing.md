@@ -51,11 +51,11 @@ hero:
     - 完成全部工作
   subtitle: 统一任务、知识、连接与交付，让 AI 真正参与工作，而不只是回答问题。
   primaryCta:
+    label: 免费试用
+    href: /register
+  secondaryCta:
     label: 进入控制台
     href: /panel
-  secondaryCta:
-    label: 查看产品
-    href: /products/xworkmate
   visual:
     eyebrow: 真实 AI Workspace
     title: Agent、对话、工具与产物在一个连续工作空间协同
@@ -304,11 +304,11 @@ finalCta:
   title: 开放的 AI 工作空间
   description: 连接一切。构建一切。交付一切。
   primaryCta:
+    label: 免费试用
+    href: /register
+  secondaryCta:
     label: 进入控制台
     href: /panel
-  secondaryCta:
-    label: 查看产品
-    href: /products/xworkmate
 ---
 
 ## Marketing Content (ZH)
