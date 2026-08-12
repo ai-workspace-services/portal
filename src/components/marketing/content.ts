@@ -18,7 +18,7 @@ export type NavDropdown = {
 
 export type HomeMarketingContent = {
   brand: {
-    name: string;
+    title: string;
     tagline: string;
   };
   nav: {

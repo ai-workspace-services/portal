@@ -6,6 +6,7 @@ import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { marketingTheme } from "@/components/marketing/theme";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useUserStore } from "@lib/userStore";
 import { cn } from "@/lib/utils";
@@ -91,10 +92,10 @@ export default function MarketingNav() {
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-extrabold tracking-tight text-primary">
-            {content.brand.name}
+          <span className={marketingTheme.brand.title}>
+            {content.brand.title}
           </span>
-          <span className="hidden text-xs font-medium text-slate-400 sm:inline">
+          <span className={`hidden sm:inline ${marketingTheme.brand.tagline}`}>
             {content.brand.tagline}
           </span>
         </Link>
@@ -265,10 +266,10 @@ export default function MarketingNav() {
             </Link>
           )}
           <Link
-            href={consoleHref}
+            href={isAuthenticated ? consoleHref : content.hero.primaryCta.href}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
           >
-            {content.nav.enterConsole}
+            {isAuthenticated ? content.nav.enterConsole : content.hero.primaryCta.label}
           </Link>
         </div>
 
@@ -343,11 +344,11 @@ export default function MarketingNav() {
               </Link>
             )}
             <Link
-              href={consoleHref}
+              href={isAuthenticated ? consoleHref : content.hero.primaryCta.href}
               className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
               onClick={() => setMobileOpen(false)}
             >
-              {content.nav.enterConsole}
+              {isAuthenticated ? content.nav.enterConsole : content.hero.primaryCta.label}
             </Link>
           </div>
         </div>

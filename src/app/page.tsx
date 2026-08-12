@@ -10,6 +10,7 @@ import EditionsCarouselSection from "@/components/marketing/EditionsCarouselSect
 import WorkflowSection from "@/components/marketing/WorkflowSection";
 import ControlPlaneSection from "@/components/marketing/ControlPlaneSection";
 import ProofSection from "@/components/marketing/ProofSection";
+import PricingTeaser from "@/components/marketing/PricingTeaser";
 import FinalCta from "@/components/marketing/FinalCta";
 
 export default function HomePage() {
@@ -23,6 +24,7 @@ export default function HomePage() {
         <WorkflowSection />
         <ControlPlaneSection />
         <ProofSection />
+        <PricingTeaser />
         <FinalCta />
       </main>
       <div className="mx-auto w-full max-w-6xl px-6 pb-10 lg:px-8">

@@ -85,13 +85,21 @@ export default function HeroSection() {
         </div>
 
         <div className="mt-7 flex flex-col items-center">
-          <Link
-            href={hero.primaryCta.href}
-            className={`${marketingTheme.cta.primary} min-w-40 px-7 py-3.5 text-base shadow-[0_12px_30px_rgba(37,99,235,0.22)]`}
-          >
-            {hero.primaryCta.label}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href={hero.primaryCta.href}
+              className={`${marketingTheme.cta.primary} min-w-40 px-7 py-3.5 text-base shadow-[0_12px_30px_rgba(37,99,235,0.22)]`}
+            >
+              {hero.primaryCta.label}
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link
+              href={hero.secondaryCta.href}
+              className={`${marketingTheme.cta.secondary} min-w-40 px-7 py-3.5 text-base`}
+            >
+              {hero.secondaryCta.label}
+            </Link>
+          </div>
           <p className="mt-3 text-xs text-slate-400">{hero.trialNote}</p>
         </div>
       </div>
