@@ -9,7 +9,7 @@ import { startStripeCheckout } from "@components/billing/stripe-client";
 import Footer from "../../components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { useLanguage } from "../../i18n/LanguageProvider";
-import { PRODUCT_LIST, type BillingPlan } from "@modules/products/registry";
+import { type BillingPlan } from "@modules/products/registry";
 
 type PricingCard = {
   key: string;
@@ -74,7 +74,8 @@ function useXconnectCards(
       const plan = catalog.get(planId);
       return Boolean(plan?.active && plan.stripePriceId);
     };
-    const priceIdOf = (planId: string) => catalog.get(planId)?.stripePriceId ?? "";
+    const priceIdOf = (planId: string) =>
+      catalog.get(planId)?.stripePriceId ?? "";
 
     const cards: PricingCard[] = [
       {
@@ -102,10 +103,10 @@ function useXconnectCards(
         key: "xconnect-payg",
         productSlug: XCONNECT_PRODUCT_SLUG,
         name: isChinese ? "按量付费" : "Pay-As-You-Go",
-        price: isChinese ? "¥1/GB" : "¥1/GB",
+        price: isChinese ? "¥1/GB" : "$0.15/GB",
         description: isChinese
           ? "预充值账户余额，高速流量按 ¥1/GB 计费，资源卡片明码实价。欠费立即停机，计算资源保留 7 天、对象存储保留 30 天后释放。"
-          : "Top up your balance and pay ¥1/GB for accelerated traffic, with resource cards billed at list price. Suspended immediately on zero balance; compute is kept for 7 days and object storage for 30.",
+          : "Top up your balance and pay $0.15/GB for accelerated traffic, with resource cards billed at list price. Suspended immediately on zero balance; compute is kept for 7 days and object storage for 30.",
         features: isChinese
           ? [
               "高速流量 ¥1/GB，按量扣费",
@@ -113,7 +114,7 @@ function useXconnectCards(
               "欠费立即停机，7 天内可恢复",
             ]
           : [
-              "Accelerated traffic at ¥1/GB",
+              "Accelerated traffic at $0.15/GB",
               "Resource cards billed at list price",
               "Suspends immediately on zero balance, recoverable within 7 days",
             ],
@@ -124,11 +125,11 @@ function useXconnectCards(
         key: "xconnect-pro-monthly",
         productSlug: XCONNECT_PRODUCT_SLUG,
         name: isChinese ? "Pro 订阅（月付）" : "Pro (Monthly)",
-        price: isChinese ? "¥20" : "¥20",
+        price: isChinese ? "¥20" : "$3",
         period: isChinese ? "/月" : "/month",
         description: isChinese
           ? "每月赠送 20GB 高速流量，超出部分按 ¥1/GB 自动计费。"
-          : "20GB of accelerated traffic every month; overage auto-bills at ¥1/GB.",
+          : "20GB of accelerated traffic every month; overage auto-bills at $0.15/GB.",
         features: isChinese
           ? [
               "每月 20GB 高速流量",
@@ -138,7 +139,7 @@ function useXconnectCards(
             ]
           : [
               "20GB accelerated traffic per month",
-              "Overage auto-billed at ¥1/GB",
+              "Overage auto-billed at $0.15/GB",
               "Resource cards at list price + 20% managed fee",
               "14-day grace period on payment failure",
             ],
@@ -163,11 +164,11 @@ function useXconnectCards(
         key: "xconnect-pro-yearly",
         productSlug: XCONNECT_PRODUCT_SLUG,
         name: isChinese ? "Pro 订阅（年付）" : "Pro (Yearly)",
-        price: isChinese ? "¥200" : "¥200",
+        price: isChinese ? "¥200" : "$28",
         period: isChinese ? "/年" : "/year",
         description: isChinese
           ? "每个自然月赠送 20GB 高速流量（全年共 240GB），比月付省 ¥40。"
-          : "20GB of accelerated traffic every calendar month (240GB/year) — ¥40 cheaper than paying monthly.",
+          : "20GB of accelerated traffic every calendar month (240GB/year) — save $8 versus monthly billing.",
         features: isChinese
           ? [
               "每自然月 20GB 高速流量，全年 240GB",
@@ -177,9 +178,9 @@ function useXconnectCards(
             ]
           : [
               "20GB accelerated traffic per calendar month, 240GB/year",
-              "Overage auto-billed at ¥1/GB",
+              "Overage auto-billed at $0.15/GB",
               "Resource cards at list price + 20% managed fee",
-              "¥40/year cheaper than monthly",
+              "Save $8/year versus monthly billing",
             ],
         button: purchasable("PRO-YEARLY")
           ? isChinese
@@ -209,89 +210,67 @@ export default function PricesPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const catalog = useBillingCatalog();
   const xconnectCards = useXconnectCards(isChinese, catalog);
-  const billingCards: PricingCard[] = PRODUCT_LIST.filter(
-    (product) => product.slug !== XCONNECT_PRODUCT_SLUG,
-  ).flatMap((product) => {
-    const cards: PricingCard[] = [];
-    if (product.billing?.saas) {
-      cards.push({
-        key: `${product.slug}-subscription`,
-        productSlug: product.slug,
-        name: `${product.name} ${isChinese ? "订阅版" : "Subscription"}`,
-        price: `$${product.billing.saas.price.toFixed(2)}`,
-        period: product.billing.saas.interval
-          ? `/${product.billing.saas.interval}`
-          : undefined,
-        description: product.billing.saas.description || "",
-        features: [
-          isChinese ? "Stripe 自动续费" : "Recurring billing with Stripe",
-          isChinese
-            ? "购买后自动同步到账户"
-            : "Syncs back to your account automatically",
-          isChinese
-            ? "支持客户门户管理账单"
-            : "Manage billing in Stripe customer portal",
+  const selfHostCard: PricingCard = {
+    key: "open-source",
+    name: isChinese ? "开源自建" : "Open Source (Self-Host)",
+    price: isChinese ? "免费" : "Free",
+    period: isChinese ? "/永久" : "/forever",
+    description: isChinese
+      ? "开源代码，自行部署和运行；从第一天起拥有完整控制权。"
+      : "Open source software you deploy and run yourself, with full control from day one.",
+    features: isChinese
+      ? ["开源代码", "私有化部署", "社区支持"]
+      : ["Open source code", "Self-host deployment", "Community support"],
+    button: isChinese ? "开始自建" : "Start self-hosting",
+    href: "/download",
+  };
+
+  const managedPaygoCard: PricingCard = {
+    key: "managed-paygo",
+    name: isChinese ? "托管服务按量付费" : "Managed Services — Pay as You Go",
+    price: isChinese ? "规格费用 + 20%" : "List price + 20%",
+    description: isChinese
+      ? "按实际使用的资源规格收费，并收取 20% 托管服务费；更多托管服务将持续加入。"
+      : "Pay for the infrastructure you use at its published specification price, plus a 20% managed-service fee. More managed services are on the way.",
+    features: isChinese
+      ? [
+          "按资源规格与实际用量计费",
+          "统一收取 20% 托管服务费",
+          "可随业务增长灵活扩展",
+        ]
+      : [
+          "Billed by resource specification and usage",
+          "A single 20% managed-service fee",
+          "Scale services up as your workload grows",
         ],
-        button: isChinese ? "使用 Stripe 订阅" : "Subscribe with Stripe",
-        billingPlan: product.billing.saas,
-      });
-    }
-    if (product.billing?.paygo) {
-      cards.push({
-        key: `${product.slug}-paygo`,
-        productSlug: product.slug,
-        name: `${product.name} ${isChinese ? "按量版" : "Pay as you go"}`,
-        price: `$${product.billing.paygo.price.toFixed(2)}`,
-        description: product.billing.paygo.description || "",
-        features: [
-          isChinese ? "一次性 Stripe 结算" : "One-time Stripe checkout",
-          isChinese ? "适合弹性使用场景" : "Fits bursty or flexible usage",
-          isChinese
-            ? "订单自动写入账户中心"
-            : "Orders sync into your account center",
+    button: isChinese ? "登录后按量使用" : "Sign in to use on demand",
+    href: "/panel/subscription",
+    highlight: true,
+  };
+
+  const customCard: PricingCard = {
+    key: "custom",
+    name: isChinese ? "专属定制" : "Custom",
+    price: isChinese ? "商务洽谈" : "Talk to us",
+    description: isChinese
+      ? "针对合规、SLA 或大规模使用需求，由团队提供专属方案。"
+      : "For compliance, SLA, or high-scale requirements, work with our team on a tailored plan.",
+    features: isChinese
+      ? ["合同级 SLA", "专属交付与支持", "适配企业治理需求"]
+      : [
+          "Contractual SLA",
+          "Dedicated delivery and support",
+          "Enterprise governance options",
         ],
-        button: isChinese ? "使用 Stripe 购买" : "Buy with Stripe",
-        billingPlan: product.billing.paygo,
-      });
-    }
-    return cards;
-  });
+    button: isChinese ? "联系我们" : "Contact Sales",
+    href: "/support",
+  };
 
   const extraCards: PricingCard[] = [
-    {
-      key: "open-source",
-      name: isChinese ? "开源版 (Self-Host)" : "Open Source (Self-Host)",
-      price: isChinese ? "免费" : "Free",
-      period: isChinese ? "/永久" : "/forever",
-      description: isChinese
-        ? "适合自托管团队，完全自主掌控。"
-        : "Best for self-hosted teams with full control.",
-      features: isChinese
-        ? ["开源代码", "私有化部署", "社区支持"]
-        : ["Open source code", "Self-host deployment", "Community support"],
-      button: isChinese ? "下载" : "Download",
-      href: "/download",
-    },
-    {
-      key: "custom",
-      name: isChinese ? "专属定制" : "Custom",
-      price: isChinese ? "商务洽谈" : "Talk to us",
-      description: isChinese
-        ? "按合同约定配额与 SLA，不走自助支付，由商务与运营团队开通。"
-        : "Contract-defined quota and SLA, provisioned by our team rather than self-serve checkout.",
-      features: isChinese
-        ? ["按合同约定配额", "合同级 SLA", "专属交付与商务支持"]
-        : [
-            "Contract-defined quota",
-            "Contractual SLA",
-            "Dedicated delivery and account support",
-          ],
-      button: isChinese ? "联系我们" : "Contact Sales",
-      href: "/support",
-    },
+    selfHostCard,
+    managedPaygoCard,
+    customCard,
   ];
-
-  const cards = [...xconnectCards, ...billingCards, ...extraCards];
 
   const handleCheckout = async (card: PricingCard) => {
     if (
@@ -326,6 +305,83 @@ export default function PricesPage() {
     }
   };
 
+  const renderPricingCard = (card: PricingCard) => (
+    <div
+      key={card.key}
+      className={`relative flex h-full flex-col rounded-2xl border p-6 ${
+        card.highlight
+          ? "border-primary bg-primary/5 shadow-2xl shadow-primary/10"
+          : "border-surface-border bg-surface"
+      }`}
+    >
+      {card.highlight ? (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+          {isChinese ? "推荐" : "Recommended"}
+        </div>
+      ) : null}
+
+      <div className="mb-6">
+        <h3 className="text-base font-semibold text-text-muted mb-2">
+          {card.name}
+        </h3>
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-bold text-heading">{card.price}</span>
+          {card.period ? (
+            <span className="text-xs text-text-muted">{card.period}</span>
+          ) : null}
+        </div>
+        <p className="mt-3 min-h-[2.5em] text-xs text-text-subtle">
+          {card.description}
+        </p>
+      </div>
+
+      <div className="mb-6 flex-1 space-y-3">
+        {card.features.map((feature) => (
+          <div key={feature} className="flex items-start gap-2">
+            <div
+              className={`mt-0.5 rounded-full p-0.5 ${
+                card.highlight
+                  ? "bg-primary/20 text-primary"
+                  : "bg-surface-muted text-text-muted"
+              }`}
+            >
+              <Check size={12} />
+            </div>
+            <span className="text-xs leading-tight text-text-muted">
+              {feature}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {card.billingPlan ? (
+        <button
+          type="button"
+          onClick={() => void handleCheckout(card)}
+          disabled={!card.billingPlan.stripePriceId}
+          className={`w-full rounded-lg py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+            card.highlight
+              ? "bg-primary text-white hover:bg-primary-hover"
+              : "border border-surface-border bg-surface-muted text-text hover:bg-surface-hover"
+          }`}
+        >
+          {card.button}
+        </button>
+      ) : (
+        <Link
+          href={card.href || "/"}
+          className={`w-full rounded-lg py-2 text-center text-xs font-semibold transition-colors ${
+            card.highlight
+              ? "bg-primary text-white hover:bg-primary-hover"
+              : "border border-surface-border bg-surface-muted text-text hover:bg-surface-hover"
+          }`}
+        >
+          {card.button}
+        </Link>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-150 flex flex-col">
       <MarketingNav />
@@ -343,8 +399,8 @@ export default function PricesPage() {
             </h1>
             <p className="text-lg text-text-muted">
               {isChinese
-                ? "从免费体验到按量付费、订阅与专属定制，随用量增长按需升级。所有在线购买统一通过 Stripe 完成。"
-                : "From a free tier to pay-as-you-go, subscriptions, and custom contracts — upgrade as your usage grows. All online purchases run through Stripe."}
+                ? "先免费开源自建；需要托管时，再按实际用量付费。托管资源按规格费用加收 20% 服务费，更多服务将陆续上线。"
+                : "Start free with self-hosting. When you need managed services, pay only for what you use: published resource pricing plus a 20% service fee. More services are coming."}
             </p>
           </div>
 
@@ -357,91 +413,25 @@ export default function PricesPage() {
             </p>
           ) : null}
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {cards.map((card) => (
-              <div
-                key={card.key}
-                className={`relative flex h-full flex-col rounded-2xl border p-6 ${
-                  card.highlight
-                    ? "border-primary bg-primary/5 shadow-2xl shadow-primary/10"
-                    : "border-surface-border bg-surface"
-                }`}
-              >
-                {card.highlight ? (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                    {isChinese ? "推荐" : "Recommended"}
-                  </div>
-                ) : null}
-
-                <div className="mb-6">
-                  <h3 className="text-base font-semibold text-text-muted mb-2">
-                    {card.name}
-                  </h3>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-heading">
-                      {card.price}
-                    </span>
-                    {card.period ? (
-                      <span className="text-xs text-text-muted">
-                        {card.period}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-3 min-h-[2.5em] text-xs text-text-subtle">
-                    {card.description}
-                  </p>
-                </div>
-
-                <div className="mb-6 flex-1 space-y-3">
-                  {card.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-2">
-                      <div
-                        className={`mt-0.5 rounded-full p-0.5 ${
-                          card.highlight
-                            ? "bg-primary/20 text-primary"
-                            : "bg-surface-muted text-text-muted"
-                        }`}
-                      >
-                        <Check size={12} />
-                      </div>
-                      <span className="text-xs leading-tight text-text-muted">
-                        {feature}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {card.billingPlan ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleCheckout(card)}
-                    // A plan with no Stripe price id is not purchasable yet
-                    // (the catalog row exists but hasn't been wired to a
-                    // Stripe Price). Disable rather than let the click fail.
-                    disabled={!card.billingPlan.stripePriceId}
-                    className={`w-full rounded-lg py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                      card.highlight
-                        ? "bg-primary text-white hover:bg-primary-hover"
-                        : "border border-surface-border bg-surface-muted text-text hover:bg-surface-hover"
-                    }`}
-                  >
-                    {card.button}
-                  </button>
-                ) : (
-                  <Link
-                    href={card.href || "/"}
-                    className={`w-full rounded-lg py-2 text-center text-xs font-semibold transition-colors ${
-                      card.highlight
-                        ? "bg-primary text-white hover:bg-primary-hover"
-                        : "border border-surface-border bg-surface-muted text-text hover:bg-surface-hover"
-                    }`}
-                  >
-                    {card.button}
-                  </Link>
-                )}
-              </div>
-            ))}
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {extraCards.map(renderPricingCard)}
           </div>
+
+          <section className="mt-16">
+            <div className="mx-auto mb-8 max-w-3xl text-center">
+              <h2 className="text-2xl font-bold tracking-tight text-heading sm:text-3xl">
+                {isChinese ? "XConnect 核心套餐" : "XConnect core plans"}
+              </h2>
+              <p className="mt-3 text-sm text-text-muted">
+                {isChinese
+                  ? "从免费体验开始；需要更高的连接与加速额度时，再按用量或套餐升级。"
+                  : "Start with the free experience, then use pay as you go or a plan when you need more connection and acceleration capacity."}
+              </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {xconnectCards.map(renderPricingCard)}
+            </div>
+          </section>
 
           <div className="mt-20 max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-surface-border bg-surface px-4 py-2 text-xs font-medium text-text-muted">
