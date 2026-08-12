@@ -16,6 +16,9 @@ test.describe("Marketing homepage experience", () => {
       }),
     ).toBeVisible();
     await expect(
+      page.locator("nav").getByRole("link", { name: "免费试用" }),
+    ).toHaveCount(0);
+    await expect(
       page.getByText("告别 AI 工具碎片化，一个 Workspace 连接你的所有 AI。"),
     ).toBeVisible();
     await expect(
@@ -69,10 +72,19 @@ test.describe("Marketing homepage experience", () => {
       }),
     ).toBeVisible();
     await expect(
+      page.locator("nav").getByRole("link", { name: "Try it free" }),
+    ).toHaveCount(0);
+    await expect(
       page.getByText(
-        "Connect everything, Orchestrate everything, Deliver everything, From idea to artifact, in one Workspace!",
+        "Say goodbye to fragmented AI tools. One Workspace connects all your AI.",
       ),
     ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Stop switching between ChatGPT, Claude, Gemini, agents, plugins, and other tools. XWorkmate brings AI models, assistants, tools, and data into one unified workspace, so you can go from idea to outcome in one place.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByText("One AI Workspace for all your AI.")).toBeVisible();
     await expect(page.getByText("Chat is powerful. Delivery is still hard.")).toBeVisible();
     await expect(page.getByRole("img", { name: "OpenClaw" })).toBeVisible();
     await expect(page.getByRole("img", { name: "Hermes Agent" })).toBeVisible();
