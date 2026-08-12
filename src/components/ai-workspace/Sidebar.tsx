@@ -13,10 +13,12 @@ interface SidebarProps {
 
 export default function Sidebar({ onHide }: SidebarProps) {
   const pathname = usePathname();
+  const [isTrialEntry, setIsTrialEntry] = useState(false);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    setIsTrialEntry(new URLSearchParams(window.location.search).get('entry') === 'trial');
     setTasks(taskStore.getTasks());
     const unsubscribe = taskStore.subscribe(() => {
       setTasks([...taskStore.getTasks()]);
@@ -24,13 +26,13 @@ export default function Sidebar({ onHide }: SidebarProps) {
     return unsubscribe;
   }, []);
 
-  const filteredTasks = tasks.filter(t => 
+  const filteredTasks = (isTrialEntry ? [] : tasks).filter(t =>
     t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     t.preview.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <aside className="w-64 bg-[#f7f7f8] flex flex-col h-full border-r border-gray-200 flex-shrink-0 transition-all duration-300 ease-in-out">
+    <aside className="w-64 shrink-0 bg-[#f7f7f8] flex flex-col h-full border-r border-gray-200/80 transition-all duration-300 ease-in-out">
       {/* Top Search & Collapse */}
       <div className="p-3 pb-2 flex items-center gap-2">
         <div className="relative flex-1">
@@ -56,11 +58,9 @@ export default function Sidebar({ onHide }: SidebarProps) {
 
       {/* Main Action Buttons */}
       <div className="px-3 space-y-2 mt-1">
-        <Link 
+        <Link
           href="/ai-workspace" 
-          className={cn(
-            "flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
-          )}
+          className="flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
         >
           <LayoutDashboard className="w-4 h-4" />
           <span>工作台</span>
@@ -101,7 +101,9 @@ export default function Sidebar({ onHide }: SidebarProps) {
               </Link>
             ))
           ) : (
-            <div className="text-center py-6 text-xs text-gray-400">暂无关联任务</div>
+            <div className="px-2 py-6 text-center text-xs leading-5 text-gray-400">
+              {isTrialEntry ? '访客模式不保存任务' : '暂无关联任务'}
+            </div>
           )}
         </div>
       </div>

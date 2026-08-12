@@ -210,8 +210,10 @@ async function callBridge(
   return data;
 }
 
-async function pingBridge(): Promise<PingResponse> {
-  const response = await fetch("/api/xworkmate/bridge?action=ping", {
+async function pingBridge(
+  endpoint = "/api/xworkmate/bridge",
+): Promise<PingResponse> {
+  const response = await fetch(`${endpoint}?action=ping`, {
     credentials: "include",
     cache: "no-store",
     headers: {
@@ -291,7 +293,7 @@ export function XWorkmateWorkspacePage({
 
     async function checkBridge() {
       try {
-        const data = await pingBridge();
+        const data = await pingBridge(bridgeEndpoint);
         if (cancelled) {
           return;
         }
@@ -313,7 +315,7 @@ export function XWorkmateWorkspacePage({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [bridgeEndpoint]);
 
   const updateActiveTask = (partial: Partial<TaskItem>) => {
     setTasks((current) =>
@@ -435,45 +437,45 @@ export function XWorkmateWorkspacePage({
 
   return (
     <main className="flex h-full min-h-0 w-full overflow-hidden bg-[#f7f8fa] text-[#1f2430]">
-      <aside className="flex w-[432px] shrink-0 flex-col border-r border-slate-200 bg-white">
-        <div className="flex h-full min-h-0 flex-col p-5">
-          <div className="mb-4 flex items-center gap-3 text-xl font-bold text-slate-600">
+      <aside className="flex w-[280px] shrink-0 flex-col border-r border-slate-200/80 bg-white">
+        <div className="flex h-full min-h-0 flex-col p-4">
+          <div className="mb-3 flex items-center gap-2.5 text-[17px] font-bold text-slate-700">
             <span className="h-3 w-3 rounded-full bg-red-400" />
             <span className="h-3 w-3 rounded-full bg-amber-400" />
             <span className="h-3 w-3 rounded-full bg-emerald-400" />
-            <span className="ml-3">XWorkmate</span>
+            <span className="ml-2">XWorkmate</span>
             {trialMode && trialStatus?.mode === "trial" ? (
-              <span className="ml-auto rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
+              <span className="ml-auto rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">
                 访客试用 · 剩余 {trialStatus.trial?.remaining ?? "—"}/
                 {trialStatus.trial?.limit ?? "—"}
               </span>
             ) : null}
           </div>
-          <div className="flex items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
-            <Search className="h-5 w-5 shrink-0 text-slate-500" />
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+            <Search className="h-4 w-4 shrink-0 text-slate-400" />
             <input
-              className="min-w-0 flex-1 bg-transparent text-lg font-semibold outline-none placeholder:text-slate-400"
+              className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-slate-400"
               placeholder="搜索任务"
               type="search"
             />
-            <ChevronLeft className="h-6 w-6 text-slate-500" />
+            <ChevronLeft className="h-4 w-4 text-slate-400" />
           </div>
 
           <button
-            className="mt-4 flex h-14 items-center justify-center gap-3 rounded-xl bg-[#0d63c7] text-lg font-bold text-white shadow-sm"
+            className="mt-3 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0d63c7] text-sm font-bold text-white shadow-[0_6px_14px_rgba(13,99,199,0.16)] transition hover:bg-[#0a56b0]"
             type="button"
             onClick={createTask}
           >
-            <ListChecks className="h-5 w-5" />
+            <ListChecks className="h-4 w-4" />
             新对话
           </button>
 
-          <div className="mt-5 flex items-center justify-between text-lg font-bold">
+          <div className="mt-5 flex items-center justify-between text-sm font-bold">
             <span>任务列表</span>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-base font-bold text-slate-500">
+          <div className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-500">
             <ChevronDown className="h-4 w-4" />
-            <Cloud className="h-5 w-5" />
+            <Cloud className="h-4 w-4" />
             <span>Gateway</span>
             <span className="ml-auto">{tasks.length}</span>
           </div>
@@ -483,7 +485,7 @@ export function XWorkmateWorkspacePage({
               <button
                 key={task.id}
                 className={cn(
-                  "grid w-full grid-cols-[36px_minmax(0,1fr)_92px] gap-2 rounded-xl px-3 py-3 text-left transition",
+                  "grid w-full grid-cols-[30px_minmax(0,1fr)_54px] gap-2 rounded-xl px-2 py-2.5 text-left transition",
                   activeTaskId === task.id
                     ? "bg-slate-100"
                     : "hover:bg-slate-50",
@@ -491,28 +493,28 @@ export function XWorkmateWorkspacePage({
                 type="button"
                 onClick={() => setActiveTaskId(task.id)}
               >
-                <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600">
-                  <ListChecks className="h-5 w-5" />
+                <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+                  <ListChecks className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-lg font-bold">
+                  <span className="block truncate text-sm font-bold">
                     {task.title}
                   </span>
-                  <span className="mt-1 line-clamp-2 block text-base font-semibold leading-snug text-slate-400">
+                  <span className="mt-0.5 line-clamp-2 block text-xs font-medium leading-snug text-slate-400">
                     {task.preview}
                   </span>
                 </span>
-                <span className="flex flex-col items-end gap-4 text-base font-semibold text-slate-400">
+                <span className="flex flex-col items-end gap-2 text-[10px] font-semibold text-slate-400">
                   {formatRelativeTime(task.updatedAt)}
                   <span className="rounded-md bg-white p-1 shadow-sm">
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-3 w-3" />
                   </span>
                 </span>
               </button>
             ))}
           </div>
 
-          <div className="mt-4 border-t border-slate-300 pt-5">
+          <div className="mt-4 border-t border-slate-200 pt-4">
             <SideMenuItem icon={Settings} label="设置" />
             <SideMenuItem icon={Languages} label="语言" badge="中" />
             <SideMenuItem icon={Sun} label="主题" badge="浅色" />
@@ -531,16 +533,16 @@ export function XWorkmateWorkspacePage({
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col border-r border-slate-200 bg-[#f8fafc]">
-        <header className="flex h-[76px] shrink-0 items-center justify-end gap-3 border-b border-slate-200 bg-white px-5">
-          <ToolbarPill>
-            <Menu className="h-4 w-4" />
+      <section className="flex min-w-0 flex-1 flex-col border-r border-slate-200/80 bg-[#f8fafc]">
+        <header className="flex h-[64px] shrink-0 items-center justify-end gap-2 border-b border-slate-200/80 bg-white px-4">
+          <ToolbarPill compact>
+            <Menu className="h-3.5 w-3.5" />
             渲染
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="h-3.5 w-3.5" />
           </ToolbarPill>
-          <ToolbarPill strong>已连接 · xworkmate-bridge.svc.plus</ToolbarPill>
-          <button
-            className="ml-3 rounded-full p-2 text-slate-500 hover:bg-slate-100"
+          <ToolbarPill strong compact>已连接 · xworkmate-bridge.svc.plus</ToolbarPill>
+              <button
+                className="ml-1 rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
             type="button"
             onClick={() => setRightPanelOpen((open) => !open)}
           >
@@ -549,26 +551,41 @@ export function XWorkmateWorkspacePage({
         </header>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">
-          <div className="mx-auto mt-16 max-w-[608px] rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h1 className="text-xl font-bold">开始对话或运行任务</h1>
-            <p className="mt-1 text-lg font-semibold text-slate-500">
-              输入需求后即可开始执行，结果会回到当前会话并同步到任务页。
+          <div className="mx-auto mt-10 w-[min(720px,calc(100%-48px))] rounded-2xl border border-slate-200/80 bg-white p-7 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <Pencil className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-[22px] font-bold tracking-tight text-slate-900">开始对话或运行任务</h1>
+                <p className="mt-2 text-[15px] font-medium leading-6 text-slate-500">
+                  输入需求，连接模型与工具，让 XWorkmate 帮你把想法推进到结果。
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+              <span className="rounded-full bg-slate-50 px-3 py-1.5">计划任务</span>
+              <span className="rounded-full bg-slate-50 px-3 py-1.5">连接工具</span>
+              <span className="rounded-full bg-slate-50 px-3 py-1.5">交付制品</span>
+            </div>
+            <p className="mt-4 text-xs font-medium text-slate-400">
+              结果会回到当前会话，并在可用时同步到任务页。
             </p>
             <button
-              className="mt-4 inline-flex items-center gap-3 rounded-lg bg-[#0d63c7] px-5 py-2.5 text-lg font-bold text-white"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0d63c7] px-4 py-2.5 text-sm font-bold text-white shadow-[0_6px_14px_rgba(13,99,199,0.2)] transition hover:bg-[#0a56b0]"
               type="button"
               onClick={() =>
                 document.getElementById("xworkmate-composer")?.focus()
               }
             >
-              <Pencil className="h-5 w-5" />
+              <Pencil className="h-4 w-4" />
               开始输入
             </button>
           </div>
 
           {activeTask?.preview ? (
-            <div className="mx-auto mt-6 max-w-[820px] rounded-xl border border-slate-200 bg-white p-5 text-base font-medium leading-7 text-slate-700 shadow-sm">
-              <div className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-400">
+            <div className="mx-auto mt-5 w-[min(820px,calc(100%-48px))] rounded-2xl border border-slate-200/80 bg-white p-5 text-[15px] font-medium leading-7 text-slate-700 shadow-sm">
+              <div className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-400">
                 {activeTask.state === "running" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : null}
@@ -583,9 +600,9 @@ export function XWorkmateWorkspacePage({
 
         <div className="shrink-0 border-t border-slate-100 bg-[#f8fafc] px-4 pb-4 pt-3">
           <div className="mx-auto max-w-[1000px]">
-            <div className="mb-3 flex items-center gap-2">
-              <label className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500">
-                <Plus className="h-5 w-5" />
+            <div className="mb-2 flex items-center gap-2">
+              <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-blue-200 hover:text-blue-600">
+                <Plus className="h-4 w-4" />
                 <input
                   className="hidden"
                   multiple
@@ -593,21 +610,21 @@ export function XWorkmateWorkspacePage({
                   onChange={handleFileInput}
                 />
               </label>
-              <ToolbarPill>
-                <Cloud className="h-5 w-5" />
+              <ToolbarPill compact>
+                <Cloud className="h-4 w-4" />
                 Gateway
                 <ChevronDown className="h-4 w-4" />
               </ToolbarPill>
-              <ToolbarPill>
-                <Zap className="h-5 w-5" />
+              <ToolbarPill compact>
+                <Zap className="h-4 w-4" />
                 OpenClaw
                 <ChevronDown className="h-4 w-4" />
               </ToolbarPill>
               <button
-                className="h-12 w-12 rounded-xl border border-slate-200 bg-white text-slate-500"
+                className="h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-blue-200 hover:text-blue-600"
                 type="button"
               >
-                <Zap className="mx-auto h-5 w-5" />
+                <Zap className="mx-auto h-4 w-4" />
               </button>
             </div>
 
@@ -616,7 +633,7 @@ export function XWorkmateWorkspacePage({
                 {files.map((file) => (
                   <span
                     key={file.id}
-                    className="inline-flex max-w-[320px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-base font-semibold text-slate-500"
+                    className="inline-flex max-w-[320px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-500"
                   >
                     {file.type.startsWith("image/") ? (
                       <ImageIcon className="h-5 w-5" />
@@ -641,22 +658,22 @@ export function XWorkmateWorkspacePage({
 
             <textarea
               id="xworkmate-composer"
-              className="h-[118px] w-full resize-none rounded-xl border border-blue-200 bg-white px-5 py-4 text-lg font-semibold outline-none transition placeholder:text-slate-400 focus:border-blue-400"
+              className="h-[104px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-[15px] font-medium leading-6 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
               placeholder="输入需求、补充上下文，XWorkmate 会沿用当前任务上下文持续处理。"
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
             />
 
             {lastError ? (
-              <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600">
+              <div className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">
                 {lastError}
               </div>
             ) : null}
 
             {trialMode && trialStatus?.mode === "trial" ? (
-              <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
-                <span>
-                  访客任务仅临时执行，不保存会话和下载制品。注册后可开启 7 天 Free 使用。
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-blue-50/80 px-3 py-2 text-xs font-semibold text-blue-700">
+                <span className="leading-5">
+                  访客任务临时执行，不保存会话和下载制品。注册后可开启 7 天 Free 使用。
                 </span>
                 <a
                   className="shrink-0 underline underline-offset-2"
@@ -672,21 +689,21 @@ export function XWorkmateWorkspacePage({
 
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ToolbarPill>
-                  <KeyRound className="h-4 w-4" />
+                <ToolbarPill compact>
+                  <KeyRound className="h-3.5 w-3.5" />
                   <ChevronDown className="h-4 w-4" />
                 </ToolbarPill>
-                <ToolbarPill>
+                <ToolbarPill compact>
                   <span className="text-lg">ⓘ</span>
                   <ChevronDown className="h-4 w-4" />
                 </ToolbarPill>
-                <ToolbarPill>
+                <ToolbarPill compact>
                   <span className="text-lg">?</span>
                   <ChevronDown className="h-4 w-4" />
                 </ToolbarPill>
               </div>
               <button
-                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#0d63c7] px-5 text-lg font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#0d63c7] px-4 text-sm font-bold text-white shadow-[0_6px_14px_rgba(13,99,199,0.18)] transition hover:bg-[#0a56b0] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSubmitting}
                 type="button"
                 onClick={submitPrompt}
@@ -704,13 +721,13 @@ export function XWorkmateWorkspacePage({
       </section>
 
       {rightPanelOpen ? (
-        <aside className="flex w-[560px] shrink-0 flex-col bg-white p-4">
+        <aside className="flex w-[340px] shrink-0 flex-col bg-white p-4">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold">
+              <h2 className="text-base font-bold">
                 {activeTask?.title || "未命名对话"}
               </h2>
-              <p className="text-base font-semibold text-slate-500">
+              <p className="text-xs font-semibold text-slate-500">
                 当前任务工作路径
               </p>
             </div>
@@ -723,19 +740,19 @@ export function XWorkmateWorkspacePage({
               </button>
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-base font-semibold text-slate-500">
-            <Cloud className="h-5 w-5" />
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500">
+            <Cloud className="h-4 w-4" />
             <span className="truncate">{workingDirectory || "未设置"}</span>
             <Copy className="ml-auto h-5 w-5" />
           </div>
-          <div className="mt-3 flex rounded-[18px] border border-slate-200 bg-slate-50 p-2 text-base font-bold text-slate-500">
+          <div className="mt-3 flex rounded-xl border border-slate-200 bg-slate-50 p-1.5 text-sm font-bold text-slate-500">
             <button
-              className="rounded-xl bg-white px-5 py-2 text-slate-900 shadow-sm"
+              className="rounded-lg bg-white px-4 py-1.5 text-slate-900 shadow-sm"
               type="button"
             >
               全部文件
             </button>
-            <button className="px-5 py-2" type="button">
+            <button className="px-4 py-1.5" type="button">
               预览
             </button>
           </div>
@@ -757,16 +774,16 @@ export function XWorkmateWorkspacePage({
               </div>
             ) : (
               <div>
-                <Folder className="mx-auto h-10 w-10 text-slate-400" />
-                <div className="mt-5 text-lg font-bold">暂无文件</div>
-                <p className="mt-3 text-base font-semibold text-slate-500">
-                  No recorded working directory for this thread.
+                <Folder className="mx-auto h-9 w-9 text-slate-300" />
+                <div className="mt-4 text-sm font-bold text-slate-700">暂无文件</div>
+                <p className="mt-2 text-xs font-medium text-slate-400">
+                  当前会话还没有可展示的制品。
                 </p>
               </div>
             )}
           </div>
 
-          <div className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500">
+          <div className="rounded-xl bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-500">
             Bridge: {bridgeStatus === "connected" ? "connected" : bridgeStatus}
             {bridgeVersion ? ` · ${bridgeVersion.slice(0, 12)}` : ""}
           </div>
@@ -801,14 +818,17 @@ function SideMenuItem({
 function ToolbarPill({
   children,
   strong = false,
+  compact = false,
 }: {
   children: ReactNode;
   strong?: boolean;
+  compact?: boolean;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-base font-bold text-slate-500 shadow-sm",
+        "inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-500 shadow-sm",
+        compact ? "h-9 px-3 text-xs" : "h-11 px-4 text-sm",
         strong && "bg-blue-50 text-slate-600",
       )}
     >
