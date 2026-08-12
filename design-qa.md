@@ -42,3 +42,28 @@ No actionable P0/P1/P2 visual differences remain in app-owned layout. The authen
 - P3: capture a production-authenticated screenshot after deployment to compare real table density and long model names.
 
 final result: passed
+
+---
+
+# AI Workspace 视觉验收
+
+## 对照对象
+
+- 线上参考：[console.svc.plus/ai-workspace](https://console.svc.plus/ai-workspace)
+- 本地实现：[127.0.0.1:3000/ai-workspace?entry=trial](http://127.0.0.1:3000/ai-workspace?entry=trial)
+- 本地最终截图：[design-qa-local.png](./design-qa-local.png)
+
+## 检查结果
+
+| 项目 | 结果 | 说明 |
+| --- | --- | --- |
+| 页面骨架 | 通过 | 左侧导航、工作台主内容、圆角容器和滚动边界完整 |
+| 信息层级 | 通过 | 工作台标题、试用状态、核心指标、任务入口按优先级呈现 |
+| 试用态 | 通过 | 显示 5/5 额度、注册后保存会话/下载制品，隐藏本地任务缓存 |
+| 空状态 | 通过 | 访客模式提示下一步动作，不使用空泛的服务错误提示 |
+| 响应式 | 通过 | 指标卡片在窄屏折为两列，操作区保持可用 |
+| 交互状态 | 通过 | 刷新、时间范围切换、收起侧栏、开始新任务入口均保留 |
+
+## 结论
+
+最终结果：**通过**。本地页面已完成与线上工作台的视觉语言对齐，并针对 `entry=trial` 增加了明确的试用状态、注册转化提示和不保存任务的访客空状态。
