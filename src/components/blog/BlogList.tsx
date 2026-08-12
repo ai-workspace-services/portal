@@ -229,18 +229,18 @@ export default function BlogList({ posts, categories }: BlogListProps) {
           </div>
 
           {featuredPost ? (
-            <article className="group relative overflow-hidden rounded-[1.5rem] bg-slate-950 p-6 text-white shadow-[0_22px_50px_rgba(15,23,42,0.16)] sm:p-8 lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(15rem,0.65fr)] lg:gap-10 lg:p-9">
-              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+            <article className="group relative overflow-hidden rounded-[1.5rem] border border-primary/12 bg-[linear-gradient(135deg,#ffffff_0%,#f8faff_56%,#edf3ff_100%)] p-6 text-slate-900 shadow-[0_22px_50px_rgba(15,23,42,0.07)] sm:p-8 lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(15rem,0.65fr)] lg:gap-10 lg:p-9">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/12 blur-3xl" />
               <div className="relative flex flex-col">
                 <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
-                  <span className="rounded-full bg-white/12 px-3 py-1 text-white/90">
+                  <span className="rounded-full border border-primary/15 bg-white/85 px-3 py-1 text-slate-800 shadow-sm">
                     {isChinese ? "本期精选" : "Featured note"}
                   </span>
-                  <span className="text-white/55">
+                  <span className="text-slate-600">
                     {featuredPost.category?.label ?? "Blog"}
                   </span>
                   {featuredPost.date ? (
-                    <time className="text-white/55">
+                    <time className="text-slate-600">
                       {formatDate(featuredPost.date, language)}
                     </time>
                   ) : null}
@@ -248,24 +248,24 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                 <h2 className="mt-6 max-w-3xl text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.05em] sm:text-[2.45rem]">
                   {featuredPost.title}
                 </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65 sm:text-base">
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
                   {featuredPost.excerpt}
                 </p>
                 <Link
                   href={"/blogs/" + featuredPost.slug}
-                  className="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-primary hover:text-white"
+                  className="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary"
                 >
                   {isChinese ? "阅读精选" : "Read featured note"}
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </div>
 
-              <div className="relative mt-8 rounded-[1.15rem] border border-white/12 bg-white/8 p-5 lg:mt-0 lg:self-end">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
-                  <Sparkles className="h-4 w-4 text-sky-300" aria-hidden />
+              <div className="relative mt-8 rounded-[1.15rem] border border-slate-900/10 bg-white/82 p-5 shadow-[0_12px_28px_rgba(15,23,42,0.04)] lg:mt-0 lg:self-end">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  <Sparkles className="h-4 w-4 text-primary" aria-hidden />
                   {isChinese ? "从现场出发" : "From the field"}
                 </div>
-                <p className="mt-4 text-sm leading-7 text-white/70">
+                <p className="mt-4 text-sm leading-7 text-slate-700">
                   {isChinese
                     ? "产品更新、工程实践与真实交付经验，按主题持续整理。"
                     : "Product updates, engineering practice, and real delivery lessons — kept close to the work."}

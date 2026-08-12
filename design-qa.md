@@ -105,9 +105,7 @@ final result: blocked
 - [x] Verify desktop and 390 px mobile layouts, CTA navigation, and console state.
 - [x] Pass TypeScript, targeted ESLint, and diff whitespace checks.
 
-final result: passed
-
----
+## final result: passed
 
 # Homepage marketing carousel design QA
 
@@ -146,5 +144,59 @@ final result: blocked
 ---
 
 Latest scoped result for the homepage unified AI Hero redesign: all required visual, responsive, localization, interaction, and console checks listed in this file passed. The blocked carousel result above is a historical review for a separate implementation.
+
+final result: passed
+
+---
+
+# Pricing-page self-host and managed pay-as-you-go QA
+
+**Source visual truth**: `/tmp/xwork-pricing-reference.png` — existing production pricing page captured from `https://console.xworktech.com/prices`.
+
+**Implementation screenshot**: `/tmp/xwork-pricing-implementation.png` — local `/prices` capture after the requested pricing update.
+
+**Viewport**: 1280 × 720 CSS px, desktop, light theme, Chinese. Both captures are 1280 × 720 pixels at 1× density; no normalization was needed.
+
+**State**: public pricing page; Chinese, then English to validate locale-specific prices.
+
+## Comparison evidence
+
+- Full-view comparison: `/tmp/xwork-pricing-comparison.png` — production reference on the left, revised implementation on the right.
+- Focused-region comparison: not needed. The above-the-fold pricing hierarchy, card count, card layout, copy, and CTAs are legible in the full view.
+- The revised three-card lead intentionally replaces the former mixed product/SKU grid, making self-hosted free the first choice and managed pay-as-you-go the highlighted choice.
+- The four XScopeHub/XCloudFlow subscription and usage cards are absent as requested; one scalable managed-services card replaces them.
+
+## Required fidelity surfaces
+
+- **Fonts and typography**: existing display and body styles are preserved; the new lead-card price remains legible at desktop width.
+- **Spacing and layout rhythm**: the lead section uses a three-column desktop grid, avoiding the prior seven-card layout's cramped first row. XConnect core pricing now starts in a distinct lower section.
+- **Colors and tokens**: existing background, border, primary CTA, recommendation badge, and surface tokens are retained.
+- **Image quality and asset fidelity**: this page has no product imagery or decorative raster assets in the reviewed viewport; existing logo and icon treatment were preserved.
+- **Copy and content**: Chinese uses CNY; the English state shows USD (`$0.15/GB`, `$3`, `$28`) and `List price + 20%`.
+
+## Findings
+
+- No actionable P0/P1/P2 differences remain relative to the requested change.
+- [P3] When live Stripe Price IDs are ready, confirm that the USD display values align with the corresponding checkout catalog.
+
+## Comparison history
+
+1. Replaced the mixed SKU grid with the requested self-host-first and pay-as-you-go lead section.
+2. Separated the retained XConnect cards into their own section to restore comfortable card widths and visual hierarchy.
+3. Captured the revised page, compared it with the existing page at the same viewport, and rechecked locale-specific currency presentation.
+
+## Primary interactions tested
+
+- Changed language from Chinese to English and back.
+- Self-host and managed-service CTAs retain their expected `/download` and `/panel/subscription` destinations.
+- Checked the browser console; zero errors were reported.
+- Passed TypeScript, lint, and diff whitespace checks.
+
+## Implementation checklist
+
+- [x] Place open-source self-hosting first and mark it free.
+- [x] Promote managed services as pay-as-you-go at list price plus 20%.
+- [x] Remove the specified XScopeHub and XCloudFlow card content.
+- [x] Keep core XConnect plans, with RMB in Chinese and USD in English.
 
 final result: passed

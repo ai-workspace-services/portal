@@ -71,6 +71,7 @@ export type BlogPostPayload = {
   tags: string[];
   excerpt: string;
   html: string;
+  toc: Array<{ level: number; title: string; anchor: string }>;
   category?: BlogCategoryPayload;
   language?: string;
   sourcePath: string;
