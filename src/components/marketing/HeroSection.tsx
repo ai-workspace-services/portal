@@ -97,6 +97,11 @@ export default function HeroSection() {
               {hero.subtitle}
             </p>
           ) : null}
+          {hero.tagline ? (
+            <p className="mt-5 text-base font-semibold leading-7 text-slate-900 sm:text-xl sm:leading-8">
+              {hero.tagline}
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-7 flex flex-col items-center">

@@ -16,8 +16,14 @@ test.describe("Marketing homepage experience", () => {
       }),
     ).toBeVisible();
     await expect(
-      page.getByText("连接一切，编排一切，交付一切，从想法到产物，在一个 Workspace 完成！"),
+      page.getByText("告别 AI 工具碎片化，一个 Workspace 连接你的所有 AI。"),
     ).toBeVisible();
+    await expect(
+      page.getByText(
+        "不用在 ChatGPT、Claude、Gemini、Agent、插件和各种工具之间反复切换。XWorkmate 将 AI 模型、智能助手、工具和数据连接到一个统一工作空间，让你从想法到成果，在一个地方完成。",
+      ),
+    ).toBeVisible();
+    await expect(page.getByText("One AI Workspace for all your AI.")).toBeVisible();
     await expect(page.getByText("聊天很强，交付仍难")).toBeVisible();
     await expect(page.getByRole("img", { name: "OpenClaw" })).toBeVisible();
     await expect(page.getByRole("img", { name: "Hermes Agent" })).toBeVisible();
