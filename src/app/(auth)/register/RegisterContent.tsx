@@ -49,6 +49,12 @@ export default function RegisterContent({
   const alerts = t.alerts;
   const searchParams = useSearchParams();
   const router = useRouter();
+  const returnTo = useMemo(() => {
+    const requested = searchParams.get("returnTo");
+    return requested?.startsWith("/") && !requested.startsWith("//")
+      ? requested
+      : "/";
+  }, [searchParams]);
 
   const isSocialAuthVisible = false;
   const githubAuthUrl = `${accountServiceBaseUrl}/api/auth/oauth/login/github`;
@@ -492,7 +498,11 @@ export default function RegisterContent({
         // Login failed but registration succeeded
         const successMessage = alerts.registrationComplete ?? alerts.success;
         setAlert({ type: "success", message: successMessage });
-        router.push("/login");
+        router.push(
+          returnTo === "/"
+            ? "/login"
+            : `/login?redirect=${encodeURIComponent(returnTo)}`,
+        );
         return;
       }
 
@@ -507,7 +517,12 @@ export default function RegisterContent({
       const successMessage = alerts.registrationComplete ?? alerts.success;
       setAlert({ type: "success", message: successMessage });
 
-      router.push(loginData?.redirectTo || "/");
+      const accountRedirect = loginData?.redirectTo;
+      const safeAccountRedirect =
+        accountRedirect?.startsWith("/") && !accountRedirect.startsWith("//")
+          ? accountRedirect
+          : undefined;
+      router.push(safeAccountRedirect || returnTo);
       router.refresh();
     } catch (error) {
       console.error("Failed to complete registration", error);

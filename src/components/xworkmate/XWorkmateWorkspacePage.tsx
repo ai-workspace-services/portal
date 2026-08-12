@@ -90,6 +90,20 @@ type ComposerFile = {
 type XWorkmateWorkspacePageProps = {
   initialPrompt?: string;
   initialSessionKey?: string;
+  trialMode?: boolean;
+};
+
+type TrialStatus = {
+  mode: "trial" | "account";
+  canPersist: boolean;
+  canDownload: boolean;
+  trial?: {
+    limit: number;
+    used: number;
+    remaining: number;
+  };
+  registerHref?: string;
+  message?: string;
 };
 
 const SEED_TASKS: TaskItem[] = [
@@ -174,8 +188,9 @@ function resultText(result: BridgeRpcResult | undefined): string {
 
 async function callBridge(
   payload: Record<string, unknown>,
+  endpoint = "/api/xworkmate/bridge",
 ): Promise<BridgeRpcResponse> {
-  const response = await fetch("/api/xworkmate/bridge", {
+  const response = await fetch(endpoint, {
     method: "POST",
     credentials: "include",
     headers: {
@@ -214,8 +229,22 @@ async function pingBridge(): Promise<PingResponse> {
 export function XWorkmateWorkspacePage({
   initialPrompt = "",
   initialSessionKey = "",
+  trialMode = false,
 }: XWorkmateWorkspacePageProps): React.ReactNode {
-  const [tasks, setTasks] = useState<TaskItem[]>(SEED_TASKS);
+  const [tasks, setTasks] = useState<TaskItem[]>(() =>
+    trialMode
+      ? [
+          {
+            id: "task-current",
+            title: "新对话",
+            preview: "",
+            updatedAt: Date.now(),
+            state: "idle",
+            files: [],
+          },
+        ]
+      : SEED_TASKS,
+  );
   const [activeTaskId, setActiveTaskId] = useState("task-current");
   const [prompt, setPrompt] = useState(initialPrompt);
   const [files, setFiles] = useState<ComposerFile[]>([]);
@@ -227,6 +256,28 @@ export function XWorkmateWorkspacePage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastError, setLastError] = useState("");
   const [workingDirectory, setWorkingDirectory] = useState("");
+  const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
+
+  const bridgeEndpoint = trialMode
+    ? "/api/ai-workspace/trial"
+    : "/api/xworkmate/bridge";
+
+  const refreshTrialStatus = async () => {
+    if (!trialMode) {
+      return;
+    }
+    try {
+      const response = await fetch("/api/ai-workspace/trial", {
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (response.ok) {
+        setTrialStatus((await response.json()) as TrialStatus);
+      }
+    } catch {
+      // The Bridge status remains the primary connectivity signal.
+    }
+  };
 
   const activeTask = useMemo(
     () => tasks.find((task) => task.id === activeTaskId) ?? tasks[0],
@@ -257,6 +308,7 @@ export function XWorkmateWorkspacePage({
     }
 
     void checkBridge();
+    void refreshTrialStatus();
 
     return () => {
       cancelled = true;
@@ -337,7 +389,7 @@ export function XWorkmateWorkspacePage({
             preferredGatewayProviderId: "openclaw",
           },
         },
-      });
+      }, bridgeEndpoint);
 
       if (response.error) {
         throw new Error(response.error.message || "Bridge returned an error.");
@@ -360,10 +412,18 @@ export function XWorkmateWorkspacePage({
       });
       setPrompt("");
       setFiles([]);
+      void refreshTrialStatus();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Bridge request failed.";
       setLastError(message);
+      if (trialMode && message.includes("额度已用尽")) {
+        setTrialStatus((current) =>
+          current
+            ? { ...current, trial: { ...current.trial!, remaining: 0 } }
+            : current,
+        );
+      }
       updateActiveTask({
         preview: message,
         state: "error",
@@ -382,6 +442,12 @@ export function XWorkmateWorkspacePage({
             <span className="h-3 w-3 rounded-full bg-amber-400" />
             <span className="h-3 w-3 rounded-full bg-emerald-400" />
             <span className="ml-3">XWorkmate</span>
+            {trialMode && trialStatus?.mode === "trial" ? (
+              <span className="ml-auto rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
+                访客试用 · 剩余 {trialStatus.trial?.remaining ?? "—"}/
+                {trialStatus.trial?.limit ?? "—"}
+              </span>
+            ) : null}
           </div>
           <div className="flex items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
             <Search className="h-5 w-5 shrink-0 text-slate-500" />
@@ -450,6 +516,17 @@ export function XWorkmateWorkspacePage({
             <SideMenuItem icon={Settings} label="设置" />
             <SideMenuItem icon={Languages} label="语言" badge="中" />
             <SideMenuItem icon={Sun} label="主题" badge="浅色" />
+            {trialMode && trialStatus?.mode === "trial" ? (
+              <a
+                className="mt-3 block rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-blue-700"
+                href={
+                  trialStatus.registerHref ??
+                  "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial"
+                }
+              >
+                注册后保存会话与下载制品 →
+              </a>
+            ) : null}
           </div>
         </div>
       </aside>
@@ -573,6 +650,23 @@ export function XWorkmateWorkspacePage({
             {lastError ? (
               <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600">
                 {lastError}
+              </div>
+            ) : null}
+
+            {trialMode && trialStatus?.mode === "trial" ? (
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                <span>
+                  访客任务仅临时执行，不保存会话和下载制品。注册后可开启 7 天 Free 使用。
+                </span>
+                <a
+                  className="shrink-0 underline underline-offset-2"
+                  href={
+                    trialStatus.registerHref ??
+                    "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial"
+                  }
+                >
+                  去注册
+                </a>
               </div>
             ) : null}
 
