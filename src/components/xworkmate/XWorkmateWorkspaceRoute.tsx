@@ -11,12 +11,13 @@ export function XWorkmateWorkspaceRoute({
   trialMode?: boolean;
 }): ReactNode {
   const searchParams = useSearchParams();
+  const isTrialEntry = searchParams.get("entry") === "trial";
 
   return (
     <XWorkmateWorkspacePage
       initialPrompt={searchParams.get("prompt") ?? ""}
       initialSessionKey={searchParams.get("sessionKey") ?? ""}
-      trialMode={trialMode}
+      trialMode={trialMode || isTrialEntry}
     />
   );
 }
