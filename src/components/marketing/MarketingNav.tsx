@@ -92,7 +92,7 @@ export default function MarketingNav() {
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-xl font-extrabold tracking-tight text-primary">
-            {content.brand.name}
+            {content.brand.title}
           </span>
           <span className="hidden text-xs font-medium text-slate-400 sm:inline">
             {content.brand.tagline}
@@ -265,10 +265,10 @@ export default function MarketingNav() {
             </Link>
           )}
           <Link
-            href={consoleHref}
+            href={isAuthenticated ? consoleHref : content.hero.primaryCta.href}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
           >
-            {content.nav.enterConsole}
+            {isAuthenticated ? content.nav.enterConsole : content.hero.primaryCta.label}
           </Link>
         </div>
 
@@ -343,11 +343,11 @@ export default function MarketingNav() {
               </Link>
             )}
             <Link
-              href={consoleHref}
+              href={isAuthenticated ? consoleHref : content.hero.primaryCta.href}
               className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
               onClick={() => setMobileOpen(false)}
             >
-              {content.nav.enterConsole}
+              {isAuthenticated ? content.nav.enterConsole : content.hero.primaryCta.label}
             </Link>
           </div>
         </div>

@@ -12,10 +12,10 @@ test.describe("Marketing homepage experience", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "从对话到交付， 一个 AI 工作空间 完成全部工作",
+        name: "把 AI 对话 变成可交付的工作结果",
       }),
     ).toBeVisible();
-    await expect(page.getByText("完整工作闭环")).toBeVisible();
+    await expect(page.getByText("聊天很强，交付仍难")).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 3, name: "把工作计划清楚" }),
     ).toBeVisible();
@@ -36,7 +36,7 @@ test.describe("Marketing homepage experience", () => {
     ).toBeVisible();
     await expect(page.getByText("产品事实与证明")).toBeVisible();
     await expect(page.getByRole("link", { name: "XConnect" })).toBeVisible();
-    await expect(page.getByText("开放的 AI 工作空间")).toBeVisible();
+    await expect(page.getByText("先跑通一个真实任务")).toBeVisible();
     const heroFigure = page.locator("figure").first();
     await expect(heroFigure).not.toContainText("AI 模型");
     await expect(heroFigure).not.toContainText("AI Agents");
@@ -53,10 +53,10 @@ test.describe("Marketing homepage experience", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "From conversation to delivery, one AI workspace for the work that matters",
+        name: "Turn AI conversations into work you can deliver",
       }),
     ).toBeVisible();
-    await expect(page.getByText("One continuous workflow")).toBeVisible();
+    await expect(page.getByText("Chat is powerful. Delivery is still hard.")).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 3, name: "Make the work clear" }),
     ).toBeVisible();
@@ -79,7 +79,7 @@ test.describe("Marketing homepage experience", () => {
     ).toBeVisible();
     await expect(page.getByText("Product facts and proof")).toBeVisible();
     await expect(page.getByRole("link", { name: "XConnect" })).toBeVisible();
-    await expect(page.getByText("Open AI Workspace")).toBeVisible();
+    await expect(page.getByText("Run one real task end to end")).toBeVisible();
     await expect(heroFigure).not.toContainText("AI Models");
     await expect(heroFigure).not.toContainText("AI Agents");
     await expect(heroFigure).not.toContainText("Connectors");

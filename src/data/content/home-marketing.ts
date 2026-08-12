@@ -1,8 +1,8 @@
 export const homeMarketingContentData = {
   "zh": {
     "brand": {
-      "name": "SVC+",
-      "tagline": "AI 工作空间平台"
+      "title": "XWorkmate",
+      "tagline": "AI 工作空间"
     },
     "nav": {
       "dropdowns": [
@@ -80,18 +80,18 @@ export const homeMarketingContentData = {
       "eyebrow": "XWorkmate · AI Workspace",
       "logoLabel": "AI 模型与智能体",
       "title": [
-        "一个 AI 工作空间",
-        "容纳你所有的 AI 智能体"
+        "把 AI 对话",
+        "变成可交付的工作结果"
       ],
-      "subtitle": "把你的模型、智能体、工具与工作流汇聚在同一个空间。",
-      "trialNote": "免费注册，即刻开始体验",
+      "subtitle": "在一个工作空间里完成计划、连接工具与交付产物。团队和 AI 围绕同一目标推进，而不是停在聊天记录里。",
+      "trialNote": "免费注册，约 3 分钟开始体验",
       "primaryCta": {
-        "label": "免费试用",
+        "label": "免费试用（约 3 分钟）",
         "href": "/register"
       },
       "secondaryCta": {
-        "label": "进入控制台",
-        "href": "/panel"
+        "label": "查看产品演示",
+        "href": "#product-demo"
       },
       "visual": {
         "eyebrow": "一个空间，所有 AI",
@@ -129,9 +129,9 @@ export const homeMarketingContentData = {
       ]
     },
     "coreCapabilities": {
-      "eyebrow": "完整工作闭环",
+      "eyebrow": "聊天很强，交付仍难",
       "title": "计划、连接、交付，在同一条工作线上持续推进",
-      "description": "每一步都保留上下文、执行状态和结果，让团队与 AI 围绕同一目标协作。",
+      "description": "大多数 AI 工具停在回答。XWorkmate 把任务、工具、过程和产物收进同一条工作线，让每一步都保留上下文、执行状态和结果。",
       "items": [
         {
           "key": "plan",
@@ -241,23 +241,23 @@ export const homeMarketingContentData = {
     },
     "proof": {
       "eyebrow": "产品事实与证明",
-      "title": "先看见真实能力，再决定如何开始",
-      "description": "用可以直接检查的产品入口和界面证据替代空泛承诺；用户案例和数据将在获得授权后持续补充。",
+      "title": "先看见真实工作流，再决定如何开始",
+      "description": "通过工作台预览、从任务到交付的路径和可直接访问的产品入口，了解 XWorkmate 如何推进真实工作。",
       "facts": [
         {
-          "value": "三端体验",
-          "label": "Web、Desktop、Mobile 的连续工作体验"
+          "value": "产品预览",
+          "label": "在 Web、Desktop、Mobile 中查看真实工作台界面"
         },
         {
-          "value": "一个工作空间",
-          "label": "任务、知识、连接和交付的统一上下文"
+          "value": "工作闭环",
+          "label": "从任务、连接到交付，始终保留同一份上下文"
         },
         {
-          "value": "托管 + 自建",
-          "label": "托管使用与自建部署的选择"
+          "value": "开放连接",
+          "label": "按需接入模型、服务、数据和本地环境"
         },
         {
-          "value": "可追溯",
+          "value": "可追溯交付",
           "label": "运行状态、日志与产物可持续跟进"
         }
       ],
@@ -451,14 +451,14 @@ export const homeMarketingContentData = {
       "copiedLabel": "已复制"
     },
     "pricingTeaser": {
-      "title": "透明定价，按需选择",
-      "description": "简单透明的计费方式，无需隐蔽费用。选择适合您的方案，按需使用，轻松上手。",
+      "title": "从一个工作空间开始，按团队需要扩展",
+      "description": "围绕工作空间、协作成员和 Agent 运行需求选择方案，让团队先跑通真实任务，再逐步扩展。",
       "priceLabel": "$0",
       "priceSuffix": "起",
       "features": [
-        "按需订阅",
-        "按量计费",
-        "随时升级或取消"
+        "工作空间与协作成员",
+        "Agent 运行额度",
+        "随时升级或调整"
       ],
       "cta": {
         "label": "查看定价详情",
@@ -466,22 +466,22 @@ export const homeMarketingContentData = {
       }
     },
     "finalCta": {
-      "title": "开放的 AI 工作空间",
-      "description": "连接一切。构建一切。交付一切。",
+      "title": "先跑通一个真实任务",
+      "description": "创建工作空间，连接已有模型和工具，产出第一份可下载结果。",
       "primaryCta": {
-        "label": "免费试用",
+        "label": "免费试用进入工作台",
         "href": "/register"
       },
       "secondaryCta": {
-        "label": "进入控制台",
-        "href": "/panel"
+        "label": "联系团队部署",
+        "href": "/contact"
       }
     }
   },
   "en": {
     "brand": {
-      "name": "SVC+",
-      "tagline": "AI Workspace Platform"
+      "title": "XWorkmate",
+      "tagline": "AI workspace"
     },
     "nav": {
       "dropdowns": [
@@ -559,18 +559,18 @@ export const homeMarketingContentData = {
       "eyebrow": "XWorkmate · AI Workspace",
       "logoLabel": "AI models & agents",
       "title": [
-        "One AI Workspace",
-        "for all your AI Agents."
+        "Turn AI conversations into",
+        "work you can deliver"
       ],
-      "subtitle": "Bring your models, agents, tools, and workflows together in one place.",
-      "trialNote": "Create a free account and start exploring",
+      "subtitle": "Plan work, connect tools, and ship outcomes in one workspace. Keep your team and AI moving toward the same goal instead of leaving work in chat history.",
+      "trialNote": "Create a free account and get started in about 3 minutes",
       "primaryCta": {
-        "label": "Try it free",
+        "label": "Try it free (about 3 minutes)",
         "href": "/register"
       },
       "secondaryCta": {
-        "label": "Enter Console",
-        "href": "/panel"
+        "label": "See the product demo",
+        "href": "#product-demo"
       },
       "visual": {
         "eyebrow": "ONE SPACE, EVERY AI",
@@ -608,9 +608,9 @@ export const homeMarketingContentData = {
       ]
     },
     "coreCapabilities": {
-      "eyebrow": "One continuous workflow",
+      "eyebrow": "Chat is powerful. Delivery is still hard.",
       "title": "Plan, connect, and deliver on the same line of work",
-      "description": "Keep context, execution status, and results together so your team and AI can work toward the same outcome.",
+      "description": "Most AI tools stop at an answer. XWorkmate brings tasks, tools, execution, and artifacts into one line of work, keeping context, status, and outcomes together.",
       "items": [
         {
           "key": "plan",
@@ -720,24 +720,24 @@ export const homeMarketingContentData = {
     },
     "proof": {
       "eyebrow": "Product facts and proof",
-      "title": "See the real capabilities before you decide how to start",
-      "description": "Use inspectable product surfaces and interface evidence instead of vague promises; customer stories and metrics will be added as they are approved.",
+      "title": "See a real workflow before you decide how to start",
+      "description": "Explore workspace previews, a path from task to delivery, and product surfaces you can inspect to understand how XWorkmate supports real work.",
       "facts": [
         {
-          "value": "3 surfaces",
-          "label": "A continuous experience across Web, Desktop, and Mobile"
+          "value": "Product preview",
+          "label": "See the workspace across Web, Desktop, and Mobile"
         },
         {
-          "value": "1 workspace",
-          "label": "One context for tasks, knowledge, connections, and delivery"
+          "value": "Working loop",
+          "label": "Keep one context from task and connection through delivery"
         },
         {
-          "value": "Managed + self-hosted",
-          "label": "Choose hosted use or your own deployment"
+          "value": "Open connections",
+          "label": "Connect the models, services, data, and local environments you need"
         },
         {
-          "value": "Traceable",
-          "label": "Keep following runs, logs, and artifacts over time"
+          "value": "Traceable delivery",
+          "label": "Follow runs, logs, and artifacts over time"
         }
       ],
       "links": [
@@ -930,14 +930,14 @@ export const homeMarketingContentData = {
       "copiedLabel": "Copied"
     },
     "pricingTeaser": {
-      "title": "Simple, transparent pricing",
-      "description": "Subscribe on demand, choose freely. No hidden fees, adjust anytime.",
+      "title": "Start with one workspace, then grow with your team",
+      "description": "Choose a plan around your workspaces, collaborators, and Agent runtime needs. Prove a real workflow first, then scale.",
       "priceLabel": "$0",
       "priceSuffix": "to start",
       "features": [
-        "Subscribe on demand",
-        "Pay as you go",
-        "Upgrade or cancel anytime"
+        "Workspaces & collaborators",
+        "Agent runtime allowance",
+        "Upgrade or adjust anytime"
       ],
       "cta": {
         "label": "View pricing details",
@@ -945,15 +945,15 @@ export const homeMarketingContentData = {
       }
     },
     "finalCta": {
-      "title": "Open AI Workspace",
-      "description": "Connect anything. Build anything. Deliver anything.",
+      "title": "Run one real task end to end",
+      "description": "Create a workspace, connect the models and tools you already use, and produce your first downloadable result.",
       "primaryCta": {
-        "label": "Try it free",
+        "label": "Try it free in the workspace",
         "href": "/register"
       },
       "secondaryCta": {
-        "label": "Enter Console",
-        "href": "/panel"
+        "label": "Talk to us about deployment",
+        "href": "/contact"
       }
     }
   }

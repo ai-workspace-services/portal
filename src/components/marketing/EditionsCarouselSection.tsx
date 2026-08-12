@@ -17,6 +17,7 @@ export default function EditionsCarouselSection() {
   return (
     <section
       aria-labelledby="editions-title"
+      id="product-demo"
       className={`${marketingTheme.section.container} py-16 sm:py-24`}
     >
       <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end lg:gap-16">
