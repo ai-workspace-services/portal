@@ -11,11 +11,12 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 type AiBrand = {
   name: string;
   logo: string;
+  width?: number;
+  height?: number;
 };
 
 const aiBrands: AiBrand[] = [
   { name: "OpenAI", logo: "/marketing/ai-logos/openai.svg" },
-  { name: "Codex", logo: "/marketing/ai-logos/codex-color.svg" },
   { name: "Claude Code", logo: "/marketing/ai-logos/claude-color.svg" },
   { name: "Gemini", logo: "/marketing/ai-logos/gemini-color.svg" },
   { name: "Grok", logo: "/marketing/ai-logos/grok.svg" },
@@ -25,6 +26,13 @@ const aiBrands: AiBrand[] = [
   { name: "Kimi", logo: "/marketing/ai-logos/kimi-official.png" },
   { name: "Qwen", logo: "/marketing/ai-logos/qwen-color.svg" },
   { name: "Mistral", logo: "/marketing/ai-logos/mistral-color.svg" },
+  { name: "OpenClaw", logo: "/marketing/ai-logos/openclaw-official.png" },
+  {
+    name: "Hermes Agent",
+    logo: "/marketing/ai-logos/hermes-official.png",
+    width: 72,
+    height: 32,
+  },
 ];
 
 function AiLogoRow({ label }: { label: string }) {
@@ -41,9 +49,11 @@ function AiLogoRow({ label }: { label: string }) {
               <Image
                 src={brand.logo}
                 alt={brand.name}
-                width={48}
-                height={48}
-                className="h-9 w-9 object-contain transition duration-200 hover:scale-110 sm:h-12 sm:w-12"
+                width={brand.width ?? 48}
+                height={brand.height ?? 48}
+                className={`object-contain transition duration-200 hover:scale-110 ${
+                  brand.width ? "h-8 w-[4.5rem] sm:h-9 sm:w-[5.5rem]" : "h-9 w-9 sm:h-12 sm:w-12"
+                }`}
               />
             </li>
           ))}
@@ -79,9 +89,14 @@ export default function HeroSection() {
               </span>
             ))}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-xl sm:leading-8">
-            {hero.subtitle}
+          <p className="mx-auto mt-4 max-w-4xl text-lg font-semibold leading-8 tracking-[-0.02em] text-slate-700 sm:text-2xl sm:leading-9">
+            {hero.line}
           </p>
+          {hero.subtitle ? (
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-xl sm:leading-8">
+              {hero.subtitle}
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-7 flex flex-col items-center">
@@ -100,7 +115,9 @@ export default function HeroSection() {
               {hero.secondaryCta.label}
             </Link>
           </div>
-          <p className="mt-3 text-xs text-slate-400">{hero.trialNote}</p>
+          {hero.trialNote ? (
+            <p className="mt-3 text-xs text-slate-400">{hero.trialNote}</p>
+          ) : null}
         </div>
       </div>
     </section>

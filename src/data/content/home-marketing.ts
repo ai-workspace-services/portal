@@ -80,11 +80,11 @@ export const homeMarketingContentData = {
       "eyebrow": "XWorkmate · AI Workspace",
       "logoLabel": "AI 模型与智能体",
       "title": [
-        "把 AI 对话",
-        "变成可交付的工作结果"
+        "开放的 AI 工作空间"
       ],
-      "subtitle": "在一个工作空间里完成计划、连接工具与交付产物。团队和 AI 围绕同一目标推进，而不是停在聊天记录里。",
-      "trialNote": "免费注册，约 3 分钟开始体验",
+      "line": "连接一切，编排一切，交付一切，从想法到产物，在一个 Workspace 完成！",
+      "subtitle": "",
+      "trialNote": "",
       "primaryCta": {
         "label": "免费试用",
         "href": "/register"
@@ -131,7 +131,7 @@ export const homeMarketingContentData = {
     "coreCapabilities": {
       "eyebrow": "聊天很强，交付仍难",
       "title": "计划、连接、交付，在同一条工作线上持续推进",
-      "description": "大多数 AI 工具停在回答。XWorkmate 把任务、工具、过程和产物收进同一条工作线，让每一步都保留上下文、执行状态和结果。",
+      "description": "XWorkmate 把任务、工具、过程和产物收进同一条工作线，让每一步都保留上下文、执行状态和结果。",
       "items": [
         {
           "key": "plan",
@@ -559,11 +559,11 @@ export const homeMarketingContentData = {
       "eyebrow": "XWorkmate · AI Workspace",
       "logoLabel": "AI models & agents",
       "title": [
-        "Turn AI conversations into",
-        "work you can deliver"
+        "An open AI workspace"
       ],
-      "subtitle": "Plan work, connect tools, and ship outcomes in one workspace. Keep your team and AI moving toward the same goal instead of leaving work in chat history.",
-      "trialNote": "Create a free account and get started in about 3 minutes",
+      "line": "Connect everything, Orchestrate everything, Deliver everything, From idea to artifact, in one Workspace!",
+      "subtitle": "",
+      "trialNote": "",
       "primaryCta": {
         "label": "Try it free",
         "href": "/register"
@@ -610,7 +610,7 @@ export const homeMarketingContentData = {
     "coreCapabilities": {
       "eyebrow": "Chat is powerful. Delivery is still hard.",
       "title": "Plan, connect, and deliver on the same line of work",
-      "description": "Most AI tools stop at an answer. XWorkmate brings tasks, tools, execution, and artifacts into one line of work, keeping context, status, and outcomes together.",
+      "description": "XWorkmate brings tasks, tools, execution, and artifacts into one line of work, keeping context, status, and outcomes together.",
       "items": [
         {
           "key": "plan",
