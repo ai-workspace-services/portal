@@ -469,12 +469,12 @@ export const homeMarketingContentData = {
       "title": "开放的 AI 工作空间",
       "description": "连接一切。构建一切。交付一切。",
       "primaryCta": {
-        "label": "进入控制台",
-        "href": "/panel"
+        "label": "免费试用",
+        "href": "/register"
       },
       "secondaryCta": {
-        "label": "查看产品",
-        "href": "/products/xworkmate"
+        "label": "进入控制台",
+        "href": "/panel"
       }
     }
   },
@@ -948,12 +948,12 @@ export const homeMarketingContentData = {
       "title": "Open AI Workspace",
       "description": "Connect anything. Build anything. Deliver anything.",
       "primaryCta": {
-        "label": "Enter Console",
-        "href": "/panel"
+        "label": "Try it free",
+        "href": "/register"
       },
       "secondaryCta": {
-        "label": "Explore Product",
-        "href": "/products/xworkmate"
+        "label": "Enter Console",
+        "href": "/panel"
       }
     }
   }
