@@ -1,130 +1,99 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
 import { marketingTheme } from "@/components/marketing/theme";
-import {
-  loadHomepageHeroAsset,
-  resolveHomepageHeroImage,
-  type HomepageHeroAsset,
-} from "@/components/marketing/homeHeroAsset";
+import { useLanguage } from "@/i18n/LanguageProvider";
+
+type AiBrand = {
+  name: string;
+  logo: string;
+};
+
+const aiBrands: AiBrand[] = [
+  { name: "OpenAI", logo: "/marketing/ai-logos/openai.svg" },
+  { name: "Codex", logo: "/marketing/ai-logos/codex-color.svg" },
+  { name: "Claude Code", logo: "/marketing/ai-logos/claude-color.svg" },
+  { name: "Gemini", logo: "/marketing/ai-logos/gemini-color.svg" },
+  { name: "Grok", logo: "/marketing/ai-logos/grok.svg" },
+  { name: "DeepSeek", logo: "/marketing/ai-logos/deepseek-color.svg" },
+  { name: "GLM", logo: "/marketing/ai-logos/glm-official.svg" },
+  { name: "MiniMax", logo: "/marketing/ai-logos/minimax-color.svg" },
+  { name: "Kimi", logo: "/marketing/ai-logos/kimi-official.png" },
+  { name: "Qwen", logo: "/marketing/ai-logos/qwen-color.svg" },
+  { name: "Mistral", logo: "/marketing/ai-logos/mistral-color.svg" },
+];
+
+function AiLogoRow({ label }: { label: string }) {
+  return (
+    <div className="w-full">
+      <div className="mb-5 flex items-center justify-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-primary">
+        <Sparkles className="h-4 w-4" aria-hidden />
+        {label}
+      </div>
+      <div className="-mx-6 overflow-x-auto px-6 pb-1 sm:mx-0 sm:px-0">
+        <ul className="mx-auto flex min-w-max items-center justify-center gap-5 sm:gap-6" aria-label={label}>
+          {aiBrands.map((brand) => (
+            <li key={brand.name}>
+              <Image
+                src={brand.logo}
+                alt={brand.name}
+                width={48}
+                height={48}
+                className="h-9 w-9 object-contain transition duration-200 hover:scale-110 sm:h-12 sm:w-12"
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 export default function HeroSection() {
   const { language } = useLanguage();
-  const content = homeMarketingContent[language] || homeMarketingContent.zh || homeMarketingContent.en;
-  const hero = content?.hero || homeMarketingContent.zh?.hero;
-  const visual = hero?.visual || homeMarketingContent.zh?.hero?.visual;
-  const [asset, setAsset] = useState<HomepageHeroAsset>({});
-
-  useEffect(() => {
-    let active = true;
-    loadHomepageHeroAsset(language).then((nextAsset) => {
-      if (active) {
-        setAsset(nextAsset);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [language]);
-
-  const imageUrl =
-    (asset.imageUrl ??
-      (visual?.imageBasePath
-        ? resolveHomepageHeroImage(visual.imageBasePath, asset.version)
-        : "")) ||
-    visual?.imageUrl ||
-    "";
-  const visualTitle = asset.title ?? visual?.title ?? "";
-  const visualSubtitle = asset.subtitle ?? visual?.subtitle ?? "";
-  const visualEyebrow = asset.eyebrow ?? visual?.eyebrow ?? "";
-  const productPills = visual?.productPills ?? [];
+  const content =
+    homeMarketingContent[language] ||
+    homeMarketingContent.zh ||
+    homeMarketingContent.en;
+  const hero = content.hero;
 
   return (
-    <section
-      className={`${marketingTheme.section.container} pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pt-24`}
-    >
-      <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
-        <div>
-          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-            <Sparkles className="h-4 w-4" aria-hidden />
+    <section className="relative overflow-hidden border-b border-slate-100 bg-white">
+      <div
+        className={`${marketingTheme.section.container} relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-start pb-16 pt-20 text-center sm:pb-20 sm:pt-28 lg:pt-32`}
+      >
+        <AiLogoRow label={hero.logoLabel} />
+
+        <div className="mt-8 max-w-5xl sm:mt-9">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
             {hero.eyebrow}
-          </div>
-          <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl lg:text-[3.5rem]">
+          </p>
+          <h1 className="mt-4 text-4xl font-semibold leading-[1.04] tracking-[-0.05em] text-slate-950 sm:text-6xl lg:text-[5.35rem]">
             {hero.title.map((line) => (
               <span key={line} className="block">
                 {line}
               </span>
             ))}
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-xl sm:leading-8">
             {hero.subtitle}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              href={hero.primaryCta.href}
-              className={marketingTheme.cta.primary}
-            >
-              {hero.primaryCta.label}
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <Link
-              href={hero.secondaryCta.href}
-              className={marketingTheme.cta.secondary}
-            >
-              {hero.secondaryCta.label}
-            </Link>
-          </div>
         </div>
 
-        <figure className="mx-auto w-full max-w-[42rem]">
-          <div className="relative px-0 py-0 lg:px-10 lg:py-10">
-            <div className="overflow-hidden rounded-[2rem] border border-slate-900/10 bg-slate-50 shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
-              <img
-                src={encodeURI(imageUrl)}
-                alt={visual.alt}
-                width={1536}
-                height={864}
-                className="aspect-[16/9] h-auto w-full object-contain"
-              />
-            </div>
-          </div>
-          <figcaption className="mt-5 flex items-start gap-3 px-2">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Sparkles className="h-4 w-4" aria-hidden />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                {visualEyebrow}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {visualTitle}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-slate-500">
-                {visualSubtitle}
-              </p>
-              {productPills.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {productPills.map((pill) => (
-                    <span
-                      key={pill}
-                      className="rounded-full border border-slate-900/10 bg-slate-50 px-2.5 py-1 text-[0.65rem] font-semibold text-slate-600"
-                    >
-                      {pill}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </figcaption>
-        </figure>
+        <div className="mt-7 flex flex-col items-center">
+          <Link
+            href={hero.primaryCta.href}
+            className={`${marketingTheme.cta.primary} min-w-40 px-7 py-3.5 text-base shadow-[0_12px_30px_rgba(37,99,235,0.22)]`}
+          >
+            {hero.primaryCta.label}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+          <p className="mt-3 text-xs text-slate-400">{hero.trialNote}</p>
+        </div>
       </div>
     </section>
   );

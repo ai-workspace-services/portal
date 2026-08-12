@@ -33,7 +33,7 @@ export default function CoreCapabilitiesSection() {
       aria-labelledby="core-capabilities-title"
       className={`${marketingTheme.section.container} pb-16 sm:pb-24`}
     >
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-3xl text-center">
         <p className={marketingTheme.heading.eyebrow}>{content.eyebrow}</p>
         <h2
           id="core-capabilities-title"
@@ -41,7 +41,7 @@ export default function CoreCapabilitiesSection() {
         >
           {content.title}
         </h2>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
           {content.description}
         </p>
       </div>
