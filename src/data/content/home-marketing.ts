@@ -80,8 +80,8 @@ export const homeMarketingContentData = {
       "eyebrow": "XWorkmate · AI Workspace",
       "logoLabel": "AI 模型与智能体",
       "title": [
-        "一个 AI 工作空间，",
-        "容纳你所有的 AI 智能体。"
+        "一个 AI 工作空间",
+        "容纳你所有的 AI 智能体"
       ],
       "subtitle": "把你的模型、智能体、工具与工作流汇聚在同一个空间。",
       "trialNote": "免费注册，即刻开始体验",
