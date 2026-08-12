@@ -86,7 +86,7 @@ export const homeMarketingContentData = {
       "subtitle": "在一个工作空间里完成计划、连接工具与交付产物。团队和 AI 围绕同一目标推进，而不是停在聊天记录里。",
       "trialNote": "免费注册，约 3 分钟开始体验",
       "primaryCta": {
-        "label": "免费试用（约 3 分钟）",
+        "label": "免费试用",
         "href": "/register"
       },
       "secondaryCta": {
@@ -565,7 +565,7 @@ export const homeMarketingContentData = {
       "subtitle": "Plan work, connect tools, and ship outcomes in one workspace. Keep your team and AI moving toward the same goal instead of leaving work in chat history.",
       "trialNote": "Create a free account and get started in about 3 minutes",
       "primaryCta": {
-        "label": "Try it free (about 3 minutes)",
+        "label": "Try it free",
         "href": "/register"
       },
       "secondaryCta": {
