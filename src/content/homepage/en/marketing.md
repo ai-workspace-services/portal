@@ -1,7 +1,7 @@
 ---
 brand:
-  name: SVC+
-  tagline: AI Workspace Platform
+  title: XWorkmate
+  tagline: AI workspace
 nav:
   dropdowns:
     - label: Products & Services
@@ -45,21 +45,22 @@ nav:
   logout: Sign out
 hero:
   eyebrow: XWorkmate · AI Workspace
+  logoLabel: AI models & agents
   title:
-    - From conversation to delivery,
-    - one AI workspace for
-    - the work that matters
-  subtitle: Bring tasks, knowledge, connections, and delivery together so AI can participate in the work—not just answer questions.
+    - An open AI workspace
+  line: Connect everything, Orchestrate everything, Deliver everything, From idea to artifact, in one Workspace!
+  subtitle: ""
+  trialNote: ""
   primaryCta:
     label: Try it free
-    href: /register
+    href: /ai-workspace?entry=trial
   secondaryCta:
-    label: Enter Console
-    href: /panel
+    label: See the product demo
+    href: "#product-demo"
   visual:
-    eyebrow: REAL AI WORKSPACE
-    title: Agents, conversations, tools, and artifacts working together in one continuous workspace.
-    subtitle: From planning to execution, your work keeps its context everywhere.
+    eyebrow: ONE SPACE, EVERY AI
+    title: Models and agents work around the same shared context.
+    subtitle: Keep the work moving without jumping between disconnected AI tools.
     imageBasePath: /marketing/home-hero
     imageUrl: /marketing/home-hero/ai-workspace-suite-en.png
     alt: XWorkmate AI workspace showing tasks, conversations, connections, and delivery artifacts
@@ -82,9 +83,9 @@ hero:
       height: 960
       alt: Mobile Edition AI Workspace
 coreCapabilities:
-  eyebrow: One continuous workflow
+  eyebrow: Chat is powerful. Delivery is still hard.
   title: Plan, connect, and deliver on the same line of work
-  description: Keep context, execution status, and results together so your team and AI can work toward the same outcome.
+  description: XWorkmate brings tasks, tools, execution, and artifacts into one line of work, keeping context, status, and outcomes together.
   items:
     - key: plan
       label: Plan
@@ -162,17 +163,17 @@ controls:
       evidence: Deployment options and runtime boundaries are clear
 proof:
   eyebrow: Product facts and proof
-  title: See the real capabilities before you decide how to start
-  description: Use inspectable product surfaces and interface evidence instead of vague promises; customer stories and metrics will be added as they are approved.
+  title: See a real workflow before you decide how to start
+  description: Explore workspace previews, a path from task to delivery, and product surfaces you can inspect to understand how XWorkmate supports real work.
   facts:
-    - value: 3 surfaces
-      label: A continuous experience across Web, Desktop, and Mobile
-    - value: 1 workspace
-      label: One context for tasks, knowledge, connections, and delivery
-    - value: Managed + self-hosted
-      label: Choose hosted use or your own deployment
-    - value: Traceable
-      label: Keep following runs, logs, and artifacts over time
+    - value: Product preview
+      label: See the workspace across Web, Desktop, and Mobile
+    - value: Working loop
+      label: Keep one context from task and connection through delivery
+    - value: Open connections
+      label: Connect the models, services, data, and local environments you need
+    - value: Traceable delivery
+      label: Follow runs, logs, and artifacts over time
   links:
     - label: XWorkmate
       href: /products/xworkmate
@@ -289,26 +290,26 @@ inviteBanner:
   copyLabel: Copy link
   copiedLabel: Copied
 pricingTeaser:
-  title: Simple, transparent pricing
-  description: Subscribe on demand, choose freely. No hidden fees, adjust anytime.
+  title: Start with one workspace, then grow with your team
+  description: Choose a plan around your workspaces, collaborators, and Agent runtime needs. Prove a real workflow first, then scale.
   priceLabel: $0
   priceSuffix: to start
   features:
-    - Subscribe on demand
-    - Pay as you go
-    - Upgrade or cancel anytime
+    - Workspaces & collaborators
+    - Agent runtime allowance
+    - Upgrade or adjust anytime
   cta:
     label: View pricing details
     href: /prices
 finalCta:
-  title: Open AI Workspace
-  description: Connect anything. Build anything. Deliver anything.
+  title: Run one real task end to end
+  description: Create a workspace, connect the models and tools you already use, and produce your first downloadable result.
   primaryCta:
-    label: Try it free
-    href: /register
+    label: Try it free in the workspace
+    href: /ai-workspace?entry=trial
   secondaryCta:
-    label: Enter Console
-    href: /panel
+    label: Talk to us about deployment
+    href: /contact
 ---
 
 ## Marketing Content (EN)

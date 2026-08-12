@@ -1,7 +1,7 @@
 ---
 brand:
-  name: SVC+
-  tagline: AI 工作空间平台
+  title: XWorkmate
+  tagline: AI 工作空间
 nav:
   dropdowns:
     - label: 产品与服务
@@ -45,21 +45,22 @@ nav:
   logout: 退出登录
 hero:
   eyebrow: XWorkmate · AI Workspace
+  logoLabel: AI 模型与智能体
   title:
-    - 从对话到交付，
-    - 一个 AI 工作空间
-    - 完成全部工作
-  subtitle: 统一任务、知识、连接与交付，让 AI 真正参与工作，而不只是回答问题。
+    - 开放的 AI 工作空间
+  line: 连接一切，编排一切，交付一切，从想法到产物，在一个 Workspace 完成！
+  subtitle: ""
+  trialNote: ""
   primaryCta:
     label: 免费试用
-    href: /register
+    href: /ai-workspace?entry=trial
   secondaryCta:
-    label: 进入控制台
-    href: /panel
+    label: 查看产品演示
+    href: "#product-demo"
   visual:
-    eyebrow: 真实 AI Workspace
-    title: Agent、对话、工具与产物在一个连续工作空间协同
-    subtitle: 从计划到执行，工作上下文始终保持连续。
+    eyebrow: 一个空间，所有 AI
+    title: 从模型到智能体，围绕同一份工作持续协作
+    subtitle: 无需在不同 AI 工具之间来回切换，工作上下文始终留在一起。
     imageBasePath: /marketing/home-hero
     imageUrl: /marketing/home-hero/ai-workspace-suite-zh.png
     alt: XWorkmate AI 工作空间，展示模型、连接、工作空间与交付产物
@@ -82,9 +83,9 @@ hero:
       height: 960
       alt: 移动版 AI 工作空间
 coreCapabilities:
-  eyebrow: 完整工作闭环
+  eyebrow: 聊天很强，交付仍难
   title: 计划、连接、交付，在同一条工作线上持续推进
-  description: 每一步都保留上下文、执行状态和结果，让团队与 AI 围绕同一目标协作。
+  description: XWorkmate 把任务、工具、过程和产物收进同一条工作线，让每一步都保留上下文、执行状态和结果。
   items:
     - key: plan
       label: Plan
@@ -162,16 +163,16 @@ controls:
       evidence: 部署选项与运行边界明确
 proof:
   eyebrow: 产品事实与证明
-  title: 先看见真实能力，再决定如何开始
-  description: 用可以直接检查的产品入口和界面证据替代空泛承诺；用户案例和数据将在获得授权后持续补充。
+  title: 先看见真实工作流，再决定如何开始
+  description: 通过工作台预览、从任务到交付的路径和可直接访问的产品入口，了解 XWorkmate 如何推进真实工作。
   facts:
-    - value: 三端体验
-      label: Web、Desktop、Mobile 的连续工作体验
-    - value: 一个工作空间
-      label: 任务、知识、连接和交付的统一上下文
-    - value: 托管 + 自建
-      label: 托管使用与自建部署的选择
-    - value: 可追溯
+    - value: 产品预览
+      label: 在 Web、Desktop、Mobile 中查看真实工作台界面
+    - value: 工作闭环
+      label: 从任务、连接到交付，始终保留同一份上下文
+    - value: 开放连接
+      label: 按需接入模型、服务、数据和本地环境
+    - value: 可追溯交付
       label: 运行状态、日志与产物可持续跟进
   links:
     - label: XWorkmate
@@ -289,26 +290,26 @@ inviteBanner:
   copyLabel: 复制链接
   copiedLabel: 已复制
 pricingTeaser:
-  title: 透明定价，按需选择
-  description: 简单透明的计费方式，无需隐蔽费用。选择适合您的方案，按需使用，轻松上手。
+  title: 从一个工作空间开始，按团队需要扩展
+  description: 围绕工作空间、协作成员和 Agent 运行需求选择方案，让团队先跑通真实任务，再逐步扩展。
   priceLabel: $0
   priceSuffix: 起
   features:
-    - 按需订阅
-    - 按量计费
-    - 随时升级或取消
+    - 工作空间与协作成员
+    - Agent 运行额度
+    - 随时升级或调整
   cta:
     label: 查看定价详情
     href: /prices
 finalCta:
-  title: 开放的 AI 工作空间
-  description: 连接一切。构建一切。交付一切。
+  title: 先跑通一个真实任务
+  description: 创建工作空间，连接已有模型和工具，产出第一份可下载结果。
   primaryCta:
-    label: 免费试用
-    href: /register
+    label: 免费试用进入工作台
+    href: /ai-workspace?entry=trial
   secondaryCta:
-    label: 进入控制台
-    href: /panel
+    label: 联系团队部署
+    href: /contact
 ---
 
 ## Marketing Content (ZH)
