@@ -304,11 +304,11 @@ finalCta:
   title: Open AI Workspace
   description: Connect anything. Build anything. Deliver anything.
   primaryCta:
+    label: Try it free
+    href: /register
+  secondaryCta:
     label: Enter Console
     href: /panel
-  secondaryCta:
-    label: Explore Product
-    href: /products/xworkmate
 ---
 
 ## Marketing Content (EN)

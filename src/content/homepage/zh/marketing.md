@@ -304,11 +304,11 @@ finalCta:
   title: 开放的 AI 工作空间
   description: 连接一切。构建一切。交付一切。
   primaryCta:
+    label: 免费试用
+    href: /register
+  secondaryCta:
     label: 进入控制台
     href: /panel
-  secondaryCta:
-    label: 查看产品
-    href: /products/xworkmate
 ---
 
 ## Marketing Content (ZH)
