@@ -1,478 +1,1041 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-  FolderOpen,
-  Loader2,
-  PencilLine,
-  RefreshCw,
+  Archive,
+  Bell,
+  Clock3,
+  FileText,
+  Layers3,
+  MessageSquareText,
+  Plus,
+  Target,
 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-import {
-  buildWorkbenchProjection,
-  type TaskThread,
-  type WorkbenchItem,
-  type WorkbenchProject,
-} from "@/lib/xworkmate/workbenchProjection";
 import { cn } from "@/lib/utils";
-import {
-  AiWorkspaceAnalyticsPanel,
-  normalizeAnalyticsDashboard,
-  type AnalyticsDashboard,
-} from "@/components/ai-workspace/AiWorkspaceAnalyticsPanel";
 
-type ActivityWindow = "7d" | "30d" | "all";
+type WorkbenchTab = "overview" | "models" | "todo" | "projects" | "inbox";
+type ActivityWindow = "all" | "30d" | "7d";
+type SessionState = "running" | "waiting" | "completed" | "cancelled";
 
-type TrialStatus = {
-  mode: "trial" | "account";
-  trial?: {
-    used: number;
-    limit: number;
-    remaining: number;
-  };
-  registerHref?: string;
+type ServerSession = {
+  sessionId: string;
+  namespaceId: string;
+  title: string;
+  state: SessionState;
+  updatedAt: number;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  messageCount: number;
+  artifactCount: number;
+  artifactPaths: string[];
+  projectLabel: string;
 };
 
-const activityWindowLabels: Record<ActivityWindow, string> = {
-  "7d": "7日",
-  "30d": "30日",
-  all: "全部",
+type ModelSummary = {
+  model: string;
+  input: number;
+  output: number;
+  share: number;
 };
 
-async function loadThreads(signal: AbortSignal): Promise<TaskThread[]> {
-  const response = await fetch("/api/ai-workspace/threads", {
-    credentials: "include",
-    cache: "no-store",
-    signal,
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) {
-    throw new Error(`加载工作台数据失败：${response.status}`);
-  }
-  const payload: unknown = await response.json();
-  if (!Array.isArray(payload)) {
-    throw new Error("工作台服务返回了无效的线程列表。");
-  }
-  return payload as TaskThread[];
+const tabs: Array<{ id: WorkbenchTab; label: string }> = [
+  { id: "overview", label: "数据总览" },
+  { id: "models", label: "模型分析" },
+  { id: "todo", label: "我的待办" },
+  { id: "projects", label: "项目 / 专项" },
+  { id: "inbox", label: "收件箱" },
+];
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
-async function loadTrialStatus(signal: AbortSignal): Promise<TrialStatus> {
-  const response = await fetch("/api/ai-workspace/trial", {
-    credentials: "include",
-    cache: "no-store",
-    signal,
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) {
-    throw new Error(`加载试用状态失败：${response.status}`);
+function stringValue(...values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
   }
-  return (await response.json()) as TrialStatus;
+  return "";
 }
 
-async function loadAnalytics(signal: AbortSignal): Promise<AnalyticsDashboard | null> {
-  const response = await fetch("/api/ai-workspace/dashboard", {
-    credentials: "include",
-    cache: "no-store",
-    signal,
-    headers: { Accept: "application/json" },
-  });
-  if (!response.ok) return null;
-  return normalizeAnalyticsDashboard((await response.json()) as unknown);
+function numberValue(...values: unknown[]): number {
+  for (const value of values) {
+    const parsed = typeof value === "number" ? value : Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
 }
 
-export function AiWorkspaceOverview(): React.ReactNode {
-  const searchParams = useSearchParams();
-  const trialEntry = searchParams?.get("entry") === "trial";
-  const [threads, setThreads] = useState<TaskThread[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
-  const [error, setError] = useState("");
-  const [activityWindow, setActivityWindow] = useState<ActivityWindow>("7d");
-  const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
-  const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
+function arrayValue(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
 
-  const refresh = useCallback(async (signal?: AbortSignal) => {
-    setStatus("loading");
-    setError("");
-    try {
-      const requestSignal = signal ?? new AbortController().signal;
-      const nextTrialStatus = trialEntry
-        ? await loadTrialStatus(requestSignal)
-        : null;
-      if (nextTrialStatus) {
-        setTrialStatus(nextTrialStatus);
-      }
-      const [nextThreads, nextAnalytics] =
-        nextTrialStatus?.mode === "trial"
-          ? [[], null]
-          : await Promise.all([
-              loadThreads(requestSignal),
-              loadAnalytics(requestSignal).catch(() => null),
-            ]);
-      setThreads(nextThreads);
-      setAnalytics(nextAnalytics);
-      setStatus("ready");
-    } catch (reason) {
-      if (signal?.aborted) {
-        return;
-      }
-      console.warn("AI Workspace overview request failed", reason);
-      setThreads([]);
-      setError(
-        reason instanceof Error ? reason.message : "加载工作台数据失败。",
-      );
-      setStatus("error");
+function normalizeTimestamp(...values: unknown[]): number {
+  for (const value of values) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value < 10_000_000_000 ? value * 1000 : value;
     }
-  }, [trialEntry]);
+    if (typeof value === "string" && value.trim()) {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric)) {
+        return numeric < 10_000_000_000 ? numeric * 1000 : numeric;
+      }
+      const parsed = Date.parse(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+  return 0;
+}
+
+function normalizeState(value: unknown): SessionState {
+  const source =
+    typeof value === "object"
+      ? stringValue(recordValue(value).status, recordValue(value).state)
+      : stringValue(value);
+  const normalized = source.toLowerCase();
+  if (["completed", "done", "success", "succeeded"].includes(normalized)) {
+    return "completed";
+  }
+  if (["cancelled", "canceled", "aborted", "failed"].includes(normalized)) {
+    return "cancelled";
+  }
+  if (["running", "active", "processing", "syncing"].includes(normalized)) {
+    return "running";
+  }
+  return "waiting";
+}
+
+function normalizeSession(
+  value: unknown,
+  namespaceId: string,
+): ServerSession | null {
+  const item = recordValue(value);
+  const lifecycle = recordValue(item.lifecycleState);
+  const context = recordValue(item.context);
+  const usage = recordValue(item.usage);
+  const artifacts = arrayValue(item.artifactPaths ?? item.artifacts)
+    .map((artifact) =>
+      typeof artifact === "string"
+        ? artifact
+        : stringValue(recordValue(artifact).path, recordValue(artifact).name),
+    )
+    .filter(Boolean);
+  const sessionId = stringValue(
+    item.sessionId,
+    item.sessionKey,
+    item.id,
+    item.key,
+  );
+  if (!sessionId) return null;
+  const inputTokens = numberValue(
+    item.inputTokens,
+    usage.inputTokens,
+    usage.input_tokens,
+    context.inputTokens,
+  );
+  const outputTokens = numberValue(
+    item.outputTokens,
+    usage.outputTokens,
+    usage.output_tokens,
+    context.outputTokens,
+  );
+  const workspace = stringValue(
+    item.projectLabel,
+    item.project,
+    item.workspacePath,
+    context.projectLabel,
+  );
+  const projectLabel = workspace
+    ? (workspace.replaceAll("\\", "/").split("/").filter(Boolean).at(-1) ??
+      workspace)
+    : "未归类专项";
+  return {
+    sessionId,
+    namespaceId: stringValue(item.namespaceId, namespaceId),
+    title: stringValue(
+      item.title,
+      item.derivedTitle,
+      item.displayName,
+      sessionId,
+    ),
+    state: normalizeState(
+      item.lifecycleState ?? item.state ?? item.status ?? lifecycle.status,
+    ),
+    updatedAt: normalizeTimestamp(
+      item.updatedAtMs,
+      item.updatedAt,
+      lifecycle.updatedAtMs,
+      lifecycle.lastRunAtMs,
+      item.createdAt,
+    ),
+    model: stringValue(
+      item.model,
+      item.modelName,
+      item.latestResolvedRuntimeModel,
+      context.model,
+      context.selectedModelId,
+    ),
+    inputTokens,
+    outputTokens,
+    messageCount: numberValue(
+      item.messageCount,
+      item.messagesCount,
+      arrayValue(item.messages).length,
+    ),
+    artifactCount: numberValue(item.artifactCount, artifacts.length),
+    artifactPaths: artifacts,
+    projectLabel,
+  };
+}
+
+function extractArray(payload: unknown, keys: string[]): unknown[] {
+  if (Array.isArray(payload)) return payload;
+  const record = recordValue(payload);
+  for (const key of keys) {
+    if (Array.isArray(record[key])) return record[key] as unknown[];
+  }
+  return [];
+}
+
+async function fetchJson(url: string): Promise<unknown> {
+  const response = await fetch(url, {
+    credentials: "include",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  const payload = (await response.json()) as unknown;
+  if (!response.ok) {
+    throw new Error(
+      stringValue(
+        recordValue(recordValue(payload).error).message,
+        recordValue(payload).message,
+      ) || `请求失败：${response.status}`,
+    );
+  }
+  return payload;
+}
+
+async function loadServerSessions(): Promise<ServerSession[]> {
+  const namespacePayload = await fetchJson(
+    "/api/ai-workspace/sessions/namespaces",
+  );
+  const namespaces = extractArray(namespacePayload, [
+    "namespaces",
+    "items",
+    "data",
+  ]);
+  const ids = namespaces
+    .map((item) => {
+      const record = recordValue(item);
+      return stringValue(record.namespaceId, record.id, record.key, item);
+    })
+    .filter(Boolean);
+  const sessionPayloads = await Promise.all(
+    ids.map(async (namespaceId) => ({
+      namespaceId,
+      payload: await fetchJson(
+        `/api/ai-workspace/sessions/namespaces/${encodeURIComponent(namespaceId)}/sessions`,
+      ),
+    })),
+  );
+  return sessionPayloads
+    .flatMap(({ namespaceId, payload }) =>
+      extractArray(payload, ["sessions", "items", "data"]).map((session) =>
+        normalizeSession(session, namespaceId),
+      ),
+    )
+    .filter((session): session is ServerSession => session !== null)
+    .sort((left, right) => right.updatedAt - left.updatedAt);
+}
+
+function formatInteger(value: number): string {
+  return new Intl.NumberFormat("zh-CN").format(value);
+}
+
+function formatTokens(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
+  return formatInteger(value);
+}
+
+function formatDate(value: number): string {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date(value))
+    .replaceAll("/", "-");
+}
+
+function filterByWindow(
+  sessions: ServerSession[],
+  window: ActivityWindow,
+): ServerSession[] {
+  if (window === "all") return sessions;
+  const days = window === "7d" ? 7 : 30;
+  const boundary = Date.now() - days * 86_400_000;
+  return sessions.filter((session) => session.updatedAt >= boundary);
+}
+
+function modelSummaries(sessions: ServerSession[]): ModelSummary[] {
+  const totals = new Map<string, { input: number; output: number }>();
+  for (const session of sessions) {
+    if (!session.model) continue;
+    const current = totals.get(session.model) ?? { input: 0, output: 0 };
+    current.input += session.inputTokens;
+    current.output += session.outputTokens;
+    totals.set(session.model, current);
+  }
+  const grandTotal = [...totals.values()].reduce(
+    (sum, value) => sum + value.input + value.output,
+    0,
+  );
+  return [...totals.entries()]
+    .map(([model, value]) => ({
+      model,
+      input: value.input,
+      output: value.output,
+      share: grandTotal ? (value.input + value.output) / grandTotal : 0,
+    }))
+    .sort(
+      (left, right) => right.input + right.output - left.input - left.output,
+    );
+}
+
+export function AiWorkspaceOverview(): ReactNode {
+  const [activeTab, setActiveTab] = useState<WorkbenchTab>("overview");
+  const [activityWindow, setActivityWindow] = useState<ActivityWindow>("all");
+  const [sessions, setSessions] = useState<ServerSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const controller = new AbortController();
-    void refresh(controller.signal);
-    return () => controller.abort();
-  }, [refresh]);
+    let cancelled = false;
+    async function load() {
+      try {
+        const result = await loadServerSessions();
+        if (!cancelled) setSessions(result);
+      } catch (reason) {
+        if (!cancelled) {
+          setError(
+            reason instanceof Error ? reason.message : "服务端数据暂时不可用",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const projection = useMemo(
-    () => buildWorkbenchProjection(threads),
-    [threads],
+  const visibleSessions = useMemo(
+    () => filterByWindow(sessions, activityWindow),
+    [activityWindow, sessions],
   );
-  const attentionItems = projection.items.filter(
-    (item) => item.state !== "completed",
-  );
-  const maxActivity = Math.max(
-    1,
-    ...projection.workloadSeries.map((entry) => entry.value),
-  );
-  const isAnonymousTrial = trialEntry && trialStatus?.mode === "trial";
-  const registerHref =
-    trialStatus?.registerHref ??
-    "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial";
 
   return (
-    <main className="h-full min-h-0 overflow-y-auto bg-[#f8f9fa] px-4 py-4 text-[#1c1b1f] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1440px]">
-        <section className="rounded-[20px] border border-slate-200/80 bg-[#f2f5f8] p-4 sm:p-[18px]">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-lg font-extrabold tracking-[-0.025em] text-slate-900">
-                工作台
-              </h1>
-              <p className="mt-1 text-xs font-medium text-slate-500">
-                {isAnonymousTrial
-                  ? "先跑通一个真实任务，再把工作沉淀下来"
-                  : "把零碎进展沉淀为清晰工作"}
-              </p>
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              {isAnonymousTrial ? (
-                <>
-                  <span className="hidden rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 sm:inline-flex">
-                    访客试用 · {trialStatus.trial?.remaining ?? 0}/
-                    {trialStatus.trial?.limit ?? 5}
-                  </span>
-                  <Link
-                    href={registerHref}
-                    className="hidden rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 sm:inline-flex"
-                  >
-                    注册后保存会话
-                  </Link>
-                </>
-              ) : null}
-              <div
-                className="flex rounded-[9px] bg-white/65 p-1"
-                role="group"
-                aria-label="活动时间范围"
-              >
-                {(Object.keys(activityWindowLabels) as ActivityWindow[]).map(
-                  (window) => (
-                    <button
-                      key={window}
-                      type="button"
-                      aria-pressed={activityWindow === window}
-                      onClick={() => setActivityWindow(window)}
-                      className={cn(
-                        "rounded-[7px] px-2.5 py-1 text-xs font-semibold transition",
-                        activityWindow === window
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "text-slate-500 hover:text-slate-800",
-                      )}
-                    >
-                      {activityWindowLabels[window]}
-                    </button>
-                  ),
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => void refresh()}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] text-slate-500 transition hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed"
-                disabled={status === "loading"}
-                aria-label="刷新工作台数据"
-              >
-                <RefreshCw
-                  className={cn(
-                    "h-4 w-4",
-                    status === "loading" && "animate-spin",
-                  )}
-                />
-              </button>
-              <Link
-                href="/ai-workspace/conversation/new?entry=trial"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] bg-slate-900 text-white transition hover:bg-slate-700"
-                aria-label="快速记录"
-              >
-                <PencilLine className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
-            {isAnonymousTrial ? (
-              <>
-                <OverviewMetric label="已执行任务" value={trialStatus.trial?.used ?? 0} />
-                <OverviewMetric label="剩余试用" value={trialStatus.trial?.remaining ?? 0} />
-                <OverviewMetric label="会话保存" value="注册后" />
-                <OverviewMetric label="制品下载" value="注册后" />
-              </>
-            ) : (
-              <>
-                <OverviewMetric label="TaskThreads" value={projection.items.length} />
-                <OverviewMetric label="待处理" value={attentionItems.length} />
-                <OverviewMetric label="推进中专项" value={projection.projects.length} />
-                <OverviewMetric label="已归档产物" value={projection.inbox.length} />
-              </>
-            )}
-          </div>
-
-          {isAnonymousTrial ? <div className="mt-3 rounded-[10px] bg-white/60 p-3">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-xs font-semibold text-slate-500">
-                工作活跃度
-              </span>
-              <span className="text-[11px] font-medium text-slate-400">
-                {activityWindow === "all"
-                  ? "服务端全部记录"
-                  : `服务端近 ${activityWindow.replace("d", "")} 天记录`}
-              </span>
-            </div>
-            <div className="mt-2 flex gap-1.5" aria-label="近七日工作活跃度">
-              {projection.workloadSeries.map((entry) => (
-                <div key={entry.name} className="min-w-0 flex-1">
-                  <div
-                    title={`${entry.name}：${entry.value} 项活动`}
-                    className="h-6 rounded-[5px] bg-blue-600"
-                    style={{
-                      opacity:
-                        entry.value === 0
-                          ? 0.1
-                          : 0.28 + (entry.value / maxActivity) * 0.72,
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div> : null}
-        </section>
-
-        {!isAnonymousTrial ? (
-          <div className="mt-4">
-            <AiWorkspaceAnalyticsPanel projection={projection} dashboard={analytics} />
-          </div>
-        ) : null}
-
-        {status === "error" && !isAnonymousTrial ? (
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 flex-1">{error}</span>
+    <main className="flex h-full min-h-0 flex-col bg-[#fbfcfe] text-[#17181c]">
+      <header className="flex min-h-[72px] shrink-0 items-stretch border-b border-[#e4e8ef] px-5 lg:px-8">
+        <div
+          role="tablist"
+          aria-label="工作台视图"
+          className="flex min-w-0 flex-1 items-stretch overflow-x-auto"
+        >
+          {tabs.map((tab) => (
             <button
+              key={tab.id}
               type="button"
-              onClick={() => void refresh()}
-              className="font-semibold underline underline-offset-2"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "relative shrink-0 px-4 text-[15px] font-semibold text-[#586174] outline-none transition-colors lg:px-6 lg:text-base",
+                activeTab === tab.id && "font-bold text-[#1260cc]",
+              )}
             >
-              重试
+              {tab.label}
+              {activeTab === tab.id ? (
+                <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#1260cc]" />
+              ) : null}
             </button>
-          </div>
-        ) : null}
-
-        {isAnonymousTrial ? (
-          <section className="mt-4 rounded-[18px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-slate-50 px-5 py-5 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-600">
-                  Guest workspace
-                </p>
-                <h2 className="mt-1 text-base font-extrabold text-slate-900">
-                  现在开始一个真实任务
-                </h2>
-                <p className="mt-1 max-w-[620px] text-sm leading-6 text-slate-500">
-                  访客模式可以先执行任务；注册后即可保存会话、创建持久化任务并下载制品。
-                </p>
-              </div>
-              <Link
-                href="/ai-workspace/conversation/new?entry=trial"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_6px_16px_rgba(37,99,235,0.2)] transition hover:bg-blue-700"
-              >
-                开始新任务
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
-          <OverviewSection title="需要你处理">
-            {status === "loading" ? (
-              <OverviewLoading />
-            ) : attentionItems.length > 0 ? (
-              <div className="divide-y divide-slate-100">
-                {attentionItems.slice(0, 5).map((item) => (
-                  <TaskRow key={item.sessionKey} item={item} />
-                ))}
-              </div>
-            ) : (
-              <OverviewEmpty
-                icon={CheckCircle2}
-                title={isAnonymousTrial ? "访客模式暂不保存任务" : "当前没有待处理事项"}
-                subtitle={
-                  isAnonymousTrial
-                    ? "执行中的结果会显示在当前工作区，注册后可继续跟进。"
-                    : "新的 TaskThread 会自动出现在这里。"
-                }
-              />
-            )}
-          </OverviewSection>
-
-          <OverviewSection title="正在推进的专项">
-            {status === "loading" ? (
-              <OverviewLoading />
-            ) : projection.projects.length > 0 ? (
-              <div className="divide-y divide-slate-100">
-                {projection.projects.slice(0, 5).map((project) => (
-                  <ProjectRow key={project.label} project={project} />
-                ))}
-              </div>
-            ) : (
-              <OverviewEmpty
-                icon={FolderOpen}
-                title={isAnonymousTrial ? "注册后开始沉淀专项" : "暂无正在推进的专项"}
-                subtitle={
-                  isAnonymousTrial
-                    ? "保存会话后，任务会按工作目录聚合为专项。"
-                    : "绑定工作目录后，TaskThread 会自动聚合为专项。"
-                }
-              />
-            )}
-          </OverviewSection>
+          ))}
         </div>
+        <div className="ml-3 flex shrink-0 items-center gap-3">
+          <div className="flex rounded-xl bg-[#f3f5f8] p-1">
+            {(
+              [
+                ["all", "全部"],
+                ["30d", "30日"],
+                ["7d", "7日"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setActivityWindow(value)}
+                className={cn(
+                  "rounded-lg px-3 py-2 text-sm font-semibold text-[#667085] transition-colors",
+                  activityWindow === value &&
+                    "bg-white text-[#1260cc] shadow-sm",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <Link
+            aria-label="新建会话"
+            href="/ai-workspace/conversation/new"
+            className="grid size-11 place-items-center rounded-[14px] bg-[#17181c] text-white shadow-sm transition-transform hover:scale-[1.02]"
+          >
+            <Plus className="size-6" strokeWidth={2.4} />
+          </Link>
+        </div>
+      </header>
+
+      <div className="min-h-0 flex-1 overflow-auto p-5 lg:p-8">
+        {error ? <ErrorBanner message={error} /> : null}
+        {activeTab === "overview" ? (
+          <DataOverview sessions={visibleSessions} loading={loading} />
+        ) : null}
+        {activeTab === "models" ? (
+          <ModelAnalysis sessions={visibleSessions} loading={loading} />
+        ) : null}
+        {activeTab === "todo" ? (
+          <SessionDetail
+            title="我的待办"
+            subtitle="按服务端运行状态与最近进展汇总"
+            sessions={visibleSessions.filter(
+              (session) => session.state !== "completed",
+            )}
+            loading={loading}
+          />
+        ) : null}
+        {activeTab === "projects" ? (
+          <ProjectsDetail sessions={visibleSessions} loading={loading} />
+        ) : null}
+        {activeTab === "inbox" ? (
+          <InboxDetail sessions={visibleSessions} loading={loading} />
+        ) : null}
       </div>
     </main>
   );
 }
 
-function OverviewMetric({
-  label,
-  value,
+function DataOverview({
+  sessions,
+  loading,
 }: {
-  label: string;
-  value: number | string;
+  sessions: ServerSession[];
+  loading: boolean;
 }) {
+  const messages = sessions.reduce(
+    (sum, session) => sum + session.messageCount,
+    0,
+  );
+  const totalTokens = sessions.reduce(
+    (sum, session) => sum + session.inputTokens + session.outputTokens,
+    0,
+  );
+  const activeDays = new Set(
+    sessions
+      .filter((session) => session.updatedAt)
+      .map((session) => new Date(session.updatedAt).toISOString().slice(0, 10)),
+  ).size;
+  const models = modelSummaries(sessions);
+  const metrics = [
+    ["TaskThreads", formatInteger(sessions.length)],
+    ["消息", formatInteger(messages)],
+    ["总 Tokens", formatTokens(totalTokens)],
+    ["活跃天数", formatInteger(activeDays)],
+    [
+      "待处理",
+      formatInteger(
+        sessions.filter((session) => session.state !== "completed").length,
+      ),
+    ],
+    [
+      "推进中专项",
+      formatInteger(
+        new Set(sessions.map((session) => session.projectLabel)).size,
+      ),
+    ],
+    [
+      "已归档产物",
+      formatInteger(
+        sessions.reduce((sum, session) => sum + session.artifactCount, 0),
+      ),
+    ],
+    ["最常用模型", models[0]?.model || "—"],
+  ];
   return (
-    <div className="h-[76px] rounded-[10px] bg-white/70 px-3 py-2.5">
-      <p className="truncate text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-xl font-extrabold tracking-[-0.03em] text-slate-900">
-        {value}
-      </p>
+    <div className="space-y-5" data-testid="data-overview">
+      <MetricGrid metrics={metrics} />
+      <ActivityHeatmap sessions={sessions} />
+      <SessionTable
+        title="最近 TaskThreads"
+        sessions={sessions.slice(0, 8)}
+        loading={loading}
+      />
     </div>
   );
 }
 
-function OverviewSection({
-  title,
-  children,
+function ModelAnalysis({
+  sessions,
+  loading,
 }: {
-  title: string;
-  children: React.ReactNode;
+  sessions: ServerSession[];
+  loading: boolean;
 }) {
+  const input = sessions.reduce((sum, session) => sum + session.inputTokens, 0);
+  const output = sessions.reduce(
+    (sum, session) => sum + session.outputTokens,
+    0,
+  );
+  const metrics = [
+    ["TaskThreads", formatInteger(sessions.length), MessageSquareText],
+    [
+      "待处理",
+      formatInteger(
+        sessions.filter((session) => session.state !== "completed").length,
+      ),
+      Clock3,
+    ],
+    [
+      "推进中专项",
+      formatInteger(
+        new Set(sessions.map((session) => session.projectLabel)).size,
+      ),
+      Target,
+    ],
+    [
+      "消息",
+      formatInteger(
+        sessions.reduce((sum, session) => sum + session.messageCount, 0),
+      ),
+      Bell,
+    ],
+    ["Tokens", formatTokens(input + output), Layers3],
+    [
+      "Artifact",
+      formatInteger(
+        sessions.reduce((sum, session) => sum + session.artifactCount, 0),
+      ),
+      FileText,
+    ],
+  ] as const;
   return (
-    <section className="rounded-[18px] border border-slate-200/80 bg-white px-[18px] pb-3 pt-4">
-      <h2 className="text-sm font-extrabold text-slate-900">{title}</h2>
-      <div className="mt-3 border-t border-slate-100">{children}</div>
+    <div className="space-y-5" data-testid="model-analysis">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {metrics.map(([label, value, Icon]) => (
+          <div
+            key={label}
+            className="rounded-xl border border-[#e4e8ef] bg-white p-4"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid size-8 place-items-center rounded-lg bg-[#f1f5fb] text-[#1260cc]">
+                <Icon className="size-4.5" />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-[#5e687a]">{label}</p>
+                <p className="mt-1 text-2xl font-bold tracking-tight">
+                  {value}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <TokenTrend sessions={sessions} />
+        <ModelShare sessions={sessions} />
+      </div>
+      <SessionTable
+        title="最近活动"
+        sessions={sessions.slice(0, 8)}
+        loading={loading}
+        showInputOutput
+      />
+    </div>
+  );
+}
+
+function MetricGrid({ metrics }: { metrics: string[][] }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {metrics.map(([label, value]) => (
+        <div
+          key={label}
+          className="min-h-[102px] rounded-xl border border-[#e4e8ef] bg-white p-4"
+        >
+          <p className="text-sm font-semibold text-[#697386]">{label}</p>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-[#17181c]">
+            {value}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActivityHeatmap({ sessions }: { sessions: ServerSession[] }) {
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() - 363);
+  start.setHours(0, 0, 0, 0);
+  const counts = new Map<string, number>();
+  for (const session of sessions) {
+    if (!session.updatedAt) continue;
+    const key = new Date(session.updatedAt).toISOString().slice(0, 10);
+    counts.set(key, (counts.get(key) ?? 0) + Math.max(1, session.messageCount));
+  }
+  const max = Math.max(1, ...counts.values());
+  const days = Array.from({ length: 364 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const count = counts.get(date.toISOString().slice(0, 10)) ?? 0;
+    return {
+      date,
+      count,
+      level: count ? Math.max(1, Math.ceil((count / max) * 4)) : 0,
+    };
+  });
+  const months = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
+    return `${date.getMonth() + 1}月`;
+  });
+  return (
+    <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white px-4 py-4 lg:px-5">
+      <div className="ml-12 grid grid-cols-12 gap-1 text-center text-xs font-medium text-[#697386]">
+        {months.map((month, index) => (
+          <span key={`${month}-${index}`}>{month}</span>
+        ))}
+      </div>
+      <div className="mt-3 flex min-w-[900px] gap-3 overflow-hidden">
+        <div className="flex h-[116px] w-9 shrink-0 flex-col justify-around text-xs text-[#697386]">
+          <span>Mon</span>
+          <span>Wed</span>
+          <span>Fri</span>
+        </div>
+        <div className="grid flex-1 grid-flow-col grid-rows-7 gap-[4px]">
+          {days.map(({ date, level }) => (
+            <span
+              key={date.toISOString()}
+              title={date.toLocaleDateString("zh-CN")}
+              className={cn(
+                "aspect-square min-h-[11px] rounded-[3px]",
+                level === 0 && "bg-[#edf1f6]",
+                level === 1 && "bg-[#c8dafa]",
+                level === 2 && "bg-[#8eb3ef]",
+                level === 3 && "bg-[#4c86dd]",
+                level === 4 && "bg-[#185fc6]",
+              )}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mt-4 flex items-center text-xs text-[#697386]">
+        <span className="font-medium text-[#1260cc]">了解我们如何统计贡献</span>
+        <span className="ml-auto">Less</span>
+        <div className="mx-2 flex gap-1">
+          {["#edf1f6", "#c8dafa", "#8eb3ef", "#4c86dd", "#185fc6"].map(
+            (color) => (
+              <span
+                key={color}
+                className="size-3 rounded-[3px]"
+                style={{ backgroundColor: color }}
+              />
+            ),
+          )}
+        </div>
+        <span>More</span>
+      </div>
     </section>
   );
 }
 
-function OverviewLoading() {
+function TokenTrend({ sessions }: { sessions: ServerSession[] }) {
+  const now = new Date();
+  const months = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - 11 + index, 1);
+    return {
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      label: `${date.getMonth() + 1}月`,
+      input: 0,
+      output: 0,
+    };
+  });
+  for (const session of sessions) {
+    if (!session.updatedAt) continue;
+    const date = new Date(session.updatedAt);
+    const bucket = months.find(
+      (month) => month.key === `${date.getFullYear()}-${date.getMonth()}`,
+    );
+    if (bucket) {
+      bucket.input += session.inputTokens;
+      bucket.output += session.outputTokens;
+    }
+  }
+  const max = Math.max(1, ...months.map((month) => month.input + month.output));
   return (
-    <div className="flex min-h-44 items-center justify-center text-sm font-medium text-slate-400">
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      正在读取工作台数据…
-    </div>
+    <AnalyticsCard title="Tokens 使用趋势（按月）">
+      <div className="flex h-[290px] items-end gap-3 border-b border-[#e7ebf1] px-2 pt-5">
+        {months.map((month) => {
+          const inputHeight = Math.max(2, (month.input / max) * 220);
+          const outputHeight = Math.max(2, (month.output / max) * 220);
+          return (
+            <div
+              key={month.key}
+              className="flex min-w-0 flex-1 flex-col items-center justify-end"
+            >
+              <div
+                className="w-full max-w-6 rounded-t bg-[#9fc1f2]"
+                style={{ height: outputHeight }}
+              />
+              <div
+                className="w-full max-w-6 bg-[#2f73d7]"
+                style={{ height: inputHeight }}
+              />
+              <span className="mt-2 text-[11px] text-[#697386]">
+                {month.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4 flex gap-6 text-xs text-[#5e687a]">
+        <Legend color="#2f73d7" label="输入 Tokens" />
+        <Legend color="#9fc1f2" label="输出 Tokens" />
+      </div>
+    </AnalyticsCard>
   );
 }
 
-function OverviewEmpty({
-  icon: Icon,
+function ModelShare({ sessions }: { sessions: ServerSession[] }) {
+  const models = modelSummaries(sessions).slice(0, 6);
+  const colors = [
+    "#155cc6",
+    "#3477dc",
+    "#5d91e2",
+    "#88abe7",
+    "#aac6ef",
+    "#d2e1f6",
+  ];
+  return (
+    <AnalyticsCard title="模型使用份额（全部）">
+      <div className="grid grid-cols-[1.5fr_1fr_1fr_.7fr] border-b border-[#e7ebf1] pb-3 text-xs font-semibold text-[#697386]">
+        <span>模型</span>
+        <span>输入</span>
+        <span>输出</span>
+        <span className="text-right">占比</span>
+      </div>
+      {models.length ? (
+        <div className="divide-y divide-[#edf0f4]">
+          {models.map((model, index) => (
+            <div
+              key={model.model}
+              className="grid grid-cols-[1.5fr_1fr_1fr_.7fr] items-center py-4 text-sm"
+            >
+              <span className="flex min-w-0 items-center gap-3 font-medium">
+                <i
+                  className="size-3 shrink-0 rounded-[3px]"
+                  style={{ backgroundColor: colors[index] }}
+                />
+                <span className="truncate">{model.model}</span>
+              </span>
+              <span className="text-[#586174]">
+                {formatTokens(model.input)}
+              </span>
+              <span className="text-[#586174]">
+                {formatTokens(model.output)}
+              </span>
+              <span className="text-right font-medium">
+                {(model.share * 100).toFixed(1)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyData label="暂无模型用量数据" />
+      )}
+    </AnalyticsCard>
+  );
+}
+
+function AnalyticsCard({
   title,
-  subtitle,
+  children,
 }: {
-  icon: typeof CheckCircle2;
   title: string;
-  subtitle: string;
+  children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-44 flex-col items-center justify-center px-6 text-center">
-      <Icon className="h-8 w-8 text-slate-400" strokeWidth={1.8} />
-      <p className="mt-3 text-sm font-bold text-slate-700">{title}</p>
-      <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+    <section className="rounded-xl border border-[#e4e8ef] bg-white p-5">
+      <h2 className="text-[17px] font-bold">{title}</h2>
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+function Legend({ color, label }: { color: string; label: string }) {
+  return (
+    <span className="flex items-center gap-2">
+      <i className="size-3 rounded-[3px]" style={{ backgroundColor: color }} />
+      {label}
+    </span>
+  );
+}
+
+function SessionTable({
+  title,
+  sessions,
+  loading,
+  showInputOutput = false,
+}: {
+  title: string;
+  sessions: ServerSession[];
+  loading: boolean;
+  showInputOutput?: boolean;
+}) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white">
+      <h2 className="px-5 py-4 text-[17px] font-bold">{title}</h2>
+      <div className="overflow-x-auto border-t border-[#e7ebf1]">
+        <table className="w-full min-w-[1040px] table-fixed text-left text-sm">
+          <thead className="bg-[#fafbfc] text-xs font-semibold text-[#697386]">
+            <tr>
+              <th className="w-[110px] px-5 py-3">状态</th>
+              <th className="w-[270px] px-3 py-3">TaskThread</th>
+              <th className="w-[160px] px-3 py-3">专项</th>
+              <th className="w-[130px] px-3 py-3">模型</th>
+              <th className="w-[180px] px-3 py-3">
+                {showInputOutput ? "Tokens（输入 / 输出）" : "Tokens"}
+              </th>
+              <th className="w-[90px] px-3 py-3">Artifact</th>
+              <th className="w-[180px] px-3 py-3">最近更新</th>
+              <th className="w-[80px] px-3 py-3">操作</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#edf0f4]">
+            {sessions.map((session) => (
+              <tr
+                key={`${session.namespaceId}-${session.sessionId}`}
+                className="transition-colors hover:bg-[#fafcff]"
+              >
+                <td className="px-5 py-3">
+                  <Status state={session.state} />
+                </td>
+                <td className="px-3 py-3">
+                  <p className="truncate font-semibold">{session.title}</p>
+                  <p className="mt-0.5 truncate text-xs text-[#7b8494]">
+                    {session.sessionId}
+                  </p>
+                </td>
+                <td className="truncate px-3 py-3 text-[#586174]">
+                  {session.projectLabel}
+                </td>
+                <td className="truncate px-3 py-3 text-[#586174]">
+                  {session.model || "—"}
+                </td>
+                <td className="px-3 py-3 text-[#586174]">
+                  {showInputOutput
+                    ? `${formatTokens(session.inputTokens)} / ${formatTokens(session.outputTokens)}`
+                    : formatTokens(session.inputTokens + session.outputTokens)}
+                </td>
+                <td className="px-3 py-3 text-[#586174]">
+                  {formatInteger(session.artifactCount)}
+                </td>
+                <td className="px-3 py-3 text-[#586174]">
+                  {formatDate(session.updatedAt)}
+                </td>
+                <td className="px-3 py-3">
+                  <Link
+                    href={`/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`}
+                    className="rounded-lg border border-[#dce2ea] px-3 py-1.5 text-xs font-semibold hover:bg-[#f6f8fb]"
+                  >
+                    查看
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {loading ? <EmptyData label="正在读取服务端数据…" /> : null}
+        {!loading && !sessions.length ? (
+          <EmptyData label="暂无服务端会话" />
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function SessionDetail({
+  title,
+  subtitle,
+  sessions,
+  loading,
+}: {
+  title: string;
+  subtitle: string;
+  sessions: ServerSession[];
+  loading: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">{title}</h1>
+        <p className="mt-1 text-sm text-[#697386]">{subtitle}</p>
+      </div>
+      <SessionTable
+        title="全部记录"
+        sessions={sessions}
+        loading={loading}
+        showInputOutput
+      />
     </div>
   );
 }
 
-function TaskRow({ item }: { item: WorkbenchItem }) {
+function ProjectsDetail({
+  sessions,
+  loading,
+}: {
+  sessions: ServerSession[];
+  loading: boolean;
+}) {
+  const projects = [
+    ...new Set(sessions.map((session) => session.projectLabel)),
+  ];
   return (
-    <Link
-      href={`/ai-workspace/conversation/${encodeURIComponent(item.sessionKey)}`}
-      className="flex items-center gap-3 py-3 transition hover:bg-slate-50/80"
-    >
-      <CheckCircle2 className="h-4 w-4 shrink-0 text-blue-600" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold text-slate-800">
-          {item.title}
-        </span>
-        <span className="mt-0.5 block truncate text-xs text-slate-500">
-          {item.preview}
-        </span>
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
-    </Link>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">项目 / 专项</h1>
+        <p className="mt-1 text-sm text-[#697386]">
+          按服务端工作目录聚合 TaskThread 与 Artifact
+        </p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {projects.map((project) => {
+          const items = sessions.filter(
+            (session) => session.projectLabel === project,
+          );
+          return (
+            <div
+              key={project}
+              className="rounded-xl border border-[#e4e8ef] bg-white p-5"
+            >
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc]">
+                  <Archive className="size-4.5" />
+                </span>
+                <h2 className="truncate font-bold">{project}</h2>
+              </div>
+              <p className="mt-4 text-sm text-[#697386]">
+                {items.length} 个工作项 ·{" "}
+                {items.reduce((sum, item) => sum + item.artifactCount, 0)}{" "}
+                个产物
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      {loading ? <EmptyData label="正在读取服务端数据…" /> : null}
+      {!loading && !projects.length ? <EmptyData label="暂无专项" /> : null}
+    </div>
   );
 }
 
-function ProjectRow({ project }: { project: WorkbenchProject }) {
+function InboxDetail({
+  sessions,
+  loading,
+}: {
+  sessions: ServerSession[];
+  loading: boolean;
+}) {
+  const artifacts = sessions.flatMap((session) =>
+    session.artifactPaths.map((path) => ({ path, session })),
+  );
   return (
-    <Link
-      href="/ai-workspace/tasks"
-      className="flex items-center gap-3 py-3 transition hover:bg-slate-50/80"
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold">收件箱</h1>
+        <p className="mt-1 text-sm text-[#697386]">服务端归档产物与最近记录</p>
+      </div>
+      <section className="divide-y divide-[#edf0f4] rounded-xl border border-[#e4e8ef] bg-white">
+        {artifacts.map(({ path, session }) => (
+          <Link
+            key={`${session.sessionId}-${path}`}
+            href={`/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`}
+            className="flex items-center gap-3 px-5 py-4 hover:bg-[#fafcff]"
+          >
+            <FileText className="size-5 text-[#1260cc]" />
+            <span className="min-w-0 flex-1">
+              <strong className="block truncate text-sm">
+                {path.split("/").at(-1)}
+              </strong>
+              <span className="mt-1 block truncate text-xs text-[#697386]">
+                {session.title} · {path}
+              </span>
+            </span>
+          </Link>
+        ))}
+        {loading ? <EmptyData label="正在读取服务端数据…" /> : null}
+        {!loading && !artifacts.length ? (
+          <EmptyData label="暂无归档产物" />
+        ) : null}
+      </section>
+    </div>
+  );
+}
+
+function Status({ state }: { state: SessionState }) {
+  const visual = {
+    running: ["进行中", "bg-[#25a244]", "text-[#217a37]"],
+    waiting: ["等待中", "bg-[#e6a817]", "text-[#936700]"],
+    completed: ["已完成", "bg-[#1769d2]", "text-[#1260cc]"],
+    cancelled: ["已取消", "bg-[#a8afb9]", "text-[#697386]"],
+  }[state];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 text-xs font-semibold",
+        visual[2],
+      )}
     >
-      <FolderOpen className="h-4 w-4 shrink-0 text-blue-600" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold text-slate-800">
-          {project.label}
-        </span>
-        <span className="mt-0.5 block text-xs text-slate-500">
-          {project.items.length} 个 TaskThread · {project.artifactCount} 个
-          Artifact
-        </span>
-      </span>
-      <span className="text-xs font-bold text-blue-700">
-        {project.progress}%
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
-    </Link>
+      <i className={cn("size-2 rounded-full", visual[1])} />
+      {visual[0]}
+    </span>
+  );
+}
+
+function EmptyData({ label }: { label: string }) {
+  return (
+    <div className="grid min-h-32 place-items-center px-5 text-sm text-[#8a93a2]">
+      {label}
+    </div>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div
+      role="alert"
+      className="mb-4 rounded-xl border border-[#f0d5d2] bg-[#fff8f7] px-4 py-3 text-sm text-[#a54841]"
+    >
+      {message}
+    </div>
   );
 }
