@@ -12,10 +12,16 @@ test.describe("Marketing homepage experience", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "把 AI 对话 变成可交付的工作结果",
+        name: "开放的 AI 工作空间",
       }),
     ).toBeVisible();
+    await expect(
+      page.getByText("连接一切，编排一切，交付一切，从想法到产物，在一个 Workspace 完成！"),
+    ).toBeVisible();
     await expect(page.getByText("聊天很强，交付仍难")).toBeVisible();
+    await expect(page.getByRole("img", { name: "OpenClaw" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Hermes Agent" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Codex" })).toHaveCount(0);
     await expect(
       page.getByRole("heading", { level: 3, name: "把工作计划清楚" }),
     ).toBeVisible();
@@ -53,10 +59,18 @@ test.describe("Marketing homepage experience", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Turn AI conversations into work you can deliver",
+        name: "An open AI workspace",
       }),
     ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Connect everything, Orchestrate everything, Deliver everything, From idea to artifact, in one Workspace!",
+      ),
+    ).toBeVisible();
     await expect(page.getByText("Chat is powerful. Delivery is still hard.")).toBeVisible();
+    await expect(page.getByRole("img", { name: "OpenClaw" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Hermes Agent" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Codex" })).toHaveCount(0);
     await expect(
       page.getByRole("heading", { level: 3, name: "Make the work clear" }),
     ).toBeVisible();

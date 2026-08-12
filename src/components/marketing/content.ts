@@ -32,6 +32,7 @@ export type HomeMarketingContent = {
     eyebrow: string;
     logoLabel: string;
     title: string[];
+    line: string;
     subtitle: string;
     trialNote: string;
     primaryCta: { label: string; href: string };
