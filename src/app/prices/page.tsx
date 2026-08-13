@@ -67,18 +67,22 @@ function useXconnectCards(
         key: "xconnect-free",
         name: isChinese ? "Free 体验版" : "Free",
         price: isChinese ? "¥0" : "$0",
+        // The trial is TRIAL-7D in billing_plans: 5GB over 7 days, then the
+        // quota is spent and traffic stops. It does not fall back to VPS
+        // traffic — saying so here would promise capacity that no longer
+        // exists once the window closes.
         description: isChinese
-          ? "登录即可体验：高速流量每周 1 小时，用完自动降级为标准 VPS 流量，不断线。"
-          : "Sign in and try it: 1 hour of accelerated traffic per week, then a seamless fallback to standard VPS traffic.",
+          ? "登录即开通 7 天试用：5GB 高速流量。用完或到期后停止服务，届时可订阅 Pro 或充值继续使用。"
+          : "Sign in to start a 7-day trial with 5GB of accelerated traffic. Service stops when the quota or the window runs out; subscribe to Pro or top up to continue.",
         features: isChinese
           ? [
-              "每周 1 小时高速流量，用完降级 VPS",
-              "Demo 资源卡片：每天 1 次、每次 1 小时",
+              "7 天内 5GB 高速流量",
+              "用完或到期即停止服务，不自动续期",
               "不承诺 SLA，不提供多端会话持久化",
             ]
           : [
-              "1 hour of accelerated traffic per week, then VPS fallback",
-              "Demo resource card: 1 run/day, 1 hour/run",
+              "5GB of accelerated traffic within 7 days",
+              "Service stops when the quota or window runs out; no auto-renewal",
               "No SLA, no persisted multi-device sessions",
             ],
         button: isChinese ? "免费开始" : "Start for free",
