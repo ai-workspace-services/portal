@@ -92,8 +92,7 @@ RUN apt-get update \
 COPY . .
 RUN find . -name "package-lock.json" -delete
 RUN yarn install --immutable && \
-    yarn prebuild && \
-    yarn next build
+    yarn build
 
 # -------------------------------------------------------
 # Stage 2 — Runtime (极致瘦身)

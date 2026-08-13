@@ -3,19 +3,23 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "${SCRIPT_DIR}/.." && pwd)
-CONTENT_DIR="${REPO_ROOT}/src/content"
-REMOTE_REPO="${CONTENT_REMOTE_REPO:-}"
-REMOTE_BRANCH="${CONTENT_REMOTE_BRANCH:-main}"
-REMOTE_SUBDIR="${CONTENT_REMOTE_SUBDIR:-content}"
+CONTENT_DIR="${CONTENT_LOCAL_DIR:-${REPO_ROOT}/src/content}"
+REMOTE_REPO="${WEBSITE_CONTENT_REPOSITORY:-${CONTENT_REMOTE_REPO:-}}"
+REMOTE_BRANCH="${WEBSITE_CONTENT_REF:-${CONTENT_REMOTE_BRANCH:-main}}"
+REMOTE_SUBDIR="${WEBSITE_CONTENT_SUBDIR:-${CONTENT_REMOTE_SUBDIR:-content/website}}"
 
 usage() {
   cat <<USAGE
 Usage: $(basename "$0") <push|pull>
 
 Environment variables:
-  CONTENT_REMOTE_REPO   Git URL or local path of the external content repository (required)
-  CONTENT_REMOTE_BRANCH Branch to sync (default: main)
-  CONTENT_REMOTE_SUBDIR Subdirectory inside the external repo to mirror content/ (default: content)
+  WEBSITE_CONTENT_REPOSITORY Git URL or local path of the Git-backed CMS repository (required)
+  WEBSITE_CONTENT_REF        Branch, tag, or commit ref to sync (default: main)
+  WEBSITE_CONTENT_SUBDIR     Directory inside the CMS repository (default: content/website)
+  CONTENT_LOCAL_DIR          Local target directory (default: src/content)
+
+  CONTENT_REMOTE_REPO, CONTENT_REMOTE_BRANCH, and CONTENT_REMOTE_SUBDIR are
+  supported as legacy aliases for the WEBSITE_CONTENT_* variables.
   GIT_AUTHOR_NAME       Author name used for commits when pushing (default: Content Sync Bot)
   GIT_AUTHOR_EMAIL      Author email used for commits when pushing (default: content-sync@example.com)
 USAGE
@@ -29,12 +33,17 @@ fi
 MODE="$1"
 
 if [[ -z "${REMOTE_REPO}" ]]; then
-  echo "CONTENT_REMOTE_REPO is required" >&2
+  echo "WEBSITE_CONTENT_REPOSITORY is required" >&2
   exit 1
 fi
 
 if [[ ! -d "${CONTENT_DIR}" ]]; then
   echo "Content directory not found: ${CONTENT_DIR}" >&2
+  exit 1
+fi
+
+if [[ "${REMOTE_SUBDIR}" == /* || "${REMOTE_SUBDIR}" == *".."* ]]; then
+  echo "WEBSITE_CONTENT_SUBDIR must be a relative path inside the CMS repository" >&2
   exit 1
 fi
 
@@ -69,6 +78,10 @@ sync_pull() {
   clone_repo
   if [[ ! -d "${TMP_DIR}/repo/${REMOTE_SUBDIR}" ]]; then
     echo "Remote repository does not contain ${REMOTE_SUBDIR}" >&2
+    exit 1
+  fi
+  if [[ ! -f "${TMP_DIR}/repo/${REMOTE_SUBDIR}/content-manifest.yaml" ]]; then
+    echo "CMS source is missing ${REMOTE_SUBDIR}/content-manifest.yaml" >&2
     exit 1
   fi
   rsync -a --delete "${TMP_DIR}/repo/${REMOTE_SUBDIR}/" "${CONTENT_DIR}/"

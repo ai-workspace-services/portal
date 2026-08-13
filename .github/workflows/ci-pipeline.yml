@@ -101,6 +101,12 @@ jobs:
     needs: prep
     env:
       NEXT_PUBLIC_RUNTIME_ENVIRONMENT: ${{ needs.prep.outputs.deployment_environment }}
+      # Generic Git backend CMS configuration. These are repository variables,
+      # not GitHub API integrations: any Git URL reachable by the runner works.
+      WEBSITE_CONTENT_REPOSITORY: ${{ vars.WEBSITE_CONTENT_REPOSITORY || 'https://github.com/haitaopanhq/knowledge.git' }}
+      WEBSITE_CONTENT_REF: ${{ vars.WEBSITE_CONTENT_REF || 'main' }}
+      WEBSITE_CONTENT_SUBDIR: ${{ vars.WEBSITE_CONTENT_SUBDIR || 'content/website' }}
+      REQUIRE_EXTERNAL_WEBSITE_CONTENT: "true"
     outputs:
       image_ref: ${{ steps.publish.outputs.image_ref }}
       image_tag: ${{ steps.publish.outputs.image_tag }}
