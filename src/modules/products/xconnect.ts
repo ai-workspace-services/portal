@@ -1,4 +1,4 @@
-import { readPublicStripePrice, type ProductConfig } from "./registry";
+import { type ProductConfig } from "./registry";
 
 const xconnect: ProductConfig = {
   slug: "xconnect",
@@ -48,33 +48,6 @@ const xconnect: ProductConfig = {
         href: "/panel/subscription/",
       },
     ],
-  },
-  billing: {
-    paygo: {
-      name: "XConnect 流量包",
-      description: "按量购买连接与加速能力，适合弹性增长。",
-      price: 19,
-      currency: "USD",
-      mode: "payment",
-      planId: "XCONNECT-PAYGO",
-      stripePriceId: readPublicStripePrice(
-        "NEXT_PUBLIC_STRIPE_PRICE_XCONNECT_PAYGO",
-      ),
-      meta: { tier: "usage", product: "xconnect" },
-    },
-    saas: {
-      name: "XConnect Pro",
-      description: "包含 AI 工作空间连接、加速与实时观测的订阅计划。",
-      price: 49,
-      currency: "USD",
-      interval: "month",
-      mode: "subscription",
-      planId: "XCONNECT-SUBSCRIPTION",
-      stripePriceId: readPublicStripePrice(
-        "NEXT_PUBLIC_STRIPE_PRICE_XCONNECT_SUBSCRIPTION",
-      ),
-      meta: { tier: "pro", product: "xconnect" },
-    },
   },
 };
 

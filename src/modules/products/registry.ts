@@ -31,30 +31,11 @@ export type ProductConfig = {
   videosUrl: string;
   downloadUrl: string;
   editions: Editions;
-  billing?: {
-    paygo?: BillingPlan;
-    saas?: BillingPlan;
-  };
 };
 
 export type StripeBillingMode = "payment" | "subscription";
 
-export type BillingPlan = {
-  name: string;
-  description?: string;
-  price: number;
-  currency: string;
-  interval?: string;
-  planId?: string;
-  stripePriceId?: string;
-  mode: StripeBillingMode;
-  meta?: Record<string, unknown>;
-};
 
-export function readPublicStripePrice(key: string): string {
-  const value = process.env[key];
-  return typeof value === "string" ? value.trim() : "";
-}
 
 export const PRODUCT_LIST: ProductConfig[] = [xconnect, xscopehub, xcloudflow];
 
