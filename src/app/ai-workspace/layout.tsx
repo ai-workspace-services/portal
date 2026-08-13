@@ -1,11 +1,23 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import Sidebar from "@/components/ai-workspace/Sidebar";
 
 export default function AiWorkspaceLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <AiWorkspaceLayoutContent>{children}</AiWorkspaceLayoutContent>
+    </Suspense>
+  );
+}
+
+function AiWorkspaceLayoutContent({
   children,
 }: {
   children: React.ReactNode;
