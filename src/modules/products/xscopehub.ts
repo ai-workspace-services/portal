@@ -1,4 +1,4 @@
-import { readPublicStripePrice, type ProductConfig } from "./registry";
+import { type ProductConfig } from "./registry";
 
 const xscopehub: ProductConfig = {
   slug: "xscopehub",
@@ -50,33 +50,6 @@ const xscopehub: ProductConfig = {
         external: true,
       },
     ],
-  },
-  billing: {
-    paygo: {
-      name: "ScopeHub 数据查询包",
-      description: "按查询量或指标卡点购买，灵活接入。",
-      price: 15,
-      currency: "USD",
-      mode: "payment",
-      planId: "XSCOPEHUB-PAYGO",
-      stripePriceId: readPublicStripePrice(
-        "NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_PAYGO",
-      ),
-      meta: { tier: "usage", product: "xscopehub" },
-    },
-    saas: {
-      name: "ScopeHub SaaS",
-      description: "订阅可视化观测、看板与告警服务。",
-      price: 39,
-      currency: "USD",
-      interval: "month",
-      mode: "subscription",
-      planId: "XSCOPEHUB-SUBSCRIPTION",
-      stripePriceId: readPublicStripePrice(
-        "NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_SUBSCRIPTION",
-      ),
-      meta: { tier: "growth", product: "xscopehub" },
-    },
   },
 };
 

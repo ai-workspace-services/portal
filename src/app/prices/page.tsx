@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, Suspense } from "react";
+import React, { useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { Check, Shield } from "lucide-react";
 
@@ -9,7 +9,20 @@ import { startStripeCheckout } from "@components/billing/stripe-client";
 import Footer from "../../components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { useLanguage } from "../../i18n/LanguageProvider";
-import { type BillingPlan } from "@modules/products/registry";
+import {
+  formatPlanPrice,
+  isPurchasable,
+  PLAN_COPY,
+  useBillingCatalog,
+  XCONNECT_PRODUCT_SLUG,
+  type CatalogPlan,
+} from "@modules/billing/catalog";
+
+type CardBillingPlan = {
+  planId: string;
+  mode: "payment" | "subscription";
+  stripePriceId: string;
+};
 
 type PricingCard = {
   key: string;
@@ -22,60 +35,32 @@ type PricingCard = {
   button: string;
   highlight?: boolean;
   href?: string;
-  billingPlan?: BillingPlan;
+  billingPlan?: CardBillingPlan;
 };
 
-// Mirrors accounts' billingPlanPayload (api/billing_plans.go). Only the
-// fields this page actually reads.
-type CatalogPlan = {
-  planId: string;
-  stripePriceId?: string;
-  active: boolean;
-};
-
-// XConnect is the marketing name for the same product this catalog prices —
-// billing_plans is the live source of truth (seeded via the admin API,
-// checked out through the same Stripe wiring xscopehub/xcloudflow already
-// use). The static price/feature copy below is display text; the only
-// values read live are stripePriceId and active, so the buttons never
-// offer to check out a plan that isn't actually purchasable yet.
-const XCONNECT_PRODUCT_SLUG = "xconnect";
-
-function useBillingCatalog(): Map<string, CatalogPlan> {
-  const [catalog, setCatalog] = useState<Map<string, CatalogPlan>>(new Map());
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/billing/plans", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : { plans: [] }))
-      .then((data: { plans?: CatalogPlan[] }) => {
-        if (cancelled) return;
-        setCatalog(
-          new Map((data.plans ?? []).map((plan) => [plan.planId, plan])),
-        );
-      })
-      .catch(() => {
-        // Catalog stays empty; cards below fall back to "coming soon".
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return catalog;
-}
-
+// billing_plans is the live source of truth for what is purchasable; the
+// display copy lives in @modules/billing/catalog so this page and the user
+// center quote the same numbers for the same planId.
 function useXconnectCards(
   isChinese: boolean,
   catalog: Map<string, CatalogPlan>,
 ): PricingCard[] {
   return useMemo(() => {
-    const purchasable = (planId: string) => {
-      const plan = catalog.get(planId);
-      return Boolean(plan?.active && plan.stripePriceId);
-    };
+    const purchasable = (planId: string) => isPurchasable(catalog.get(planId));
     const priceIdOf = (planId: string) =>
       catalog.get(planId)?.stripePriceId ?? "";
+    // Copy comes from the shared module, the amount from the catalog. A plan
+    // with no published price reads as "coming soon" rather than borrowing a
+    // number the catalog does not carry.
+    const copyOf = (planId: string) => {
+      const copy = isChinese ? PLAN_COPY[planId].zh : PLAN_COPY[planId].en;
+      const price = formatPlanPrice(catalog.get(planId), isChinese ? "zh" : "en");
+      return {
+        ...copy,
+        price: price?.amount ?? (isChinese ? "即将上线" : "Coming soon"),
+        period: price?.period || undefined,
+      };
+    };
 
     const cards: PricingCard[] = [
       {
@@ -124,25 +109,7 @@ function useXconnectCards(
       {
         key: "xconnect-pro-monthly",
         productSlug: XCONNECT_PRODUCT_SLUG,
-        name: isChinese ? "Pro 订阅（月付）" : "Pro (Monthly)",
-        price: isChinese ? "¥20" : "$3",
-        period: isChinese ? "/月" : "/month",
-        description: isChinese
-          ? "每月赠送 20GB 高速流量，超出部分按 ¥1/GB 自动计费。"
-          : "20GB of accelerated traffic every month; overage auto-bills at $0.15/GB.",
-        features: isChinese
-          ? [
-              "每月 20GB 高速流量",
-              "超出部分 ¥1/GB 自动计费",
-              "资源卡片明码实价 + 20% 托管费",
-              "14 天欠费宽限期",
-            ]
-          : [
-              "20GB accelerated traffic per month",
-              "Overage auto-billed at $0.15/GB",
-              "Resource cards at list price + 20% managed fee",
-              "14-day grace period on payment failure",
-            ],
+        ...copyOf("PRO-MONTHLY"),
         highlight: true,
         button: purchasable("PRO-MONTHLY")
           ? isChinese
@@ -152,9 +119,6 @@ function useXconnectCards(
             ? "即将上线"
             : "Coming soon",
         billingPlan: {
-          name: "Pro Monthly",
-          price: 20,
-          currency: "CNY",
           mode: "subscription",
           planId: "PRO-MONTHLY",
           stripePriceId: priceIdOf("PRO-MONTHLY"),
@@ -163,25 +127,7 @@ function useXconnectCards(
       {
         key: "xconnect-pro-yearly",
         productSlug: XCONNECT_PRODUCT_SLUG,
-        name: isChinese ? "Pro 订阅（年付）" : "Pro (Yearly)",
-        price: isChinese ? "¥200" : "$28",
-        period: isChinese ? "/年" : "/year",
-        description: isChinese
-          ? "每个自然月赠送 20GB 高速流量（全年共 240GB），比月付省 ¥40。"
-          : "20GB of accelerated traffic every calendar month (240GB/year) — save $8 versus monthly billing.",
-        features: isChinese
-          ? [
-              "每自然月 20GB 高速流量，全年 240GB",
-              "超出部分 ¥1/GB 自动计费",
-              "资源卡片明码实价 + 20% 托管费",
-              "比月付省 ¥40/年",
-            ]
-          : [
-              "20GB accelerated traffic per calendar month, 240GB/year",
-              "Overage auto-billed at $0.15/GB",
-              "Resource cards at list price + 20% managed fee",
-              "Save $8/year versus monthly billing",
-            ],
+        ...copyOf("PRO-YEARLY"),
         button: purchasable("PRO-YEARLY")
           ? isChinese
             ? "使用 Stripe 订阅"
@@ -190,9 +136,6 @@ function useXconnectCards(
             ? "即将上线"
             : "Coming soon",
         billingPlan: {
-          name: "Pro Yearly",
-          price: 200,
-          currency: "CNY",
           mode: "subscription",
           planId: "PRO-YEARLY",
           stripePriceId: priceIdOf("PRO-YEARLY"),
