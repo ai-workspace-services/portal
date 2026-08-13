@@ -17,10 +17,14 @@ content/website/
 └── about/
 ```
 
-The current backend is maintained under the `gitops` workspace at
+The default backend is `https://github.com/haitaopanhq/knowledge.git`, under
 `content/website`. Portal copies that directory to `src/content` in its
 isolated build workspace, validates the contract, then generates the typed
 content artifacts consumed by the homepage.
+
+`/docs` and `/blogs` are served through the existing docs-service proxy. Their
+source remains the `ai-workspace-services/docs` service; the website CMS only
+owns the static marketing content embedded into the Portal build.
 
 ## Local workflow
 
@@ -28,7 +32,7 @@ Point Portal at any local path or Git URL. The Git host is not part of the
 contract.
 
 ```bash
-export WEBSITE_CONTENT_REPOSITORY=/Users/shenlan/workspaces/gitops
+export WEBSITE_CONTENT_REPOSITORY=https://github.com/haitaopanhq/knowledge.git
 export WEBSITE_CONTENT_REF=main
 export WEBSITE_CONTENT_SUBDIR=content/website
 
@@ -48,8 +52,8 @@ content snapshot.
 
 ## CI contract
 
-Any CI runner must set the following environment variables before building the
-Portal image:
+The Portal workflow defaults to the repository above. Any CI runner can
+override it with the following environment variables before building the image:
 
 | Variable | Meaning |
 | --- | --- |
