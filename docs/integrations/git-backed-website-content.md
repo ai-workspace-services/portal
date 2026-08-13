@@ -22,9 +22,16 @@ The default backend is `https://github.com/haitaopanhq/knowledge.git`, under
 isolated build workspace, validates the contract, then generates the typed
 content artifacts consumed by the homepage.
 
-`/docs` and `/blogs` are served through the existing docs-service proxy. Their
-source remains the `ai-workspace-services/docs` service; the website CMS only
-owns the static marketing content embedded into the Portal build.
+`knowledge.git` is the canonical content source for the product surface:
+
+- `content/website/` supplies the homepage and static product marketing copy
+  embedded into the Portal build.
+- `docs/` supplies product documentation through the docs service.
+- `content/` supplies product technical blogs through the docs service.
+
+Portal's `/docs` and `/blogs` routes remain proxied to the existing docs
+service. This keeps the web application thin while every content change still
+follows the same Git PR and release workflow in `knowledge.git`.
 
 ## Local workflow
 
