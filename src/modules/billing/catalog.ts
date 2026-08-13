@@ -51,7 +51,7 @@ export const PLAN_COPY: Record<string, PlanCopyEntry> = {
   "PAYG-TOPUP-50": {
     mode: "payment",
     zh: {
-      name: "余额充值",
+      name: "余额充值 ¥50",
       description:
         "为按量付费账户充值 ¥50，高速流量按 ¥1/GB 从余额扣减。到账后可在下方流水核对。",
       features: [
@@ -61,9 +61,55 @@ export const PLAN_COPY: Record<string, PlanCopyEntry> = {
       ],
     },
     en: {
-      name: "Balance top-up",
+      name: "Balance top-up $7",
       description:
         "Add $7 to a pay-as-you-go balance. Accelerated traffic draws down at $0.15/GB. Check the ledger below once it lands.",
+      features: [
+        "Accelerated traffic at $0.15/GB",
+        "Credited immediately and recorded in the ledger",
+        "Suspended on zero balance, restored on top-up",
+      ],
+    },
+  },
+  "PAYG-TOPUP-100": {
+    mode: "payment",
+    zh: {
+      name: "余额充值 ¥100",
+      description:
+        "为按量付费账户充值 ¥100，高速流量按 ¥1/GB 从余额扣减。到账后可在下方流水核对。",
+      features: [
+        "高速流量 ¥1/GB，按量扣费",
+        "充值即时到账，计入账单流水",
+        "欠费立即停机，充值后自动恢复",
+      ],
+    },
+    en: {
+      name: "Balance top-up $14",
+      description:
+        "Add $14 to a pay-as-you-go balance. Accelerated traffic draws down at $0.15/GB. Check the ledger below once it lands.",
+      features: [
+        "Accelerated traffic at $0.15/GB",
+        "Credited immediately and recorded in the ledger",
+        "Suspended on zero balance, restored on top-up",
+      ],
+    },
+  },
+  "PAYG-TOPUP-500": {
+    mode: "payment",
+    zh: {
+      name: "余额充值 ¥500",
+      description:
+        "为按量付费账户充值 ¥500，高速流量按 ¥1/GB 从余额扣减。到账后可在下方流水核对。",
+      features: [
+        "高速流量 ¥1/GB，按量扣费",
+        "充值即时到账，计入账单流水",
+        "欠费立即停机，充值后自动恢复",
+      ],
+    },
+    en: {
+      name: "Balance top-up $70",
+      description:
+        "Add $70 to a pay-as-you-go balance. Accelerated traffic draws down at $0.15/GB. Check the ledger below once it lands.",
       features: [
         "Accelerated traffic at $0.15/GB",
         "Credited immediately and recorded in the ledger",
@@ -123,7 +169,13 @@ export const PLAN_COPY: Record<string, PlanCopyEntry> = {
 };
 
 /** Order the storefront shows plans in when the catalog omits sortOrder. */
-const SELLABLE_PLAN_ORDER = ["PAYG-TOPUP-50", "PRO-MONTHLY", "PRO-YEARLY"];
+const SELLABLE_PLAN_ORDER = [
+  "PAYG-TOPUP-50",
+  "PAYG-TOPUP-100",
+  "PAYG-TOPUP-500",
+  "PRO-MONTHLY",
+  "PRO-YEARLY",
+];
 
 /**
  * A plan is offerable only when the catalog says it is active AND carries a
