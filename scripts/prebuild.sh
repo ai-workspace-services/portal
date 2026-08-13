@@ -11,15 +11,20 @@ echo "======================================"
 echo "Starting prebuild process..."
 echo "======================================"
 
-# Step 1: Synchronize the Git-backed CMS source when configured.
-if [[ -n "${WEBSITE_CONTENT_REPOSITORY:-${CONTENT_REMOTE_REPO:-}}" ]]; then
+# Step 1: Synchronize the Git-backed CMS source. Portal never keeps the
+# canonical website copy in its checkout. CI synchronizes before `docker
+# build`; local builds pull the default backend when no mirror is present.
+if [[ -n "${WEBSITE_CONTENT_REPOSITORY:-}" ]]; then
   echo ""
   echo "[1/3] Synchronizing Git-backed website content..."
   bash scripts/sync-content.sh pull
-elif [[ ! -f "src/content/content-manifest.yaml" ]]; then
-  echo "Git-backed website content has not been synchronized." >&2
-  echo "Set WEBSITE_CONTENT_REPOSITORY and run: yarn content:pull" >&2
-  exit 1
+elif [[ -f "src/content/content-manifest.yaml" ]]; then
+  echo ""
+  echo "[1/3] Using synchronized Git-backed website content..."
+else
+  echo ""
+  echo "[1/3] Synchronizing default Git-backed website content..."
+  bash scripts/sync-content.sh pull
 fi
 
 # Step 2: Validate the content contract before generating artifacts.

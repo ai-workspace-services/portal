@@ -11,7 +11,6 @@
     "build": "bash scripts/prebuild.sh && next build",
     "build:static": "yarn build",
     "content:pull": "bash scripts/sync-content.sh pull",
-    "content:push": "bash scripts/sync-content.sh push",
     "content:validate": "tsx scripts/validate-website-content.ts",
     "start": "node ./scripts/start.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --no-eslintrc -c .eslintrc.json",
