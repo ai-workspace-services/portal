@@ -8,8 +8,11 @@
   "scripts": {
     "dev": "bash scripts/Dev-MCP-Server.sh && next dev --turbo",
     "prebuild": "bash scripts/prebuild.sh",
-    "build": "next build",
-    "build:static": "npm run prebuild && next build",
+    "build": "bash scripts/prebuild.sh && next build",
+    "build:static": "yarn build",
+    "content:pull": "bash scripts/sync-content.sh pull",
+    "content:push": "bash scripts/sync-content.sh push",
+    "content:validate": "tsx scripts/validate-website-content.ts",
     "start": "node ./scripts/start.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --no-eslintrc -c .eslintrc.json",
     "typecheck": "tsc --noEmit",

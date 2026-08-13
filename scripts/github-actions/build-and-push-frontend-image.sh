@@ -16,6 +16,26 @@ require_env() {
 require_env IMAGE_REF
 require_env CANONICAL_DOMAIN
 
+sync_website_content() {
+  if [[ -z "${WEBSITE_CONTENT_REPOSITORY:-}" ]]; then
+    if [[ "${REQUIRE_EXTERNAL_WEBSITE_CONTENT:-false}" == "true" ]]; then
+      echo "WEBSITE_CONTENT_REPOSITORY is required for this build" >&2
+      exit 1
+    fi
+    echo "Using website content bundled with the Portal checkout"
+    return
+  fi
+
+  echo "Synchronizing website content from the Git backend"
+  (
+    cd "${REPO_ROOT}"
+    bash scripts/sync-content.sh pull
+    npx tsx scripts/validate-website-content.ts
+  )
+}
+
+sync_website_content
+
 BUILD_ARGS_FILE="$(mktemp)"
 trap 'rm -f "${BUILD_ARGS_FILE}"' EXIT
 

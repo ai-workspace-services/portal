@@ -19,7 +19,11 @@ type HeroContent = {
   }>
 }
 
-const CONTENT_ROOT = path.join(process.cwd(), 'src', 'content')
+const CONTENT_ROOT = path.resolve(
+  process.env.WEBSITE_CONTENT_DIR ??
+    process.env.CONTENT_SOURCE_DIR ??
+    path.join(process.cwd(), 'src', 'content')
+)
 const OUTPUT_ROOT = path.join(process.cwd(), 'src', 'data', 'content')
 
 function parseFrontMatter(raw: string): { metadata: Record<string, any> } {
