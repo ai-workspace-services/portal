@@ -64,7 +64,27 @@ When in doubt, follow the skill first and keep the release chain fully auditable
 
 ---
 
-## 3. Repository Mental Model (Read This First)
+## 3. Portal Content Architecture Default Rule
+
+Portal is evolving into a pure Next.js/React frontend. For any static
+user-facing copy, product marketing, documentation, blog, localization, or
+Git-backed content work:
+
+- Treat `skills/portal-frontend-content-boundary/SKILL.md` as the default
+  reference before implementation.
+- Keep Portal responsible for UI, interaction, routing, and proxies only.
+- Use `haitaopanhq/knowledge` as the canonical source for website copy,
+  product documentation, and technical blogs.
+- Keep deployment and runtime business configuration in
+  `ai-workspace-infra/gitops`.
+- Do not add new canonical static copy to Portal components, `src/data`, or
+  localization files. Migrate the touched surface to the content contract.
+- Do not introduce GitHub API, runtime Git content loading, or browser-editor
+  dependencies for content publishing.
+
+---
+
+## 4. Repository Mental Model (Read This First)
 
 This repository has **three clearly separated layers**:
 
@@ -104,7 +124,7 @@ Used for build-time or runtime wiring only.
 
 ---
 
-## 4. Import & Alias Rules (Critical)
+## 5. Import & Alias Rules (Critical)
 
 ### Dashboard code (src/\*\*)
 
@@ -125,7 +145,7 @@ import { UserCard } from "@/components/UserCard";
 
 ---
 
-## 5. TypeScript & Formatting Rules
+## 6. TypeScript & Formatting Rules
 
 - Strict mode enabled
 - Use `type` for type definitions, `interface` for object shapes
@@ -136,7 +156,7 @@ import { UserCard } from "@/components/UserCard";
 
 ---
 
-## 6. Naming Conventions
+## 7. Naming Conventions
 
 - Components: PascalCase (`UserProfile.tsx`)
 - Files: kebab-case for utilities (`user-utils.ts`), PascalCase for components
@@ -146,7 +166,7 @@ import { UserCard } from "@/components/UserCard";
 
 ---
 
-## 7. Error Handling & Logging
+## 8. Error Handling & Logging
 
 - Use try/catch for async operations
 - Return Result types or throw errors consistently
@@ -155,7 +175,7 @@ import { UserCard } from "@/components/UserCard";
 
 ---
 
-## 8. React Patterns
+## 9. React Patterns
 
 - Use `'use client'` directive for client components
 - Prefer function components with hooks
@@ -164,7 +184,7 @@ import { UserCard } from "@/components/UserCard";
 
 ---
 
-## 9. Global State Rules (Dashboard Only)
+## 10. Global State Rules (Dashboard Only)
 
 ✅ Zustand is the **only** allowed global state mechanism
 ❌ React Context for shared/global state is forbidden
@@ -175,7 +195,7 @@ Rule: If state must survive navigation or be shared → it lives in Zustand.
 
 ---
 
-## 10. URL-Synchronized State
+## 11. URL-Synchronized State
 
 Anything involving:
 
@@ -192,7 +212,7 @@ MUST be handled inside Zustand slices.
 
 ---
 
-## 11. Component State Rules
+## 12. Component State Rules
 
 Allowed:
 
@@ -207,7 +227,7 @@ Forbidden:
 
 ---
 
-## 12. packages/neurapress Rules (Very Important)
+## 13. packages/neurapress Rules (Very Important)
 
 packages/neurapress is treated as a vendored internal library.
 
@@ -227,7 +247,7 @@ MUST NOT:
 
 ---
 
-## 13. Testing Guidelines
+## 14. Testing Guidelines
 
 - Unit tests: Vitest with jsdom environment
 - E2E tests: Playwright
@@ -237,7 +257,7 @@ MUST NOT:
 
 ---
 
-## 14. Environment & Runtime Config
+## 15. Environment & Runtime Config
 
 - No new environment variables without approval
 - Runtime config must live in: src/config/runtime-service-config\*.yaml
@@ -246,13 +266,13 @@ MUST NOT:
 
 ---
 
-## 15. Cursor / Copilot Rules
+## 16. Cursor / Copilot Rules
 
 - No `.cursor/rules/`, `.cursorrules`, or `.github/copilot-instructions.md` found
 
 ---
 
-## 16. TL;DR for AI Agents
+## 17. TL;DR for AI Agents
 
 - dashboard = application
 - packages = libraries
@@ -307,7 +327,7 @@ If these rules conflict with user instructions, ask once for clarification and p
 
 ---
 
-## 17. XWorkmate Desktop-to-Web Adaptation Guidelines
+## 18. XWorkmate Desktop-to-Web Adaptation Guidelines
 
 When porting or aligning features from `xworkmate-app` (Flutter Desktop) to `portal` (Next.js Web):
 
@@ -323,4 +343,3 @@ When porting or aligning features from `xworkmate-app` (Flutter Desktop) to `por
 - **Bridge API & Token Proxy**:
   - Pass requests to `https://xworkmate-bridge.svc.plus` via Next.js API route proxy (`/api/ai-workspace/[...path]`).
   - Automatically forward user session headers (`cookie`, `authorization`, `x-account-session`) to bypass CORS and reuse authentication state.
-

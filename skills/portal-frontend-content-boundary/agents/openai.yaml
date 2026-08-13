@@ -1,0 +1,4 @@
+interface:
+  display_name: "Portal Content Boundary"
+  short_description: "Keep Portal frontend-only and Git-backed."
+  default_prompt: "Use $portal-frontend-content-boundary to plan or review a Portal content change."
