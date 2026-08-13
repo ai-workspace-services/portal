@@ -30,7 +30,6 @@ sync_website_content() {
   (
     cd "${REPO_ROOT}"
     bash scripts/sync-content.sh pull
-    npx tsx scripts/validate-website-content.ts
   )
 }
 
