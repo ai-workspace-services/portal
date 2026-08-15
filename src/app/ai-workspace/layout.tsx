@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import Sidebar from "@/components/ai-workspace/Sidebar";
@@ -23,12 +23,16 @@ function AiWorkspaceLayoutContent({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [sidebarHidden, setSidebarHidden] = useState(false);
 
   // The trial entry renders the standalone XWorkmate workspace, which owns
   // its own sidebar and full-screen shell. Do not wrap it in the analytics
   // workbench shell as that would render two nested workspaces.
-  if (searchParams.get("entry") === "trial") {
+  if (
+    searchParams.get("entry") === "trial" ||
+    pathname === "/ai-workspace/conversation/new"
+  ) {
     return <>{children}</>;
   }
 
