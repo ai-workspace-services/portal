@@ -26,12 +26,12 @@ export type VlessQrCopy = {
   downloadQr: string
   generating: string
   error: string
-  missingUuid: string
+  missingProxyUuid: string
   qrAlt: string
 }
 
 interface VlessQrCardProps {
-  uuid: string | null | undefined
+  proxyUuid: string | null | undefined
   copy: VlessQrCopy
   defaultTransport?: VlessTransport
   visibleTransports?: VlessTransport[]
@@ -59,7 +59,7 @@ function resolveInitialTransport(defaultTransport: VlessTransport | undefined, v
 
 
 export default function VlessQrCard({
-  uuid,
+  proxyUuid,
   copy,
   defaultTransport,
   visibleTransports,
@@ -139,7 +139,7 @@ export default function VlessQrCard({
     }
   }, [rawNode, preferredTransport])
 
-  const vlessUri = useMemo(() => buildVlessUri(uuid, effectiveNode), [uuid, effectiveNode])
+  const vlessUri = useMemo(() => buildVlessUri(proxyUuid, effectiveNode), [proxyUuid, effectiveNode])
 
   useEffect(() => {
     let cancelled = false
@@ -292,10 +292,10 @@ export default function VlessQrCard({
           ))}
         </div>
 
-        {!uuid ? (
+        {!proxyUuid ? (
           <div className="rounded-md border border-[color:var(--color-warning-border)] bg-[var(--color-warning-muted)] p-3 text-xs text-[var(--color-warning-foreground)]">
             <p className="font-semibold">❌ UUID 缺失</p>
-            <p className="mt-1">{copy.missingUuid}</p>
+            <p className="mt-1">{copy.missingProxyUuid}</p>
           </div>
         ) : (!nodes || nodes.length === 0) && !rawNode ? (
           <div className="rounded-md border border-[color:var(--color-warning-border)] bg-[var(--color-warning-muted)] p-3 text-xs text-[var(--color-warning-foreground)]">

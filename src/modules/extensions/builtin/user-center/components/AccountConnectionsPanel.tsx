@@ -12,7 +12,7 @@ import { fetchAgentNodes } from "../lib/fetchAgentNodes";
 import type { VlessNode } from "../lib/vless";
 
 interface AccountConnectionsPanelProps {
-  uuid: string | null;
+  proxyUuid: string | null;
 }
 
 function formatProtocols(protocols?: string | string[]): string {
@@ -31,7 +31,7 @@ function visibleNode(node: VlessNode): boolean {
 }
 
 export default function AccountConnectionsPanel({
-  uuid,
+  proxyUuid,
 }: AccountConnectionsPanelProps) {
   const { language } = useLanguage();
   const isChinese = language === "zh";
@@ -164,7 +164,7 @@ export default function AccountConnectionsPanel({
         )}
       </Card>
 
-      <VlessQrCard uuid={uuid} copy={copy} />
+      <VlessQrCard proxyUuid={proxyUuid} copy={copy} />
     </div>
   );
 }
