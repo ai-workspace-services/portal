@@ -355,7 +355,7 @@ type UserCenterOverviewTranslation = {
     logout: string
   }
   cards: {
-    uuid: {
+    proxyUuid: {
       label: string
       description: string
       copy: string
@@ -384,7 +384,7 @@ type UserCenterOverviewTranslation = {
       downloadQr: string
       generating: string
       error: string
-      missingUuid: string
+      missingProxyUuid: string
       warning: string
       macPath: string
       linuxPath: string
@@ -1084,7 +1084,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         loading: 'Loading your personalized space…',
         welcome: 'Welcome back, {name}.',
         guest: 'Sign in to unlock your user center.',
-        uuidNote: 'Your UUID uniquely identifies you across our services.',
+        uuidNote: 'Your proxy UUID identifies this account on access nodes and can be rotated independently.',
         lockBanner: {
           title: 'Finish MFA setup',
           body: 'Complete multi-factor authentication to unlock every panel section.',
@@ -1093,9 +1093,9 @@ export const translations: Record<'en' | 'zh', Translation> = {
           logout: 'Sign out',
         },
         cards: {
-          uuid: {
-            label: 'UUID',
-            description: 'This fingerprint ties every service action back to your account.',
+          proxyUuid: {
+            label: 'Proxy UUID',
+            description: 'This credential is used to access proxy nodes and can be rotated independently from your account identity.',
             copy: 'Copy',
             copied: 'Copied',
           },
@@ -1122,8 +1122,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
             downloadQr: 'Download QR',
             generating: 'Generating QR code…',
             error: 'We could not generate the QR code. Try again later.',
-            missingUuid: 'We could not locate your UUID. Refresh the page or sign in again.',
-            warning: 'Your UUID is the only credential required to access this node. Keep it private and do not share it.',
+            missingProxyUuid: 'We could not locate your proxy UUID. Refresh the page or sign in again.',
+            warning: 'Your proxy UUID is the credential required to access this node. Keep it private and do not share it.',
             macPath: '/opt/homebrew/etc/config.json',
             linuxPath: '/usr/local/etc/config.json',
             qrAlt: 'VLESS connection QR code',
@@ -1954,7 +1954,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         loading: '正在加载你的专属空间…',
         welcome: '欢迎回来，{name}。',
         guest: '请登录后解锁属于你的用户中心。',
-        uuidNote: 'UUID 是你的唯一身份凭证，后续的所有服务都与它关联在一起。',
+        uuidNote: 'Proxy UUID 用于标识你在代理节点上的访问凭证，可独立于账户身份进行轮换。',
         lockBanner: {
           title: '完成多因素认证',
           body: '完成 MFA 绑定后即可访问所有控制台板块。',
@@ -1963,9 +1963,9 @@ export const translations: Record<'en' | 'zh', Translation> = {
           logout: '退出登录',
         },
         cards: {
-          uuid: {
-            label: 'UUID',
-            description: '这串指纹标识让平台中的每项服务都能准确识别你。',
+          proxyUuid: {
+            label: '代理 UUID',
+            description: '这是访问代理节点的凭证，可独立于账户身份进行轮换。',
             copy: '复制',
             copied: '已复制',
           },
@@ -1992,8 +1992,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
             downloadQr: '下载二维码',
             generating: '二维码生成中…',
             error: '二维码生成失败，请稍后重试。',
-            missingUuid: '无法获取您的 UUID，请刷新页面或重新登录。',
-            warning: 'UUID 是访问节点的唯一凭证，请谨慎保存，勿随意分发。',
+            missingProxyUuid: '无法获取您的代理 UUID，请刷新页面或重新登录。',
+            warning: '代理 UUID 是访问节点的凭证，请谨慎保存，勿随意分发。',
             macPath: '/opt/homebrew/etc/config.json',
             linuxPath: '/usr/local/etc/config.json',
             qrAlt: 'VLESS 连接二维码',

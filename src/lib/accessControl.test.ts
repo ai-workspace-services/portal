@@ -7,6 +7,7 @@ function makeUser(overrides: Partial<User> = {}): User {
   return {
     id: "u-1",
     uuid: "u-1",
+    proxyUuid: "proxy-u-1",
     email: "someone@example.com",
     username: "someone",
     mfaEnabled: false,
@@ -139,10 +140,14 @@ describe("accessControl", () => {
 
   describe("/panel/ops gate", () => {
     it("admits root, admin, and operator roles", () => {
-      expect(resolveAccess(makeUser({ role: "admin" }), OPS_RULE)).toMatchObject({
+      expect(
+        resolveAccess(makeUser({ role: "admin" }), OPS_RULE),
+      ).toMatchObject({
         allowed: true,
       });
-      expect(resolveAccess(makeUser({ role: "operator" }), OPS_RULE)).toMatchObject({
+      expect(
+        resolveAccess(makeUser({ role: "operator" }), OPS_RULE),
+      ).toMatchObject({
         allowed: true,
       });
     });

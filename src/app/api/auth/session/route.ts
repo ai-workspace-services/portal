@@ -11,6 +11,7 @@ const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
 type AccountUser = {
   id?: string;
   uuid?: string;
+  proxyUuid?: string;
   name?: string;
   username?: string;
   email: string;
@@ -218,7 +219,15 @@ export async function GET(request: NextRequest) {
       };
 
   const normalizedUser = identifier
-    ? { ...rawUser, id: identifier, uuid: identifier }
+    ? {
+        ...rawUser,
+        id: identifier,
+        uuid: identifier,
+        proxyUuid:
+          typeof rawUser.proxyUuid === "string"
+            ? rawUser.proxyUuid.trim()
+            : "",
+      }
     : rawUser;
   const publicEmail = resolvePublicUserEmail({
     email: normalizedUser.email,
