@@ -78,7 +78,7 @@ async function generateHomeMarketingContent() {
   return content
 }
 
-async function generateProductContent(product: 'xworkmate' | 'xstream' | 'open-platform') {
+async function generateProductContent(product: string) {
   const languages: Language[] = ['zh', 'en']
   const content: Record<Language, any> = {} as any
 
@@ -87,9 +87,11 @@ async function generateProductContent(product: 'xworkmate' | 'xstream' | 'open-p
       const heroPath = path.join(CONTENT_ROOT, 'product', product, lang, 'hero.md')
       const raw = await fs.readFile(heroPath, 'utf-8')
       const { metadata } = parseFrontMatter(raw)
-      content[lang] = metadata
+      if (metadata && Object.keys(metadata).length > 0) {
+        content[lang] = metadata
+      }
     } catch (error) {
-      console.error(`Failed to read ${product} content for ${lang}:`, error)
+      // product or language variant might not exist locally
     }
   }
 
@@ -125,6 +127,10 @@ async function main() {
     path.join(OUTPUT_ROOT, 'homepage.ts'),
     'export default ' + JSON.stringify(homepageContent, null, 2) + ';'
   )
+  await fs.writeFile(
+    path.join(OUTPUT_ROOT, 'homepage.json'),
+    JSON.stringify(homepageContent, null, 2)
+  )
 
   console.log('Generating home marketing content...')
   const homeMarketingContent = await generateHomeMarketingContent()
@@ -134,14 +140,28 @@ async function main() {
   )
 
   // Generate product content
-  const products = ['xworkmate', 'xstream', 'open-platform'] as const
+  const products = [
+    'xconnect',
+    'xworkmate',
+    'open-platform',
+    'ai-workspace',
+    'xstream',
+    'xcloudflow',
+    'xscopehub',
+  ]
   for (const product of products) {
     console.log(`Generating ${product} content...`)
     const productContent = await generateProductContent(product)
-    await fs.writeFile(
-      path.join(OUTPUT_ROOT, `${product}.ts`),
-      'export default ' + JSON.stringify(productContent, null, 2) + ';'
-    )
+    if (Object.keys(productContent).length > 0) {
+      await fs.writeFile(
+        path.join(OUTPUT_ROOT, `${product}.ts`),
+        'export default ' + JSON.stringify(productContent, null, 2) + ';'
+      )
+      await fs.writeFile(
+        path.join(OUTPUT_ROOT, `${product}.json`),
+        JSON.stringify(productContent, null, 2)
+      )
+    }
   }
 
   console.log('Generating docs content...')
@@ -149,6 +169,10 @@ async function main() {
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'docs-home.ts'),
     'export default ' + JSON.stringify(docsContent, null, 2) + ';'
+  )
+  await fs.writeFile(
+    path.join(OUTPUT_ROOT, 'docs-home.json'),
+    JSON.stringify(docsContent, null, 2)
   )
 
   console.log('Content generation complete!')

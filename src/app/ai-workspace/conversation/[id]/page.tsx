@@ -6,6 +6,7 @@ import RightContextPanel, { type ArtifactFile } from '@/components/ai-workspace/
 import { Network, Presentation, Microscope, Globe, FileText, Table, Palette, ChevronsLeft, PlayCircle, Menu } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { taskStore, type TaskItem } from '@/lib/xworkmate/taskStore';
+import { XWorkmateWorkspaceRoute } from '@/components/xworkmate/XWorkmateWorkspaceRoute';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -35,6 +36,13 @@ export default function ConversationPage() {
       }
     }
   }, [id, isNew]);
+
+  // Keep /ai-workspace?entry=trial and /ai-workspace/conversation/new on the
+  // same task-running surface. Existing conversation IDs retain their
+  // context-replay view.
+  if (isNew) {
+    return <XWorkmateWorkspaceRoute />;
+  }
 
   const taskTitle = isNew ? '新对话' : (activeTask?.title || '对话任务');
   const workingPath = isNew ? '.../threads/draft-new' : `.../threads/${id}`;

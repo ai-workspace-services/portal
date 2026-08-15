@@ -87,6 +87,61 @@ export type BlogListPayload = {
   totalPages: number;
 };
 
+export type WebsiteCTA = {
+  label: string;
+  href: string;
+};
+
+export type WebsiteHeroPayload = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  cta: WebsiteCTA;
+  downloadUrl?: string;
+  supportedPlatforms?: string;
+};
+
+export type WebsiteWizardStepPayload = {
+  step: number;
+  title: string;
+  description: string;
+  platforms?: string;
+  link?: string;
+};
+
+export type WebsiteWizardPayload = {
+  title: string;
+  description: string;
+  steps: WebsiteWizardStepPayload[];
+};
+
+export type WebsiteShowcasePayload = {
+  title: string;
+  description: string;
+  icon?: string;
+  image: string;
+  reverse?: boolean;
+};
+
+export type WebsiteProductPayload = {
+  slug: string;
+  language: string;
+  hero: WebsiteHeroPayload;
+  wizard?: WebsiteWizardPayload;
+  showcases: WebsiteShowcasePayload[];
+  sourcePath?: string;
+  updatedAt?: string;
+};
+
+export type WebsiteProductSummaryPayload = {
+  slug: string;
+  title: string;
+  badge: string;
+  subtitle: string;
+  language: string;
+  href: string;
+};
+
 async function detectLanguage(): Promise<"zh" | "en"> {
   const store = await headers();
   const preferred =
@@ -176,3 +231,45 @@ export async function getLatestBlogPosts(
     `/api/v1/home/latest-blogs?lang=${lang}&limit=${limit}`,
   );
 }
+
+export async function getProducts(
+  langOverride?: "zh" | "en",
+): Promise<WebsiteProductSummaryPayload[]> {
+  const lang = langOverride || (await detectLanguage());
+  try {
+    return await request<WebsiteProductSummaryPayload[]>(
+      `/api/v1/products?lang=${lang}`,
+    );
+  } catch (error) {
+    console.warn("Failed to fetch products from content-service", error);
+    return [];
+  }
+}
+
+export async function getProduct(
+  slug: string,
+  langOverride?: "zh" | "en",
+): Promise<WebsiteProductPayload | null> {
+  const lang = langOverride || (await detectLanguage());
+  try {
+    return await request<WebsiteProductPayload>(
+      `/api/v1/products/${slug}?lang=${lang}`,
+    );
+  } catch (error) {
+    console.warn(`Failed to fetch product ${slug} from content-service`, error);
+    return null;
+  }
+}
+
+export async function getWebsiteHomepage(
+  langOverride?: "zh" | "en",
+): Promise<any | null> {
+  const lang = langOverride || (await detectLanguage());
+  try {
+    return await request<any>(`/api/v1/website/homepage?lang=${lang}`);
+  } catch (error) {
+    console.warn("Failed to fetch homepage marketing from content-service", error);
+    return null;
+  }
+}
+
