@@ -70,8 +70,7 @@
         {
           "step": 2,
           "title": "Configure Models & Agents",
-          "description": "Connect mainstream model providers and agent toolchains on demand.",
-          "link": "/panel"
+          "description": "Connect mainstream model providers and agent toolchains on demand."
         },
         {
           "step": 3,
