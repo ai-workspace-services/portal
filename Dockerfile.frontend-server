@@ -84,7 +84,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
 # 基础镜像升级到最新
 # ---------------------------
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl git \
+    && apt-get install -y --no-install-recommends curl git rsync \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable \
