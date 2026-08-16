@@ -53,13 +53,15 @@ Worker 是可选适配模式，不改变 Node/VPS 默认构建。包含文件系
 
 `ai-workspace-infra/platform-ops-toolkit` 的 `Serverless Orchestrator` 可手动验证本分支的 Cloudflare 交付：
 
-- `deploy_portal_frontend=true`
-- `frontend_only=true`
+- `deploy_cloudflare=true|false`
+- `deploy_cloud_run=true|false`
+- `verify_supabase=true|false`
+- `initialize_supabase=true|false`
 - `portal_repository=ai-workspace-services/portal`
 - `vault_env_path=sit | uat | prod`
 - `portal_ref=<不可变发布 tag、portal PR head SHA 或分支名>`
 
-该模式在平台仓库对应环境的 Vault 角色下获取 Cloudflare 凭据，检出指定 portal ref，部署 `static-dashboard/out` 至同名 Pages 分支，并将 `frontend-server` 通过 OpenNext 部署为 `frontend-server-edge-sit`、`frontend-server-edge-uat` 或 `frontend-server-edge-prod` Worker。任一步骤失败都会使编排失败；它不会部署 Cloud Run、edge-gateway 或 Supabase。
+该模式将 Cloudflare、GCP Cloud Run、Supabase 作为可组合节点：可全选执行完整验证，也可只选择其中任意部分。Cloudflare 节点会检出指定 portal ref，部署 `static-dashboard/out` 至同名 Pages 分支，并将 `frontend-server` 通过 OpenNext 部署为 `frontend-server-edge-sit`、`frontend-server-edge-uat` 或 `frontend-server-edge-prod` Worker；Cloud Run 节点部署后端服务并注入 Supabase 连接；Supabase 节点校验 Vault 中的连接契约，`initialize_supabase=true` 时先初始化 Accounts schema。任何已选择节点失败都会使编排失败。
 
 ## 推荐路由
 
