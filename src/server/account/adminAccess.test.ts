@@ -10,6 +10,7 @@ function buildUser(overrides: Partial<AccountSessionUser> = {}): AccountSessionU
   return {
     id: "user-1",
     uuid: "user-1",
+    proxyUuid: "proxy-1",
     email: "user@example.com",
     role: "user",
     groups: [],

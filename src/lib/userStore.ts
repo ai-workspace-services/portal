@@ -15,6 +15,7 @@ export type TenantMembership = {
 export type User = {
   id: string
   uuid: string
+  proxyUuid: string
   email: string
   name?: string
   username: string
@@ -98,6 +99,7 @@ async function fetchSessionUser(): Promise<User | null> {
       user?: {
         id?: string
         uuid?: string
+        proxyUuid?: string
         email: string
         name?: string
         username?: string
@@ -127,7 +129,7 @@ async function fetchSessionUser(): Promise<User | null> {
       return null
     }
 
-    const { id, uuid, email, name, username, mfaEnabled, mfa, mfaPending, role, groups, permissions } = sessionUser
+    const { id, uuid, proxyUuid, email, name, username, mfaEnabled, mfa, mfaPending, role, groups, permissions } = sessionUser
     const identifier =
       typeof uuid === 'string' && uuid.trim().length > 0
         ? uuid.trim()
@@ -213,6 +215,7 @@ async function fetchSessionUser(): Promise<User | null> {
     return {
       id: identifier,
       uuid: identifier,
+      proxyUuid: typeof proxyUuid === 'string' ? proxyUuid.trim() : '',
       email: publicEmail,
       name: normalizedName,
       username: normalizedUsername ?? publicEmail,
