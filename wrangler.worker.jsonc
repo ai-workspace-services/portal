@@ -19,5 +19,34 @@
   ],
   "images": {
     "binding": "IMAGES"
+  },
+  "env": {
+    "sit": {
+      "name": "frontend-server-edge-sit",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "frontend-server-edge-sit"
+        }
+      ]
+    },
+    "uat": {
+      "name": "frontend-server-edge-uat",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "frontend-server-edge-uat"
+        }
+      ]
+    },
+    "prod": {
+      "name": "frontend-server-edge-prod",
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "frontend-server-edge-prod"
+        }
+      ]
+    }
   }
 }
