@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import MfaSetupPanel from "../account/MfaSetupPanel";
 import SubscriptionPanel from "../account/SubscriptionPanel";
 import AccountConnectionsPanel from "../components/AccountConnectionsPanel";
+import AccountGettingStarted from "../components/AccountGettingStarted";
 import AccountPolicySecurityPanel from "../components/AccountPolicySecurityPanel";
 import AccountSection from "../components/AccountSection";
 import UserOverview from "../components/UserOverview";
@@ -32,24 +33,7 @@ export default function UserCenterAccountRoute() {
           ]}
         />
       ) : null}
-      <header className="rounded-[var(--radius-xl)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-4 py-3.5 sm:px-5">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
-          Account console
-        </p>
-        <div className="mt-1 flex flex-col gap-1.5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--color-heading)] sm:text-2xl">
-              账户与服务总览
-            </h1>
-            <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[var(--color-text-subtle)] sm:text-sm">
-              集中查看订阅配额、连接节点、策略快照与账户安全状态。
-            </p>
-          </div>
-          <p className="text-[11px] text-[var(--color-text-subtle)]">
-            数据以当前账号 API 返回为准
-          </p>
-        </div>
-      </header>
+      <AccountGettingStarted user={user} isReadOnlyRole={isReadOnlyRole} />
 
       <AccountSection
         id="account-overview"

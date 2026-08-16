@@ -27,7 +27,9 @@ export default function PanelLayout({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Keep the console dense by default. The sidebar expands on hover and can
+  // be pinned open through the header control for longer navigation sessions.
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
