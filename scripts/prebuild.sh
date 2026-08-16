@@ -37,10 +37,20 @@ echo ""
 echo "[3/3] Generating marketing content..."
 npx tsx scripts/generate-content.ts
 
-# Build contentlayer artifacts used by non-doc pages
 echo ""
-echo "Building contentlayer..."
-node scripts/build-contentlayer.mjs
+echo "Generating runtime configuration module..."
+node scripts/generate-runtime-config-module.mjs
+
+# Build contentlayer artifacts used by non-doc pages. Static/Workers builds
+# can skip this legacy empty source; the default VPS build keeps it enabled.
+if [[ "${SKIP_CONTENTLAYER:-false}" == "true" ]]; then
+  echo ""
+  echo "Skipping Contentlayer for this optional deployment target."
+else
+  echo ""
+  echo "Building contentlayer..."
+  node scripts/build-contentlayer.mjs
+fi
 
 echo ""
 echo "======================================"

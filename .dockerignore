@@ -1,6 +1,9 @@
 .git
 .github
 .next
+.open-next
+.wrangler
+static-dashboard/out
 .contentlayer
 node_modules
 coverage

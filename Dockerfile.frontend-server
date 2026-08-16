@@ -1,5 +1,5 @@
 # =======================================================
-# all-in-one: static-dashboard + frontend-server standalone
+# frontend-server: Next.js standalone for Node/VPS
 # Global ARGs — 必须在所有 FROM 之前声明
 # =======================================================
 ARG NODE_BUILDER_IMAGE=node:24-bookworm
@@ -93,7 +93,6 @@ RUN apt-get update \
 COPY . .
 RUN find . -name "package-lock.json" -delete
 RUN yarn install --immutable && \
-    yarn build:static-dashboard && \
     yarn build:frontend-server:node
 
 # -------------------------------------------------------
@@ -122,7 +121,7 @@ ENV NODE_ENV=production \
 # 基础镜像升级到最新
 # ---------------------------
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends tini ca-certificates nginx \
+    && apt-get install -y --no-install-recommends tini ca-certificates \
     && apt-get dist-upgrade -y \
     && apt-get install -y --no-install-recommends --only-upgrade libpam-modules libpam-modules-bin libpam-runtime libpam0g zlib1g \
     && rm -rf /var/lib/apt/lists/*
@@ -156,15 +155,6 @@ COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
 COPY --from=builder /app/dashboard/.next/server/instrumentation.js ./.next/server/instrumentation.js
 
 # ---------------------------
-# static-dashboard + unified ingress
-# ---------------------------
-COPY --from=builder /app/dashboard/static-dashboard/out /usr/share/nginx/html
-COPY --from=builder /app/dashboard/.next/static /usr/share/nginx/html/_next/static
-COPY deploy/nginx/all-in-one.conf /etc/nginx/conf.d/default.conf
-COPY scripts/start-all-in-one.sh /usr/local/bin/start-all-in-one
-RUN chmod +x /usr/local/bin/start-all-in-one
-
-# ---------------------------
 # 额外瘦身（可减少 15–40 MB）
 # ---------------------------
 #RUN rm -rf node_modules/next/dist/compiled/@vercel/og/* \
@@ -174,8 +164,8 @@ RUN chmod +x /usr/local/bin/start-all-in-one
 
 # （如果 Edge Runtime 里用不到 font/SWC 也可移除，比现在更狠）
 
-EXPOSE 8080
+EXPOSE 3000
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["/usr/local/bin/start-all-in-one"]
+CMD ["node", "server.js"]
