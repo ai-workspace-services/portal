@@ -2,6 +2,7 @@
 .github
 .next
 .open-next
+.edge-build
 .wrangler
 static-dashboard/out
 .contentlayer
