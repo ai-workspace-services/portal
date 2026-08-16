@@ -10,7 +10,7 @@ const nextConfig = {
   // ===============================
   // 🚀 生产优化 —— 最关键的三行
   // ===============================
-  output: "standalone",   // 让 Next.js 生成可独立运行的最小产物（大幅减小 Docker 镜像）
+  output: "standalone",
   compress: true,         // Gzip 压缩输出（确保小体积网络传输）
 
   // 配置允许的外部图片域名
