@@ -54,9 +54,14 @@ if [[ "${PUSH_LATEST:-false}" == "true" ]]; then
   tag_args+=(--tag "${IMAGE_LATEST_REF}")
 fi
 
+dockerfile="${DOCKERFILE:-${REPO_ROOT}/Dockerfile}"
+if [[ "${dockerfile}" != /* ]]; then
+  dockerfile="${REPO_ROOT}/${dockerfile}"
+fi
+
 docker buildx build \
   --platform "${DOCKER_PLATFORM:-linux/amd64}" \
-  --file "${REPO_ROOT}/Dockerfile" \
+  --file "${dockerfile}" \
   "${tag_args[@]}" \
   "${build_args[@]}" \
   --push \

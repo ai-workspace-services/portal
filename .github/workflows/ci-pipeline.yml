@@ -11,11 +11,17 @@ on:
       - '*-release-*'
       - '*daily-build-*'
     paths:
-      - ".github/workflows/pipeline.yaml"
-      - "Dockerfile"
+      - ".github/workflows/ci-pipeline.yml"
+      - ".github/workflows/validate-frontend-delivery.yml"
+      - ".github/scripts/**"
+      - "Dockerfile*"
       - "deploy/single-node/**"
+      - "deploy/nginx/**"
       - "package.json"
       - "yarn.lock"
+      - "open-next.config.ts"
+      - "wrangler.worker.jsonc"
+      - "static-dashboard/**"
       - "src/**"
       - "scripts/**"
       - "public/**"
@@ -96,9 +102,22 @@ jobs:
         run: bash scripts/github-actions/resolve-push-latest.sh
 
   build:
-    name: Build
+    name: Build / ${{ matrix.target }}
     runs-on: ubuntu-latest
     needs: prep
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: all-in-one
+            dockerfile: Dockerfile
+            image_name: console
+          - target: static-dashboard
+            dockerfile: Dockerfile.static-dashboard
+            image_name: console-static-dashboard
+          - target: frontend-server
+            dockerfile: Dockerfile.frontend-server
+            image_name: console-frontend-server
     env:
       NEXT_PUBLIC_RUNTIME_ENVIRONMENT: ${{ needs.prep.outputs.deployment_environment }}
       # Generic Git backend CMS configuration. These are repository variables,
@@ -136,24 +155,94 @@ jobs:
       - name: Publish Frontend Image
         id: publish
         env:
-          IMAGE_REF: ${{ needs.prep.outputs.image_ref }}
+          IMAGE_REF: ghcr.io/${{ needs.prep.outputs.ghcr_namespace }}/${{ matrix.image_name }}:${{ needs.prep.outputs.image_tag }}
           IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
-          IMAGE_LATEST_REF: ${{ needs.prep.outputs.image_latest_ref }}
+          IMAGE_LATEST_REF: ghcr.io/${{ needs.prep.outputs.ghcr_namespace }}/${{ matrix.image_name }}:latest
           PUSH_LATEST: ${{ needs.prep.outputs.push_latest }}
+          DOCKERFILE: ${{ matrix.dockerfile }}
         run: bash scripts/github-actions/publish-frontend-image.sh
+
+  release-assets:
+    name: Build release artifacts
+    needs: [prep, build]
+    if: ${{ github.ref_type == 'tag' && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+      RELEASE_ASSET_DIR: ${{ runner.temp }}/portal-release-assets
+      WEBSITE_CONTENT_REPOSITORY: ${{ vars.WEBSITE_CONTENT_REPOSITORY || 'https://github.com/haitaopanhq/knowledge.git' }}
+      WEBSITE_CONTENT_REF: ${{ vars.WEBSITE_CONTENT_REF || 'main' }}
+      WEBSITE_CONTENT_SUBDIR: ${{ vars.WEBSITE_CONTENT_SUBDIR || 'content/website' }}
+    steps:
+      - name: Check Out Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a # v5.0.0
+
+      - name: Set Up Node 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Enable Yarn
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build static dashboard artifact
+        run: yarn build:static-dashboard
+
+      - name: Build OpenNext Worker artifact
+        run: yarn build:frontend-server:worker
+
+      - name: Package frontend artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p "${RELEASE_ASSET_DIR}"
+          artifact_suffix="${RELEASE_TAG//\//-}"
+
+          tar -czf "${RELEASE_ASSET_DIR}/portal-static-dashboard-${artifact_suffix}.tar.gz" \
+            -C static-dashboard/out .
+
+          tar -czf "${RELEASE_ASSET_DIR}/portal-frontend-server-worker-${artifact_suffix}.tar.gz" \
+            .open-next \
+            open-next.config.ts \
+            wrangler.worker.jsonc \
+            package.json \
+            yarn.lock
+
+      - name: Upload release assets to workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-release-assets-${{ github.sha }}
+          path: ${{ runner.temp }}/portal-release-assets
+          if-no-files-found: error
+          retention-days: 14
 
   release:
     name: Publish release manifest and assets
-    needs: build
-    if: ${{ contains(github.ref, '/tags/') && contains(github.ref, 'daily-build-') && needs.build.result == 'success' }}
+    needs: [prep, build, release-assets]
+    if: ${{ github.ref_type == 'tag' && needs.build.result == 'success' && needs.release-assets.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download frontend release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: portal-release-assets-${{ github.sha }}
+          path: release-assets
+
       - name: Prepare release assets
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-          IMAGE_REFS: ghcr.io/${{ github.repository_owner }}/console:${{ github.ref_name }}
+          RELEASE_INPUT_DIRS: release-assets
+          IMAGE_REFS: |
+            ghcr.io/${{ needs.prep.outputs.ghcr_namespace }}/console:${{ needs.prep.outputs.image_tag }}
+            ghcr.io/${{ needs.prep.outputs.ghcr_namespace }}/console-static-dashboard:${{ needs.prep.outputs.image_tag }}
+            ghcr.io/${{ needs.prep.outputs.ghcr_namespace }}/console-frontend-server:${{ needs.prep.outputs.image_tag }}
           GH_TOKEN: ${{ github.token }}
         run: bash .github/scripts/publish-release-artifacts.sh

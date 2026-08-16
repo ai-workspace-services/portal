@@ -47,7 +47,9 @@ Worker 是可选适配模式，不改变 Node/VPS 默认构建。包含文件系
 
 ## GitHub Actions 验证
 
-`.github/workflows/validate-frontend-delivery.yml` 在 Node.js 24 上验证三个 Next.js 构建目标，并使用 Buildx 验证三个 Dockerfile。流水线只构建、不推送镜像，也不会部署 Cloudflare 资源；可通过特性分支 push、Pull Request 或手动触发运行。
+`.github/workflows/validate-frontend-delivery.yml` 在 Node.js 24 上验证三个 Next.js 构建目标，并使用 Buildx 验证三个 Dockerfile。`.github/workflows/ci-pipeline.yml` 的 `build` 阶段使用矩阵构建并推送三个镜像：默认 `console`（`Dockerfile`）、`console-static-dashboard`（`Dockerfile.static-dashboard`）和 `console-frontend-server`（`Dockerfile.frontend-server`）。
+
+带版本标签的 CI 运行会额外构建并上传 GitHub Actions artifact：`portal-static-dashboard-<tag>.tar.gz` 用于 CDN/Pages 静态发布，`portal-frontend-server-worker-<tag>.tar.gz` 包含 OpenNext Worker 产物和部署配置；随后由 GitHub Release 发布这些制品及三组 GHCR 镜像引用清单。验证流水线只构建、不推送镜像，也不会部署 Cloudflare 资源；可通过特性分支 push、Pull Request 或手动触发运行。
 
 ## UAT Cloudflare 联动验证
 
