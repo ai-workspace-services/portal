@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/validate-frontend-delivery.yml"
       - "Dockerfile*"
+      - ".dockerignore"
       - "deploy/nginx/**"
       - "docs/zh/deployment/**"
       - "package.json"
@@ -23,6 +24,7 @@ on:
     paths:
       - ".github/workflows/validate-frontend-delivery.yml"
       - "Dockerfile*"
+      - ".dockerignore"
       - "deploy/nginx/**"
       - "package.json"
       - "yarn.lock"
@@ -53,8 +55,16 @@ jobs:
             command: yarn build:static-dashboard
           - target: frontend-server-node
             command: yarn build:frontend-server:node
-          - target: frontend-server-worker
-            command: yarn build:frontend-server:worker
+          - target: frontend-ssr-public
+            command: yarn build:ssr:public
+          - target: frontend-ssr-content
+            command: yarn build:ssr:content
+          - target: frontend-ssr-auth
+            command: yarn build:ssr:auth
+          - target: frontend-ssr-console
+            command: yarn build:ssr:console
+          - target: frontend-ssr-workspace
+            command: yarn build:ssr:workspace
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

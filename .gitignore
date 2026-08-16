@@ -15,6 +15,7 @@ node_modules/
 # Next.js build output
 .next/
 .open-next/
+.edge-build/
 .wrangler/
 out/
 public/_build/
