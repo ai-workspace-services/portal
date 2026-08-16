@@ -67,3 +67,44 @@ final result: passed
 ## 结论
 
 最终结果：**通过**。本地页面已完成与线上工作台的视觉语言对齐，并针对 `entry=trial` 增加了明确的试用状态、注册转化提示和不保存任务的访客空状态。
+
+---
+
+# Management console design QA
+
+## Comparison target
+
+- Source visual truth: `docs/design/user-management-console-reference.png`
+- Intended route: `/panel/management`
+- Implementation capture: `../.product-design-audit/04-local-management-implementation.png`
+- Browser viewport: 1366 × 768 CSS px, device scale factor 1.
+- State: local development server, unauthenticated / unauthorised route state.
+
+## Evidence and normalization
+
+The source visual is a 1440 × 1024 management workspace with user metrics, a dense user table, and a persistent user inspector. The browser-rendered local implementation was captured at 1366 × 768, but the management route was blocked by the application access guard before its content could render. The two artifacts therefore do not represent the same authenticated state and cannot be compared for visual fidelity.
+
+Focused-region comparison was not possible: the local capture only includes the access-denied state. The production browser session is authenticated, but it cannot render uncommitted local source changes, so it is not valid implementation evidence.
+
+## Findings
+
+- [P1] Authenticated visual verification is blocked.
+  Location: local `/panel/management` route.
+  Evidence: the browser capture renders `权限不足` and, after reload, redirects to `/login`; it does not render the new management workspace.
+  Impact: full-view and focused design comparison with the approved reference is not yet possible.
+  Fix: sign in to the local development environment with an administrator or operator account, then capture the management route at 1440 × 1024 and compare it against the saved reference.
+
+## Implementation checklist
+
+- [x] Save the approved reference under `docs/design/`.
+- [x] Implement a 56px collapsed sidebar that expands on hover and can be pinned open from the header.
+- [x] Implement the user-management workspace, filters, dense table, and user detail inspector using existing management callbacks.
+- [x] Keep permissions, user groups, and homepage video settings available as page-level tabs.
+- [x] Run TypeScript, targeted ESLint, and unit tests.
+- [ ] Perform an authenticated browser capture and visual comparison.
+
+## Follow-up polish
+
+- Validate the compact layout at 1440 × 1024 and a narrower desktop breakpoint after an authenticated local session is available.
+
+final result: blocked

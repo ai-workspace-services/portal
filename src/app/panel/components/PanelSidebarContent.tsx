@@ -116,7 +116,7 @@ export function PanelSidebarContent({
     const sectionDisabled = section.items.every((item) => item.disabled);
 
     return (
-      <div key={section.id} className="space-y-3">
+      <div key={section.id} className={collapsed ? "space-y-1" : "space-y-3"}>
         <p
           className={`text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${
             sectionDisabled
@@ -128,14 +128,16 @@ export function PanelSidebarContent({
             section.id as keyof typeof translations.en.userCenter.sections
           ] || section.title}
         </p>
-        <div className={`space-y-2 ${sectionDisabled ? "opacity-60" : ""}`}>
+        <div
+          className={`${collapsed ? "space-y-1" : "space-y-2"} ${sectionDisabled ? "opacity-60" : ""}`}
+        >
           {section.items.map((item) => {
             const active = isActive(pathname, item.href);
             const isDashboard = item.href === "/panel";
             const { Icon } = item;
 
             const baseClasses = [
-              "group flex items-center gap-3 rounded-[14px] border px-3 py-3 text-sm transition-all duration-300",
+              "group flex items-center gap-3 rounded-md border px-3 py-2.5 text-sm transition-all duration-200",
             ];
             if (item.disabled) {
               baseClasses.push(
@@ -159,7 +161,7 @@ export function PanelSidebarContent({
             }
 
             const iconClasses = [
-              "flex h-8 w-8 items-center justify-center rounded-xl transition-colors",
+              "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
             ];
             if (active) {
               iconClasses.push(
@@ -253,7 +255,9 @@ export function PanelSidebarContent({
         </p>
       </SidebarHeader>
 
-      <SidebarContent className="flex flex-col gap-6">
+      <SidebarContent
+        className={`flex flex-col ${collapsed ? "gap-3" : "gap-6"}`}
+      >
         {primarySections.map(renderSection)}
         {resourceSections.length > 0 ? (
           <div className="border-t border-[color:var(--color-surface-border)] pt-4">

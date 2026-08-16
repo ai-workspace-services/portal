@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
+import { BarChart3, ShieldCheck, UsersRound, Video } from "lucide-react";
 
 import Card from "../components/Card";
 import TrendChart, {
@@ -19,7 +20,7 @@ import UserGroupManagement, {
 } from "../management/components/UserGroupManagement";
 import HomepageVideoSettingsPanel from "../management/components/HomepageVideoSettingsPanel";
 import { EmailBlacklist } from "../management/components/EmailBlacklist";
-import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
+import UserManagementWorkspace from "../management/components/UserManagementWorkspace";
 import { resolveAccess } from "@lib/accessControl";
 import type { HomepageVideoSettingsResponse } from "@/lib/home/homepageVideo";
 import { useUserStore } from "@lib/userStore";
@@ -113,9 +114,9 @@ export default function UserCenterManagementRoute() {
   const [pendingRoleUpdates, setPendingRoleUpdates] = useState<Set<string>>(
     new Set(),
   );
-  const [pendingGroupUpdates, setPendingGroupUpdates] = useState<
-    Set<string>
-  >(new Set());
+  const [pendingGroupUpdates, setPendingGroupUpdates] = useState<Set<string>>(
+    new Set(),
+  );
   const [groupsUpdateMessage, setGroupsUpdateMessage] = useState<
     string | undefined
   >();
@@ -127,6 +128,9 @@ export default function UserCenterManagementRoute() {
   const [homepageVideoError, setHomepageVideoError] = useState<
     string | undefined
   >();
+  const [activeTab, setActiveTab] = useState<
+    "users" | "permissions" | "groups" | "homepage"
+  >("users");
 
   const metricsSWR = useSWR<UserMetricsResponse>(
     canAccess ? "/api/admin/users/metrics" : null,
@@ -511,63 +515,152 @@ export default function UserCenterManagementRoute() {
     );
   }
 
+  const tabs = [
+    { id: "users" as const, label: "用户管理", Icon: UsersRound },
+    { id: "permissions" as const, label: "角色与权限", Icon: ShieldCheck },
+    { id: "groups" as const, label: "用户组", Icon: BarChart3 },
+    { id: "homepage" as const, label: "首页视频配置", Icon: Video },
+  ];
+
   return (
-    <div className="space-y-6">
-      <Breadcrumbs
-        items={[
-          { label: t.items.dashboard, href: "/panel" },
-          {
-            label: translations[language].nav.account.management,
-            href: "/panel/management",
-          },
-        ]}
-      />
-      <OverviewCards
-        overview={metricsSWR.data?.overview}
-        isLoading={metricsLoading}
-        lastUpdatedLabel={lastUpdatedLabel}
-      />
-      <TrendChart series={metricsSWR.data?.series} isLoading={metricsLoading} />
-      <PermissionMatrixEditor
-        matrix={matrixDraft}
-        roles={["user", "admin", "operator"]}
-        isLoading={settingsLoading}
-        isSaving={matrixPending}
-        hasChanges={matrixDirty}
-        statusMessage={matrixStatus}
-        errorMessage={matrixError}
-        onToggle={handleTogglePermission}
-        onSave={handleSaveMatrix}
-        canEdit={canEditPermissions}
-      />
-      <HomepageVideoSettingsPanel
-        settings={homepageVideoSWR.data}
-        isLoading={homepageVideoSWR.isLoading}
-        isSaving={homepageVideoSaving}
-        canEdit={canEditPermissions}
-        statusMessage={homepageVideoStatus}
-        errorMessage={homepageVideoError}
-        onSave={handleSaveHomepageVideo}
-      />
-      {groupsUpdateMessage ? (
-        <p className="text-sm text-red-600">{groupsUpdateMessage}</p>
+    <div className="overflow-hidden rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)]">
+      <header className="flex flex-col gap-4 border-b border-[color:var(--color-surface-border)] px-4 py-4 sm:px-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-[var(--color-heading)]">
+              用户管理
+            </h1>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              查看、管理和操作系统用户
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="inline-flex h-9 items-center rounded-md border border-[color:var(--color-surface-border)] px-3 text-sm font-medium text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-hover)]"
+            >
+              导出用户
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("groups")}
+              className="inline-flex h-9 items-center rounded-md bg-[var(--color-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
+            >
+              + 创建用户
+            </button>
+          </div>
+        </div>
+        <nav
+          className="-mb-4 flex gap-1 overflow-x-auto"
+          aria-label="管理工作台模块"
+        >
+          {tabs.map(({ id, label, Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveTab(id)}
+              className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium transition ${
+                activeTab === id
+                  ? "border-[var(--color-primary)] text-[var(--color-primary)]"
+                  : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-heading)]"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {activeTab === "users" ? (
+        <>
+          <div className="border-b border-[color:var(--color-surface-border)] px-4 py-4 sm:px-5">
+            <OverviewCards
+              overview={metricsSWR.data?.overview}
+              isLoading={metricsLoading}
+              lastUpdatedLabel={lastUpdatedLabel}
+            />
+            <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-subtle)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
+              系统运行正常
+              {lastUpdatedLabel ? <span>· {lastUpdatedLabel}</span> : null}
+            </div>
+          </div>
+          <UserManagementWorkspace
+            users={usersSWR.data}
+            isLoading={usersLoading}
+            canEditRoles={canEditRoles}
+            pendingUserIds={pendingRoleUpdates}
+            onRoleChange={handleRoleChange}
+            onPauseUser={handlePauseUser}
+            onResumeUser={handleResumeUser}
+            onDeleteUser={handleDeleteUser}
+            onRenewUuid={handleRenewUuid}
+          />
+        </>
       ) : null}
-      <UserGroupManagement
-        users={usersSWR.data}
-        isLoading={usersLoading}
-        onRoleChange={handleRoleChange}
-        canEditRoles={canEditRoles}
-        canCreateCustomUser={canCreateCustomUser}
-        pendingUserIds={pendingRoleUpdates}
-        onPauseUser={handlePauseUser}
-        onResumeUser={handleResumeUser}
-        onDeleteUser={handleDeleteUser}
-        onRenewUuid={handleRenewUuid}
-        onCreateCustomUser={handleCreateCustomUser}
-        onManageBlacklist={() => setIsBlacklistOpen(true)}
-        onGroupsChange={handleGroupsChange}
-        pendingGroupUserIds={pendingGroupUpdates}
-      />
+
+      {activeTab === "permissions" ? (
+        <div className="space-y-5 p-4 sm:p-5">
+          <TrendChart
+            series={metricsSWR.data?.series}
+            isLoading={metricsLoading}
+          />
+          <PermissionMatrixEditor
+            matrix={matrixDraft}
+            roles={["user", "admin", "operator"]}
+            isLoading={settingsLoading}
+            isSaving={matrixPending}
+            hasChanges={matrixDirty}
+            statusMessage={matrixStatus}
+            errorMessage={matrixError}
+            onToggle={handleTogglePermission}
+            onSave={handleSaveMatrix}
+            canEdit={canEditPermissions}
+          />
+        </div>
+      ) : null}
+
+      {activeTab === "groups" ? (
+        <div className="space-y-4 p-4 sm:p-5">
+          {groupsUpdateMessage ? (
+            <p className="text-sm text-[var(--color-danger)]">
+              {groupsUpdateMessage}
+            </p>
+          ) : null}
+          <UserGroupManagement
+            users={usersSWR.data}
+            isLoading={usersLoading}
+            onRoleChange={handleRoleChange}
+            canEditRoles={canEditRoles}
+            canCreateCustomUser={canCreateCustomUser}
+            pendingUserIds={pendingRoleUpdates}
+            onPauseUser={handlePauseUser}
+            onResumeUser={handleResumeUser}
+            onDeleteUser={handleDeleteUser}
+            onRenewUuid={handleRenewUuid}
+            onCreateCustomUser={handleCreateCustomUser}
+            onManageBlacklist={() => setIsBlacklistOpen(true)}
+            onGroupsChange={handleGroupsChange}
+            pendingGroupUserIds={pendingGroupUpdates}
+          />
+        </div>
+      ) : null}
+
+      {activeTab === "homepage" ? (
+        <div className="p-4 sm:p-5">
+          <HomepageVideoSettingsPanel
+            settings={homepageVideoSWR.data}
+            isLoading={homepageVideoSWR.isLoading}
+            isSaving={homepageVideoSaving}
+            canEdit={canEditPermissions}
+            statusMessage={homepageVideoStatus}
+            errorMessage={homepageVideoError}
+            onSave={handleSaveHomepageVideo}
+          />
+        </div>
+      ) : null}
+
       <EmailBlacklist
         isOpen={isBlacklistOpen}
         onClose={() => setIsBlacklistOpen(false)}
