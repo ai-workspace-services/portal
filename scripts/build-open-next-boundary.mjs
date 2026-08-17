@@ -1,4 +1,4 @@
-import { cp, lstat, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -7,11 +7,21 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const appRoot = path.join(projectRoot, "src", "app");
 const generatedRoot = path.join(projectRoot, ".edge-build");
 const boundary = readBoundary(process.argv.slice(2));
+const cloudflareConfigPath = process.env.CLOUDFLARE_BOUNDARY_CONFIG
+  ? path.resolve(projectRoot, process.env.CLOUDFLARE_BOUNDARY_CONFIG)
+  : path.join(projectRoot, "config", "cloudflare-boundaries.json");
+const cloudflareConfig = JSON.parse(await readFile(cloudflareConfigPath, "utf8"));
+const cloudflareEnvironment = process.env.CLOUDFLARE_ENV || "uat";
+const environmentConfig = cloudflareConfig.environments?.[cloudflareEnvironment];
+const boundaryConfig = cloudflareConfig.boundaries?.[boundary];
+if (!environmentConfig || !boundaryConfig) {
+  throw new Error(`Cloudflare boundary config is missing environment=${cloudflareEnvironment} boundary=${boundary}`);
+}
 
 const boundaries = {
   public: {
-    workerName: "frontend-ssr-public",
-    routes: ["console-uat.onwalk.net/*", "console-uat.onwalk.net/_edge/public/*"],
+    workerName: boundaryConfig.worker_name,
+    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => !isApi(relativePath) && !startsWithAny(relativePath, [
       "(auth)/",
       "blogs/",
@@ -29,45 +39,23 @@ const boundaries = {
     ]),
   },
   content: {
-    workerName: "frontend-ssr-content",
-    routes: [
-      "console-uat.onwalk.net/blogs*",
-      "console-uat.onwalk.net/docs*",
-      "console-uat.onwalk.net/download*",
-      "console-uat.onwalk.net/_edge/content/*",
-    ],
+    workerName: boundaryConfig.worker_name,
+    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, ["blogs/", "docs/", "download/"]),
   },
   auth: {
-    workerName: "frontend-ssr-auth",
-    routes: [
-      "console-uat.onwalk.net/login*",
-      "console-uat.onwalk.net/register*",
-      "console-uat.onwalk.net/email-verification*",
-      "console-uat.onwalk.net/logout*",
-      "console-uat.onwalk.net/_edge/auth/*",
-    ],
+    workerName: boundaryConfig.worker_name,
+    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, ["(auth)/", "logout/"]),
   },
   console: {
-    workerName: "frontend-ssr-console",
-    routes: [
-      "console-uat.onwalk.net/panel*",
-      "console-uat.onwalk.net/dashboard*",
-      "console-uat.onwalk.net/_edge/console/*",
-    ],
+    workerName: boundaryConfig.worker_name,
+    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, ["panel/", "dashboard/"]),
   },
   workspace: {
-    workerName: "frontend-ssr-workspace",
-    routes: [
-      "console-uat.onwalk.net/ai-workspace*",
-      "console-uat.onwalk.net/cloud_iac*",
-      "console-uat.onwalk.net/editor*",
-      "console-uat.onwalk.net/support*",
-      "console-uat.onwalk.net/xworkmate*",
-      "console-uat.onwalk.net/_edge/workspace/*",
-    ],
+    workerName: boundaryConfig.worker_name,
+    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, [
       "ai-workspace/",
       "cloud_iac/",
@@ -83,6 +71,7 @@ const definition = boundaries[boundary];
 if (!definition) {
   throw new Error(`Unknown SSR boundary: ${boundary}. Expected one of ${Object.keys(boundaries).join(", ")}.`);
 }
+const routes = definition.routeSuffixes.map((suffix) => `${environmentConfig.console_host}${suffix}`);
 
 const boundaryRoot = path.join(generatedRoot, boundary);
 await rm(boundaryRoot, { recursive: true, force: true });
@@ -156,10 +145,10 @@ await writeFile(
     assets: { directory: ".open-next/assets", binding: "ASSETS" },
     services: [{ binding: "WORKER_SELF_REFERENCE", service: definition.workerName }],
     env: {
-      uat: {
-        name: `${definition.workerName}-uat`,
-        routes: definition.routes.map((pattern) => ({ pattern, zone_name: "onwalk.net" })),
-        services: [{ binding: "WORKER_SELF_REFERENCE", service: `${definition.workerName}-uat` }],
+      [cloudflareEnvironment]: {
+        name: `${definition.workerName}-${cloudflareEnvironment}`,
+        routes: routes.map((pattern) => ({ pattern, zone_name: environmentConfig.zone_name })),
+        services: [{ binding: "WORKER_SELF_REFERENCE", service: `${definition.workerName}-${cloudflareEnvironment}` }],
         images: { binding: "IMAGES" },
       },
     },
