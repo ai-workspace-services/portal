@@ -1,4 +1,5 @@
 {
+  "_comment": "Local development fixture only. Deployment consumes GitOps EdgeRoutingConfig via CLOUDFLARE_BOUNDARY_CONFIG.",
   "environments": {
     "sit": {
       "console_host": "console-cloudflare-sit.onwalk.net",
