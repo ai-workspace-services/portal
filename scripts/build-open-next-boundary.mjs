@@ -218,16 +218,16 @@ function normaliseCloudflareConfig(config) {
   if (config.kind !== "EdgeRoutingConfig") return config;
   const spec = config.spec ?? {};
   const cloudflare = spec.cloudflare ?? {};
-  const hosts = spec.hosts ?? {};
+  const serverless = spec.serverless ?? {};
   const environment = config.metadata?.environment ?? process.env.CLOUDFLARE_ENV ?? "uat";
-  const boundaries = Object.fromEntries((spec.ssr ?? []).map((item) => [item.id, {
+  const boundaries = Object.fromEntries((serverless.ssr ?? []).map((item) => [item.id, {
     worker_name: item.worker_name,
     route_suffixes: item.route_suffixes,
   }]));
   return {
     environments: {
       [environment]: {
-        console_host: hosts.console_cloudflare,
+        console_host: serverless.console_host,
         zone_name: cloudflare.zone_name,
       },
     },
