@@ -41,6 +41,13 @@ echo ""
 echo "Generating runtime configuration module..."
 node scripts/generate-runtime-config-module.mjs
 
+# Ensure static-dashboard has access to all public assets during static export
+if [[ ! -e "static-dashboard/public" && -d "public" ]]; then
+  echo ""
+  echo "Linking public assets to static-dashboard/public..."
+  ln -s ../public static-dashboard/public
+fi
+
 # Build contentlayer artifacts used by non-doc pages. Static/Workers builds
 # can skip this legacy empty source; the default VPS build keeps it enabled.
 if [[ "${SKIP_CONTENTLAYER:-false}" == "true" ]]; then
