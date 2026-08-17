@@ -10,7 +10,7 @@ const boundary = readBoundary(process.argv.slice(2));
 const cloudflareConfigPath = process.env.CLOUDFLARE_BOUNDARY_CONFIG
   ? path.resolve(projectRoot, process.env.CLOUDFLARE_BOUNDARY_CONFIG)
   : path.join(projectRoot, "config", "cloudflare-boundaries.json");
-const cloudflareConfig = JSON.parse(await readFile(cloudflareConfigPath, "utf8"));
+const cloudflareConfig = normaliseCloudflareConfig(JSON.parse(await readFile(cloudflareConfigPath, "utf8")));
 const cloudflareEnvironment = process.env.CLOUDFLARE_ENV || "uat";
 const environmentConfig = cloudflareConfig.environments?.[cloudflareEnvironment];
 const boundaryConfig = cloudflareConfig.boundaries?.[boundary];
@@ -212,6 +212,27 @@ console.log(`Built SSR boundary ${boundary}: ${selectedPages.length} page entrie
 function readBoundary(args) {
   const index = args.indexOf("--boundary");
   return index >= 0 ? args[index + 1] : "";
+}
+
+function normaliseCloudflareConfig(config) {
+  if (config.kind !== "EdgeRoutingConfig") return config;
+  const spec = config.spec ?? {};
+  const cloudflare = spec.cloudflare ?? {};
+  const hosts = spec.hosts ?? {};
+  const environment = config.metadata?.environment ?? process.env.CLOUDFLARE_ENV ?? "uat";
+  const boundaries = Object.fromEntries((spec.ssr ?? []).map((item) => [item.id, {
+    worker_name: item.worker_name,
+    route_suffixes: item.route_suffixes,
+  }]));
+  return {
+    environments: {
+      [environment]: {
+        console_host: hosts.console_cloudflare,
+        zone_name: cloudflare.zone_name,
+      },
+    },
+    boundaries,
+  };
 }
 
 function releaseId() {
