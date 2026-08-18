@@ -33,10 +33,9 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
     {
       title: "资源",
       items: [
-        { label: "文档中心", href: "/docs" },
         { label: "下载", href: "/download" },
         { label: "定价", href: "/prices" },
-        { label: "支持", href: "/support" },
+        { label: "帮助与支持", href: "/support" },
       ],
     },
     {
@@ -71,10 +70,9 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
     {
       title: "Resources",
       items: [
-        { label: "Docs", href: "/docs" },
         { label: "Download", href: "/download" },
         { label: "Pricing", href: "/prices" },
-        { label: "Support", href: "/support" },
+        { label: "Help & support", href: "/support" },
       ],
     },
     {

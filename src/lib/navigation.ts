@@ -14,7 +14,6 @@ import {
   Settings,
   Plus,
   Home,
-  FileText,
   Book,
   Info,
   CreditCard,
@@ -89,14 +88,6 @@ export const createNavConfig = (
       showOn: "both",
     },
     {
-      key: "docs",
-      label: isChinese ? "文档" : "Docs",
-      href: "/docs",
-      icon: FileText,
-      active: (pathname) => pathname?.startsWith("/docs"),
-      showOn: "both",
-    },
-    {
       key: "console",
       label: isChinese ? "控制台" : "Console",
       href: "/panel",
@@ -127,7 +118,7 @@ export const createNavConfig = (
       label: isChinese ? "支持" : "Support",
       href: "/support",
       icon: LifeBuoy,
-      active: (pathname) => pathname === "/support",
+      active: (pathname) => pathname === "/support" || pathname?.startsWith("/docs"),
       showOn: "both",
     },
     {
