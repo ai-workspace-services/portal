@@ -7,7 +7,7 @@
  *
  * 结构上的核心变化：把「3 步开启」做成转化主干而不是装饰性图文，
  * 每步给出时长预期和结果预览，区块末尾只留一个 primary 按钮。
- * 站点级的 MarketingNav / Footer 保持复用，只有主体内容进入 .xds 作用域。
+ * 导航与页脚用 xds 版站点组件，整页都在 .xds 作用域内。
  */
 
 import Link from "next/link";
@@ -32,8 +32,8 @@ import {
   Zap,
 } from "lucide-react";
 
-import Footer from "@/components/Footer";
-import MarketingNav from "@/components/marketing/MarketingNav";
+import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
+import XdsSiteNav from "@/components/xds/XdsSiteNav";
 import {
   XdsBadge,
   XdsCard,
@@ -43,6 +43,7 @@ import {
   XdsSectionHead,
 } from "@/components/ui/xds";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import ProductShotFrame from "@/components/products/ProductShotFrame";
 import xconnectContent from "@/data/content/xconnect.json";
 
 type Lang = "zh" | "en";
@@ -89,6 +90,11 @@ const COPY = {
     stepAction: "完成安全设置",
     wizardCta: "创建账户，开始第 1 步",
     wizardDocs: "先看完整部署文档",
+    previewEyebrow: "Preview",
+    previewTitle: "控制台与客户端，装完就是这个样子",
+    previewLead:
+      "下面三张来自真实界面：控制台总览、节点与凭据面板、客户端主界面。截图未配齐时保留同尺寸占位，版式不变。",
+    previewPlaceholder: "界面截图待补充",
     featEyebrow: "Capabilities",
     featTitle: "连接层要解决的六件事",
     feats: [
@@ -231,6 +237,11 @@ const COPY = {
     stepAction: "Finish security setup",
     wizardCta: "Create an account, start step 1",
     wizardDocs: "Read the full deployment guide first",
+    previewEyebrow: "Preview",
+    previewTitle: "What the console and client actually look like",
+    previewLead:
+      "Three real screens: console overview, node and credential panel, and the client itself. Slots without a screenshot keep their reserved frame, so the layout never collapses.",
+    previewPlaceholder: "Screenshot coming soon",
     featEyebrow: "Capabilities",
     featTitle: "Six things a connectivity layer has to solve",
     feats: [
@@ -287,16 +298,22 @@ export default function XConnectPage() {
   const t = COPY[lang];
   const localized = xconnectContent as unknown as Record<
     string,
-    { hero?: { badge?: string } } | undefined
+    | {
+        hero?: { badge?: string };
+        showcases?: Array<{ title?: string; image?: string }>;
+      }
+    | undefined
   >;
   const content = localized[lang] ?? localized.zh;
   const badge = content?.hero?.badge ?? "AI Connectivity";
+  // 预览带的图来自内容数据，缺图的位置留占位框而不是塌掉一格
+  const shots = (content?.showcases ?? []).slice(0, 3);
 
   return (
-    <div style={{ minHeight: "100vh", overflowX: "hidden" }}>
-      <MarketingNav />
+    <div className="xds" style={{ minHeight: "100vh", overflowX: "hidden" }}>
+      <XdsSiteNav />
 
-      <main className="xds" style={{ paddingTop: 24 }}>
+      <main style={{ paddingTop: 24 }}>
         {/* ───────────────── Hero ───────────────── */}
         <section className="xds-hero">
           <div className="xds-container">
@@ -472,6 +489,30 @@ export default function XConnectPage() {
             </div>
           </div>
         </section>
+
+        {/* ───────────────── 界面预览 ───────────────── */}
+        {shots.length ? (
+          <section className="xds-section-sm xds-preview" id="preview">
+            <div className="xds-container">
+              <XdsSectionHead
+                eyebrow={t.previewEyebrow}
+                title={t.previewTitle}
+                lead={t.previewLead}
+              />
+              <div className="xds-gallery">
+                {shots.map((shot, idx) => (
+                  <figure key={shot.image ?? idx}>
+                    <ProductShotFrame
+                      src={shot.image}
+                      alt={shot.title ?? t.previewTitle}
+                      placeholder={t.previewPlaceholder}
+                    />
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* ───────────────── 能力矩阵 ───────────────── */}
         <section
@@ -682,9 +723,7 @@ export default function XConnectPage() {
         </section>
       </main>
 
-      <div className="mx-auto w-full max-w-6xl px-6 pb-10 lg:px-8">
-        <Footer />
-      </div>
+      <XdsSiteFooter brand="XConnect" />
     </div>
   );
 }
