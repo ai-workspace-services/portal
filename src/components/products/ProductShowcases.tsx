@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { WebsiteShowcasePayload } from "@/lib/docsServiceClient";
+import ProductShotFrame from "./ProductShotFrame";
 
 interface ProductShowcasesProps {
   showcases: WebsiteShowcasePayload[];
@@ -73,9 +74,7 @@ export default function ProductShowcases({ showcases }: ProductShowcasesProps) {
                 <p className="xds-t-lead">{showcase.description}</p>
               </div>
               <div className="xds-showcase-media">
-                {/* 走 CMS 返回的任意来源地址，不上 next/image 以免域名白名单拦截 */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={encodeURI(showcase.image)} alt={showcase.title} />
+                <ProductShotFrame src={showcase.image} alt={showcase.title} />
               </div>
             </div>
           );
