@@ -179,10 +179,7 @@ export default function MarketingNav() {
     <header className="xds xds-mnav" ref={navRef}>
       <div className="xds-container-wide xds-mnav-inner">
         <div className="xds-mnav-wayfind">
-          <MarketingBreadcrumbs
-            brand={content.brand.title}
-            tagline={content.brand.tagline}
-          />
+          <MarketingBreadcrumbs />
         </div>
 
         <nav className="xds-mnav-links xds-mnav-desktop">
