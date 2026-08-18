@@ -39,7 +39,10 @@ function NavLink({
   onNavigate?: () => void;
 }) {
   const external = isExternal(link.href);
-  const isRepo = external && /(^|\.)github\.com/i.test(new URL(link.href).host);
+  // 站内 /github 是跳转到开源仓库的入口，和直挂外链一样按仓库样式渲染。
+  const isRepo = external
+    ? /(^|\.)github\.com$/i.test(new URL(link.href).host)
+    : link.href === "/github";
 
   if (isRepo) {
     return (

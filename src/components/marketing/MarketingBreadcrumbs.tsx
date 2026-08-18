@@ -115,7 +115,7 @@ export default function MarketingBreadcrumbs({
     return (
       <Link href="/" className="xds-logo xds-mnav-lockup">
         {brand}
-        <span className="xds-mnav-tagline">{tagline}</span>
+        {tagline ? <span className="xds-mnav-tagline">{tagline}</span> : null}
       </Link>
     );
   }
