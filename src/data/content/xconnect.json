@@ -1,53 +1,127 @@
 {
   "zh": {
     "hero": {
-      "badge": "AI 工作空间连接器与加速",
+      "badge": "AI 连接与网络中枢",
       "title": "XConnect",
-      "subtitle": "面向自建与预置 AI 工作空间的连接器，为工作流、协作与访问提供统一入口。",
+      "subtitle": "AI Connectivity · 为 AI Workspace 提供高速、稳定、安全的全球连接能力与私有环境穿透。",
       "cta": {
-        "label": "立即体验",
-        "href": "/panel"
-      }
+        "label": "立即下载客户端",
+        "href": "https://console.svc.plus/download"
+      },
+      "downloadUrl": "https://console.svc.plus/download",
+      "supportedPlatforms": "macOS · Windows · Linux · iOS · Android（明确不支持鸿蒙OS）"
+    },
+    "wizard": {
+      "title": "3 步开启安全加速连接",
+      "description": "通过向导快速部署客户端，打通本地开发环境与全球 AI 节点。",
+      "steps": [
+        {
+          "step": 1,
+          "title": "获取客户端",
+          "description": "访问下载中心获取最新安装包。",
+          "link": "https://console.svc.plus/download",
+          "platforms": "macOS · Windows · Linux · iOS · Android（明确不支持鸿蒙OS）"
+        },
+        {
+          "step": 2,
+          "title": "同步凭证配置",
+          "description": "登录控制台账号，自动同步工作空间路由与安全接入策略。"
+        },
+        {
+          "step": 3,
+          "title": "一键开启直连",
+          "description": "点击 Connect 启动安全加密隧道，保持上下文与算力始终在线。"
+        }
+      ]
     },
     "showcases": [
       {
-        "title": "工作空间连接",
-        "description": "统一连接自建、组织预置和托管工作区，让用户在一个入口里进入真实工作流。",
-        "icon": "network",
+        "title": "全球 AI 链路专线加速"
+      },
+      {
+        "description": "多区域节点智能调度与最优路由算法，大幅降低大模型 API 与 Agent 调用的延迟与抖动。",
+        "icon": "zap",
         "image": "/marketing/xconnect/product.png"
       },
       {
-        "title": "AI 加速能力",
-        "description": "为高频任务、实时交互和跨区域访问提供加速路径与稳定体验。",
-        "icon": "activity",
+        "title": "私有环境与本地 Workspace 穿透"
+      },
+      {
+        "description": "安全穿越复杂网络环境，将本地代码仓库、内网数据库与专有算力无缝接入云端 AI 工作台。",
+        "icon": "shield-check",
         "image": "/marketing/xconnect/panel.png",
         "reverse": true
+      },
+      {
+        "title": "全平台客户端统一体验"
+      },
+      {
+        "description": "覆盖桌面与移动端主流操作系统，快速安装即开即用（macOS · Windows · Linux · iOS · Android，明确不支持鸿蒙OS）。",
+        "icon": "monitor",
+        "image": "/marketing/xconnect/homepage.png"
       }
     ]
   },
   "en": {
     "hero": {
-      "badge": "AI workspace connector & acceleration",
+      "badge": "AI Connectivity & Network Hub",
       "title": "XConnect",
-      "subtitle": "A connector for self-hosted and provisioned AI workspaces, with unified access for real work.",
+      "subtitle": "AI Connectivity · Delivering fast, secure, and resilient global connectivity and private environment tunneling for AI Workspace.",
       "cta": {
-        "label": "Experience now",
-        "href": "/panel"
-      }
+        "label": "Download Client",
+        "href": "https://console.svc.plus/download"
+      },
+      "downloadUrl": "https://console.svc.plus/download",
+      "supportedPlatforms": "macOS · Windows · Linux · iOS · Android (HarmonyOS explicitly not supported)"
+    },
+    "wizard": {
+      "title": "Get Connected in 3 Simple Steps",
+      "description": "Quickly set up the client and link your local development environment to global AI nodes.",
+      "steps": [
+        {
+          "step": 1,
+          "title": "Download Client",
+          "description": "Visit the download center to get the installer for your platform.",
+          "link": "https://console.svc.plus/download",
+          "platforms": "macOS · Windows · Linux · iOS · Android (HarmonyOS explicitly not supported)"
+        },
+        {
+          "step": 2,
+          "title": "Sync Credentials",
+          "description": "Log in with your console account to automatically synchronize workspace routing policies."
+        },
+        {
+          "step": 3,
+          "title": "One-Click Connect",
+          "description": "Click Connect to establish an encrypted tunnel and keep your compute and context online."
+        }
+      ]
     },
     "showcases": [
       {
-        "title": "Workspace connection",
-        "description": "Connect self-hosted, organization-provisioned, and managed workspaces from one entry point.",
-        "icon": "network",
+        "title": "Global AI Link Acceleration"
+      },
+      {
+        "description": "Smart multi-region node dispatching and optimal routing to minimize latency and jitter for LLM and Agent calls.",
+        "icon": "zap",
         "image": "/marketing/xconnect/product.png"
       },
       {
-        "title": "AI acceleration",
-        "description": "Provide a fast, stable path for high-frequency tasks, live collaboration, and cross-region access.",
-        "icon": "activity",
+        "title": "Private Environment Tunneling"
+      },
+      {
+        "description": "Securely traverse complex networks to bridge local repositories, private databases, and dedicated compute to cloud AI Workspaces.",
+        "icon": "shield-check",
         "image": "/marketing/xconnect/panel.png",
         "reverse": true
+      },
+      {
+        "title": "Unified Cross-Platform Experience"
+      },
+      {
+        "description": "Full support across mainstream desktop and mobile operating systems (macOS · Windows · Linux · iOS · Android, HarmonyOS explicitly not supported).",
+        "icon": "monitor",
+        "image": "/marketing/xconnect/homepage.png"
       }
     ]
   }

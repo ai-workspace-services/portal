@@ -1,4 +1,5 @@
-"use client";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /**
  * 帮助中心 —— Micro SaaS 模版第 4 页
@@ -37,6 +38,147 @@ import {
 } from "@/components/ui/xds";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import docsHomeContent from "@/data/content/docs-home";
+import DocsSearch from "./DocsSearch";
+
+const collectionIcons: Record<string, LucideIcon> = {
+  xworkmate: Blocks,
+  xconnect: Network,
+  "ai-workspace": Sparkles,
+  "open-platform": Boxes,
+};
+
+const PRODUCT_GROUPS = [
+  {
+    slug: "xworkmate",
+    sourceSlugs: ["01-console", "02-accounts"],
+    zh: {
+      title: "XWorkmate",
+      description:
+        "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中。",
+    },
+    en: {
+      title: "XWorkmate",
+      description:
+        "AI Workspace · Bring AI into real work instead of keeping it in conversation.",
+    },
+  },
+  {
+    slug: "xconnect",
+    sourceSlugs: ["integrations", "03-rag-server"],
+    zh: {
+      title: "XConnect",
+      description:
+        "AI Connectivity · 为你的 AI Workspace 提供稳定、安全的连接能力。",
+    },
+    en: {
+      title: "XConnect",
+      description:
+        "AI Connectivity · Stable, secure connectivity for your AI Workspace.",
+    },
+  },
+  {
+    slug: "ai-workspace",
+    sourceSlugs: ["get-started", "core-concepts", "zh", "en"],
+    zh: {
+      title: "AI Workspace",
+      description: "对话、任务与工具一体化，持续产出可交付成果。",
+    },
+    en: {
+      title: "AI Workspace",
+      description:
+        "Conversations, tasks, and tools in one place—continuously producing deliverables.",
+    },
+  },
+  {
+    slug: "open-platform",
+    sourceSlugs: ["04-postgresql", "reference"],
+    zh: {
+      title: "Open Platform",
+      description:
+        "Platform & Infrastructure · 提供可控、可扩展的基础支撑，支持从托管到自建。",
+    },
+    en: {
+      title: "Open Platform",
+      description:
+        "Platform & Infrastructure · Controlled, extensible foundations from managed services to self-hosting.",
+    },
+  },
+] as const;
+
+function toProductCollections(
+  collections: DocCollectionPayload[],
+  language: "zh" | "en",
+): DocCollectionPayload[] {
+  const bySlug = new Map(
+    collections.map((collection) => [collection.slug, collection]),
+  );
+
+  return PRODUCT_GROUPS.map((group) => {
+    const sources = group.sourceSlugs
+      .map((slug) => bySlug.get(slug))
+      .filter((collection): collection is DocCollectionPayload =>
+        Boolean(collection),
+      );
+    const primary = sources[0];
+    const versions = sources.flatMap((collection) => collection.versions);
+    const entryVersion =
+      primary?.defaultVersionSlug || primary?.versions[0]?.slug;
+
+    return {
+      slug: group.slug,
+      title: group[language].title,
+      description: group[language].description,
+      updatedAt: primary?.updatedAt,
+      tags: Array.from(
+        new Set(sources.flatMap((collection) => collection.tags)),
+      ),
+      versions,
+      defaultVersionSlug: entryVersion || "overview",
+      entryHref:
+        primary && entryVersion
+          ? `/docs/${primary.slug}/${entryVersion}`
+          : "/docs",
+      articleCount: versions.length,
+      category: primary?.category,
+    };
+  });
+}
+
+export default async function DocsHome() {
+  const headerStore = await headers();
+  const preferred =
+    headerStore.get("x-language") ??
+    headerStore.get("accept-language") ??
+    "";
+  const language: "zh" | "en" = preferred.toLowerCase().includes("zh")
+    ? "zh"
+    : "en";
+  const isChinese = language === "zh";
+
+  let home;
+  let rawCollections: DocCollectionPayload[] = [];
+
+  try {
+    const [h, c] = await Promise.all([getDocsHome(), getDocCollections()]);
+    home = h;
+    rawCollections = c;
+  } catch {
+    const fallback =
+      (docsHomeContent as any)[language] || (docsHomeContent as any).zh;
+    home = fallback?.home;
+    rawCollections = fallback?.collections || [];
+  }
+
+  const collections =
+    rawCollections.length > 0
+      ? toProductCollections(rawCollections, language)
+      : [];
+
+  const firstCollectionHref =
+    collections[0]?.entryHref ||
+    (collections[0]
+      ? `/docs/${collections[0].slug}/${collections[0].defaultVersionSlug}`
+      : "/docs/get-started/overview");
 
 type Collection = {
   slug: string;

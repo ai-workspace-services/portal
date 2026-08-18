@@ -1,0 +1,124 @@
+name: Validate Frontend Delivery
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-frontend-delivery.yml"
+      - "Dockerfile*"
+      - ".dockerignore"
+      - "deploy/nginx/**"
+      - "docs/zh/deployment/**"
+      - "package.json"
+      - "yarn.lock"
+      - "next.config.mjs"
+      - "open-next.config.ts"
+      - "wrangler.worker.jsonc"
+      - "public/**"
+      - "scripts/**"
+      - "src/**"
+      - "static-dashboard/**"
+  push:
+    branches:
+      - "feature/**"
+    paths:
+      - ".github/workflows/validate-frontend-delivery.yml"
+      - "Dockerfile*"
+      - ".dockerignore"
+      - "deploy/nginx/**"
+      - "package.json"
+      - "yarn.lock"
+      - "next.config.mjs"
+      - "open-next.config.ts"
+      - "wrangler.worker.jsonc"
+      - "public/**"
+      - "scripts/**"
+      - "src/**"
+      - "static-dashboard/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-delivery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  next-builds:
+    name: Node 24 / ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: static-dashboard
+            command: yarn build:static-dashboard
+          - target: frontend-server-node
+            command: yarn build:frontend-server:node
+          - target: frontend-ssr-public
+            command: yarn build:ssr:public
+          - target: frontend-ssr-content
+            command: yarn build:ssr:content
+          - target: frontend-ssr-auth
+            command: yarn build:ssr:auth
+          - target: frontend-ssr-console
+            command: yarn build:ssr:console
+          - target: frontend-ssr-workspace
+            command: yarn build:ssr:workspace
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Yarn
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build ${{ matrix.target }}
+        run: ${{ matrix.command }}
+
+  docker-builds:
+    name: Docker / ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: all-in-one
+            file: Dockerfile
+            port: 8080
+          - target: static-dashboard
+            file: Dockerfile.static-dashboard
+            port: 8080
+          - target: frontend-server
+            file: Dockerfile.frontend-server
+            port: 3000
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.target }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          load: true
+          push: false
+          tags: portal-${{ matrix.target }}:validation
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+
+      - name: Smoke test ${{ matrix.target }} image
+        run: ./.github/scripts/smoke_test_image.sh
+        env:
+          TARGET: ${{ matrix.target }}
+          CONTAINER_PORT: ${{ matrix.port }}

@@ -18,9 +18,14 @@ export type DocVersionPayload = {
   description: string;
   updatedAt?: string;
   tags: string[];
+  markdown?: string;
+  plaintext?: string;
+  sourcePath?: string;
+  editUrl?: string;
   html: string;
   toc: Array<{ level: number; title: string; anchor: string }>;
   category?: string;
+  language?: string;
 };
 
 export type DocCollectionPayload = {
@@ -31,6 +36,8 @@ export type DocCollectionPayload = {
   tags: string[];
   versions: DocVersionPayload[];
   defaultVersionSlug: string;
+  entryHref?: string;
+  articleCount?: number;
   category?: string;
 };
 
@@ -38,6 +45,17 @@ export type DocPagePayload = {
   collection: DocCollectionPayload;
   version: DocVersionPayload;
   breadcrumbs: Array<{ label: string; href: string }>;
+};
+
+export type DocSearchHitPayload = {
+  kind: "doc";
+  slug: string;
+  title: string;
+  excerpt: string;
+  sourcePath?: string;
+  plaintext?: string;
+  collection?: string;
+  href: string;
 };
 
 export type BlogCategoryPayload = {
@@ -53,6 +71,7 @@ export type BlogPostPayload = {
   tags: string[];
   excerpt: string;
   html: string;
+  toc: Array<{ level: number; title: string; anchor: string }>;
   category?: BlogCategoryPayload;
   language?: string;
   sourcePath: string;
@@ -68,9 +87,65 @@ export type BlogListPayload = {
   totalPages: number;
 };
 
+export type WebsiteCTA = {
+  label: string;
+  href: string;
+};
+
+export type WebsiteHeroPayload = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  cta: WebsiteCTA;
+  downloadUrl?: string;
+  supportedPlatforms?: string;
+};
+
+export type WebsiteWizardStepPayload = {
+  step: number;
+  title: string;
+  description: string;
+  platforms?: string;
+  link?: string;
+};
+
+export type WebsiteWizardPayload = {
+  title: string;
+  description: string;
+  steps: WebsiteWizardStepPayload[];
+};
+
+export type WebsiteShowcasePayload = {
+  title: string;
+  description: string;
+  icon?: string;
+  image: string;
+  reverse?: boolean;
+};
+
+export type WebsiteProductPayload = {
+  slug: string;
+  language: string;
+  hero: WebsiteHeroPayload;
+  wizard?: WebsiteWizardPayload;
+  showcases: WebsiteShowcasePayload[];
+  sourcePath?: string;
+  updatedAt?: string;
+};
+
+export type WebsiteProductSummaryPayload = {
+  slug: string;
+  title: string;
+  badge: string;
+  subtitle: string;
+  language: string;
+  href: string;
+};
+
 async function detectLanguage(): Promise<"zh" | "en"> {
   const store = await headers();
-  const preferred = store.get("x-language") ?? store.get("accept-language") ?? "";
+  const preferred =
+    store.get("x-language") ?? store.get("accept-language") ?? "";
   return preferred.toLowerCase().includes("zh") ? "zh" : "en";
 }
 
@@ -97,7 +172,9 @@ export async function getDocsHome(): Promise<DocsHomePayload> {
 
 export async function getDocCollections(): Promise<DocCollectionPayload[]> {
   const lang = await detectLanguage();
-  return request<DocCollectionPayload[]>(`/api/v1/docs/collections?lang=${lang}`);
+  return request<DocCollectionPayload[]>(
+    `/api/v1/docs/collections?lang=${lang}`,
+  );
 }
 
 export async function getDocPage(
@@ -107,6 +184,21 @@ export async function getDocPage(
   const lang = await detectLanguage();
   return request<DocPagePayload>(
     `/api/v1/docs/pages/${collection}/${slug}?lang=${lang}`,
+  );
+}
+
+export async function searchDocs(
+  query: string,
+  limit = 10,
+): Promise<DocSearchHitPayload[]> {
+  const lang = await detectLanguage();
+  const search = new URLSearchParams({
+    lang,
+    query,
+    limit: String(limit),
+  });
+  return request<DocSearchHitPayload[]>(
+    `/api/v1/docs/search?${search.toString()}`,
   );
 }
 
@@ -131,9 +223,53 @@ export async function getBlogPost(slug: string): Promise<BlogPostPayload> {
   return request<BlogPostPayload>(`/api/v1/blogs/${slug}?lang=${lang}`);
 }
 
-export async function getLatestBlogPosts(limit = 7): Promise<BlogPostPayload[]> {
+export async function getLatestBlogPosts(
+  limit = 7,
+): Promise<BlogPostPayload[]> {
   const lang = await detectLanguage();
   return request<BlogPostPayload[]>(
     `/api/v1/home/latest-blogs?lang=${lang}&limit=${limit}`,
   );
 }
+
+export async function getProducts(
+  langOverride?: "zh" | "en",
+): Promise<WebsiteProductSummaryPayload[]> {
+  const lang = langOverride || (await detectLanguage());
+  try {
+    return await request<WebsiteProductSummaryPayload[]>(
+      `/api/v1/products?lang=${lang}`,
+    );
+  } catch (error) {
+    console.warn("Failed to fetch products from content-service", error);
+    return [];
+  }
+}
+
+export async function getProduct(
+  slug: string,
+  langOverride?: "zh" | "en",
+): Promise<WebsiteProductPayload | null> {
+  const lang = langOverride || (await detectLanguage());
+  try {
+    return await request<WebsiteProductPayload>(
+      `/api/v1/products/${slug}?lang=${lang}`,
+    );
+  } catch (error) {
+    console.warn(`Failed to fetch product ${slug} from content-service`, error);
+    return null;
+  }
+}
+
+export async function getWebsiteHomepage(
+  langOverride?: "zh" | "en",
+): Promise<any | null> {
+  const lang = langOverride || (await detectLanguage());
+  try {
+    return await request<any>(`/api/v1/website/homepage?lang=${lang}`);
+  } catch (error) {
+    console.warn("Failed to fetch homepage marketing from content-service", error);
+    return null;
+  }
+}
+

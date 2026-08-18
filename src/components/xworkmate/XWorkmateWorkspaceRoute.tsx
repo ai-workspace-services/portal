@@ -5,13 +5,19 @@ import type { ReactNode } from "react";
 
 import { XWorkmateWorkspacePage } from "@/components/xworkmate/XWorkmateWorkspacePage";
 
-export function XWorkmateWorkspaceRoute(): ReactNode {
+export function XWorkmateWorkspaceRoute({
+  trialMode = false,
+}: {
+  trialMode?: boolean;
+}): ReactNode {
   const searchParams = useSearchParams();
+  const isTrialEntry = searchParams.get("entry") === "trial";
 
   return (
     <XWorkmateWorkspacePage
       initialPrompt={searchParams.get("prompt") ?? ""}
       initialSessionKey={searchParams.get("sessionKey") ?? ""}
+      trialMode={trialMode || isTrialEntry}
     />
   );
 }

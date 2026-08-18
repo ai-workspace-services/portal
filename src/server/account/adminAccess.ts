@@ -20,6 +20,24 @@ export function isPlatformRootEmail(email?: string): boolean {
   return email?.trim().toLowerCase() === PLATFORM_ROOT_EMAIL;
 }
 
+/**
+ * Operations pages are role-gated. A permission string alone must not grant
+ * access to the operational console or its account APIs.
+ */
+export function isOperationsUser(user: AccountSessionUser | null): boolean {
+  if (!user) {
+    return false;
+  }
+  if (user.role === "admin" || user.role === "operator") {
+    return true;
+  }
+  return user.groups.some((group) =>
+    ["root", "admin", "administrator", "operator", "ops"].includes(
+      group.trim().toLowerCase(),
+    ),
+  );
+}
+
 function hasRole(
   user: AccountSessionUser,
   roles: AccountUserRole[],

@@ -19,6 +19,7 @@ export type AccountTenantMembership = {
 export type AccountSessionUser = {
   id: string;
   uuid: string;
+  proxyUuid: string;
   email: string;
   name?: string;
   username?: string;
@@ -43,6 +44,7 @@ type RawAccountTenant = {
 type RawAccountUser = {
   id?: unknown;
   uuid?: unknown;
+  proxyUuid?: unknown;
   email?: unknown;
   name?: unknown;
   username?: unknown;
@@ -140,6 +142,7 @@ function buildUser(
     return null;
   }
   const identifier = normalizeString(raw.uuid) ?? normalizeString(raw.id);
+  const proxyUuid = normalizeString(raw.proxyUuid) ?? "";
   const email = normalizeString(raw.email);
   if (!identifier || !email) {
     return null;
@@ -158,6 +161,7 @@ function buildUser(
   return {
     id: identifier,
     uuid: identifier,
+    proxyUuid,
     email,
     name: name ?? undefined,
     username: username ?? undefined,

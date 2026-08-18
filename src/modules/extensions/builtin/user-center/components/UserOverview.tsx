@@ -1,97 +1,128 @@
-'use client'
+"use client";
 
-import { useCallback, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Copy } from 'lucide-react'
+import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Copy } from "lucide-react";
 
-import { useLanguage } from '@i18n/LanguageProvider'
-import { translations } from '@i18n/translations'
-import { hasPublicUserEmail } from '@lib/publicUserIdentity'
-import { useUserStore } from '@lib/userStore'
+import { useLanguage } from "@i18n/LanguageProvider";
+import { translations } from "@i18n/translations";
+import { hasPublicUserEmail } from "@lib/publicUserIdentity";
+import { useUserStore } from "@lib/userStore";
 
-import Card from './Card'
-import VlessQrCard from './VlessQrCard'
+import Card from "./Card";
+import VlessQrCard from "./VlessQrCard";
 
 type UserOverviewProps = {
-  hideMfaMainPrompt?: boolean
-  dashboardLayout?: boolean
-  hideVless?: boolean
-}
-export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayout = false, hideVless = false }: UserOverviewProps) {
-  const router = useRouter()
-  const { language } = useLanguage()
-  const copy = translations[language].userCenter.overview
-  const mfaCopy = translations[language].userCenter.mfa
-  const user = useUserStore((state) => state.user)
-  const logout = useUserStore((state) => state.logout)
-  const [copied, setCopied] = useState(false)
+  hideMfaMainPrompt?: boolean;
+  dashboardLayout?: boolean;
+  hideVless?: boolean;
+  showIdentityNote?: boolean;
+};
+export default function UserOverview({
+  hideMfaMainPrompt = false,
+  dashboardLayout = false,
+  hideVless = false,
+  showIdentityNote = true,
+}: UserOverviewProps) {
+  const router = useRouter();
+  const { language } = useLanguage();
+  const copy = translations[language].userCenter.overview;
+  const mfaCopy = translations[language].userCenter.mfa;
+  const user = useUserStore((state) => state.user);
+  const logout = useUserStore((state) => state.logout);
+  const [copied, setCopied] = useState(false);
   const shouldRenderPublicEmail = hasPublicUserEmail({
     email: user?.email,
     role: user?.role,
-  })
+  });
 
-  const uuid = user?.uuid ?? user?.id ?? '—'
-  const vlessUuid = user?.uuid ?? user?.id ?? null
-  const username = user?.username ?? '—'
-  const email = shouldRenderPublicEmail ? user?.email : '—'
-  const docsUrl = mfaCopy.actions.docsUrl
+  const proxyUuid = user?.proxyUuid ?? "";
+  const vlessProxyUuid = proxyUuid || null;
+  const username = user?.username ?? "—";
+  const email = shouldRenderPublicEmail ? user?.email : "—";
+  const docsUrl = mfaCopy.actions.docsUrl;
 
   const mfaStatusLabel = useMemo(() => {
     if (user?.mfaEnabled) {
-      return mfaCopy.state.enabled
+      return mfaCopy.state.enabled;
     }
     if (user?.mfaPending) {
-      return mfaCopy.state.pending
+      return mfaCopy.state.pending;
     }
-    return mfaCopy.state.disabled
-  }, [mfaCopy.state.disabled, mfaCopy.state.enabled, mfaCopy.state.pending, user?.mfaEnabled, user?.mfaPending])
+    return mfaCopy.state.disabled;
+  }, [
+    mfaCopy.state.disabled,
+    mfaCopy.state.enabled,
+    mfaCopy.state.pending,
+    user?.mfaEnabled,
+    user?.mfaPending,
+  ]);
 
-  const requiresSetup = Boolean(user && !user.isReadOnly && (!user.mfaEnabled || user.mfaPending))
-  const shouldShowMfaMainPrompt = !hideMfaMainPrompt && !user?.isReadOnly
+  const requiresSetup = Boolean(
+    user && !user.isReadOnly && (!user.mfaEnabled || user.mfaPending),
+  );
+  const shouldShowMfaMainPrompt = !hideMfaMainPrompt && !user?.isReadOnly;
+  const dashboardCardClassName = dashboardLayout
+    ? `${hideVless ? "xl:col-span-4" : "xl:col-span-3"} !p-4`
+    : "";
 
   const handleCopy = useCallback(async () => {
-    const identifier = user?.uuid ?? user?.id
+    const identifier = user?.proxyUuid;
     if (!identifier) {
-      return
+      return;
     }
 
     try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard && 'writeText' in navigator.clipboard) {
-        await navigator.clipboard.writeText(identifier)
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.clipboard &&
+        "writeText" in navigator.clipboard
+      ) {
+        await navigator.clipboard.writeText(identifier);
       } else {
-        const textarea = document.createElement('textarea')
-        textarea.value = identifier
-        textarea.style.position = 'fixed'
-        textarea.style.opacity = '0'
-        document.body.appendChild(textarea)
-        textarea.focus()
-        textarea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textarea)
+        const textarea = document.createElement("textarea");
+        textarea.value = identifier;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
       }
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.warn('Failed to copy UUID', error)
+      console.warn("Failed to copy UUID", error);
     }
-  }, [user?.id, user?.uuid])
+  }, [user?.proxyUuid]);
 
   const handleGoToSetup = useCallback(() => {
-    router.push('/panel/account?setupMfa=1')
-  }, [router])
+    router.push("/panel/account?setupMfa=1");
+  }, [router]);
 
   const handleLogout = useCallback(async () => {
-    await logout()
-    router.replace('/login')
-    router.refresh()
-  }, [logout, router])
+    await logout();
+    router.replace("/login");
+    router.refresh();
+  }, [logout, router]);
 
   return (
     <div className="space-y-6 text-[var(--color-text)] transition-colors">
-      <div className={dashboardLayout ? 'border-b border-[color:var(--color-surface-border)] pb-4' : ''}>
-        <p className="text-sm text-[var(--color-text-subtle)] opacity-90">{copy.uuidNote}</p>
-      </div>
+      {showIdentityNote ? (
+        <div
+          className={
+            dashboardLayout
+              ? "border-b border-[color:var(--color-surface-border)] pb-4"
+              : ""
+          }
+        >
+          <p className="text-sm text-[var(--color-text-subtle)] opacity-90">
+            {copy.uuidNote}
+          </p>
+        </div>
+      ) : null}
 
       {shouldShowMfaMainPrompt && requiresSetup ? (
         <div className="rounded-[var(--radius-xl)] border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-4 text-sm text-[var(--color-warning-foreground)] transition-colors">
@@ -128,57 +159,81 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
         aria-label="Account identity and connection"
         className={
           dashboardLayout
-            ? 'grid gap-4 md:grid-cols-2 xl:grid-cols-12'
-            : 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'
+            ? "grid gap-4 md:grid-cols-2 xl:grid-cols-12"
+            : "grid gap-4 md:grid-cols-2 lg:grid-cols-3"
         }
       >
-        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
+        <Card className={dashboardCardClassName}>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.uuid.label}</p>
-              <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">{uuid}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+                {copy.cards.proxyUuid.label}
+              </p>
+              <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">
+                {proxyUuid || "—"}
+              </p>
             </div>
             <button
               type="button"
               onClick={handleCopy}
-              disabled={!user?.id}
+              disabled={!proxyUuid}
               className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-surface-border)] px-3 py-1 text-xs font-medium text-[var(--color-text-subtle)] transition-colors hover:border-[color:var(--color-primary-border)] hover:text-[var(--color-primary)] disabled:cursor-not-allowed disabled:border-[color:var(--color-surface-border)] disabled:text-[var(--color-text-subtle)] opacity-100 disabled:opacity-60"
-              aria-label={copy.cards.uuid.copy}
+              aria-label={copy.cards.proxyUuid.copy}
             >
               <Copy className="h-3.5 w-3.5" />
-              {copied ? copy.cards.uuid.copied : copy.cards.uuid.copy}
+              {copied ? copy.cards.proxyUuid.copied : copy.cards.proxyUuid.copy}
             </button>
           </div>
-          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.uuid.description}</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">
+            {copy.cards.proxyUuid.description}
+          </p>
         </Card>
 
         {!hideVless ? (
           <VlessQrCard
-            uuid={vlessUuid}
+            proxyUuid={vlessProxyUuid}
             copy={copy.cards.vless}
-            className={dashboardLayout ? 'xl:col-span-6' : ''}
+            className={dashboardLayout ? "xl:col-span-6" : ""}
           />
         ) : null}
 
-        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.username.label}</p>
-          <p className="mt-1 text-base font-medium text-[var(--color-text)]">{username}</p>
-          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.username.description}</p>
+        <Card className={dashboardCardClassName}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+            {copy.cards.username.label}
+          </p>
+          <p className="mt-1 text-base font-medium text-[var(--color-text)]">
+            {username}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">
+            {copy.cards.username.description}
+          </p>
         </Card>
 
-        <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.email.label}</p>
-          <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">{email}</p>
-          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.email.description}</p>
+        <Card className={dashboardCardClassName}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+            {copy.cards.email.label}
+          </p>
+          <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">
+            {email}
+          </p>
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">
+            {copy.cards.email.description}
+          </p>
         </Card>
 
         {shouldShowMfaMainPrompt ? (
-          <Card className={dashboardLayout ? 'xl:col-span-3' : ''}>
+          <Card className={dashboardCardClassName}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.cards.mfa.label}</p>
-                <p className="mt-1 text-base font-medium text-[var(--color-text)]">{mfaStatusLabel}</p>
-                <p className="mt-3 text-xs text-[var(--color-text-subtle)]">{copy.cards.mfa.description}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+                  {copy.cards.mfa.label}
+                </p>
+                <p className="mt-1 text-base font-medium text-[var(--color-text)]">
+                  {mfaStatusLabel}
+                </p>
+                <p className="mt-3 text-xs text-[var(--color-text-subtle)]">
+                  {copy.cards.mfa.description}
+                </p>
               </div>
               <Link
                 href="/panel/account?setupMfa=1"
@@ -191,5 +246,5 @@ export default function UserOverview({ hideMfaMainPrompt = false, dashboardLayou
         ) : null}
       </div>
     </div>
-  )
+  );
 }

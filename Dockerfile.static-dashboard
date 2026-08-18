@@ -1,0 +1,25 @@
+ARG NODE_BUILDER_IMAGE=node:24-bookworm
+ARG NGINX_RUNTIME_IMAGE=nginx:1.27-alpine
+
+FROM ${NODE_BUILDER_IMAGE} AS builder
+
+WORKDIR /app/dashboard
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends rsync \
+    && rm -rf /var/lib/apt/lists/* \
+    && corepack enable \
+    && corepack prepare yarn@4.12.0 --activate
+
+COPY . .
+RUN yarn install --immutable \
+    && yarn build:static-dashboard
+
+FROM ${NGINX_RUNTIME_IMAGE} AS runner
+
+COPY static-dashboard/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dashboard/static-dashboard/out /usr/share/nginx/html
+
+EXPOSE 8080

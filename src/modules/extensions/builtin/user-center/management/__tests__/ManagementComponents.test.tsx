@@ -98,6 +98,57 @@ describe("Management dashboard components", () => {
     expect(handleRoleChange).toHaveBeenCalledWith("2", "admin");
   });
 
+  it("toggles a segment tag and preserves the rest of the user's groups", () => {
+    const handleGroupsChange = vi.fn();
+    const users = [
+      {
+        id: "1",
+        email: "user@example.com",
+        role: "user",
+        groups: ["segment:registered", "Admin"],
+      },
+    ];
+
+    render(
+      <UserGroupManagement
+        users={users}
+        canEditRoles
+        onGroupsChange={handleGroupsChange}
+      />,
+    );
+
+    // 已有的自定义分组("Admin")照常展示，不被四个建议标签吞掉。
+    expect(screen.getByText("Admin")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "订阅用户" }));
+    expect(handleGroupsChange).toHaveBeenCalledWith("1", [
+      "segment:registered",
+      "Admin",
+      "segment:subscribed",
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: "注册用户" }));
+    expect(handleGroupsChange).toHaveBeenCalledWith("1", ["Admin"]);
+  });
+
+  it("disables segment tag buttons while a groups update is pending", () => {
+    const users = [
+      { id: "1", email: "user@example.com", role: "user", groups: [] },
+    ];
+
+    render(
+      <UserGroupManagement
+        users={users}
+        canEditRoles
+        onGroupsChange={vi.fn()}
+        pendingGroupUserIds={new Set(["1"])}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "注册用户" })).toBeDisabled();
+    expect(screen.getByText("更新中…")).toBeInTheDocument();
+  });
+
   it("shows usernames and treats missing active flags as enabled", () => {
     render(
       <UserGroupManagement

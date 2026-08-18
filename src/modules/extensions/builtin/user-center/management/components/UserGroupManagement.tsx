@@ -35,12 +35,28 @@ type UserGroupManagementProps = {
   onRenewUuid?: (userId: string) => void;
   onManageBlacklist?: () => void;
   onCreateCustomUser?: (input: CreateManagedUserInput) => Promise<void> | void;
+  // 分段标签走独立接口(PUT /admin/users/:id/groups), 与角色更新分开
+  // pending —— 共用 pendingUserIds 会让改标签时角色下拉框也跟着显示
+  // "更新中", 语义不对。
+  onGroupsChange?: (userId: string, groups: string[]) => void;
+  pendingGroupUserIds?: Set<string>;
 };
 
 const ROLE_OPTIONS = [
   { value: "admin", label: "管理员" },
   { value: "operator", label: "运营者" },
   { value: "user", label: "用户" },
+];
+
+// 运营手动打的分段标签，用 "segment:" 前缀与 groups 里其它含义的值
+// (如 "Admin"、"ReadOnly Role" 这类由代码匹配的角色标记，或节点准入分组)
+// 分开，避免互相踩踏。这里只是常用建议项，不是后端强制的枚举——
+// UserGroupManagement 仍然可以给任意用户加任意自定义分组。
+export const SEGMENT_TAGS: Array<{ value: string; label: string }> = [
+  { value: "segment:registered", label: "注册用户" },
+  { value: "segment:subscribed", label: "订阅用户" },
+  { value: "segment:operations", label: "运营用户" },
+  { value: "segment:beta", label: "内测用户" },
 ];
 
 function parseGroupList(input: string): string[] {
@@ -86,9 +102,39 @@ export function UserGroupManagement({
   onRenewUuid,
   onManageBlacklist,
   onCreateCustomUser,
+  onGroupsChange,
+  pendingGroupUserIds,
 }: UserGroupManagementProps) {
   const data = useMemo(() => users ?? [], [users]);
   const pendingSet = pendingUserIds ?? new Set<string>();
+  const pendingGroupSet = pendingGroupUserIds ?? new Set<string>();
+
+  const toggleSegmentTag = (user: ManagedUser, tag: string) => {
+    if (!onGroupsChange) return;
+    const current = user.groups ?? [];
+    const next = current.includes(tag)
+      ? current.filter((g) => g !== tag)
+      : [...current, tag];
+    onGroupsChange(user.id, next);
+  };
+
+  const addCustomGroup = (user: ManagedUser) => {
+    if (!onGroupsChange) return;
+    const input = prompt("添加自定义分组名称：");
+    const value = input?.trim();
+    if (!value) return;
+    const current = user.groups ?? [];
+    if (current.includes(value)) return;
+    onGroupsChange(user.id, [...current, value]);
+  };
+
+  const removeGroup = (user: ManagedUser, group: string) => {
+    if (!onGroupsChange) return;
+    onGroupsChange(
+      user.id,
+      (user.groups ?? []).filter((g) => g !== group),
+    );
+  };
 
   const [customEmail, setCustomEmail] = useState("");
   const [customUuid, setCustomUuid] = useState("");
@@ -277,7 +323,12 @@ export function UserGroupManagement({
                 : data.map((user) => {
                     const role = user.role ?? "user";
                     const isPending = pendingSet.has(user.id);
+                    const isGroupsPending = pendingGroupSet.has(user.id);
                     const isActive = user.active !== false;
+                    const userGroups = user.groups ?? [];
+                    const customGroups = userGroups.filter(
+                      (g) => !SEGMENT_TAGS.some((tag) => tag.value === g),
+                    );
                     return (
                       <tr
                         key={user.id}
@@ -310,8 +361,66 @@ export function UserGroupManagement({
                             </p>
                           ) : null}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {user.groups?.join("、") || "—"}
+                        <td className="px-4 py-3">
+                          <div className="flex max-w-xs flex-wrap items-center gap-1.5">
+                            {SEGMENT_TAGS.map((tag) => {
+                              const active = userGroups.includes(tag.value);
+                              return (
+                                <button
+                                  key={tag.value}
+                                  type="button"
+                                  disabled={!onGroupsChange || isGroupsPending}
+                                  onClick={() => toggleSegmentTag(user, tag.value)}
+                                  className={`rounded-full border px-2 py-0.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                                    active
+                                      ? "border-purple-300 bg-purple-100 text-purple-700"
+                                      : "border-gray-200 text-gray-400 hover:border-purple-200 hover:text-purple-500"
+                                  }`}
+                                  title={
+                                    active
+                                      ? `点击移除「${tag.label}」`
+                                      : `点击标记为「${tag.label}」`
+                                  }
+                                >
+                                  {tag.label}
+                                </button>
+                              );
+                            })}
+                            {customGroups.map((group) => (
+                              <span
+                                key={group}
+                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                              >
+                                {group}
+                                {onGroupsChange ? (
+                                  <button
+                                    type="button"
+                                    disabled={isGroupsPending}
+                                    onClick={() => removeGroup(user, group)}
+                                    className="text-gray-400 hover:text-red-500 disabled:cursor-not-allowed"
+                                    aria-label={`移除分组 ${group}`}
+                                  >
+                                    ×
+                                  </button>
+                                ) : null}
+                              </span>
+                            ))}
+                            {onGroupsChange ? (
+                              <button
+                                type="button"
+                                disabled={isGroupsPending}
+                                onClick={() => addCustomGroup(user)}
+                                className="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-xs text-gray-400 hover:border-purple-300 hover:text-purple-500 disabled:cursor-not-allowed"
+                              >
+                                + 自定义
+                              </button>
+                            ) : null}
+                            {isGroupsPending ? (
+                              <span className="text-xs text-purple-500">
+                                更新中…
+                              </span>
+                            ) : null}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <span

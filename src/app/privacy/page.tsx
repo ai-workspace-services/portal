@@ -25,7 +25,7 @@ type PolicyContent = {
 
 const enContent: PolicyContent = {
   title: "Privacy Policy",
-  subtitle: "This Privacy Policy explains how XWork Technologies LLC collects, uses, and protects your information across the SVC+ Cloud-Neutral Platform, our AI-native workspaces, and developer infrastructure.",
+  subtitle: "This Privacy Policy explains how XWork Technologies LLC collects, uses, and protects your information across the SVC+ XWork Tech Platform, our AI-native workspaces, and developer infrastructure.",
   effective: "Effective Date: October 1, 2026",
   updated: "Last Updated: October 1, 2026",
   overview: [
@@ -123,7 +123,7 @@ const enContent: PolicyContent = {
 
 const zhContent: PolicyContent = {
   title: "隐私政策",
-  subtitle: "本隐私政策说明了 XWork Technologies LLC 如何在 SVC+ Cloud-Neutral Platform、AI 原生工作区和开发者基础设施中收集、使用和保护您的信息。",
+  subtitle: "本隐私政策说明了 XWork Technologies LLC 如何在 SVC+ XWork Tech Platform、AI 原生工作区和开发者基础设施中收集、使用和保护您的信息。",
   effective: "生效日期：2026年10月1日",
   updated: "最后更新：2026年10月1日",
   overview: [

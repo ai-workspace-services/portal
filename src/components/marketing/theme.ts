@@ -6,6 +6,10 @@
 // with dark/light theme switching.
 
 export const marketingTheme = {
+  brand: {
+    title: "text-lg font-semibold tracking-tight text-primary",
+    tagline: "text-sm font-semibold tracking-tight text-slate-500",
+  },
   section: {
     // Horizontal page gutter, consistent across every section.
     container: "mx-auto w-full max-w-6xl px-6 lg:px-8",

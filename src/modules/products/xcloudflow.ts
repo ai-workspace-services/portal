@@ -1,4 +1,4 @@
-import { readPublicStripePrice, type ProductConfig } from "./registry";
+import { type ProductConfig } from "./registry";
 
 const xcloudflow: ProductConfig = {
   slug: "xcloudflow",
@@ -50,33 +50,6 @@ const xcloudflow: ProductConfig = {
         external: true,
       },
     ],
-  },
-  billing: {
-    paygo: {
-      name: "CloudFlow 任务包",
-      description: "按量购买编排执行次数，灵活扩展。",
-      price: 12,
-      currency: "USD",
-      mode: "payment",
-      planId: "XCLOUDFLOW-PAYGO",
-      stripePriceId: readPublicStripePrice(
-        "NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_PAYGO",
-      ),
-      meta: { tier: "usage", product: "xcloudflow" },
-    },
-    saas: {
-      name: "CloudFlow SaaS",
-      description: "托管版多云编排与管控，含团队协作。",
-      price: 59,
-      currency: "USD",
-      interval: "month",
-      mode: "subscription",
-      planId: "XCLOUDFLOW-SUBSCRIPTION",
-      stripePriceId: readPublicStripePrice(
-        "NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_SUBSCRIPTION",
-      ),
-      meta: { tier: "team", product: "xcloudflow" },
-    },
   },
 };
 

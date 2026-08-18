@@ -150,7 +150,7 @@ export function AuthLayout({
           <div className="mb-6 flex items-center justify-between gap-4">
             <Link href="/" className="space-y-1">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
-                Cloud-Neutral Toolkit
+                XWork Tech Toolkit
               </p>
               <p className="text-2xl font-semibold tracking-[-0.04em] text-slate-900">
                 Svc.Plus

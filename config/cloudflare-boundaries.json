@@ -1,0 +1,39 @@
+{
+  "_comment": "Local development fixture only. Deployment consumes GitOps EdgeRoutingConfig via CLOUDFLARE_BOUNDARY_CONFIG.",
+  "environments": {
+    "sit": {
+      "console_host": "console-cloudflare-sit.onwalk.net",
+      "zone_name": "onwalk.net"
+    },
+    "uat": {
+      "console_host": "console-cloudflare-uat.onwalk.net",
+      "zone_name": "onwalk.net"
+    },
+    "prod": {
+      "console_host": "console.svc.plus",
+      "zone_name": "svc.plus"
+    }
+  },
+  "boundaries": {
+    "public": {
+      "worker_name": "frontend-ssr-public",
+      "route_suffixes": ["/*", "/_edge/public/*"]
+    },
+    "content": {
+      "worker_name": "frontend-ssr-content",
+      "route_suffixes": ["/blogs*", "/docs*", "/download*", "/_edge/content/*"]
+    },
+    "auth": {
+      "worker_name": "frontend-ssr-auth",
+      "route_suffixes": ["/login*", "/register*", "/email-verification*", "/logout*", "/_edge/auth/*"]
+    },
+    "console": {
+      "worker_name": "frontend-ssr-console",
+      "route_suffixes": ["/panel*", "/dashboard*", "/_edge/console/*"]
+    },
+    "workspace": {
+      "worker_name": "frontend-ssr-workspace",
+      "route_suffixes": ["/ai-workspace*", "/cloud_iac*", "/editor*", "/support*", "/xworkmate*", "/_edge/workspace/*"]
+    }
+  }
+}

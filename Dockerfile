@@ -1,8 +1,9 @@
 # =======================================================
+# all-in-one: static-dashboard + frontend-server standalone
 # Global ARGs — 必须在所有 FROM 之前声明
 # =======================================================
-ARG NODE_BUILDER_IMAGE=node:22-bookworm
-ARG NODE_RUNTIME_IMAGE=node:22-slim
+ARG NODE_BUILDER_IMAGE=node:24-bookworm
+ARG NODE_RUNTIME_IMAGE=node:24-slim
 ARG CONTENTLAYER_BUILD=true
 ARG NEXT_PUBLIC_APP_BASE_URL=
 ARG NEXT_PUBLIC_SITE_URL=
@@ -83,7 +84,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
 # 基础镜像升级到最新
 # ---------------------------
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl git \
+    && apt-get install -y --no-install-recommends curl git rsync \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable \
@@ -92,8 +93,8 @@ RUN apt-get update \
 COPY . .
 RUN find . -name "package-lock.json" -delete
 RUN yarn install --immutable && \
-    yarn prebuild && \
-    yarn next build
+    yarn build:static-dashboard && \
+    yarn build:frontend-server:node
 
 # -------------------------------------------------------
 # Stage 2 — Runtime (极致瘦身)
@@ -121,7 +122,7 @@ ENV NODE_ENV=production \
 # 基础镜像升级到最新
 # ---------------------------
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends tini ca-certificates \
+    && apt-get install -y --no-install-recommends tini ca-certificates nginx \
     && apt-get dist-upgrade -y \
     && apt-get install -y --no-install-recommends --only-upgrade libpam-modules libpam-modules-bin libpam-runtime libpam0g zlib1g \
     && rm -rf /var/lib/apt/lists/*
@@ -132,6 +133,36 @@ RUN apt-get update \
 COPY --from=builder /app/dashboard/.next/standalone ./
 COPY --from=builder /app/dashboard/.next/static ./static
 COPY --from=builder /app/dashboard/public ./public
+# Turbopack's compiled instrumentation entrypoint loads server chunks that are
+# not included by the standalone file trace. Keep the matching chunk set with
+# it or the runtime fails before serving any request.
+COPY --from=builder /app/dashboard/.next/server/chunks ./.next/server/chunks
+# Turbopack externalizes Node-only OpenTelemetry hooks behind hashed aliases
+# under .next/node_modules. Preserve those aliases and their small dependency
+# closure; the standalone file trace does not include instrumentation.ts.
+COPY --from=builder /app/dashboard/.next/node_modules ./.next/node_modules
+COPY --from=builder /app/dashboard/node_modules/require-in-the-middle ./node_modules/require-in-the-middle
+COPY --from=builder /app/dashboard/node_modules/import-in-the-middle ./node_modules/import-in-the-middle
+COPY --from=builder /app/dashboard/node_modules/debug ./node_modules/debug
+COPY --from=builder /app/dashboard/node_modules/module-details-from-path ./node_modules/module-details-from-path
+COPY --from=builder /app/dashboard/node_modules/cjs-module-lexer ./node_modules/cjs-module-lexer
+COPY --from=builder /app/dashboard/node_modules/es-module-lexer ./node_modules/es-module-lexer
+COPY --from=builder /app/dashboard/node_modules/ms ./node_modules/ms
+COPY --from=builder /app/dashboard/node_modules/supports-color ./node_modules/supports-color
+COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
+# Next's standalone trace excludes the compiled instrumentation entrypoint.
+# Copy it explicitly so the runtime server executes instrumentation.ts before
+# accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
+COPY --from=builder /app/dashboard/.next/server/instrumentation.js ./.next/server/instrumentation.js
+
+# ---------------------------
+# static-dashboard + unified ingress
+# ---------------------------
+COPY --from=builder /app/dashboard/static-dashboard/out /usr/share/nginx/html
+COPY --from=builder /app/dashboard/.next/static /usr/share/nginx/html/_next/static
+COPY deploy/nginx/all-in-one.conf /etc/nginx/conf.d/default.conf
+COPY scripts/start-all-in-one.sh /usr/local/bin/start-all-in-one
+RUN chmod +x /usr/local/bin/start-all-in-one
 
 # ---------------------------
 # 额外瘦身（可减少 15–40 MB）
@@ -143,8 +174,8 @@ COPY --from=builder /app/dashboard/public ./public
 
 # （如果 Edge Runtime 里用不到 font/SWC 也可移除，比现在更狠）
 
-EXPOSE 3000
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["node", "server.js"]
+CMD ["/usr/local/bin/start-all-in-one"]

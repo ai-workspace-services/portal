@@ -1,0 +1,171 @@
+# =======================================================
+# frontend-server: Next.js standalone for Node/VPS
+# Global ARGs — 必须在所有 FROM 之前声明
+# =======================================================
+ARG NODE_BUILDER_IMAGE=node:24-bookworm
+ARG NODE_RUNTIME_IMAGE=node:24-slim
+ARG CONTENTLAYER_BUILD=true
+ARG NEXT_PUBLIC_APP_BASE_URL=
+ARG NEXT_PUBLIC_SITE_URL=
+ARG NEXT_PUBLIC_LOGIN_URL=
+ARG NEXT_PUBLIC_DOCS_BASE_URL=
+ARG NEXT_PUBLIC_RUNTIME_ENVIRONMENT=
+ARG NEXT_PUBLIC_RUNTIME_REGION=
+ARG NEXT_PUBLIC_GISCUS_REPO=
+ARG NEXT_PUBLIC_GISCUS_REPO_ID=
+ARG NEXT_PUBLIC_GISCUS_CATEGORY=
+ARG NEXT_PUBLIC_GISCUS_CATEGORY_ID=
+ARG NEXT_PUBLIC_PAYPAL_CLIENT_ID=
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_PAYGO=
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_SUBSCRIPTION=
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_PAYGO=
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_SUBSCRIPTION=
+ARG NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_PAYGO=
+ARG NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_SUBSCRIPTION=
+ARG NEXT_PUBLIC_RELEASE_IMAGE=
+ARG NEXT_PUBLIC_RELEASE_TAG=
+ARG NEXT_PUBLIC_RELEASE_COMMIT=
+ARG NEXT_PUBLIC_RELEASE_VERSION=
+
+# -------------------------------------------------------
+# Stage 1 — Builder (Turbopack + standalone)
+# -------------------------------------------------------
+FROM ${NODE_BUILDER_IMAGE} AS builder
+
+WORKDIR /app/dashboard
+
+ARG NEXT_PUBLIC_APP_BASE_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_LOGIN_URL
+ARG NEXT_PUBLIC_DOCS_BASE_URL
+ARG NEXT_PUBLIC_RUNTIME_ENVIRONMENT
+ARG NEXT_PUBLIC_RUNTIME_REGION
+ARG NEXT_PUBLIC_GISCUS_REPO
+ARG NEXT_PUBLIC_GISCUS_REPO_ID
+ARG NEXT_PUBLIC_GISCUS_CATEGORY
+ARG NEXT_PUBLIC_GISCUS_CATEGORY_ID
+ARG NEXT_PUBLIC_PAYPAL_CLIENT_ID
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_PAYGO
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_SUBSCRIPTION
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_PAYGO
+ARG NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_SUBSCRIPTION
+ARG NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_PAYGO
+ARG NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_SUBSCRIPTION
+ARG NEXT_PUBLIC_RELEASE_IMAGE
+ARG NEXT_PUBLIC_RELEASE_TAG
+ARG NEXT_PUBLIC_RELEASE_COMMIT
+ARG NEXT_PUBLIC_RELEASE_VERSION
+
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_PRIVATE_TURBOPACK=1 \
+    NEXT_PUBLIC_APP_BASE_URL=${NEXT_PUBLIC_APP_BASE_URL} \
+    NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
+    NEXT_PUBLIC_LOGIN_URL=${NEXT_PUBLIC_LOGIN_URL} \
+    NEXT_PUBLIC_DOCS_BASE_URL=${NEXT_PUBLIC_DOCS_BASE_URL} \
+    NEXT_PUBLIC_RUNTIME_ENVIRONMENT=${NEXT_PUBLIC_RUNTIME_ENVIRONMENT} \
+    NEXT_PUBLIC_RUNTIME_REGION=${NEXT_PUBLIC_RUNTIME_REGION} \
+    NEXT_PUBLIC_GISCUS_REPO=${NEXT_PUBLIC_GISCUS_REPO} \
+    NEXT_PUBLIC_GISCUS_REPO_ID=${NEXT_PUBLIC_GISCUS_REPO_ID} \
+    NEXT_PUBLIC_GISCUS_CATEGORY=${NEXT_PUBLIC_GISCUS_CATEGORY} \
+    NEXT_PUBLIC_GISCUS_CATEGORY_ID=${NEXT_PUBLIC_GISCUS_CATEGORY_ID} \
+    NEXT_PUBLIC_PAYPAL_CLIENT_ID=${NEXT_PUBLIC_PAYPAL_CLIENT_ID} \
+    NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_PAYGO=${NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_PAYGO} \
+    NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_SUBSCRIPTION=${NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_SUBSCRIPTION} \
+    NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_PAYGO=${NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_PAYGO} \
+    NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_SUBSCRIPTION=${NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_SUBSCRIPTION} \
+    NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_PAYGO=${NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_PAYGO} \
+    NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_SUBSCRIPTION=${NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_SUBSCRIPTION} \
+    NEXT_PUBLIC_RELEASE_IMAGE=${NEXT_PUBLIC_RELEASE_IMAGE} \
+    NEXT_PUBLIC_RELEASE_TAG=${NEXT_PUBLIC_RELEASE_TAG} \
+    NEXT_PUBLIC_RELEASE_COMMIT=${NEXT_PUBLIC_RELEASE_COMMIT} \
+    NEXT_PUBLIC_RELEASE_VERSION=${NEXT_PUBLIC_RELEASE_VERSION}
+
+# ---------------------------
+# 基础镜像升级到最新
+# ---------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl git rsync \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && corepack enable \
+    && corepack prepare yarn@4.12.0 --activate
+
+COPY . .
+RUN find . -name "package-lock.json" -delete
+RUN yarn install --immutable && \
+    yarn build:frontend-server:node
+
+# -------------------------------------------------------
+# Stage 2 — Runtime (极致瘦身)
+# -------------------------------------------------------
+FROM ${NODE_RUNTIME_IMAGE} AS runner
+
+WORKDIR /app/dashboard/
+
+# RUNTIME_ENV / REGION 刻意不在这里赋值 —— 由运行时(compose 的
+# environment: 或 docker run -e)注入。
+#
+# 这里原本写着 RUNTIME_ENV=prod。runtime-loader 解析环境的第一级就是
+# process.env.RUNTIME_ENV, 所以每一个镜像不论构建来源, 启动即以生产身份
+# 运行、连生产认证服务 —— SIT / UAT / 本地全都如此, 且不报任何错。
+#
+# 镜像不应该知道自己会被部署到哪里: 同一个 digest 要能部署到任意环境, 环境
+# 是部署时的事实, 不是构建时的属性。不赋值时 loader 会落到它自己的默认值
+# (dev), 那是安全的方向 —— 猜错成 dev 只是连不上, 猜错成 prod 会把测试流量
+# 打进生产。
+ENV NODE_ENV=production \
+    PORT=3000
+
+# ---------------------------
+# 安装 tini（修复子进程 + 更快退出）
+# 基础镜像升级到最新
+# ---------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tini ca-certificates \
+    && apt-get dist-upgrade -y \
+    && apt-get install -y --no-install-recommends --only-upgrade libpam-modules libpam-modules-bin libpam-runtime libpam0g zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---------------------------
+# 导入 standalone 的运行产物
+# ---------------------------
+COPY --from=builder /app/dashboard/.next/standalone ./
+COPY --from=builder /app/dashboard/.next/static ./static
+COPY --from=builder /app/dashboard/public ./public
+# Turbopack's compiled instrumentation entrypoint loads server chunks that are
+# not included by the standalone file trace. Keep the matching chunk set with
+# it or the runtime fails before serving any request.
+COPY --from=builder /app/dashboard/.next/server/chunks ./.next/server/chunks
+# Turbopack externalizes Node-only OpenTelemetry hooks behind hashed aliases
+# under .next/node_modules. Preserve those aliases and their small dependency
+# closure; the standalone file trace does not include instrumentation.ts.
+COPY --from=builder /app/dashboard/.next/node_modules ./.next/node_modules
+COPY --from=builder /app/dashboard/node_modules/require-in-the-middle ./node_modules/require-in-the-middle
+COPY --from=builder /app/dashboard/node_modules/import-in-the-middle ./node_modules/import-in-the-middle
+COPY --from=builder /app/dashboard/node_modules/debug ./node_modules/debug
+COPY --from=builder /app/dashboard/node_modules/module-details-from-path ./node_modules/module-details-from-path
+COPY --from=builder /app/dashboard/node_modules/cjs-module-lexer ./node_modules/cjs-module-lexer
+COPY --from=builder /app/dashboard/node_modules/es-module-lexer ./node_modules/es-module-lexer
+COPY --from=builder /app/dashboard/node_modules/ms ./node_modules/ms
+COPY --from=builder /app/dashboard/node_modules/supports-color ./node_modules/supports-color
+COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
+# Next's standalone trace excludes the compiled instrumentation entrypoint.
+# Copy it explicitly so the runtime server executes instrumentation.ts before
+# accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
+COPY --from=builder /app/dashboard/.next/server/instrumentation.js ./.next/server/instrumentation.js
+
+# ---------------------------
+# 额外瘦身（可减少 15–40 MB）
+# ---------------------------
+#RUN rm -rf node_modules/next/dist/compiled/@vercel/og/* \
+#    && rm -rf node_modules/sharp/vendor/* \
+#    && find node_modules -name "*.md" -delete \
+#    && find node_modules -name "*.map" -delete
+
+# （如果 Edge Runtime 里用不到 font/SWC 也可移除，比现在更狠）
+
+EXPOSE 3000
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["node", "server.js"]

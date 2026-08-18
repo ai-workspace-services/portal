@@ -61,7 +61,8 @@ export default function LoginContent({
   const errorParam = searchParams.get("error");
   const registeredParam = searchParams.get("registered");
   const setupMfaParam = searchParams.get("setupMfa");
-  const redirectParam = searchParams.get("redirect");
+  const redirectParam =
+    searchParams.get("redirect") ?? searchParams.get("returnTo");
 
   const normalize = useCallback(
     (value: string) =>
@@ -322,7 +323,9 @@ export default function LoginContent({
           .json()
           .catch(() => ({}));
         const redirectTarget =
-          redirectParam && redirectParam.startsWith("/")
+          redirectParam &&
+          redirectParam.startsWith("/") &&
+          !redirectParam.startsWith("//")
             ? redirectParam
             : undefined;
         router.push(redirectTarget || data?.redirectTo || "/");

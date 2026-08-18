@@ -9,6 +9,8 @@ This `docs/` directory now has a bilingual canonical layer for the current repos
 - Coverage checklist / 覆盖检查矩阵: `docs/DOC_COVERAGE.md`
 - English index / 英文入口: `docs/en/README.md`
 - 中文入口 / Chinese index: `docs/zh/README.md`
+- Homepage design language / 首页设计语言: `docs/design/homepage-conversation-to-delivery.md`
+- Homepage implementation plan / 首页实施计划: `docs/plans/2026-08-11-homepage-conversation-to-delivery.md`
 
 ## Canonical Bilingual Pages / 双语规范页
 

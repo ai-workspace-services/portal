@@ -2,14 +2,12 @@ import 'server-only'
 
 import fs from 'fs'
 import path from 'path'
-
 import yaml from 'js-yaml'
-
-// 使用 process.cwd() 获取项目根目录，避免 __dirname 在生产环境的问题
-const configDir = path.join(process.cwd(), 'src', 'config')
+import { runtimeServiceConfigSources } from '@/config/runtime-service-config.generated'
 
 const FORBIDDEN_IMPORT_CONTEXTS = [
-  `${path.sep}src${path.sep}components${path.sep}ui${path.sep}`,
+  '/src/components/ui/',
+  '\\src\\components\\ui\\',
   'tiptap',
   'mermaid',
   'next-themes',
@@ -35,13 +33,11 @@ function assertServerOnlyContext() {
 assertServerOnlyContext()
 
 function loadYamlSource(sourceKey: RuntimeSourceKey): string | undefined {
-  try {
-    const filePath = path.join(configDir, `runtime-service-config.${sourceKey}.yaml`)
-    return fs.readFileSync(filePath, 'utf8')
-  } catch (error) {
-    console.warn(`[runtime-config] Failed to load YAML source "${sourceKey}"`, error)
-    return undefined
+  const source = runtimeServiceConfigSources[sourceKey]
+  if (!source) {
+    console.warn(`[runtime-config] Generated YAML source "${sourceKey}" is empty.`)
   }
+  return source
 }
 
 type RuntimeSourceKey = 'base' | 'dev' | 'sit' | 'uat' | 'prod'
@@ -73,7 +69,8 @@ export type RuntimeEnvSettings = {
 
 const RUNTIME_ENV_CONFIG_BASENAME = '.runtime-env-config.yaml'
 
-// 动态加载 YAML 源文件，避免 Turbopack 编译问题
+// YAML sources are embedded at build time so the same runtime selection works
+// in Node/VPS and Worker environments without relying on a writable filesystem.
 function getYamlSource(sourceKey: RuntimeSourceKey): string | undefined {
   return loadYamlSource(sourceKey)
 }

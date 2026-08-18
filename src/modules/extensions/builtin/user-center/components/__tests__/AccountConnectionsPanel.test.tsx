@@ -44,7 +44,7 @@ vi.mock("../VlessQrCard", () => ({
 
 describe("AccountConnectionsPanel", () => {
   it("renders service-provided node details without inventing health status", () => {
-    render(<AccountConnectionsPanel uuid="acct-1" />);
+    render(<AccountConnectionsPanel proxyUuid="proxy-1" />);
 
     expect(screen.getByText("JP-XHTTP.SVC.PLUS")).toBeInTheDocument();
     expect(screen.getAllByText("jp-xhttp.svc.plus")).toHaveLength(2);

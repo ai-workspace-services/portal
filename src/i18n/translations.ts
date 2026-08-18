@@ -284,6 +284,8 @@ type AuthLoginTranslation = {
     emailPlaceholder: string
     password: string
     passwordPlaceholder: string
+    showPassword: string
+    hidePassword: string
     remember: string
     submit: string
     submitting?: string
@@ -353,7 +355,7 @@ type UserCenterOverviewTranslation = {
     logout: string
   }
   cards: {
-    uuid: {
+    proxyUuid: {
       label: string
       description: string
       copy: string
@@ -382,7 +384,7 @@ type UserCenterOverviewTranslation = {
       downloadQr: string
       generating: string
       error: string
-      missingUuid: string
+      missingProxyUuid: string
       warning: string
       macPath: string
       linuxPath: string
@@ -451,6 +453,8 @@ type UserCenterMfaTranslation = {
   }
   modal: {
     title: string
+    setupTitle: string
+    setupDescription: string
     close: string
   }
   disable: {
@@ -712,7 +716,7 @@ export type Translation = {
 export const translations: Record<'en' | 'zh', Translation> = {
   en: {
     hero: {
-      title: 'Cloud-Neutral',
+      title: 'XWork Tech',
       description: 'Unified tools for building and managing your cloud native stack.',
       start: 'Get Started',
       learn: 'Learn More',
@@ -770,7 +774,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     login: {
       title: 'Account Login',
-      description: 'Sign in to personalize your Cloud-Neutral experience.',
+      description: 'Sign in to personalize your XWork Tech experience.',
       usernameLabel: 'Username',
       passwordLabel: 'Password',
       submit: 'Sign in',
@@ -867,7 +871,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     auth: {
       register: {
         badge: 'Create account',
-        title: 'Join Cloud-Neutral',
+        title: 'Join XWork Tech',
 
         subtitle: 'We’ll email a verification code so you can confirm your address before accessing the workspace.',
 
@@ -977,10 +981,12 @@ export const translations: Record<'en' | 'zh', Translation> = {
         form: {
           title: 'Sign in to your account',
           subtitle: 'Use the email, password, and authenticator code you registered with.',
-          email: 'User email',
-          emailPlaceholder: 'name@example.com',
+          email: 'Username or email',
+          emailPlaceholder: 'name@example.com or admin',
           password: 'Password',
           passwordPlaceholder: 'Enter your password',
+          showPassword: 'Show password',
+          hidePassword: 'Hide password',
           remember: 'Remember this device',
           submit: 'Sign in',
           mfa: {
@@ -998,7 +1004,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           wechat: 'Continue with WeChat',
         },
         registerPrompt: {
-          text: 'New to Cloud-Neutral?',
+          text: 'New to XWork Tech?',
           link: 'Create an account',
         },
         alerts: {
@@ -1060,7 +1066,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         preferences: 'Preferences',
       },
       items: {
-        dashboard: 'Dashboard',
+        dashboard: 'Overview',
         agents: 'Agents',
         apis: 'APIs',
         accounts: 'Accounts',
@@ -1078,7 +1084,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         loading: 'Loading your personalized space…',
         welcome: 'Welcome back, {name}.',
         guest: 'Sign in to unlock your user center.',
-        uuidNote: 'Your UUID uniquely identifies you across our services.',
+        uuidNote: 'Your proxy UUID identifies this account on access nodes and can be rotated independently.',
         lockBanner: {
           title: 'Finish MFA setup',
           body: 'Complete multi-factor authentication to unlock every panel section.',
@@ -1087,9 +1093,9 @@ export const translations: Record<'en' | 'zh', Translation> = {
           logout: 'Sign out',
         },
         cards: {
-          uuid: {
-            label: 'UUID',
-            description: 'This fingerprint ties every service action back to your account.',
+          proxyUuid: {
+            label: 'Proxy UUID',
+            description: 'This credential is used to access proxy nodes and can be rotated independently from your account identity.',
             copy: 'Copy',
             copied: 'Copied',
           },
@@ -1116,8 +1122,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
             downloadQr: 'Download QR',
             generating: 'Generating QR code…',
             error: 'We could not generate the QR code. Try again later.',
-            missingUuid: 'We could not locate your UUID. Refresh the page or sign in again.',
-            warning: 'Your UUID is the only credential required to access this node. Keep it private and do not share it.',
+            missingProxyUuid: 'We could not locate your proxy UUID. Refresh the page or sign in again.',
+            warning: 'Your proxy UUID is the credential required to access this node. Keep it private and do not share it.',
             macPath: '/opt/homebrew/etc/config.json',
             linuxPath: '/usr/local/etc/config.json',
             qrAlt: 'VLESS connection QR code',
@@ -1188,6 +1194,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         modal: {
           title: 'Manage multi-factor authentication',
+          setupTitle: 'Complete multi-factor authentication',
+          setupDescription: 'This security step protects operations, account actions, and billing changes.',
           close: 'Close window',
         },
         disable: {
@@ -1345,7 +1353,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           ],
         },
         stats: [
-          { value: '0+', label: 'Integration of Cloud-Neutral Toolkit applications' },
+          { value: '0+', label: 'Integration of XWork Tech Toolkit applications' },
           { value: '0+', label: 'Recent 24h Visits' },
           { value: '7', label: 'View our examples and guides' },
         ],
@@ -1357,20 +1365,20 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         shortcuts: {
           title: 'More shortcuts',
-          subtitle: 'Save time when integrating Cloud-Neutral Toolkit',
+          subtitle: 'Save time when integrating XWork Tech Toolkit',
           buttons: {
             start: 'Get Started',
             docs: 'Docs',
             guides: 'Guides',
           },
           items: [
-            { title: 'Get started', description: 'An overview of using Cloud-Neutral Toolkit' },
-            { title: 'Creating your application', description: 'Integrate Cloud-Neutral Toolkit into your application' },
-            { title: 'More about Authentication', description: 'Understand all about authenticating with Cloud-Neutral Toolkit' },
-            { title: 'Understanding Authorization', description: 'Scope out all about authorization using Cloud-Neutral Toolkit' },
-            { title: 'Machine-to-Machine', description: 'Integrate Cloud-Neutral Toolkit into your services' },
-            { title: 'Connect via CLI', description: 'Connect Cloud-Neutral Toolkit with your application via CLI' },
-            { title: 'REST & Admin APIs', description: 'Programmatically integrate Cloud-Neutral Toolkit into your application' },
+            { title: 'Get started', description: 'An overview of using XWork Tech Toolkit' },
+            { title: 'Creating your application', description: 'Integrate XWork Tech Toolkit into your application' },
+            { title: 'More about Authentication', description: 'Understand all about authenticating with XWork Tech Toolkit' },
+            { title: 'Understanding Authorization', description: 'Scope out all about authorization using XWork Tech Toolkit' },
+            { title: 'Machine-to-Machine', description: 'Integrate XWork Tech Toolkit into your services' },
+            { title: 'Connect via CLI', description: 'Connect XWork Tech Toolkit with your application via CLI' },
+            { title: 'REST & Admin APIs', description: 'Programmatically integrate XWork Tech Toolkit into your application' },
           ],
         },
         tabsLabel: 'Product Matrix',
@@ -1652,7 +1660,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     login: {
       title: '账户登录',
-      description: '登录以获得个性化的 Cloud-Neutral 体验。',
+      description: '登录以获得个性化的 XWork Tech 体验。',
       usernameLabel: '用户名',
       passwordLabel: '密码',
       submit: '立即登录',
@@ -1748,7 +1756,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     auth: {
       register: {
         badge: '立即注册',
-        title: '加入 Cloud-Neutral',
+        title: '加入 XWork Tech',
         subtitle: '我们会先向你的邮箱发送验证码，确认地址后即可进入工作台。',
 
         highlights: [
@@ -1843,10 +1851,12 @@ export const translations: Record<'en' | 'zh', Translation> = {
         form: {
           title: '登录账号',
           subtitle: '使用注册时的邮箱、密码和动态验证码即可访问。',
-          email: '用户邮箱',
-          emailPlaceholder: 'name@example.com',
+          email: '用户名或邮箱',
+          emailPlaceholder: '邮箱或用户名',
           password: '密码',
           passwordPlaceholder: '请输入密码',
+          showPassword: '显示密码',
+          hidePassword: '隐藏密码',
           remember: '记住这台设备',
           submit: '登录',
           mfa: {
@@ -1926,7 +1936,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         preferences: '偏好设置',
       },
       items: {
-        dashboard: '仪表盘',
+        dashboard: '总览',
         agents: '运行节点',
         apis: '接口集成',
         accounts: '账户中心',
@@ -1944,7 +1954,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         loading: '正在加载你的专属空间…',
         welcome: '欢迎回来，{name}。',
         guest: '请登录后解锁属于你的用户中心。',
-        uuidNote: 'UUID 是你的唯一身份凭证，后续的所有服务都与它关联在一起。',
+        uuidNote: 'Proxy UUID 用于标识你在代理节点上的访问凭证，可独立于账户身份进行轮换。',
         lockBanner: {
           title: '完成多因素认证',
           body: '完成 MFA 绑定后即可访问所有控制台板块。',
@@ -1953,9 +1963,9 @@ export const translations: Record<'en' | 'zh', Translation> = {
           logout: '退出登录',
         },
         cards: {
-          uuid: {
-            label: 'UUID',
-            description: '这串指纹标识让平台中的每项服务都能准确识别你。',
+          proxyUuid: {
+            label: '代理 UUID',
+            description: '这是访问代理节点的凭证，可独立于账户身份进行轮换。',
             copy: '复制',
             copied: '已复制',
           },
@@ -1982,8 +1992,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
             downloadQr: '下载二维码',
             generating: '二维码生成中…',
             error: '二维码生成失败，请稍后重试。',
-            missingUuid: '无法获取您的 UUID，请刷新页面或重新登录。',
-            warning: 'UUID 是访问节点的唯一凭证，请谨慎保存，勿随意分发。',
+            missingProxyUuid: '无法获取您的代理 UUID，请刷新页面或重新登录。',
+            warning: '代理 UUID 是访问节点的凭证，请谨慎保存，勿随意分发。',
             macPath: '/opt/homebrew/etc/config.json',
             linuxPath: '/usr/local/etc/config.json',
             qrAlt: 'VLESS 连接二维码',
@@ -2050,6 +2060,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         modal: {
           title: '管理多因素认证',
+          setupTitle: '完成多因素认证',
+          setupDescription: '完成后才能使用运营管理、账号处置和计费变更等核心功能。',
           close: '关闭窗口',
         },
         disable: {
@@ -2207,7 +2219,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           ],
         },
         stats: [
-          { value: '0+', label: '集成 Cloud-Neutral Toolkit 的应用程序' },
+          { value: '0+', label: '集成 XWork Tech Toolkit 的应用程序' },
           { value: '0+', label: '最近24小时访量' },
           { value: '7', label: '查看我们的示例和指南' },
         ],
@@ -2219,20 +2231,20 @@ export const translations: Record<'en' | 'zh', Translation> = {
         },
         shortcuts: {
           title: '更多快捷方式',
-          subtitle: '在集成 Cloud-Neutral Toolkit 时节省时间',
+          subtitle: '在集成 XWork Tech Toolkit 时节省时间',
           buttons: {
             start: '开始使用',
             docs: '文档',
             guides: '指南',
           },
           items: [
-            { title: '开始使用', description: 'Cloud-Neutral Toolkit 使用概览' },
-            { title: '创建您的应用程序', description: '将 Cloud-Neutral Toolkit 集成到您的应用程序中' },
-            { title: '关于身份验证', description: '了解有关使用 Cloud-Neutral Toolkit 进行身份验证的所有信息' },
-            { title: '了解授权', description: '了解有关使用 Cloud-Neutral Toolkit 进行授权的所有信息' },
-            { title: '机器对机器', description: '将 Cloud-Neutral Toolkit 集成到您的服务中' },
-            { title: '通过 CLI 连接', description: '通过 CLI 将 Cloud-Neutral Toolkit 连接到您的应用程序' },
-            { title: 'REST & Admin APIs', description: '通过编程将 Cloud-Neutral Toolkit 集成到您的应用程序中' },
+            { title: '开始使用', description: 'XWork Tech Toolkit 使用概览' },
+            { title: '创建您的应用程序', description: '将 XWork Tech Toolkit 集成到您的应用程序中' },
+            { title: '关于身份验证', description: '了解有关使用 XWork Tech Toolkit 进行身份验证的所有信息' },
+            { title: '了解授权', description: '了解有关使用 XWork Tech Toolkit 进行授权的所有信息' },
+            { title: '机器对机器', description: '将 XWork Tech Toolkit 集成到您的服务中' },
+            { title: '通过 CLI 连接', description: '通过 CLI 将 XWork Tech Toolkit 连接到您的应用程序' },
+            { title: 'REST & Admin APIs', description: '通过编程将 XWork Tech Toolkit 集成到您的应用程序中' },
           ],
         },
         tabsLabel: '产品矩阵',

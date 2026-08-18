@@ -21,7 +21,7 @@
         ]
       },
       {
-        "slug": "xconnect",
+        "slug": "xstream",
         "title": "Xstream Platform",
         "description": "AI加速代理私有网络互联，涵盖 Caddy、Xray 隧道观测代理与同步节点。",
         "defaultVersionSlug": "latest",
@@ -72,7 +72,7 @@
         ]
       },
       {
-        "slug": "xconnect",
+        "slug": "xstream",
         "title": "Xstream Platform",
         "description": "Private AI network interconnect covering Caddy, Xray tunnels, and Vector agents.",
         "defaultVersionSlug": "latest",

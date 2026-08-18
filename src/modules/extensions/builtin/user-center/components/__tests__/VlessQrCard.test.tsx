@@ -41,14 +41,17 @@ const copy: VlessQrCopy = {
   downloadQr: "Download QR",
   generating: "Generating",
   error: "Failed to generate",
-  missingUuid: "Missing UUID",
+  missingProxyUuid: "Missing proxy UUID",
   qrAlt: "VLESS QR code",
 };
 
 describe("VlessQrCard", () => {
   it("keeps the XHTTP connection, copy, and QR download controls available by default", async () => {
     render(
-      <VlessQrCard uuid="11111111-1111-4111-8111-111111111111" copy={copy} />,
+      <VlessQrCard
+        proxyUuid="11111111-1111-4111-8111-111111111111"
+        copy={copy}
+      />,
     );
 
     expect(screen.getByRole("button", { name: /xhttp/i })).toBeInTheDocument();

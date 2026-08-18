@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import BrandCTA from "@components/BrandCTA";
+import BlogArticle from "@components/blog/BlogArticle";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { getBlogPost } from "@lib/docsServiceClient";
 
@@ -45,11 +46,11 @@ export async function generateMetadata({
   }
 
   if (!post) {
-    return { title: "Blog Post | Cloud-Neutral" };
+    return { title: "Blog Post | XWork Tech" };
   }
 
   return {
-    title: `${post.title} | Cloud-Neutral Blog`,
+    title: `${post.title} | XWork Tech Blog`,
     description: post.excerpt,
   };
 }
@@ -128,10 +129,11 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-slate-900/10 bg-white/92 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:p-8">
-          <article
-            className="public-doc-prose"
-            dangerouslySetInnerHTML={{ __html: post.html }}
+        <section className="rounded-[2rem] border border-slate-900/10 bg-white/95 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:p-9 xl:p-10">
+          <BlogArticle
+            html={post.html}
+            toc={post.toc ?? []}
+            language={language}
           />
         </section>
 
