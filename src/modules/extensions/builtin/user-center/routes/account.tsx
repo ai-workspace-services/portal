@@ -87,7 +87,8 @@ export default function UserCenterAccountRoute() {
 
   const user = useUserStore((state) => state.user);
   const isReadOnlyRole = Boolean(user?.isReadOnly);
-  const uuid = user?.uuid ?? user?.id ?? null;
+  // VLESS 访问凭据用 proxyUuid，不是账户身份 uuid（见 #220）
+  const proxyUuid = user?.proxyUuid || null;
 
   const { data: usageSummary, mutate: mutateUsage } = useSWR(
     "account-usage-summary",
@@ -117,7 +118,7 @@ export default function UserCenterAccountRoute() {
     breakdown.last1Hour + breakdown.last24Hours + breakdown.monthToDate > 0;
 
   const nodeList = nodes ?? [];
-  const credentialsReady = Boolean(uuid);
+  const credentialsReady = Boolean(proxyUuid);
   // 「验证连接」只有在服务端确实下发了节点、且已经出现过用量时才算完成。
   // 没有连通性接口，所以不假装知道单个节点通不通。
   const connectionVerified = nodeList.length > 0 && hasTraffic;
@@ -128,14 +129,14 @@ export default function UserCenterAccountRoute() {
     router.push("/panel/account?setupMfa=1");
   }, [router]);
 
-  const handleCopyUuid = useCallback(async () => {
-    if (!uuid) return;
+  const handleCopyProxyUuid = useCallback(async () => {
+    if (!proxyUuid) return;
     try {
-      await navigator.clipboard.writeText(uuid);
+      await navigator.clipboard.writeText(proxyUuid);
     } catch (err) {
-      console.warn("Failed to copy UUID", err);
+      console.warn("Failed to copy proxy UUID", err);
     }
-  }, [uuid]);
+  }, [proxyUuid]);
 
   const handleRefresh = useCallback(() => {
     void mutateUsage();
@@ -230,7 +231,7 @@ export default function UserCenterAccountRoute() {
 
         {/* ── 连接凭据 ── */}
         <section className="xds-uc-hero">
-          <VlessConnectionCard uuid={uuid} nodes={nodeList} zh={zh} />
+          <VlessConnectionCard proxyUuid={proxyUuid} nodes={nodeList} zh={zh} />
 
           <XdsCard className="xds-uuid-card">
             <XdsCardHead
@@ -239,8 +240,8 @@ export default function UserCenterAccountRoute() {
                 <XdsButton
                   variant="ghost"
                   size="sm"
-                  onClick={handleCopyUuid}
-                  disabled={!uuid}
+                  onClick={handleCopyProxyUuid}
+                  disabled={!proxyUuid}
                   aria-label={zh ? "复制代理 UUID" : "Copy proxy UUID"}
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />
@@ -249,7 +250,7 @@ export default function UserCenterAccountRoute() {
               }
             />
             <XdsCardBody>
-              <XdsValueBox>{uuid ?? DASH}</XdsValueBox>
+              <XdsValueBox>{proxyUuid ?? DASH}</XdsValueBox>
               <p className="xds-t-caption xds-mt-12">
                 {zh
                   ? "访问代理节点的凭据，可独立于账户身份轮换。"

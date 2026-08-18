@@ -31,6 +31,7 @@ import {
 
 import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { openStripePortal } from "@components/billing/stripe-client";
+import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
 import { formatBytes } from "@lib/format";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
@@ -111,7 +112,10 @@ export default function UserCenterSubscriptionRoute() {
 
   const user = useUserStore((state) => state.user);
   const isReadOnlyRole = Boolean(user?.isReadOnly);
-  const mfaReady = Boolean(user?.mfaEnabled) && !user?.mfaPending;
+  // 「谁需要绑定 MFA 才能支付」这条规则由 PaymentMfaNotice 单独维护，
+  // 这里只复用它的判定，避免两处各写一份而慢慢跑偏。
+  const mfaRequired = usePaymentMfaRequired();
+  const mfaReady = !mfaRequired;
 
   const { data, isLoading, mutate } = useSWR<SubscriptionResponse>(
     "/api/auth/subscriptions",
@@ -240,7 +244,7 @@ export default function UserCenterSubscriptionRoute() {
         </header>
 
         {/* ── 安全门禁：只出现一处，且可行动 ── */}
-        {!mfaReady ? (
+        {mfaRequired ? (
           <div className="xds-gate">
             <span className="xds-gate-ico" aria-hidden="true">
               <Lock className="h-5 w-5" />
