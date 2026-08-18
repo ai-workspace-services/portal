@@ -453,12 +453,25 @@
 .xds-rail-item:hover { background: rgba(255,255,255,.08); color: #fff; }
 .xds-rail-item.xds-is-active { background: var(--blue-500); color: #fff; }
 .xds-sidebar { background: var(--bg-surface); border-right: 1px solid var(--border-default); padding: var(--sp-4) var(--sp-3); }
+/* standalone (非 .xds-shell 内) 使用：自带宽度与收起态，供 /panel 这类不走三栏 grid 的控制台外壳复用 */
+.xds-sidebar { width: var(--sidebar-w); flex: none; display: flex; flex-direction: column; min-height: 0; transition: width var(--dur-base) var(--ease-out); }
+.xds-sidebar.xds-is-collapsed { width: var(--rail-w); padding-left: var(--sp-2); padding-right: var(--sp-2); }
+.xds-sidebar-brand { display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-2) var(--sp-4); margin-bottom: var(--sp-4); border-bottom: 1px solid var(--border-subtle); flex: none; }
+.xds-sidebar-nav { flex: 1; overflow-y: auto; min-height: 0; }
+.xds-sidebar-foot { flex: none; margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--border-default); }
 .xds-nav-group + .xds-nav-group { margin-top: var(--sp-5); }
 .xds-nav-label { font-size: var(--fs-eyebrow); font-family: var(--font-mono); letter-spacing: var(--ls-eyebrow); text-transform: uppercase; color: var(--text-tertiary); padding: 0 var(--sp-2); margin-bottom: var(--sp-2); }
 .xds-nav-item { display: flex; align-items: center; gap: var(--sp-2); height: 30px; padding: 0 var(--sp-2); border-radius: var(--r-sm); font-size: var(--fs-body-sm); color: var(--text-secondary); transition: all var(--dur-fast) var(--ease-out); }
 .xds-nav-item:hover { background: var(--bg-sunken); color: var(--text-primary); }
 .xds-nav-item.xds-is-active { background: var(--blue-50); color: var(--blue-600); font-weight: var(--fw-medium); }
+.xds-nav-item.xds-is-disabled { color: var(--text-disabled); cursor: not-allowed; opacity: .6; }
 .xds-nav-item .xds-ico { width: 15px; height: 15px; flex: none; opacity: .8; }
+.xds-nav-item .xds-caret { margin-left: auto; transition: transform var(--dur-fast) var(--ease-out); }
+.xds-nav-item .xds-caret.xds-is-open { transform: rotate(180deg); }
+.xds-sidebar.xds-is-collapsed .xds-nav-label,
+.xds-sidebar.xds-is-collapsed .xds-sidebar-brand-text,
+.xds-sidebar.xds-is-collapsed .xds-nav-item-label { display: none; }
+.xds-sidebar.xds-is-collapsed .xds-nav-item { justify-content: center; }
 .xds-topbar { height: var(--topbar-h); border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.86); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--sp-6); position: sticky; top: 0; z-index: 5; }
 .xds-crumbs { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-body-sm); color: var(--text-tertiary); }
 .xds-crumbs .xds-sep { color: var(--text-disabled); }
