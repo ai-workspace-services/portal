@@ -801,7 +801,6 @@
 
 /* ---------- 站点导航：品牌 / 账户菜单 / 移动端 / 面包屑 ---------- */
 .xds-mnav-lockup { display: inline-flex; align-items: center; gap: var(--sp-2); min-width: 0; line-height: 1; }
-.xds-mnav-tagline { font-size: var(--fs-caption); font-weight: var(--fw-regular); letter-spacing: 0; color: var(--text-tertiary); }
 .xds-mnav-caret { transition: transform var(--dur-fast) var(--ease-out); }
 .xds-mnav-caret.xds-is-open { transform: rotate(180deg); }
 .xds-mnav-menu::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 8px; }
