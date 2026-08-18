@@ -473,7 +473,9 @@
    Marketing nav / footer
    ============================================================ */
 .xds-mnav { position: sticky; top: 0; z-index: 20; height: 56px; border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.82); backdrop-filter: blur(12px); }
-.xds-mnav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+.xds-mnav-inner { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--sp-6); }
+.xds-mnav-wayfind { min-width: 0; justify-self: start; }
+.xds-mnav-actions { justify-self: end; }
 .xds-logo { display: flex; align-items: center; gap: 8px; font-size: var(--fs-h4); font-weight: var(--fw-semibold); letter-spacing: -0.02em; }
 .xds-logo-mark { width: 22px; height: 22px; border-radius: var(--r-xs); background: var(--blue-500); display: grid; place-items: center; color: #fff; }
 .xds-mnav-links { display: flex; align-items: center; gap: var(--sp-6); }
@@ -787,7 +789,7 @@
 .xds-mnav-account:hover { background: var(--bg-hover); color: var(--text-primary); }
 .xds-mnav-avatar { display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--r-pill); background: var(--blue-500); color: #fff; font-size: var(--fs-micro); font-weight: var(--fw-semibold); }
 .xds-mnav-account-label { max-width: 10rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.xds-mnav-burger { display: none; width: 32px; height: 32px; place-items: center; border: 1px solid var(--border-default); border-radius: var(--r-sm); color: var(--text-secondary); }
+.xds-mnav-burger { justify-self: end; display: none; width: 32px; height: 32px; place-items: center; border: 1px solid var(--border-default); border-radius: var(--r-sm); color: var(--text-secondary); }
 .xds-mnav-mobile { border-top: 1px solid var(--border-subtle); background: var(--bg-surface); padding: var(--sp-4) 0 var(--sp-5); }
 .xds-mnav-mobile a { display: block; padding: 9px 0; font-size: var(--fs-body-sm); color: var(--text-secondary); }
 .xds-mnav-mobile a:hover { color: var(--text-primary); }
@@ -796,3 +798,39 @@
   .xds-mnav-burger { display: grid; }
   .xds-mnav-menu { grid-template-columns: 1fr; min-width: 260px; }
 }
+
+/* ---------- 站点导航：品牌 / 账户菜单 / 移动端 / 面包屑 ---------- */
+.xds-mnav-lockup { display: inline-flex; align-items: center; gap: var(--sp-2); min-width: 0; line-height: 1; }
+.xds-mnav-tagline { font-size: var(--fs-caption); font-weight: var(--fw-regular); letter-spacing: 0; color: var(--text-tertiary); }
+.xds-mnav-caret { transition: transform var(--dur-fast) var(--ease-out); }
+.xds-mnav-caret.xds-is-open { transform: rotate(180deg); }
+.xds-mnav-menu::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 8px; }
+.xds-mnav-menu-item .xds-t-caption { display: block; margin-top: 2px; }
+.xds-mnav-menu-section { padding-bottom: var(--sp-2); margin-bottom: var(--sp-2); border-bottom: 1px solid var(--border-subtle); }
+.xds-mnav-menu-section-label { display: block; padding: 0 var(--sp-3) var(--sp-2); font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); letter-spacing: var(--ls-eyebrow, .08em); text-transform: uppercase; color: var(--text-tertiary); }
+.xds-mnav-menu-item.xds-is-active { background: var(--blue-50); }
+.xds-mnav-menu-item.xds-is-active .xds-mnav-menu-label { color: var(--text-brand); }
+.xds-mnav-mobile-group + .xds-mnav-mobile-group { margin-top: var(--sp-3); }
+.xds-mnav-group-label { display: block; padding-top: var(--sp-2); font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); text-transform: uppercase; color: var(--text-tertiary); }
+.xds-mnav-mobile-account { gap: var(--sp-3); margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px solid var(--border-subtle); }
+.xds-mnav-mobile-actions { flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px solid var(--border-subtle); }
+
+.xds-mnav-crumbs { min-width: 0; overflow: hidden; }
+.xds-mnav-crumbs ol { display: flex; align-items: center; min-width: 0; font-size: var(--fs-body-sm); }
+.xds-mnav-crumbs li { display: inline-flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.xds-mnav-crumbs li + li { margin-left: var(--sp-2); }
+.xds-mnav-crumbs a { color: var(--text-tertiary); white-space: nowrap; transition: color var(--dur-fast) var(--ease-out); }
+.xds-mnav-crumbs a:hover { color: var(--text-primary); }
+.xds-mnav-crumbs .xds-sep { color: var(--text-disabled); }
+.xds-mnav-crumbs .xds-cur { max-width: 30ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); font-weight: var(--fw-medium); }
+@media (max-width: 760px) {
+  /* 窄屏只留首页 + 当前层级，导航条不换行。 */
+  .xds-mnav-crumbs li:not(:first-child):not(:last-child) { display: none; }
+}
+
+/* 仓库入口：导航里唯一带 star 暗示的链接，图标 hover 才点亮。 */
+.xds-mnav-repo { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--border-default); border-radius: var(--r-pill); font-size: var(--fs-body-sm); color: var(--text-secondary); transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }
+.xds-mnav-repo:hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--bg-hover); }
+.xds-mnav-star { color: var(--text-disabled); transition: color var(--dur-fast) var(--ease-out), fill var(--dur-fast) var(--ease-out); }
+.xds-mnav-repo:hover .xds-mnav-star { color: var(--warning); fill: var(--warning); }
+.xds-mnav-mobile .xds-mnav-repo { display: inline-flex; width: auto; margin-top: var(--sp-2); }

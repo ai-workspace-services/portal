@@ -29,10 +29,8 @@ const boundaries = {
       "download/",
       "logout/",
       "panel/",
-      "dashboard/",
       "ai-workspace/",
       "cloud_iac/",
-      "editor/",
       "support/",
       "xworkmate/",
       "xworkmate-suite/",
@@ -51,7 +49,7 @@ const boundaries = {
   console: {
     workerName: boundaryConfig.worker_name,
     routeSuffixes: boundaryConfig.route_suffixes,
-    owns: (relativePath) => startsWithAny(relativePath, ["panel/", "dashboard/"]),
+    owns: (relativePath) => startsWithAny(relativePath, ["panel/"]),
   },
   workspace: {
     workerName: boundaryConfig.worker_name,
@@ -59,7 +57,6 @@ const boundaries = {
     owns: (relativePath) => startsWithAny(relativePath, [
       "ai-workspace/",
       "cloud_iac/",
-      "editor/",
       "support/",
       "xworkmate/",
       "xworkmate-suite/",

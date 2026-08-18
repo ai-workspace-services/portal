@@ -1,23 +1,106 @@
 "use client";
 
+/**
+ * 站点导航 —— 全站公开页唯一一套导航。
+ *
+ * 由原 MarketingNav（Tailwind + marketingTheme）与 XdsSiteNav（xds 外观）合并而来：
+ * 信息架构、登录态、控制台角色切换沿用首页导航，外观改用 xds 设计系统。
+ *
+ * 作用域策略：.xds 只挂在导航自身（和面包屑）上，不往页面根节点扩散，
+ * 避免 .xds 的 :where() 基线重置反噬到页面正文里的 Tailwind 排版。
+ */
+
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, Github, LogOut, Menu, Star, X } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
-import { marketingTheme } from "@/components/marketing/theme";
 import LanguageToggle from "@/components/LanguageToggle";
+import MarketingBreadcrumbs from "@/components/marketing/MarketingBreadcrumbs";
 import { useUserStore } from "@lib/userStore";
 import { cn } from "@/lib/utils";
 
+type NavFlatLink = { label: string; href: string };
+
+function isExternal(href: string) {
+  return /^https?:\/\//i.test(href);
+}
+
+/**
+ * 平铺导航项。站外链接走原生 a 并补 noopener；仓库链接额外做成星标胶囊，
+ * 是导航里唯一带 star 暗示的入口——图标 hover 才点亮，不喧宾夺主。
+ */
+function NavLink({
+  link,
+  onNavigate,
+}: {
+  link: NavFlatLink;
+  onNavigate?: () => void;
+}) {
+  const external = isExternal(link.href);
+  const isRepo = external && /(^|\.)github\.com/i.test(new URL(link.href).host);
+
+  if (isRepo) {
+    return (
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="xds-mnav-repo"
+        title="欢迎 Star"
+        onClick={onNavigate}
+      >
+        <Github className="h-3.5 w-3.5" aria-hidden="true" />
+        {link.label}
+        <Star className="h-3 w-3 xds-mnav-star" aria-hidden="true" />
+      </a>
+    );
+  }
+
+  if (external) {
+    return (
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+      >
+        {link.label}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={link.href} onClick={onNavigate}>
+      {link.label}
+    </Link>
+  );
+}
+
 export default function MarketingNav() {
   const { language } = useLanguage();
-  const content = (homeMarketingContent as any)[language] || (homeMarketingContent as any).zh;
+  const content = homeMarketingContent[language] ?? homeMarketingContent.zh;
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+  // 触发器与下拉面板之间有 6px 空隙，鼠标斜着划过去时会先掠过空隙。
+  // CSS 用 ::before 把空隙并进面板命中区，这里再给一个关闭延时兜底，
+  // 避免指针路过相邻触发器或轻微抖动就把菜单收掉。
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function cancelScheduledClose() {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }
+
+  function scheduleClose() {
+    cancelScheduledClose();
+    closeTimer.current = setTimeout(() => setOpenDropdown(null), 200);
+  }
 
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
@@ -29,7 +112,9 @@ export default function MarketingNav() {
     "?";
   const accountLabel = user?.username ?? user?.email ?? "";
 
-  const [activeConsole, setActiveConsole] = useState<"user" | "admin" | "operator">("user");
+  const [activeConsole, setActiveConsole] = useState<
+    "user" | "admin" | "operator"
+  >("user");
 
   useEffect(() => {
     if (user?.isAdmin) {
@@ -41,7 +126,8 @@ export default function MarketingNav() {
     }
   }, [user]);
 
-  const showRoleSelector = isAuthenticated && (user?.isAdmin || user?.isOperator);
+  const showRoleSelector =
+    isAuthenticated && (user?.isAdmin || user?.isOperator);
 
   const displayLabel = showRoleSelector
     ? activeConsole === "admin"
@@ -76,6 +162,7 @@ export default function MarketingNav() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
+      if (closeTimer.current) clearTimeout(closeTimer.current);
     };
   }, []);
 
@@ -86,277 +173,272 @@ export default function MarketingNav() {
   }
 
   return (
-    <nav
-      ref={navRef}
-      className="sticky top-0 z-40 border-b border-slate-900/8 bg-white/95 backdrop-blur-sm"
-    >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <span className={marketingTheme.brand.title}>
-            {content.brand.title}
-          </span>
-          <span className={`hidden sm:inline ${marketingTheme.brand.tagline}`}>
-            {content.brand.tagline}
-          </span>
-        </Link>
+    <header className="xds xds-mnav" ref={navRef}>
+      <div className="xds-container-wide xds-mnav-inner">
+        <div className="xds-mnav-wayfind">
+          <MarketingBreadcrumbs
+            brand={content.brand.title}
+            tagline={content.brand.tagline}
+          />
+        </div>
 
-        <div className="hidden items-center gap-1 lg:flex">
-          {content.nav.dropdowns.map((dropdown: any, index: number) => (
+        <nav className="xds-mnav-links xds-mnav-desktop">
+          {content.nav.dropdowns.map((dropdown, index) => (
             <div
               key={dropdown.label}
-              className="relative"
-              onMouseEnter={() => setOpenDropdown(index)}
-              onMouseLeave={() => setOpenDropdown(null)}
+              className="xds-mnav-item"
+              onMouseEnter={() => {
+                cancelScheduledClose();
+                setOpenDropdown(index);
+              }}
+              onMouseLeave={scheduleClose}
             >
               <button
                 type="button"
-                className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-primary"
-                onClick={() =>
-                  setOpenDropdown((current) => (current === index ? null : index))
-                }
+                className="xds-mnav-trigger"
                 aria-expanded={openDropdown === index}
+                onClick={() =>
+                  setOpenDropdown((current) =>
+                    current === index ? null : index,
+                  )
+                }
               >
                 {dropdown.label}
                 <ChevronDown
-                  className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                    openDropdown === index ? "rotate-180" : ""
-                  }`}
-                  aria-hidden
+                  className={cn(
+                    "h-3.5 w-3.5 xds-mnav-caret",
+                    openDropdown === index && "xds-is-open",
+                  )}
+                  aria-hidden="true"
                 />
               </button>
 
-              {openDropdown === index && (
-                <div className="absolute left-0 top-full pt-2">
-                  <div className="grid w-[560px] grid-cols-2 gap-1 rounded-2xl border border-slate-900/8 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
-                    {dropdown.columns.map((item: any) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className="rounded-xl p-3 transition-colors hover:bg-slate-50"
-                        onClick={() => setOpenDropdown(null)}
-                      >
-                        <div className="text-sm font-semibold text-slate-900">
-                          {item.label}
-                        </div>
-                        <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
-                          {item.description}
-                        </p>
-                      </Link>
-                    ))}
-                  </div>
+              {openDropdown === index ? (
+                <div className="xds-mnav-menu">
+                  {dropdown.columns.map((item) => (
+                    <Link
+                      key={item.href + item.label}
+                      href={item.href}
+                      className="xds-mnav-menu-item"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      <span className="xds-mnav-menu-label">{item.label}</span>
+                      <span className="xds-t-caption">{item.description}</span>
+                    </Link>
+                  ))}
                 </div>
-              )}
+              ) : null}
             </div>
           ))}
 
-          {content.nav.links.map((link: any) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-primary"
-            >
-              {link.label}
-            </Link>
+          {content.nav.links.map((link) => (
+            <NavLink key={link.href + link.label} link={link} />
           ))}
-        </div>
+        </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div
+          className="xds-row xds-mnav-actions xds-mnav-desktop"
+          style={{ gap: "var(--sp-3)" }}
+        >
           <LanguageToggle />
+
           {isLoading ? (
-            <div
-              className="h-9 w-9 animate-pulse rounded-full bg-slate-100"
-              aria-hidden
-            />
+            <span className="xds-mnav-skeleton" aria-hidden="true" />
           ) : isAuthenticated ? (
-            <div className="relative">
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-full border border-slate-900/10 py-1 pl-1 pr-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-                onClick={() => setAccountOpen((open) => !open)}
-                aria-expanded={accountOpen}
-              >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                  {accountInitial}
-                </span>
-                <span className="max-w-[10rem] truncate">{displayLabel}</span>
-                <ChevronDown
-                  className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                    accountOpen ? "rotate-180" : ""
-                  }`}
-                  aria-hidden
-                />
-              </button>
-              {accountOpen && (
-                <div className="absolute right-0 top-full pt-2 z-50">
-                  <div className="w-48 rounded-2xl border border-slate-900/8 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.18)]">
-                    {showRoleSelector && (
-                      <div className="border-b border-slate-100 pb-1.5 mb-1.5">
-                        <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <>
+              <div className="xds-mnav-item">
+                <button
+                  type="button"
+                  className="xds-mnav-account"
+                  aria-expanded={accountOpen}
+                  onClick={() => setAccountOpen((open) => !open)}
+                >
+                  <span className="xds-mnav-avatar">{accountInitial}</span>
+                  <span className="xds-mnav-account-label">{displayLabel}</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 xds-mnav-caret",
+                      accountOpen && "xds-is-open",
+                    )}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {accountOpen ? (
+                  <div className="xds-mnav-menu xds-mnav-menu-sm">
+                    {showRoleSelector ? (
+                      <div className="xds-mnav-menu-section">
+                        <span className="xds-mnav-menu-section-label">
                           切换控制台
-                        </div>
-                        {user?.isAdmin && (
+                        </span>
+                        {user?.isAdmin ? (
                           <button
                             type="button"
+                            className={cn(
+                              "xds-mnav-menu-item",
+                              activeConsole === "admin" && "xds-is-active",
+                            )}
                             onClick={() => {
                               setActiveConsole("admin");
                               setAccountOpen(false);
                             }}
-                            className={cn(
-                              "flex w-full items-center px-3 py-1.5 text-left text-sm font-medium rounded-lg transition-colors",
-                              activeConsole === "admin"
-                                ? "bg-primary/10 text-primary"
-                                : "text-slate-700 hover:bg-slate-50"
-                            )}
                           >
-                            Admin 管理面
+                            <span className="xds-mnav-menu-label">
+                              Admin 管理面
+                            </span>
                           </button>
-                        )}
-                        {user?.isOperator && (
+                        ) : null}
+                        {user?.isOperator ? (
                           <button
                             type="button"
+                            className={cn(
+                              "xds-mnav-menu-item",
+                              activeConsole === "operator" && "xds-is-active",
+                            )}
                             onClick={() => {
                               setActiveConsole("operator");
                               setAccountOpen(false);
                             }}
-                            className={cn(
-                              "flex w-full items-center px-3 py-1.5 text-left text-sm font-medium rounded-lg transition-colors",
-                              activeConsole === "operator"
-                                ? "bg-primary/10 text-primary"
-                                : "text-slate-700 hover:bg-slate-50"
-                            )}
                           >
-                            Operator 运营面
+                            <span className="xds-mnav-menu-label">
+                              Operator 运营面
+                            </span>
                           </button>
-                        )}
+                        ) : null}
                         <button
                           type="button"
+                          className={cn(
+                            "xds-mnav-menu-item",
+                            activeConsole === "user" && "xds-is-active",
+                          )}
                           onClick={() => {
                             setActiveConsole("user");
                             setAccountOpen(false);
                           }}
-                          className={cn(
-                            "flex w-full items-center px-3 py-1.5 text-left text-sm font-medium rounded-lg transition-colors",
-                            activeConsole === "user"
-                              ? "bg-primary/10 text-primary"
-                              : "text-slate-700 hover:bg-slate-50"
-                          )}
                         >
-                          用户中心
+                          <span className="xds-mnav-menu-label">用户中心</span>
                         </button>
                       </div>
-                    )}
+                    ) : null}
                     <button
                       type="button"
+                      className="xds-mnav-menu-item"
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
                     >
-                      <LogOut className="h-4 w-4" aria-hidden />
-                      {content.nav.logout}
+                      <span className="xds-mnav-menu-label">
+                        <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                        {content.nav.logout}
+                      </span>
                     </button>
                   </div>
-                </div>
-              )}
-            </div>
+                ) : null}
+              </div>
+
+              <Link
+                href={consoleHref}
+                className="xds-btn xds-btn-primary xds-btn-sm"
+              >
+                {content.nav.enterConsole}
+              </Link>
+            </>
           ) : (
-            <Link
-              href="/login"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:text-primary"
-            >
-              {content.nav.login}
-            </Link>
+            <>
+              <Link href="/login" className="xds-btn xds-btn-ghost xds-btn-sm">
+                {content.nav.login}
+              </Link>
+              <Link
+                href={content.hero.primaryCta.href}
+                className="xds-btn xds-btn-primary xds-btn-sm"
+              >
+                {content.hero.primaryCta.label}
+              </Link>
+            </>
           )}
-          {isAuthenticated ? (
-            <Link
-              href={consoleHref}
-              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[var(--color-primary-hover)]"
-            >
-              {content.nav.enterConsole}
-            </Link>
-          ) : null}
         </div>
 
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-700 lg:hidden"
+          className="xds-mnav-burger"
+          aria-label="menu"
+          aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((open) => !open)}
-          aria-label="Toggle menu"
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? (
+            <X className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Menu className="h-4 w-4" aria-hidden="true" />
+          )}
         </button>
       </div>
 
-      {mobileOpen && (
-        <div className="border-t border-slate-900/8 bg-white px-6 pb-6 pt-2 lg:hidden">
-          {content.nav.dropdowns.map((dropdown: any) => (
-            <div key={dropdown.label} className="py-2">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                {dropdown.label}
-              </div>
-              <div className="mt-1 space-y-1">
-                {dropdown.columns.map((item: any) => (
+      {mobileOpen ? (
+        <div className="xds-mnav-mobile">
+          <div className="xds-container-wide">
+            {content.nav.dropdowns.map((dropdown) => (
+              <div key={dropdown.label} className="xds-mnav-mobile-group">
+                <span className="xds-mnav-group-label">{dropdown.label}</span>
+                {dropdown.columns.map((item) => (
                   <Link
-                    key={item.label}
+                    key={item.href + item.label}
                     href={item.href}
-                    className="block rounded-lg px-2 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     onClick={() => setMobileOpen(false)}
                   >
                     {item.label}
                   </Link>
                 ))}
               </div>
+            ))}
+
+            <div className="xds-mnav-mobile-group">
+              {content.nav.links.map((link) => (
+                <NavLink
+                  key={link.href + link.label}
+                  link={link}
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              ))}
             </div>
-          ))}
-          {content.nav.links.map((link: any) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="block rounded-lg px-2 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              onClick={() => setMobileOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
-          {isAuthenticated && !isLoading && (
-            <div className="mt-3 flex items-center gap-3 border-t border-slate-900/8 pt-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                {accountInitial}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700">
-                {accountLabel}
-              </span>
-            </div>
-          )}
-          <div className="mt-3 flex items-center gap-3 border-t border-slate-900/8 pt-4">
-            {isLoading ? null : isAuthenticated ? (
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-900/12 px-4 py-2.5 text-center text-sm font-semibold text-slate-700"
-              >
-                <LogOut className="h-4 w-4" aria-hidden />
-                {content.nav.logout}
-              </button>
-            ) : (
-              <Link
-                href="/login"
-                className="flex-1 rounded-full border border-slate-900/12 px-4 py-2.5 text-center text-sm font-semibold text-slate-700"
-                onClick={() => setMobileOpen(false)}
-              >
-                {content.nav.login}
-              </Link>
-            )}
-            {isAuthenticated ? (
-              <Link
-                href={consoleHref}
-                className="flex-1 rounded-full bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
-                onClick={() => setMobileOpen(false)}
-              >
-                {content.nav.enterConsole}
-              </Link>
+
+            {isAuthenticated && !isLoading ? (
+              <div className="xds-row xds-mnav-mobile-account">
+                <span className="xds-mnav-avatar">{accountInitial}</span>
+                <span className="xds-mnav-account-label">{accountLabel}</span>
+              </div>
             ) : null}
+
+            <div className="xds-row xds-mnav-mobile-actions">
+              <LanguageToggle />
+              {isLoading ? null : isAuthenticated ? (
+                <>
+                  <button
+                    type="button"
+                    className="xds-btn xds-btn-secondary xds-btn-sm"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                    {content.nav.logout}
+                  </button>
+                  <Link
+                    href={consoleHref}
+                    className="xds-btn xds-btn-primary xds-btn-sm"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {content.nav.enterConsole}
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="xds-btn xds-btn-primary xds-btn-sm"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {content.nav.login}
+                </Link>
+              )}
+            </div>
           </div>
         </div>
-      )}
-    </nav>
+      ) : null}
+    </header>
   );
 }
