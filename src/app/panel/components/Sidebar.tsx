@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
-import { SidebarRoot } from "../../../components/layout/SidebarRoot";
+import { cn } from "@/lib/utils";
+
 import {
   PanelSidebarContent,
-  PanelSidebarContentProps,
+  type PanelSidebarContentProps,
 } from "./PanelSidebarContent";
 
 export interface SidebarProps extends PanelSidebarContentProps {
@@ -17,10 +17,14 @@ export default function Sidebar({
   collapsed = false,
 }: SidebarProps) {
   return (
-    <SidebarRoot
-      className={`transition-[width] duration-200 ${collapsed ? "w-16 p-2" : "w-64 p-3"} border-r border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)] text-[var(--color-text)] shadow-[var(--shadow-soft)] backdrop-blur ${className}`}
+    <aside
+      className={cn(
+        "xds xds-sidebar flex h-full flex-col",
+        collapsed && "xds-is-collapsed",
+        className,
+      )}
     >
       <PanelSidebarContent onNavigate={onNavigate} collapsed={collapsed} />
-    </SidebarRoot>
+    </aside>
   );
 }

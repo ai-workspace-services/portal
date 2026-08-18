@@ -556,6 +556,7 @@ type UserCenterTranslation = {
     infra: string
     management: string
     preferences: string
+    admin: string
   }
   items: {
     dashboard: string
@@ -1064,6 +1065,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         infra: 'Infrastructure',
         management: 'Accounts & Access',
         preferences: 'Preferences',
+        admin: 'Admin & Operations',
       },
       items: {
         dashboard: 'Overview',
@@ -1934,6 +1936,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         infra: '资源运维',
         management: '账户与权限',
         preferences: '偏好设置',
+        admin: '运营与管理',
       },
       items: {
         dashboard: '总览',
