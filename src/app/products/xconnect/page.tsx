@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+"use client";
 
 /**
  * XConnect 产品主页 —— Micro SaaS 模版第 1 页
