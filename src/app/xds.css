@@ -1,0 +1,716 @@
+/* ============================================================
+   XConnect Micro SaaS 模版 — 作用域化设计系统 v1.0
+   ------------------------------------------------------------
+   规范来源：ai-workspace-services/.github → design-system/micro-saas-模版
+
+   全部变量挂在 .xds 作用域下，全部组件类以 xds- 前缀命名。
+   只有显式挂了 .xds 的页面会受影响，panel / dashboard / editor
+   等其余页面完全不受本文件影响，回归面为零。
+
+   排版语言借鉴 Supabase：轻字重（400/500/600）、宽行高（正文 1.6）、
+   深度靠边框分层而非阴影。品牌色沿用控制台 --color-primary #0058bd。
+   ============================================================ */
+
+.xds {
+  /* ---------- 1. 字体族 ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "SFMono-Regular", ui-monospace, "JetBrains Mono",
+    "Cascadia Code", Consolas, monospace;
+
+  /* ---------- 2. 字号阶梯（1.200 Minor Third，marketing / console 双密度）---------- */
+  --fs-display-1: 4.25rem;  /* 68px  marketing hero */
+  --fs-display-2: 3rem;     /* 48px  section hero */
+  --fs-h1: 2.25rem;         /* 36px */
+  --fs-h2: 1.75rem;         /* 28px */
+  --fs-h3: 1.3125rem;       /* 21px */
+  --fs-h4: 1.0625rem;       /* 17px */
+  --fs-body-lg: 1.0625rem;  /* 17px  marketing 正文 */
+  --fs-body: 0.9375rem;     /* 15px  默认正文 */
+  --fs-body-sm: 0.875rem;   /* 14px  console 正文 */
+  --fs-caption: 0.8125rem;  /* 13px  辅助说明 */
+  --fs-micro: 0.75rem;      /* 12px  标签 / 表头 */
+  --fs-eyebrow: 0.6875rem;  /* 11px  全大写眉标 */
+
+  /* ---------- 3. 行高（Supabase 关键差异：正文 1.6，标题 1.1）---------- */
+  --lh-display: 1.04;
+  --lh-heading: 1.18;
+  --lh-snug: 1.35;
+  --lh-body: 1.6;
+  --lh-relaxed: 1.75;
+
+  /* ---------- 4. 字重（Supabase 只用 400/500，最重 600）---------- */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* ---------- 5. 字距 ---------- */
+  --ls-display: -0.032em;
+  --ls-heading: -0.018em;
+  --ls-body: 0;
+  --ls-eyebrow: 0.09em;
+  --ls-mono: -0.01em;
+
+  /* ---------- 6. 中性色阶 ---------- */
+  --gray-0: #ffffff;
+  --gray-25: #fcfcfd;
+  --gray-50: #f7f8fa;
+  --gray-100: #eff1f5;
+  --gray-200: #e3e7ee;
+  --gray-300: #d0d6e0;
+  --gray-400: #9aa4b5;
+  --gray-500: #616c80;
+  --gray-600: #525c6e;
+  --gray-700: #3d4553;
+  --gray-800: #262c37;
+  --gray-900: #141920;
+
+  /* ---------- 7. 品牌蓝 ---------- */
+  --blue-50: #eef4fd;
+  --blue-100: #dbe8fa;
+  --blue-200: #b4cef4;
+  --blue-300: #7ba9e9;
+  --blue-500: #0058bd;
+  --blue-600: #004a9e;
+  --blue-700: #003c80;
+
+  /* ---------- 8. 语义色 ---------- */
+  --success: #0f7c46;
+  --success-bg: #e6f5ed;
+  --success-border: #bfe3d0;
+  --warning: #8a5300;
+  --warning-bg: #fdf3e0;
+  --warning-border: #f0dcb4;
+  --danger: #b42318;
+  --danger-bg: #fdeceb;
+  --danger-border: #f5c9c5;
+  --info: var(--blue-500);
+  --info-bg: var(--blue-50);
+  --info-border: var(--blue-200);
+
+  /* ---------- 9. 语义别名 ---------- */
+  --bg-canvas: var(--gray-50);
+  --bg-surface: var(--gray-0);
+  --bg-raised: var(--gray-25);
+  --bg-sunken: var(--gray-100);
+  --bg-hover: var(--gray-50);
+  --bg-inverse: var(--gray-900);
+
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-tertiary: var(--gray-500);
+  --text-disabled: var(--gray-400);
+  --text-inverse: #ffffff;
+  --text-brand: var(--blue-500);
+
+  --border-subtle: var(--gray-100);
+  --border-default: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --border-brand: var(--blue-200);
+
+  /* ---------- 10. 圆角（只保留 4 档）---------- */
+  --r-xs: 4px;   /* badge / input / tag */
+  --r-sm: 6px;   /* button / 卡内元素 */
+  --r-md: 10px;  /* card / panel */
+  --r-lg: 14px;  /* 大容器 / 模态 */
+  --r-pill: 999px;
+
+  /* ---------- 11. 阴影（Supabase 原则：仅浮层用；平面靠边框分层）---------- */
+  --shadow-none: none;
+  --shadow-overlay: 0 4px 12px rgba(20, 25, 32, 0.08), 0 1px 3px rgba(20, 25, 32, 0.06);
+  --shadow-modal: 0 16px 48px rgba(20, 25, 32, 0.14), 0 2px 8px rgba(20, 25, 32, 0.08);
+  --focus-ring: 0 0 0 3px rgba(0, 88, 189, 0.22);
+
+  /* ---------- 12. 间距（4px 基准）---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-14: 56px;
+  --sp-20: 80px;
+  --sp-30: 120px;
+
+  /* ---------- 13. 动效 ---------- */
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---------- 14. 布局 ---------- */
+  --container: 1200px;
+  --container-wide: 1360px;
+  --rail-w: 56px;
+  --sidebar-w: 236px;
+  --topbar-h: 52px;
+}
+
+/* ============================================================
+   Reset + Base
+   ============================================================ */
+.xds, .xds *, .xds *::before, .xds *::after { box-sizing: border-box; }
+.xds {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-regular);
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.xds h1, .xds h2, .xds h3, .xds h4, .xds h5, .xds h6 { margin: 0; font-weight: var(--fw-medium); line-height: var(--lh-heading); letter-spacing: var(--ls-heading); color: var(--text-primary); }
+.xds h1 { font-size: var(--fs-h1); }
+.xds h2 { font-size: var(--fs-h2); }
+.xds h3 { font-size: var(--fs-h3); }
+.xds h4 { font-size: var(--fs-h4); font-weight: var(--fw-semibold); }
+.xds p { margin: 0; }
+.xds ul, .xds ol { margin: 0; padding: 0; list-style: none; }
+.xds a { color: inherit; text-decoration: none; }
+.xds button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.xds input, .xds select, .xds textarea { font: inherit; color: inherit; }
+.xds svg { display: block; max-width: 100%; }
+.xds table { border-collapse: collapse; width: 100%; }
+.xds :focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-xs); }
+
+/* ============================================================
+   Typography utilities
+   ============================================================ */
+.xds-t-display-1 { font-size: var(--fs-display-1); line-height: var(--lh-display); letter-spacing: var(--ls-display); font-weight: var(--fw-medium); }
+.xds-t-display-2 { font-size: var(--fs-display-2); line-height: 1.08; letter-spacing: var(--ls-display); font-weight: var(--fw-medium); }
+.xds-t-h1 { font-size: var(--fs-h1); }
+.xds-t-h2 { font-size: var(--fs-h2); }
+.xds-t-h3 { font-size: var(--fs-h3); }
+.xds-t-h4 { font-size: var(--fs-h4); font-weight: var(--fw-semibold); }
+.xds-t-lead { font-size: var(--fs-body-lg); line-height: var(--lh-relaxed); color: var(--text-secondary); }
+.xds-t-body { font-size: var(--fs-body); line-height: var(--lh-body); }
+.xds-t-body-sm { font-size: var(--fs-body-sm); line-height: var(--lh-body); }
+.xds-t-caption { font-size: var(--fs-caption); line-height: var(--lh-snug); color: var(--text-tertiary); }
+.xds-t-micro { font-size: var(--fs-micro); line-height: var(--lh-snug); }
+.xds-t-eyebrow {
+  font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow); text-transform: uppercase;
+  color: var(--text-tertiary); font-family: var(--font-mono);
+}
+.xds-t-mono { font-family: var(--font-mono); letter-spacing: var(--ls-mono); font-size: 0.92em; }
+.xds-muted { color: var(--text-secondary); }
+.xds-subtle { color: var(--text-tertiary); }
+.xds-brand { color: var(--text-brand); }
+
+/* ============================================================
+   Layout primitives
+   ============================================================ */
+.xds-container { width: 100%; max-width: var(--container); margin: 0 auto; padding: 0 var(--sp-6); }
+.xds-container-wide { width: 100%; max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--sp-6); }
+.xds-stack > * + * { margin-top: var(--sp-4); }
+.xds-row { display: flex; align-items: center; gap: var(--sp-3); }
+.xds-row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+.xds-grid { display: grid; gap: var(--sp-4); }
+.xds-g-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.xds-g-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.xds-g-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.xds-section { padding: var(--sp-30) 0; }
+.xds-section-sm { padding: var(--sp-20) 0; }
+.xds-divider { height: 1px; background: var(--border-default); border: 0; margin: 0; }
+
+/* ============================================================
+   Button — 4 变体 × 3 尺寸 × 6 状态
+   ============================================================ */
+.xds-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  height: 36px; padding: 0 14px;
+  border-radius: var(--r-sm); border: 1px solid transparent;
+  font-size: var(--fs-body-sm); font-weight: var(--fw-medium); line-height: 1;
+  white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+.xds-btn:focus-visible { box-shadow: var(--focus-ring); }
+.xds-btn[disabled], .xds-btn.xds-is-disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+.xds-btn-sm { height: 28px; padding: 0 10px; font-size: var(--fs-micro); }
+.xds-btn-lg { height: 44px; padding: 0 22px; font-size: var(--fs-body); }
+.xds-btn-primary { background: var(--blue-500); color: var(--text-inverse); border-color: var(--blue-500); }
+.xds-btn-primary:hover { background: var(--blue-600); border-color: var(--blue-600); }
+.xds-btn-primary:active { background: var(--blue-700); }
+.xds-btn-secondary { background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-strong); }
+.xds-btn-secondary:hover { background: var(--bg-hover); border-color: var(--gray-400); }
+.xds-btn-ghost { background: transparent; color: var(--text-secondary); }
+.xds-btn-ghost:hover { background: var(--bg-sunken); color: var(--text-primary); }
+.xds-btn-danger { background: var(--bg-surface); color: var(--danger); border-color: var(--danger-border); }
+.xds-btn-danger:hover { background: var(--danger-bg); }
+.xds-btn-pill { border-radius: var(--r-pill); }
+.xds-btn-block { width: 100%; }
+.xds-btn .xds-ico { width: 15px; height: 15px; flex: none; }
+
+/* ============================================================
+   Card / Panel — 无阴影，靠边框分层
+   ============================================================ */
+.xds-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-md);
+}
+.xds-card-pad { padding: var(--sp-5); }
+.xds-card-hover { transition: border-color var(--dur-base) var(--ease-out), background var(--dur-base) var(--ease-out); }
+.xds-card-hover:hover { border-color: var(--border-strong); background: var(--bg-raised); }
+.xds-card-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--border-subtle);
+}
+.xds-card-body { padding: var(--sp-5); }
+.xds-card-foot { padding: var(--sp-3) var(--sp-5); border-top: 1px solid var(--border-subtle); background: var(--bg-raised); border-radius: 0 0 var(--r-md) var(--r-md); }
+.xds-panel-title { font-size: var(--fs-h4); font-weight: var(--fw-semibold); letter-spacing: var(--ls-heading); }
+
+/* ============================================================
+   Badge / Status
+   ============================================================ */
+.xds-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 20px; padding: 0 7px;
+  border-radius: var(--r-xs); border: 1px solid var(--border-default);
+  background: var(--bg-sunken); color: var(--text-secondary);
+  font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); line-height: 1;
+  white-space: nowrap;
+}
+.xds-badge-success { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.xds-badge-warning { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
+.xds-badge-danger  { background: var(--danger-bg);  border-color: var(--danger-border);  color: var(--danger); }
+.xds-badge-info    { background: var(--info-bg);    border-color: var(--info-border);    color: var(--blue-600); }
+.xds-badge-pill { border-radius: var(--r-pill); padding: 0 9px; }
+.xds-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+/* ============================================================
+   Eyebrow pill（hero 徽标）
+   ============================================================ */
+.xds-pill {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  height: 28px; padding: 0 12px; border-radius: var(--r-pill);
+  border: 1px solid var(--border-brand); background: var(--blue-50);
+  color: var(--blue-600); font-size: var(--fs-micro); font-weight: var(--fw-medium);
+}
+
+/* ============================================================
+   Stepper — 向导（产品页 + 用户中心共用）
+   ============================================================ */
+.xds-stepper { display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.xds-step { position: relative; padding: var(--sp-5); border: 1px solid var(--border-default); border-right: 0; background: var(--bg-surface); }
+.xds-step:first-child { border-radius: var(--r-md) 0 0 var(--r-md); }
+.xds-step:last-child { border-right: 1px solid var(--border-default); border-radius: 0 var(--r-md) var(--r-md) 0; }
+.xds-step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1px solid var(--border-strong); background: var(--bg-surface);
+  font-size: var(--fs-micro); font-weight: var(--fw-semibold); font-family: var(--font-mono);
+  color: var(--text-tertiary); flex: none;
+}
+.xds-step.xds-is-done { background: var(--bg-raised); }
+.xds-step.xds-is-done .xds-step-num { background: var(--success); border-color: var(--success); color: #fff; }
+.xds-step.xds-is-active { border-color: var(--blue-300); box-shadow: inset 3px 0 0 var(--blue-500); }
+.xds-step.xds-is-active .xds-step-num { background: var(--blue-500); border-color: var(--blue-500); color: #fff; }
+.xds-step-title { font-size: var(--fs-h4); font-weight: var(--fw-semibold); }
+.xds-step-desc { font-size: var(--fs-caption); color: var(--text-secondary); line-height: var(--lh-body); }
+.xds-step-check { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-caption); }
+.xds-step-check .xds-ok { color: var(--success); }
+.xds-step-check .xds-pending { color: var(--text-disabled); }
+
+/* ============================================================
+   Meter — 配额 / 用量进度
+   ============================================================ */
+.xds-meter { height: 6px; border-radius: var(--r-pill); background: var(--gray-200); overflow: hidden; }
+.xds-meter > i { display: block; height: 100%; border-radius: var(--r-pill); background: var(--blue-500); transition: width var(--dur-base) var(--ease-out); }
+.xds-meter.xds-is-warning > i { background: var(--warning); }
+.xds-meter.xds-is-danger > i { background: var(--danger); }
+.xds-meter-seg { display: flex; gap: 2px; height: 6px; }
+.xds-meter-seg > i { flex: 1; border-radius: 1px; background: var(--gray-200); }
+.xds-meter-seg > i.xds-on { background: var(--blue-500); }
+
+/* ============================================================
+   Stat tile — 数据卡
+   ============================================================ */
+.xds-stat { padding: var(--sp-4) var(--sp-5); }
+.xds-stat-label { font-size: var(--fs-micro); color: var(--text-tertiary); font-weight: var(--fw-medium); }
+.xds-stat-value {
+  font-family: var(--font-mono); font-size: 1.75rem; font-weight: var(--fw-medium);
+  line-height: 1.1; letter-spacing: -0.02em; color: var(--text-primary);
+  font-variant-numeric: tabular-nums; margin-top: 6px;
+}
+.xds-stat-value .xds-unit { font-size: 0.95rem; color: var(--text-tertiary); margin-left: 3px; }
+.xds-stat-meta { font-size: var(--fs-caption); color: var(--text-tertiary); margin-top: var(--sp-2); }
+.xds-stat-delta { font-size: var(--fs-micro); font-family: var(--font-mono); }
+.xds-stat-delta.xds-up { color: var(--success); }
+.xds-stat-delta.xds-down { color: var(--danger); }
+
+/* ============================================================
+   Key-value 行（账户元信息条）
+   ============================================================ */
+.xds-kv-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--border-default); border-radius: var(--r-md); background: var(--bg-surface); overflow: hidden; }
+.xds-kv { padding: var(--sp-3) var(--sp-4); border-right: 1px solid var(--border-subtle); }
+.xds-kv:last-child { border-right: 0; }
+.xds-kv-k { font-size: var(--fs-micro); color: var(--text-tertiary); }
+.xds-kv-v { font-size: var(--fs-body-sm); font-weight: var(--fw-medium); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+
+/* ============================================================
+   Table
+   ============================================================ */
+.xds-table { font-size: var(--fs-body-sm); }
+.xds-table th {
+  text-align: left; font-size: var(--fs-micro); font-weight: var(--fw-medium);
+  color: var(--text-tertiary); padding: var(--sp-2) var(--sp-4);
+  border-bottom: 1px solid var(--border-default); background: var(--bg-raised); white-space: nowrap;
+}
+.xds-table td { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+.xds-table tbody tr:last-child td { border-bottom: 0; }
+.xds-table tbody tr:hover { background: var(--bg-hover); }
+.xds-table .xds-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+
+/* ============================================================
+   Tabs
+   ============================================================ */
+.xds-tabs { display: flex; gap: var(--sp-5); border-bottom: 1px solid var(--border-default); }
+.xds-tab {
+  position: relative; padding: 0 0 10px; font-size: var(--fs-body-sm);
+  font-weight: var(--fw-medium); color: var(--text-tertiary);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.xds-tab:hover { color: var(--text-primary); }
+.xds-tab.xds-is-active { color: var(--text-primary); }
+.xds-tab.xds-is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--blue-500); border-radius: 1px; }
+
+/* ============================================================
+   Segmented control
+   ============================================================ */
+.xds-seg { display: inline-flex; padding: 2px; gap: 2px; background: var(--bg-sunken); border: 1px solid var(--border-default); border-radius: var(--r-sm); }
+.xds-seg > button { padding: 4px 12px; border-radius: 4px; font-size: var(--fs-micro); font-weight: var(--fw-medium); color: var(--text-tertiary); white-space: nowrap; }
+.xds-seg > button.xds-is-active { background: var(--bg-surface); color: var(--text-primary); box-shadow: 0 1px 2px rgba(20,25,32,.06); }
+
+/* ============================================================
+   Alert / Callout
+   ============================================================ */
+.xds-alert { display: flex; gap: var(--sp-3); padding: var(--sp-4); border-radius: var(--r-md); border: 1px solid; font-size: var(--fs-body-sm); }
+.xds-alert-icon { width: 18px; height: 18px; flex: none; margin-top: 1px; }
+.xds-alert-info { background: var(--info-bg); border-color: var(--info-border); color: var(--blue-700); }
+.xds-alert-warning { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
+.xds-alert-danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
+.xds-alert-success { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.xds-alert-title { font-weight: var(--fw-semibold); }
+.xds-alert-body { color: inherit; opacity: .88; margin-top: 2px; line-height: var(--lh-body); }
+
+/* ============================================================
+   Empty state
+   ============================================================ */
+.xds-empty { text-align: center; padding: var(--sp-10) var(--sp-5); border: 1px dashed var(--border-strong); border-radius: var(--r-md); background: var(--bg-raised); }
+.xds-empty-icon { width: 36px; height: 36px; margin: 0 auto var(--sp-3); color: var(--text-disabled); }
+.xds-empty-title { font-size: var(--fs-body-sm); font-weight: var(--fw-semibold); }
+.xds-empty-desc { font-size: var(--fs-caption); color: var(--text-tertiary); margin-top: 4px; }
+
+/* ============================================================
+   Code / value box
+   ============================================================ */
+.xds-code-box {
+  font-family: var(--font-mono); font-size: var(--fs-caption);
+  background: var(--gray-900); color: #e6eaf0;
+  border-radius: var(--r-sm); padding: var(--sp-3) var(--sp-4);
+  overflow-x: auto; line-height: 1.65;
+}
+.xds-code-box .xds-c-key { color: #7fb2ff; }
+.xds-code-box .xds-c-str { color: #7fd8a8; }
+.xds-code-box .xds-c-dim { color: #8b95a5; }
+.xds-value-box {
+  font-family: var(--font-mono); font-size: var(--fs-caption);
+  background: var(--bg-sunken); border: 1px solid var(--border-default);
+  border-radius: var(--r-sm); padding: 8px 10px; word-break: break-all;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Input / Search
+   ============================================================ */
+.xds-input {
+  display: flex; align-items: center; gap: var(--sp-2);
+  height: 36px; padding: 0 12px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  background: var(--bg-surface); color: var(--text-tertiary); font-size: var(--fs-body-sm);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.xds-input:hover { border-color: var(--gray-400); }
+.xds-input.xds-is-focus { border-color: var(--blue-500); box-shadow: var(--focus-ring); }
+.xds-input-lg { height: 46px; font-size: var(--fs-body); border-radius: var(--r-md); }
+.xds-kbd {
+  font-family: var(--font-mono); font-size: 11px; padding: 2px 6px;
+  border: 1px solid var(--border-default); border-bottom-width: 2px;
+  border-radius: var(--r-xs); background: var(--bg-raised); color: var(--text-tertiary);
+}
+
+/* ============================================================
+   Console shell
+   ============================================================ */
+.xds-shell { display: grid; grid-template-columns: var(--rail-w) var(--sidebar-w) minmax(0, 1fr); min-height: 100%; background: var(--bg-canvas); }
+.xds-rail { background: var(--gray-900); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); padding: var(--sp-3) 0; }
+.xds-rail-item { width: 34px; height: 34px; border-radius: var(--r-sm); display: grid; place-items: center; color: #8b95a5; transition: all var(--dur-fast) var(--ease-out); }
+.xds-rail-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+.xds-rail-item.xds-is-active { background: var(--blue-500); color: #fff; }
+.xds-sidebar { background: var(--bg-surface); border-right: 1px solid var(--border-default); padding: var(--sp-4) var(--sp-3); }
+.xds-nav-group + .xds-nav-group { margin-top: var(--sp-5); }
+.xds-nav-label { font-size: var(--fs-eyebrow); font-family: var(--font-mono); letter-spacing: var(--ls-eyebrow); text-transform: uppercase; color: var(--text-tertiary); padding: 0 var(--sp-2); margin-bottom: var(--sp-2); }
+.xds-nav-item { display: flex; align-items: center; gap: var(--sp-2); height: 30px; padding: 0 var(--sp-2); border-radius: var(--r-sm); font-size: var(--fs-body-sm); color: var(--text-secondary); transition: all var(--dur-fast) var(--ease-out); }
+.xds-nav-item:hover { background: var(--bg-sunken); color: var(--text-primary); }
+.xds-nav-item.xds-is-active { background: var(--blue-50); color: var(--blue-600); font-weight: var(--fw-medium); }
+.xds-nav-item .xds-ico { width: 15px; height: 15px; flex: none; opacity: .8; }
+.xds-topbar { height: var(--topbar-h); border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.86); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--sp-6); position: sticky; top: 0; z-index: 5; }
+.xds-crumbs { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-body-sm); color: var(--text-tertiary); }
+.xds-crumbs .xds-sep { color: var(--text-disabled); }
+.xds-crumbs .xds-cur { color: var(--text-primary); font-weight: var(--fw-medium); }
+.xds-main { padding: var(--sp-6); max-width: 1180px; }
+.xds-page-head { margin-bottom: var(--sp-5); }
+.xds-page-title { font-size: var(--fs-h2); font-weight: var(--fw-medium); letter-spacing: var(--ls-heading); }
+.xds-page-sub { font-size: var(--fs-body-sm); color: var(--text-secondary); margin-top: 6px; max-width: 68ch; }
+.xds-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--blue-500); color: #fff; display: grid; place-items: center; font-size: var(--fs-micro); font-weight: var(--fw-semibold); }
+
+/* ============================================================
+   Marketing nav / footer
+   ============================================================ */
+.xds-mnav { position: sticky; top: 0; z-index: 20; height: 56px; border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.82); backdrop-filter: blur(12px); }
+.xds-mnav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+.xds-logo { display: flex; align-items: center; gap: 8px; font-size: var(--fs-h4); font-weight: var(--fw-semibold); letter-spacing: -0.02em; }
+.xds-logo-mark { width: 22px; height: 22px; border-radius: var(--r-xs); background: var(--blue-500); display: grid; place-items: center; color: #fff; }
+.xds-mnav-links { display: flex; align-items: center; gap: var(--sp-6); }
+.xds-mnav-links a { font-size: var(--fs-body-sm); color: var(--text-secondary); transition: color var(--dur-fast) var(--ease-out); }
+.xds-mnav-links a:hover { color: var(--text-primary); }
+.xds-footer { border-top: 1px solid var(--border-default); background: var(--bg-surface); padding: var(--sp-14) 0 var(--sp-8); }
+.xds-footer-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: var(--sp-8); }
+.xds-footer h5 { font-size: var(--fs-micro); font-weight: var(--fw-semibold); color: var(--text-primary); margin-bottom: var(--sp-3); }
+.xds-footer li + li { margin-top: 9px; }
+.xds-footer a { font-size: var(--fs-caption); color: var(--text-tertiary); }
+.xds-footer a:hover { color: var(--text-primary); }
+
+/* ============================================================
+   Sparkline / chart shell
+   ============================================================ */
+.xds-spark { width: 100%; height: 46px; display: block; }
+.xds-chart-frame { border: 1px solid var(--border-default); border-radius: var(--r-md); background: var(--bg-surface); }
+
+/* ============================================================
+   Icon
+   ============================================================ */
+.xds-ic { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.xds-ic-sm { width: 14px; height: 14px; }
+.xds-ic-lg { width: 20px; height: 20px; }
+.xds-ic-xl { width: 24px; height: 24px; }
+
+/* ============================================================
+   Misc
+   ============================================================ */
+.xds-hr-dot { border-top: 1px dashed var(--border-default); }
+.xds-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--r-xs); background: var(--bg-sunken); border: 1px solid var(--border-subtle); font-size: var(--fs-micro); color: var(--text-secondary); }
+.xds-link-arrow { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--blue-500); }
+.xds-link-arrow:hover { color: var(--blue-600); }
+.xds-qr { width: 116px; height: 116px; border: 1px solid var(--border-default); border-radius: var(--r-sm); background: #fff; padding: 7px; }
+.xds-scroll-x { overflow-x: auto; }
+
+@media (max-width: 1100px) {
+  :root { --fs-display-1: 3rem; --fs-display-2: 2.25rem; }
+  .xds-g-3, .xds-g-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .xds-kv-strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .xds-stepper { grid-template-columns: 1fr; }
+  .xds-step { border-right: 1px solid var(--border-default); border-bottom: 0; }
+  .xds-step:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
+  .xds-step:last-child { border-radius: 0 0 var(--r-md) var(--r-md); }
+  .xds-shell { grid-template-columns: var(--rail-w) minmax(0,1fr); }
+  .xds-sidebar { display: none; }
+  .xds-footer-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 680px) {
+  .xds-g-2, .xds-g-3, .xds-g-4 { grid-template-columns: 1fr; }
+  .xds-section { padding: var(--sp-14) 0; }
+}
+
+
+/* ============================================================
+   页面级样式（由设计稿原型直接迁移，同样 xds- 前缀）
+   ============================================================ */
+
+/* ---------- 产品主页 ---------- */
+.xds-hero { padding: var(--sp-20) 0 var(--sp-14); text-align: center; position: relative; overflow: hidden; }
+  .xds-hero::before {
+    content: ""; position: absolute; inset: -180px 0 auto 0; height: 420px;
+    background: radial-gradient(ellipse 620px 260px at 50% 100%, rgba(0,88,189,.10), transparent 70%);
+    pointer-events: none;
+  }
+  .xds-hero > * { position: relative; }
+  .xds-hero-title { margin: var(--sp-5) 0 var(--sp-4); }
+  .xds-hero-sub { max-width: 40rem; margin: 0 auto; }
+  .xds-hero-cta { display: flex; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-8); flex-wrap: wrap; }
+  .xds-platform-line { display: inline-flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-6); font-size: var(--fs-caption); color: var(--text-tertiary); }
+  .xds-platform-line .xds-sepdot { width: 3px; height: 3px; border-radius: 50%; background: var(--border-strong); }
+
+  .xds-trust { border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface); }
+  .xds-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .xds-trust-cell { padding: var(--sp-5) var(--sp-6); border-right: 1px solid var(--border-subtle); }
+  .xds-trust-cell:last-child { border-right: 0; }
+  .xds-trust-v { font-family: var(--font-mono); font-size: 1.5rem; font-weight: var(--fw-medium); letter-spacing: -0.02em; }
+  .xds-trust-k { font-size: var(--fs-caption); color: var(--text-tertiary); margin-top: 2px; }
+
+  .xds-sec-head { max-width: 42rem; }
+  .xds-sec-head .xds-t-eyebrow { display: block; margin-bottom: var(--sp-3); }
+  .xds-sec-head h2 { margin-bottom: var(--sp-3); }
+
+  .xds-wizard { margin-top: var(--sp-8); }
+  .xds-wizard-card { position: relative; padding: var(--sp-6); background: var(--bg-surface); border: 1px solid var(--border-default); display: flex; flex-direction: column; }
+  .xds-wizard-card > .xds-wizard-visual { flex: 1; }
+  .xds-wizard-card:nth-child(1) { border-radius: var(--r-md) 0 0 var(--r-md); border-right: 0; }
+  .xds-wizard-card:nth-child(2) { border-right: 0; }
+  .xds-wizard-card:nth-child(3) { border-radius: 0 var(--r-md) var(--r-md) 0; }
+  .xds-wizard-idx { font-family: var(--font-mono); font-size: var(--fs-eyebrow); letter-spacing: var(--ls-eyebrow); color: var(--text-tertiary); }
+  .xds-wizard-card h3 { font-size: var(--fs-h4); font-weight: var(--fw-semibold); margin: var(--sp-3) 0 var(--sp-2); }
+  .xds-wizard-visual { margin-top: var(--sp-5); border: 1px solid var(--border-subtle); border-radius: var(--r-sm); background: var(--bg-raised); padding: var(--sp-3); min-height: 104px; }
+
+  .xds-feat { border: 1px solid var(--border-default); border-radius: var(--r-md); overflow: hidden; background: var(--bg-surface); margin-top: var(--sp-8); }
+  .xds-feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .xds-feat-cell { padding: var(--sp-6); border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); }
+  .xds-feat-cell:nth-child(3n) { border-right: 0; }
+  .xds-feat-cell:nth-child(n+4) { border-bottom: 0; }
+  .xds-feat-ico { width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--blue-50); color: var(--blue-500); display: grid; place-items: center; border: 1px solid var(--blue-100); }
+  .xds-feat-cell h4 { margin: var(--sp-4) 0 var(--sp-2); }
+
+  .xds-dl-table td, .xds-dl-table th { padding: var(--sp-3) var(--sp-5); }
+  .xds-price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); margin-top: var(--sp-8); }
+  .xds-price-card { padding: var(--sp-6); }
+  .xds-price-card.xds-is-featured { border-color: var(--blue-300); position: relative; }
+  .xds-price-amt { font-family: var(--font-mono); font-size: 2.25rem; font-weight: var(--fw-medium); letter-spacing: -0.03em; line-height: 1; }
+  .xds-price-amt .xds-per { font-size: var(--fs-body-sm); color: var(--text-tertiary); font-weight: var(--fw-regular); letter-spacing: 0; }
+  .xds-price-feats { margin-top: var(--sp-5); }
+  .xds-price-feats li { display: flex; gap: var(--sp-2); font-size: var(--fs-body-sm); color: var(--text-secondary); align-items: flex-start; }
+  .xds-price-feats li + li { margin-top: 10px; }
+  .xds-price-feats .xds-ic { color: var(--success); margin-top: 3px; }
+
+  .xds-faq-item { padding: var(--sp-5) 0; border-bottom: 1px solid var(--border-subtle); }
+  .xds-faq-q { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-4); font-size: var(--fs-body); font-weight: var(--fw-medium); }
+  .xds-faq-a { font-size: var(--fs-body-sm); color: var(--text-secondary); margin-top: var(--sp-3); max-width: 62ch; }
+
+  .xds-final-cta { border: 1px solid var(--border-default); border-radius: var(--r-lg); background: var(--gray-900); color: #fff; padding: var(--sp-14) var(--sp-10); text-align: center; }
+  .xds-final-cta h2 { color: #fff; }
+  .xds-final-cta p { color: #9aa4b5; margin-top: var(--sp-3); }
+  @media (max-width: 1100px) {
+    .xds-trust-grid, .xds-feat-grid, .xds-price-grid { grid-template-columns: repeat(2, 1fr); }
+    .xds-wizard-card { border-radius: 0 !important; border-right: 1px solid var(--border-default) !important; }
+  }
+
+/* ---------- 用户中心 ---------- */
+.xds-uc-hero { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: var(--sp-4); align-items: start; }
+  .xds-onboard { border: 1px solid var(--border-default); border-radius: var(--r-md); background: var(--bg-surface); overflow: hidden; }
+  .xds-onboard-head { padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; gap: var(--sp-4); }
+  .xds-prog { display: flex; align-items: center; gap: var(--sp-3); }
+  .xds-prog-track { width: 108px; }
+  .xds-steps3 { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .xds-s3 { padding: var(--sp-4) var(--sp-5); border-right: 1px solid var(--border-subtle); position: relative; }
+  .xds-s3:last-child { border-right: 0; }
+  .xds-s3.xds-is-active { background: linear-gradient(180deg, var(--blue-50), transparent 60%); box-shadow: inset 0 2px 0 var(--blue-500); }
+  .xds-s3-top { display: flex; align-items: center; gap: var(--sp-2); }
+  .xds-s3-title { font-size: var(--fs-body-sm); font-weight: var(--fw-semibold); }
+  .xds-s3-desc { font-size: var(--fs-caption); color: var(--text-secondary); margin-top: 6px; }
+  .xds-s3-checks { margin-top: var(--sp-3); display: grid; gap: 6px; }
+  .xds-s3-check { display: flex; align-items: center; gap: 7px; font-size: var(--fs-caption); }
+  .xds-s3-check.xds-ok { color: var(--text-secondary); }
+  .xds-s3-check.xds-ok .xds-ic { color: var(--success); }
+  .xds-s3-check.xds-todo { color: var(--text-tertiary); }
+  .xds-s3-act { margin-top: var(--sp-4); }
+
+  .xds-uuid-card .xds-value-box { font-size: var(--fs-body-sm); line-height: 1.5; }
+  .xds-vless-body { display: grid; grid-template-columns: 116px minmax(0,1fr); gap: var(--sp-4); }
+  .xds-node-flag { width: 20px; height: 15px; border-radius: 2px; border: 1px solid var(--border-default); background: var(--bg-sunken); display: grid; place-items: center; font-size: 9px; font-family: var(--font-mono); color: var(--text-tertiary); }
+  .xds-lat { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: var(--fs-micro); }
+  .xds-bars { display: flex; gap: 1.5px; align-items: flex-end; height: 11px; }
+  .xds-bars i { width: 2.5px; background: var(--gray-300); border-radius: 1px; }
+  .xds-bars i.xds-on { background: var(--success); }
+  .xds-sec-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-3) 0; border-bottom: 1px solid var(--border-subtle); }
+  .xds-sec-row:last-child { border-bottom: 0; }
+  @media (max-width: 1100px) { .xds-uc-hero { grid-template-columns: 1fr; } .xds-steps3 { grid-template-columns: 1fr; } .xds-s3 { border-right: 0; border-bottom: 1px solid var(--border-subtle); } }
+
+/* ---------- 订阅计费 ---------- */
+.xds-gate { display: flex; gap: var(--sp-4); align-items: center; padding: var(--sp-4) var(--sp-5); border: 1px solid var(--warning-border); background: var(--warning-bg); border-radius: var(--r-md); }
+  .xds-gate-ico { width: 34px; height: 34px; border-radius: var(--r-sm); background: rgba(138,83,0,.10); color: var(--warning); display: grid; place-items: center; flex: none; }
+  .xds-plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+  .xds-plan { padding: var(--sp-5); position: relative; }
+  .xds-plan.xds-is-current { border-color: var(--blue-300); background: linear-gradient(180deg, var(--blue-50), var(--bg-surface) 55%); }
+  .xds-plan-amt { font-family: var(--font-mono); font-size: 1.75rem; font-weight: var(--fw-medium); letter-spacing: -0.03em; line-height: 1; margin-top: var(--sp-4); }
+  .xds-plan-amt .xds-per { font-size: var(--fs-caption); color: var(--text-tertiary); font-weight: var(--fw-regular); letter-spacing: 0; }
+  .xds-plan ul { margin-top: var(--sp-4); }
+  .xds-plan li { display: flex; gap: 7px; font-size: var(--fs-caption); color: var(--text-secondary); align-items: flex-start; }
+  .xds-plan li + li { margin-top: 7px; }
+  .xds-plan li .xds-ic { color: var(--success); margin-top: 2px; }
+  .xds-usage-bars { display: flex; align-items: flex-end; gap: 3px; height: 88px; }
+  .xds-usage-bars i { flex: 1; background: var(--blue-100); border-radius: 2px 2px 0 0; min-height: 2px; }
+  .xds-usage-bars i.xds-hi { background: var(--blue-500); }
+  .xds-axis { display: flex; justify-content: space-between; margin-top: 7px; }
+  .xds-danger-zone { border-color: var(--danger-border); }
+  .xds-danger-zone .xds-card-head { border-bottom-color: var(--danger-border); background: var(--danger-bg); border-radius: var(--r-md) var(--r-md) 0 0; }
+  .xds-pm { display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); border: 1px solid var(--border-default); border-radius: var(--r-sm); }
+  .xds-pm-brand { width: 40px; height: 26px; border-radius: var(--r-xs); background: var(--gray-900); color: #fff; display: grid; place-items: center; font-family: var(--font-mono); font-size: 9px; letter-spacing: .06em; flex: none; }
+  .xds-sec-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-3) 0; border-bottom: 1px solid var(--border-subtle); }
+  .xds-sec-row:last-child { border-bottom: 0; }
+  @media (max-width: 1100px) { .xds-plan-grid { grid-template-columns: 1fr; } }
+
+/* ---------- 帮助中心 ---------- */
+.xds-help-hero { padding: var(--sp-14) 0 var(--sp-10); border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface); position: relative; overflow: hidden; }
+  .xds-help-hero::before { content:""; position:absolute; inset:-140px 0 auto 0; height:340px; background: radial-gradient(ellipse 560px 220px at 50% 100%, rgba(0,88,189,.08), transparent 70%); }
+  .xds-help-hero > * { position: relative; }
+  .xds-search-wrap { max-width: 620px; margin: var(--sp-6) auto 0; }
+  .xds-search-big { display: flex; align-items: center; gap: var(--sp-3); height: 50px; padding: 0 var(--sp-4); border: 1px solid var(--border-strong); border-radius: var(--r-md); background: var(--bg-surface); }
+  .xds-search-big:hover { border-color: var(--gray-400); }
+  .xds-hot { display: flex; gap: var(--sp-2); justify-content: center; flex-wrap: wrap; margin-top: var(--sp-4); }
+  .xds-hot a { font-size: var(--fs-caption); color: var(--text-secondary); border: 1px solid var(--border-default); border-radius: var(--r-pill); padding: 4px 11px; background: var(--bg-surface); }
+  .xds-hot a:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+  .xds-task-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-3); }
+  .xds-task { padding: var(--sp-5); display: flex; flex-direction: column; }
+  .xds-task-ico { width: 30px; height: 30px; border-radius: var(--r-sm); background: var(--blue-50); border: 1px solid var(--blue-100); color: var(--blue-500); display: grid; place-items: center; }
+  .xds-task h4 { margin: var(--sp-4) 0 6px; }
+  .xds-task .xds-link-arrow { margin-top: auto; padding-top: var(--sp-4); font-size: var(--fs-caption); }
+
+  .xds-doc-layout { display: grid; grid-template-columns: 214px minmax(0,1fr) 196px; gap: var(--sp-8); }
+  .xds-doc-nav .xds-nav-label { padding: 0; }
+  .xds-doc-nav a { display: block; font-size: var(--fs-body-sm); color: var(--text-secondary); padding: 5px 10px; border-radius: var(--r-xs); border-left: 2px solid transparent; margin-left: -2px; }
+  .xds-doc-nav a:hover { color: var(--text-primary); background: var(--bg-sunken); }
+  .xds-doc-nav a.xds-is-active { color: var(--blue-600); border-left-color: var(--blue-500); background: var(--blue-50); font-weight: var(--fw-medium); }
+  .xds-doc-nav .xds-nav-group + .xds-nav-group { margin-top: var(--sp-5); }
+
+  .xds-prose { font-size: var(--fs-body); line-height: var(--lh-relaxed); color: var(--text-secondary); }
+  .xds-prose h1 { font-size: var(--fs-h1); color: var(--text-primary); margin-bottom: var(--sp-3); }
+  .xds-prose h2 { font-size: var(--fs-h3); color: var(--text-primary); margin: var(--sp-10) 0 var(--sp-3); scroll-margin-top: 80px; }
+  .xds-prose p + p { margin-top: var(--sp-4); }
+  .xds-prose ol { counter-reset: n; margin-top: var(--sp-4); }
+  .xds-prose ol li { counter-increment: n; position: relative; padding-left: 30px; }
+  .xds-prose ol li + li { margin-top: var(--sp-4); }
+  .xds-prose ol li::before { content: counter(n); position: absolute; left: 0; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg-sunken); border: 1px solid var(--border-default); color: var(--text-tertiary); font-family: var(--font-mono); font-size: 11px; display: grid; place-items: center; }
+  .xds-prose code { font-family: var(--font-mono); font-size: .88em; background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--r-xs); padding: 1px 5px; color: var(--text-primary); }
+  .xds-prose strong { color: var(--text-primary); font-weight: var(--fw-semibold); }
+  .xds-toc { position: sticky; top: 76px; align-self: start; }
+  .xds-toc a { display: block; font-size: var(--fs-caption); color: var(--text-tertiary); padding: 4px 0 4px 11px; border-left: 2px solid var(--border-subtle); }
+  .xds-toc a.xds-is-active { color: var(--blue-600); border-left-color: var(--blue-500); }
+  .xds-toc a:hover { color: var(--text-primary); }
+
+  .xds-contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+  @media (max-width: 1100px) { .xds-task-grid { grid-template-columns: repeat(2,1fr); } .xds-doc-layout { grid-template-columns: 1fr; } .xds-toc { display: none; } .xds-contact-grid { grid-template-columns: 1fr; } }
+
+/* ---------- 交互元素补充 ---------- */
+/* FAQ 用 <details>/<summary> 实现，去掉浏览器默认三角标记 */
+.xds-faq-item > summary { list-style: none; }
+.xds-faq-item > summary::-webkit-details-marker { display: none; }
+.xds-faq-item > summary::marker { content: ""; }
+.xds-faq-item[open] > summary > svg { transform: rotate(180deg); }
+.xds-faq-item > summary > svg { transition: transform var(--dur-base) var(--ease-out); }
+
+/* 表格在窄容器下横向滚动而不是撑破布局 */
+.xds-scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.xds-scroll-x > table { min-width: 640px; }
+
+/* ---------- 极小工具类（只补 JSX 里高频重复的间距，不做完整 utility 体系） ---------- */
+.xds-mt-7 { margin-top: 7px; }
+.xds-mt-12 { margin-top: 12px; }
+.xds-mt-16 { margin-top: 16px; }
+.xds-mt-20 { margin-top: 20px; }
+.xds-mt-24 { margin-top: 24px; }
+.xds-mt-32 { margin-top: 32px; }
