@@ -714,3 +714,25 @@
 .xds-mt-20 { margin-top: 20px; }
 .xds-mt-24 { margin-top: 24px; }
 .xds-mt-32 { margin-top: 32px; }
+
+/* ---------- 产品页图文展示 ---------- */
+.xds-showcases { display: grid; gap: var(--sp-30); }
+.xds-showcase {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-14); align-items: center;
+}
+.xds-showcase.xds-is-reverse > .xds-showcase-copy { order: 2; }
+.xds-showcase-copy > .xds-t-h2 { margin: var(--sp-5) 0 var(--sp-3); }
+.xds-showcase-media {
+  border: 1px solid var(--border-default); border-radius: var(--r-lg);
+  background: var(--bg-raised); padding: 6px; overflow: hidden;
+}
+.xds-showcase-media img {
+  width: 100%; height: auto; display: block;
+  border-radius: calc(var(--r-lg) - 6px);
+}
+@media (max-width: 1100px) {
+  .xds-showcases { gap: var(--sp-20); }
+  .xds-showcase { grid-template-columns: 1fr; gap: var(--sp-8); }
+  .xds-showcase.xds-is-reverse > .xds-showcase-copy { order: 0; }
+}

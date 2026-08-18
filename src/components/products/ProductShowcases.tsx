@@ -1,6 +1,14 @@
 "use client";
 
-import { marketingTheme } from "@/components/marketing/theme";
+/**
+ * 产品页图文展示 —— Micro SaaS 模版
+ * 设计稿：ai-workspace-services/.github → design-system/micro-saas-模版
+ *
+ * 保留左右交替的版式与 icon 映射，去掉模糊光晕和 shadow-2xl：
+ * 规范里深度由边框强度表达，平面元素不投影。
+ * 数据契约不变（WebsiteShowcasePayload）。
+ */
+
 import {
   Activity,
   Bot,
@@ -14,13 +22,14 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { WebsiteShowcasePayload } from "@/lib/docsServiceClient";
 
 interface ProductShowcasesProps {
   showcases: WebsiteShowcasePayload[];
 }
 
-const ICONS: Record<string, any> = {
+const ICONS: Record<string, LucideIcon> = {
   bot: Bot,
   network: Network,
   monitor: Monitor,
@@ -35,53 +44,43 @@ const ICONS: Record<string, any> = {
 };
 
 export default function ProductShowcases({ showcases }: ProductShowcasesProps) {
-  if (!showcases || showcases.length === 0) {
+  if (!showcases?.length) {
     return null;
   }
 
   return (
-    <section className={`${marketingTheme.section.container} mt-24 sm:mt-32 space-y-28 sm:space-y-36`}>
-      {showcases.map((showcase, idx) => {
-        const Icon = (showcase.icon && ICONS[showcase.icon]) || Shield;
-        const isReverse = showcase.reverse;
-
-        return (
-          <div
-            key={idx}
-            className={`flex flex-col ${
-              isReverse ? "lg:flex-row-reverse" : "lg:flex-row"
-            } items-center gap-12`}
-          >
-            <div className={`flex-1 ${isReverse ? "lg:pl-10" : "lg:pr-10"}`}>
-              <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 shadow-inner">
-                <Icon className="h-6 w-6" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">
-                {showcase.title}
-              </h2>
-              <p className="text-lg text-slate-600 leading-relaxed">
-                {showcase.description}
-              </p>
-            </div>
-            <div className="flex-1 w-full relative">
-              <div
-                className={`absolute -inset-4 bg-gradient-to-${
-                  isReverse ? "tl" : "tr"
-                } from-indigo-100 to-purple-50 opacity-50 blur-xl rounded-full`}
-              />
-              <div className="relative rounded-3xl border border-slate-200 bg-white/60 backdrop-blur-xl shadow-2xl overflow-hidden p-2">
-                <div className="rounded-2xl overflow-hidden">
-                  <img
-                    src={encodeURI(showcase.image)}
-                    alt={showcase.title}
-                    className="w-full object-cover transform hover:scale-105 transition-transform duration-700"
-                  />
+    <section
+      className="xds-section-sm"
+      style={{
+        background: "var(--bg-surface)",
+        borderTop: "1px solid var(--border-subtle)",
+        borderBottom: "1px solid var(--border-subtle)",
+      }}
+    >
+      <div className="xds-container xds-showcases">
+        {showcases.map((showcase, idx) => {
+          const Icon = (showcase.icon && ICONS[showcase.icon]) || Shield;
+          return (
+            <div
+              key={`${showcase.title}-${idx}`}
+              className={`xds-showcase${showcase.reverse ? " xds-is-reverse" : ""}`}
+            >
+              <div className="xds-showcase-copy">
+                <div className="xds-feat-ico">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                 </div>
+                <h2 className="xds-t-h2">{showcase.title}</h2>
+                <p className="xds-t-lead">{showcase.description}</p>
+              </div>
+              <div className="xds-showcase-media">
+                {/* 走 CMS 返回的任意来源地址，不上 next/image 以免域名白名单拦截 */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={encodeURI(showcase.image)} alt={showcase.title} />
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </section>
   );
 }

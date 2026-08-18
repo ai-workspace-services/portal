@@ -289,16 +289,17 @@ export function IdentityStrip({
 /* ═══════════════════════════════════ VLESS 连接卡 ═══════════════════════════════════ */
 
 export function VlessConnectionCard({
-  uuid,
+  proxyUuid,
   nodes,
   zh,
 }: {
-  uuid: string | null;
+  /** 代理 UUID —— VLESS 访问凭据，与账户身份 uuid 是两个字段（见 #220） */
+  proxyUuid: string | null;
   nodes: VlessNode[];
   zh: boolean;
 }) {
   const node = nodes[0];
-  const uri = useMemo(() => buildVlessUri(uuid, node), [uuid, node]);
+  const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -335,7 +336,7 @@ export function VlessConnectionCard({
   }, [uri]);
 
   const handleDownload = useCallback(() => {
-    const config = buildVlessConfig(uuid, node);
+    const config = buildVlessConfig(proxyUuid, node);
     if (!config) return;
     const blob = new Blob([serializeConfigForDownload(config)], {
       type: "application/json",
@@ -346,7 +347,7 @@ export function VlessConnectionCard({
     a.download = "xconnect-config.json";
     a.click();
     URL.revokeObjectURL(url);
-  }, [uuid, node]);
+  }, [proxyUuid, node]);
 
   return (
     <XdsCard id="xds-vless">

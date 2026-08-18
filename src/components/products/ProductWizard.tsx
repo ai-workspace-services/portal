@@ -1,17 +1,15 @@
 "use client";
 
-import { marketingTheme } from "@/components/marketing/theme";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Download,
-  KeyRound,
-  Layers,
-  Power,
-  Settings,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+/**
+ * 产品页向导 —— Micro SaaS 模版
+ * 设计稿：ai-workspace-services/.github → design-system/micro-saas-模版
+ *
+ * 向导是转化主干而不是装饰：三格无缝拼接、STEP 0N 眉标、
+ * 区块末尾只留一个 primary 按钮（规范第 5.1 节：一个视觉区块只能有一个 primary）。
+ * 数据契约不变（WebsiteWizardPayload）。
+ */
+
+import { ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { WebsiteWizardPayload } from "@/lib/docsServiceClient";
 
@@ -20,80 +18,78 @@ interface ProductWizardProps {
   language?: string;
 }
 
-const STEP_ICONS = [Download, KeyRound, Power, Layers, Settings, Sparkles, Zap];
-
 export default function ProductWizard({
   wizard,
   language = "zh",
 }: ProductWizardProps) {
-  if (!wizard || !wizard.steps || wizard.steps.length === 0) {
+  if (!wizard?.steps?.length) {
     return null;
   }
 
   const isEn = language === "en";
+  const steps = wizard.steps;
+  // 三步以内并排无缝拼接，超过三步退回等宽网格，避免挤成一条
+  const columns = Math.min(steps.length, 3);
 
   return (
-    <section className={`${marketingTheme.section.container} mt-20 sm:mt-28`}>
-      <div className="text-center max-w-2xl mx-auto mb-12">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          {wizard.title}
-        </h2>
-        {wizard.description && (
-          <p className="mt-3 text-base text-slate-600 leading-relaxed">
-            {wizard.description}
-          </p>
-        )}
-      </div>
+    <section className="xds-section" id="wizard">
+      <div className="xds-container">
+        <div className="xds-sec-head">
+          <span className="xds-t-eyebrow">{isEn ? "Get started" : "Get started"}</span>
+          <h2 className="xds-t-h1">{wizard.title}</h2>
+          {wizard.description ? (
+            <p className="xds-t-lead">{wizard.description}</p>
+          ) : null}
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {wizard.steps.map((s, idx) => {
-          const StepIcon = STEP_ICONS[idx % STEP_ICONS.length] || CheckCircle2;
-          return (
-            <div
-              key={idx}
-              className="relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-indigo-200 group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
-                    <StepIcon className="h-5 w-5" />
-                  </div>
-                  <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">
-                    STEP {s.step || idx + 1}
-                  </span>
-                </div>
-
-                <h3 className="text-lg font-bold text-slate-900 mb-2">
-                  {s.title}
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                  {s.description}
-                </p>
+        <div
+          className="xds-grid xds-wizard"
+          style={{
+            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+            gap: 0,
+          }}
+        >
+          {steps.map((step, idx) => (
+            <article key={`${step.step}-${idx}`} className="xds-wizard-card">
+              <div className="xds-row-between">
+                <span className="xds-wizard-idx">
+                  STEP {String(step.step ?? idx + 1).padStart(2, "0")}
+                </span>
               </div>
+              <h3>{step.title}</h3>
+              <p className="xds-t-body-sm xds-muted">{step.description}</p>
 
-              {s.platforms && (
-                <div className="pt-3 border-t border-slate-100 mt-2">
-                  <p className="text-xs text-indigo-600 font-medium leading-relaxed">
-                    {s.platforms}
-                  </p>
+              {step.platforms || step.link ? (
+                <div className="xds-wizard-visual">
+                  {step.platforms ? (
+                    <p className="xds-t-caption">{step.platforms}</p>
+                  ) : null}
+                  {step.link ? (
+                    <Link
+                      href={step.link}
+                      className="xds-link-arrow xds-t-caption"
+                      style={{ display: "inline-flex", marginTop: 12 }}
+                    >
+                      {isEn ? "Open" : "前往"}
+                      <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Link>
+                  ) : null}
                 </div>
-              )}
+              ) : null}
+            </article>
+          ))}
+        </div>
 
-              {s.link && (
-                <div className="mt-3">
-                  <Link
-                    href={s.link}
-                    className="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
-                  >
-                    <Download className="mr-1 h-3.5 w-3.5" />
-                    {isEn ? "Go to Link" : "前往了解"}
-                    <ArrowRight className="ml-1 h-3 w-3" />
-                  </Link>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        <div className="xds-row" style={{ marginTop: 24, gap: 12 }}>
+          <Link href="/register" className="xds-btn xds-btn-primary">
+            {isEn ? "Create an account, start step 1" : "创建账户，开始第 1 步"}
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+          <Link href="/docs" className="xds-link-arrow">
+            {isEn ? "Read the full guide first" : "先看完整部署文档"}
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </section>
   );
