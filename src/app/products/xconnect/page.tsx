@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
-import XdsSiteNav from "@/components/xds/XdsSiteNav";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import {
   XdsBadge,
   XdsCard,
@@ -311,7 +311,7 @@ export default function XConnectPage() {
 
   return (
     <div className="xds" style={{ minHeight: "100vh", overflowX: "hidden" }}>
-      <XdsSiteNav />
+      <MarketingNav />
 
       <main style={{ paddingTop: 24 }}>
         {/* ───────────────── Hero ───────────────── */}

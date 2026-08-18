@@ -10,7 +10,7 @@
  */
 
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
-import XdsSiteNav from "@/components/xds/XdsSiteNav";
+import MarketingNav from "@/components/marketing/MarketingNav";
 import ProductHero from "./ProductHero";
 import ProductWizard from "./ProductWizard";
 import ProductShowcases from "./ProductShowcases";
@@ -28,7 +28,7 @@ export default function ProductPageTemplate({
 }: ProductPageTemplateProps) {
   return (
     <div className="xds" style={{ minHeight: "100vh", overflowX: "hidden" }}>
-      <XdsSiteNav />
+      <MarketingNav />
       <main style={{ paddingTop: 24 }}>
         <ProductHero hero={product.hero} language={language} />
         {product.wizard ? (
