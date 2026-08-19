@@ -15,6 +15,7 @@
     "deploy:static-dashboard:pages": "yarn build:static-dashboard && wrangler pages deploy out --cwd static-dashboard",
     "build:workers:next": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && next build && node scripts/prepare-open-next-build.mjs",
     "build:workers": "yarn build:workers:next && opennextjs-cloudflare build --skipNextBuild --config wrangler.worker.jsonc",
+    "collect:edge-assets": "node scripts/collect-edge-assets.mjs",
     "build:ssr:public": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && node scripts/build-open-next-boundary.mjs --boundary public",
     "build:ssr:content": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && node scripts/build-open-next-boundary.mjs --boundary content",
     "build:ssr:auth": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && node scripts/build-open-next-boundary.mjs --boundary auth",
