@@ -107,7 +107,7 @@ await writeFile(
     "",
     "export default {",
     "  ...baseConfig,",
-    `  assetPrefix: process.env.NEXT_PUBLIC_STATIC_CDN_URL ? \`\${process.env.NEXT_PUBLIC_STATIC_CDN_URL.replace(/\\/$/, "")}/_edge/\${boundary}\` : \`/_edge/\${boundary}\`,`,
+    `  assetPrefix: process.env.NEXT_PUBLIC_STATIC_CDN_URL ? \`\${process.env.NEXT_PUBLIC_STATIC_CDN_URL.replace(/\\/$/, "")}/_edge/${boundary}\` : "/_edge/${boundary}",`,
     `  generateBuildId: async () => "${boundary}-${releaseId()}",`,
     "};",
     "",
