@@ -1,11 +1,11 @@
-# UAT。域名与 platform-ops-toolkit 的 provision 输出一致:
-# console-cloudflare-uat / accounts-cloudflare-uat + TARGET_DOMAIN_BASE(onwalk.net)。
+# UAT。服务入口以 GitOps serverless runtime topology 为唯一来源:
+# console-serverless-uat / accounts-serverless-uat + TARGET_DOMAIN_BASE(onwalk.net)。
 #
 # 这个文件原先不存在, 而 loader 的 source 选择是
 # `environment === 'prod' ? 'prod' : 'sit'` —— UAT 会静默使用 SIT 的端点
 # (127.0.0.1:8080, 在 UAT 主机上并不存在), 同时通过 base 的漏项连着生产认证。
-apiBaseUrl: https://accounts-cloudflare-uat.onwalk.net/api
-authUrl: https://accounts-cloudflare-uat.onwalk.net
-dashboardUrl: https://console-cloudflare-uat.onwalk.net
+apiBaseUrl: https://accounts-serverless-uat.onwalk.net/api
+authUrl: https://accounts-serverless-uat.onwalk.net
+dashboardUrl: https://console-serverless-uat.onwalk.net
 docsServiceUrl: https://docs.svc.plus
 logLevel: info

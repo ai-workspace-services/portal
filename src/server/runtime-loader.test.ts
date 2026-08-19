@@ -26,4 +26,14 @@ describe("runtime-loader", () => {
     expect(config.authUrl).toBe("https://accounts.svc.plus");
     expect(config.dashboardUrl).toBe("https://www.svc.plus");
   });
+
+  it("uses the GitOps serverless service entrances for UAT", async () => {
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+
+    const config = loadRuntimeConfig({ hostname: "console-serverless-uat.onwalk.net" });
+
+    expect(config.apiBaseUrl).toBe("https://accounts-serverless-uat.onwalk.net/api");
+    expect(config.authUrl).toBe("https://accounts-serverless-uat.onwalk.net");
+    expect(config.dashboardUrl).toBe("https://console-serverless-uat.onwalk.net");
+  });
 });

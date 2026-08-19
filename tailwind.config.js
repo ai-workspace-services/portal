@@ -6,14 +6,20 @@
  */
 
 import typography from '@tailwindcss/typography'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
 const tailwindConfig = {
   // 扫描的源文件路径
-  content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+  content: {
+    files: [
+      path.join(projectRoot, 'src/**/*.{js,ts,jsx,tsx,mdx}'),
+      path.join(projectRoot, 'app/**/*.{js,ts,jsx,tsx,mdx}'),
+      path.join(projectRoot, 'components/**/*.{js,ts,jsx,tsx,mdx}'),
+    ],
+  },
 
   // 主题扩展配置
   theme: {
