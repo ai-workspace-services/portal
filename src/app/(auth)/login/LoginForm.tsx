@@ -17,6 +17,8 @@ import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
 import { useUserStore } from "@lib/userStore";
 
+import { codeRequiresMfa, resolveLoginErrorMessage } from "./loginErrors";
+
 export function LoginForm() {
   const router = useRouter();
   const { language } = useLanguage();
@@ -180,16 +182,38 @@ export function LoginForm() {
         credentials: "include",
       });
 
+      // Two response shapes reach this screen. The portal BFF answers with
+      // {success, error, needMfa}; when the edge router sends /api/auth/* to
+      // the account service instead, the raw shape comes back, where a
+      // required second factor is a 200 carrying mfaRequired and no error at
+      // all. Read both so neither routing silently looks like a success.
       const payload = (await response.json().catch(() => ({}))) as {
         success?: boolean;
         error?: string | null;
         needMfa?: boolean;
+        mfaRequired?: boolean;
+        mfa_required?: boolean;
       };
 
-      if (payload.needMfa) {
+      const requiresMfa = Boolean(
+        payload.needMfa ?? payload.mfaRequired ?? payload.mfa_required,
+      );
+
+      if (requiresMfa) {
         setMfaRequirement("required");
-        router.replace("/panel/account?setupMfa=1");
-        router.refresh();
+        // Only the BFF hands back a challenge cookie and expects the enrolment
+        // screen to take over. The account service just asks for the code, so
+        // stay on the form and prompt for it.
+        if (payload.needMfa) {
+          router.replace("/panel/account?setupMfa=1");
+          router.refresh();
+          return;
+        }
+        setError(
+          authCopy.alerts.mfa?.missing ??
+            pageCopy.missingTotp ??
+            authCopy.alerts.missingCredentials,
+        );
         return;
       }
 
@@ -197,47 +221,17 @@ export function LoginForm() {
 
       if (!isSuccessful) {
         const messageKey = payload.error ?? "generic_error";
-        if (
-          messageKey === "mfa_code_required" ||
-          messageKey === "invalid_mfa_code" ||
-          messageKey === "mfa_required" ||
-          messageKey === "mfa_setup_required" ||
-          messageKey === "mfa_challenge_failed"
-        ) {
+        if (codeRequiresMfa(messageKey)) {
           setMfaRequirement("required");
         }
-        switch (messageKey) {
-          case "missing_credentials":
-            setError(authCopy.alerts.missingCredentials);
-            break;
-          case "invalid_credentials":
-            setError(pageCopy.invalidCredentials);
-            break;
-          case "user_not_found":
-            setError(pageCopy.userNotFound);
-            break;
-          case "mfa_code_required":
-            setError(
-              authCopy.alerts.mfa?.missing ??
-                pageCopy.missingTotp ??
-                authCopy.alerts.missingCredentials,
-            );
-            break;
-          case "invalid_mfa_code":
-            setError(authCopy.alerts.mfa?.invalid ?? pageCopy.genericError);
-            break;
-          case "mfa_challenge_failed":
-            setError(
-              authCopy.alerts.mfa?.challengeFailed ?? pageCopy.genericError,
-            );
-            break;
-          case "account_service_unreachable":
-            setError(pageCopy.serviceUnavailable ?? pageCopy.genericError);
-            break;
-          default:
-            setError(pageCopy.genericError);
-            break;
-        }
+        setError(
+          resolveLoginErrorMessage(
+            response.status,
+            messageKey,
+            pageCopy,
+            authCopy,
+          ),
+        );
         return;
       }
 

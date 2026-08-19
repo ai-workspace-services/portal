@@ -2,6 +2,11 @@ import { Suspense } from 'react'
 
 import { LogoutClient } from './LogoutClient'
 
+// Same cross-boundary constraint as /login: this route lives in the auth
+// build, and a prerendered page makes links from other boundaries hang
+// silently instead of falling back to a full page load.
+export const dynamic = 'force-dynamic'
+
 function LogoutFallback() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
