@@ -11,17 +11,16 @@ const cloudflareConfigPath = process.env.CLOUDFLARE_BOUNDARY_CONFIG
   ? path.resolve(projectRoot, process.env.CLOUDFLARE_BOUNDARY_CONFIG)
   : path.join(projectRoot, "config", "cloudflare-boundaries.json");
 const cloudflareConfig = normaliseCloudflareConfig(JSON.parse(await readFile(cloudflareConfigPath, "utf8")));
-const cloudflareEnvironment = process.env.CLOUDFLARE_ENV || "uat";
-const environmentConfig = cloudflareConfig.environments?.[cloudflareEnvironment];
+const deploymentEnvironment = process.env.PORTAL_DEPLOYMENT_ENV || "uat";
+const environmentConfig = cloudflareConfig.environments?.[deploymentEnvironment];
 const boundaryConfig = cloudflareConfig.boundaries?.[boundary];
 if (!environmentConfig || !boundaryConfig) {
-  throw new Error(`Cloudflare boundary config is missing environment=${cloudflareEnvironment} boundary=${boundary}`);
+  throw new Error(`Cloudflare boundary config is missing environment=${deploymentEnvironment} boundary=${boundary}`);
 }
 
 const boundaries = {
   public: {
     workerName: boundaryConfig.worker_name,
-    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => !isApi(relativePath) && !startsWithAny(relativePath, [
       "(auth)/",
       "blogs/",
@@ -38,22 +37,18 @@ const boundaries = {
   },
   content: {
     workerName: boundaryConfig.worker_name,
-    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, ["blogs/", "docs/", "download/"]),
   },
   auth: {
     workerName: boundaryConfig.worker_name,
-    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, ["(auth)/", "logout/"]),
   },
   console: {
     workerName: boundaryConfig.worker_name,
-    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, ["panel/"]),
   },
   workspace: {
     workerName: boundaryConfig.worker_name,
-    routeSuffixes: boundaryConfig.route_suffixes,
     owns: (relativePath) => startsWithAny(relativePath, [
       "ai-workspace/",
       "cloud_iac/",
@@ -68,7 +63,6 @@ const definition = boundaries[boundary];
 if (!definition) {
   throw new Error(`Unknown SSR boundary: ${boundary}. Expected one of ${Object.keys(boundaries).join(", ")}.`);
 }
-const routes = definition.routeSuffixes.map((suffix) => `${environmentConfig.console_host}${suffix}`);
 
 const boundaryRoot = path.join(generatedRoot, boundary);
 await rm(boundaryRoot, { recursive: true, force: true });
@@ -83,6 +77,29 @@ await writeFile(path.join(boundaryRoot, "tsconfig.json"), `${JSON.stringify({
   compilerOptions: { baseUrl: "../.." },
   include: ["../../src", "../../types", "./**/*.ts", "./**/*.tsx"],
 }, null, 2)}\n`);
+await writeFile(
+  path.join(boundaryRoot, "tailwind.config.js"),
+  [
+    'import baseConfig from "../../tailwind.config.js";',
+    "",
+    "export default {",
+    "  ...baseConfig,",
+    "};",
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  path.join(boundaryRoot, "postcss.config.mjs"),
+  [
+    "export default {",
+    "  plugins: {",
+    '    tailwindcss: { config: "./tailwind.config.js" },',
+    "    autoprefixer: {},",
+    "  },",
+    "};",
+    "",
+  ].join("\n"),
+);
 await writeFile(
   path.join(boundaryRoot, "next.config.mjs"),
   [
@@ -141,14 +158,7 @@ await writeFile(
     compatibility_flags: ["nodejs_compat", "global_fetch_strictly_public"],
     assets: { directory: ".open-next/assets", binding: "ASSETS" },
     services: [{ binding: "WORKER_SELF_REFERENCE", service: definition.workerName }],
-    env: {
-      [cloudflareEnvironment]: {
-        name: `${definition.workerName}-${cloudflareEnvironment}`,
-        routes: routes.map((pattern) => ({ pattern, zone_name: environmentConfig.zone_name })),
-        services: [{ binding: "WORKER_SELF_REFERENCE", service: `${definition.workerName}-${cloudflareEnvironment}` }],
-        images: { binding: "IMAGES" },
-      },
-    },
+    images: { binding: "IMAGES" },
   }, null, 2)}\n`,
 );
 
@@ -184,10 +194,35 @@ for (const relativePath of selected) {
   }
   const target = path.join(boundaryRoot, "src", "app", relativePath);
   await mkdir(path.dirname(target), { recursive: true });
+  if (relativePath === "layout.tsx") {
+    const appProvidersImport = relativeImport(target, path.join(appRoot, "AppProviders.tsx"));
+    const layoutSource = (await readFile(source, "utf8"))
+      .replace("import './globals.css'", "import './globals.compiled.css'")
+      .replace("from './AppProviders'", `from ${JSON.stringify(appProvidersImport)}`);
+    await writeFile(target, layoutSource);
+    await cp(path.join(appRoot, "globals.css"), path.join(path.dirname(target), "globals.css"));
+    await cp(path.join(appRoot, "xds.css"), path.join(path.dirname(target), "xds.css"));
+    continue;
+  }
   const importPath = relativeImport(target, source);
   await writeFile(target, `export { default } from ${JSON.stringify(importPath)};\nexport * from ${JSON.stringify(importPath)};\n`);
 }
 
+await run(
+  "yarn",
+  [
+    "exec",
+    "tailwindcss",
+    "--config",
+    path.join(projectRoot, "tailwind.config.js"),
+    "--input",
+    path.join(boundaryRoot, "src", "app", "globals.css"),
+    "--output",
+    path.join(boundaryRoot, "src", "app", "globals.compiled.css"),
+    "--minify",
+  ],
+  projectRoot,
+);
 await copyPublicAssets(path.join(projectRoot, "public"), path.join(boundaryRoot, "public"));
 await run("yarn", ["exec", "next", "build", boundaryRoot], projectRoot);
 await run("node", [path.join(projectRoot, "scripts", "prepare-open-next-build.mjs")], boundaryRoot);
