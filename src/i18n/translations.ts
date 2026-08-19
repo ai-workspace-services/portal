@@ -644,6 +644,15 @@ export type Translation = {
     invalidCredentials: string
     userNotFound: string
     genericError: string
+    // Rendered when the account service reports a code this screen does not
+    // recognise. It carries the code so a report names the real failure
+    // instead of the catch-all copy.
+    genericErrorWithCode: string
+    emailNotVerified: string
+    accountSuspended: string
+    sandboxNoLogin: string
+    passwordRequired: string
+    mfaSetupRequired: string
     serviceUnavailable?: string
     disclaimer: string
   }
@@ -787,6 +796,12 @@ export const translations: Record<'en' | 'zh', Translation> = {
       invalidCredentials: 'Incorrect username or password. Please try again.',
       userNotFound: 'We could not find an account with that username.',
       genericError: 'We could not sign you in. Please try again later.',
+      genericErrorWithCode: 'We could not sign you in ({code}). Please try again later.',
+      emailNotVerified: 'Verify your email address before signing in. Check your inbox for the verification link.',
+      accountSuspended: 'This account is suspended. Contact support to restore access.',
+      sandboxNoLogin: 'The sandbox account cannot sign in directly.',
+      passwordRequired: 'This username requires a password. Please enter it to continue.',
+      mfaSetupRequired: 'Finish setting up two-factor authentication before signing in.',
       serviceUnavailable: 'The account service is temporarily unavailable. Please try again shortly.',
       disclaimer: 'Your session stays on this device only and is used solely to keep the console signed in while you browse.',
     },
@@ -1674,6 +1689,12 @@ export const translations: Record<'en' | 'zh', Translation> = {
       invalidCredentials: '用户名或密码不正确，请重试。',
       userNotFound: '未找到该用户名对应的账户。',
       genericError: '登录失败，请稍后再试。',
+      genericErrorWithCode: '登录失败（{code}），请稍后再试。',
+      emailNotVerified: '请先验证邮箱再登录，验证链接已发送到你的邮箱。',
+      accountSuspended: '该账号已被暂停，请联系客服恢复访问。',
+      sandboxNoLogin: '沙箱账号不支持直接登录。',
+      passwordRequired: '该用户名需要使用密码登录，请输入密码。',
+      mfaSetupRequired: '请先完成两步验证设置再登录。',
       serviceUnavailable: '账户服务暂时不可用，请稍后再试。',
       disclaimer: '登录态仅保存在当前设备，用于在浏览期间保持控制台会话。',
     },

@@ -1,4 +1,10 @@
-export const dynamic = "error";
+// Served from the auth SSR boundary, which is a separate build from the
+// public one that links here. A statically prerendered page is the one case
+// where the router accepts the foreign build's payload and the navigation
+// never commits -- the link simply does nothing. Rendering per request keeps
+// this page on the same full-page-load path as every other cross-boundary
+// route, and an auth screen should not be cached for a year anyway.
+export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
