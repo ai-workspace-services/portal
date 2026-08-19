@@ -5,6 +5,7 @@ import { withContentlayer } from "next-contentlayer";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const docsSiteBaseUrl = (process.env.NEXT_PUBLIC_DOCS_BASE_URL || "https://docs.svc.plus").replace(/\/$/, "");
+const staticCdnUrl = (process.env.NEXT_PUBLIC_STATIC_CDN_URL || "").replace(/\/$/, "");
 
 const nextConfig = {
   // ===============================
@@ -12,6 +13,7 @@ const nextConfig = {
   // ===============================
   output: "standalone",
   compress: true,         // Gzip 压缩输出（确保小体积网络传输）
+  assetPrefix: staticCdnUrl || undefined,
 
   // 配置允许的外部图片域名
   images: {
