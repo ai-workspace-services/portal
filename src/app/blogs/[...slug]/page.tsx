@@ -11,10 +11,17 @@ import BrandCTA from "@components/BrandCTA";
 import BlogArticle from "@components/blog/BlogArticle";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { getBlogList, getBlogPost } from "@lib/docsServiceClient";
+import { getDefaultContentLanguage } from "@server/contentLanguage";
 
 export async function generateStaticParams() {
   try {
-    const { posts } = await getBlogList({ page: 1, pageSize: 500 });
+    // No request to negotiate against at build time, so the language is the
+    // pinned default rather than whatever the caller would have asked for.
+    const { posts } = await getBlogList({
+      page: 1,
+      pageSize: 500,
+      lang: getDefaultContentLanguage(),
+    });
     return posts.map((post) => ({ slug: post.slug.split("/") }));
   } catch (error) {
     // A content service that is down must not fail the build; every post then

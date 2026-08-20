@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 
 import { getDocCollections as loadDocCollections, getDocPage, getDocsHome } from '@lib/docsServiceClient'
+import { getDefaultContentLanguage } from '@server/contentLanguage'
 import { isFeatureEnabled } from '@lib/featureToggles'
 import type { DocCollection } from './types'
 
@@ -46,7 +47,7 @@ export async function getDocVersionParams(): Promise<Array<{ collection: string;
     return []
   }
   try {
-    const collections = await getDocCollections()
+    const collections = await loadDocCollections(getDefaultContentLanguage())
     return collections.flatMap((collection) =>
       (collection.versions ?? []).map((version) => ({
         collection: collection.slug,
@@ -65,7 +66,7 @@ export async function getDocCollectionParams(): Promise<Array<{ collection: stri
     return []
   }
   try {
-    const collections = await getDocCollections()
+    const collections = await loadDocCollections(getDefaultContentLanguage())
     return collections.map((collection) => ({ collection: collection.slug }))
   } catch (error) {
     console.warn('Skipping docs prerender: content service unavailable', error)
