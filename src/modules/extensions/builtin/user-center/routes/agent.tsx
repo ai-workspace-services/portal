@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import useSWR from 'swr'
 import { Server, MapPin, Plus, ExternalLink, RefreshCw } from 'lucide-react'
 
-import Breadcrumbs from '@/app/panel/components/Breadcrumbs'
 import { useLanguage } from '@i18n/LanguageProvider'
 import { translations } from '@i18n/translations'
 import { fetchAgentNodes } from '../lib/fetchAgentNodes'
@@ -69,14 +68,6 @@ export default function UserCenterAgentRoute() {
 
   return (
     <div className="space-y-6">
-      <Breadcrumbs
-        items={[
-          { label: t.items.dashboard, href: '/panel' },
-          { label: t.sections.productivity, href: '/panel/agent' },
-          { label: t.items.agents, href: '/panel/agent' },
-        ]}
-      />
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[var(--color-heading)]">{t.items.agents}</h1>

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-import Breadcrumbs from '@/app/panel/components/Breadcrumbs'
 import Card from '../components/Card'
 
 export default function UserCenterLdpRoute() {
@@ -14,12 +13,6 @@ export default function UserCenterLdpRoute() {
 
   return (
     <div className="space-y-4">
-      <Breadcrumbs
-        items={[
-          { label: 'Dashboard', href: '/panel' },
-          { label: 'LDP', href: '/panel/ldp' },
-        ]}
-      />
       <Card>
         <h1 className="text-2xl font-semibold text-gray-900">LDP Management</h1>
         <p className="mt-2 text-sm text-gray-600">Explore low-latency directory plane modules.</p>
