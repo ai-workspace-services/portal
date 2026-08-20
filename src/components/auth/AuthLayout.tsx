@@ -148,14 +148,14 @@ export function AuthLayout({
       >
         <div className="w-full max-w-[32rem]">
           <div className="mb-6 flex items-center justify-between gap-4">
-            <Link href="/" className="space-y-1">
+            <a href="/" className="space-y-1">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
                 XWork Tech Toolkit
               </p>
               <p className="text-2xl font-semibold tracking-[-0.04em] text-slate-900">
                 Svc.Plus
               </p>
-            </Link>
+            </a>
             <span className="rounded-[12px] border border-slate-900/8 bg-white/88 px-3 py-1.5 text-xs font-semibold text-slate-600">
               {modeLabel}
             </span>

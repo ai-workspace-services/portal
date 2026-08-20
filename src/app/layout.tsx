@@ -4,7 +4,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Analytics } from '@vercel/analytics/react'
 import { AppProviders } from './AppProviders'
 import { resolveWebReleaseMetadata } from '@/lib/webReleaseMetadata'
 import { getConsoleIntegrationDefaults } from '@/server/consoleIntegrations'
@@ -154,7 +153,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={bodyClassName}>
         <AppProviders assistantDefaults={assistantDefaults}>{children}</AppProviders>
-        <Analytics />
       </body>
     </html>
   )

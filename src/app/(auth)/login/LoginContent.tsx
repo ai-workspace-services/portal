@@ -111,8 +111,7 @@ export default function LoginContent({
           throw new Error("Token exchange failed");
         }
 
-        router.push("/");
-        router.refresh();
+        window.location.href = "/";
       } catch (error) {
         console.error("Token exchange failed:", error);
         setAlert({ type: "error", message: alerts.genericError });
@@ -328,8 +327,7 @@ export default function LoginContent({
           !redirectParam.startsWith("//")
             ? redirectParam
             : undefined;
-        router.push(redirectTarget || data?.redirectTo || "/");
-        router.refresh();
+        window.location.href = redirectTarget || data?.redirectTo || "/";
       } catch (error) {
         console.error("Failed to submit login request", error);
         setAlert({ type: "error", message: alerts.genericError });

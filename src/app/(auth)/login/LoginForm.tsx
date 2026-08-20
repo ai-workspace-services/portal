@@ -236,8 +236,7 @@ export function LoginForm() {
       }
 
       await login();
-      router.replace("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (submitError) {
       console.warn("Login failed", submitError);
       setError(pageCopy.genericError);
@@ -247,12 +246,11 @@ export function LoginForm() {
   };
 
   const handleGoHome = () => {
-    router.replace("/");
-    router.refresh();
+    window.location.href = "/";
   };
 
   const handleLogout = () => {
-    router.push("/logout");
+    window.location.href = "/logout";
   };
 
   const requiresTotpInput = mfaRequirement === "required";

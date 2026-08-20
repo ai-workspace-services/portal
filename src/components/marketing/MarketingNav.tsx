@@ -75,9 +75,9 @@ function NavLink({
   }
 
   return (
-    <Link href={link.href} onClick={onNavigate}>
+    <a href={link.href} onClick={onNavigate}>
       {link.label}
-    </Link>
+    </a>
   );
 }
 
@@ -216,7 +216,7 @@ export default function MarketingNav() {
               {openDropdown === index ? (
                 <div className="xds-mnav-menu">
                   {dropdown.columns.map((item) => (
-                    <Link
+                    <a
                       key={item.href + item.label}
                       href={item.href}
                       className="xds-mnav-menu-item"
@@ -224,7 +224,7 @@ export default function MarketingNav() {
                     >
                       <span className="xds-mnav-menu-label">{item.label}</span>
                       <span className="xds-t-caption">{item.description}</span>
-                    </Link>
+                    </a>
                   ))}
                 </div>
               ) : null}
@@ -334,24 +334,24 @@ export default function MarketingNav() {
                 ) : null}
               </div>
 
-              <Link
+              <a
                 href={consoleHref}
                 className="xds-btn xds-btn-primary xds-btn-sm"
               >
                 {content.nav.enterConsole}
-              </Link>
+              </a>
             </>
           ) : (
             <>
-              <Link href="/login" className="xds-btn xds-btn-ghost xds-btn-sm">
+              <a href="/login" className="xds-btn xds-btn-ghost xds-btn-sm">
                 {content.nav.login}
-              </Link>
-              <Link
+              </a>
+              <a
                 href={content.hero.primaryCta.href}
                 className="xds-btn xds-btn-primary xds-btn-sm"
               >
                 {content.hero.primaryCta.label}
-              </Link>
+              </a>
             </>
           )}
         </div>
@@ -378,13 +378,13 @@ export default function MarketingNav() {
               <div key={dropdown.label} className="xds-mnav-mobile-group">
                 <span className="xds-mnav-group-label">{dropdown.label}</span>
                 {dropdown.columns.map((item) => (
-                  <Link
+                  <a
                     key={item.href + item.label}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                   >
                     {item.label}
-                  </Link>
+                  </a>
                 ))}
               </div>
             ))}
@@ -418,22 +418,22 @@ export default function MarketingNav() {
                     <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
                     {content.nav.logout}
                   </button>
-                  <Link
+                  <a
                     href={consoleHref}
                     className="xds-btn xds-btn-primary xds-btn-sm"
                     onClick={() => setMobileOpen(false)}
                   >
                     {content.nav.enterConsole}
-                  </Link>
+                  </a>
                 </>
               ) : (
-                <Link
+                <a
                   href="/login"
                   className="xds-btn xds-btn-primary xds-btn-sm"
                   onClick={() => setMobileOpen(false)}
                 >
                   {content.nav.login}
-                </Link>
+                </a>
               )}
             </div>
           </div>

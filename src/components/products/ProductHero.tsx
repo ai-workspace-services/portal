@@ -39,16 +39,16 @@ export default function ProductHero({
         <p className="xds-t-lead xds-hero-sub">{hero.subtitle}</p>
 
         <div className="xds-hero-cta">
-          <Link href={primaryHref} className="xds-btn xds-btn-primary xds-btn-lg">
+          <a href={primaryHref} className="xds-btn xds-btn-primary xds-btn-lg">
             {isDownloadCta ? (
               <Download className="h-4 w-4" aria-hidden="true" />
             ) : null}
             {hero.cta?.label || (isEn ? "Get started" : "立即体验")}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-          <Link href="/panel" className="xds-btn xds-btn-secondary xds-btn-lg">
+          </a>
+          <a href="/panel" className="xds-btn xds-btn-secondary xds-btn-lg">
             {isEn ? "Console workspace" : "进入控制台"}
-          </Link>
+          </a>
         </div>
 
         {hero.supportedPlatforms ? (
