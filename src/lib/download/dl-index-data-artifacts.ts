@@ -81,7 +81,3 @@ export async function getDownloadListings(): Promise<DirListing[]> {
 export async function getDownloadListingsForBuildTime(): Promise<DirListing[]> {
   return loadDownloadListingsForBuildTime()
 }
-
-export function clearDownloadListingsCache(): void {
-  // Intentionally left blank. Runtime fetches always return fresh data.
-}

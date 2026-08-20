@@ -15,8 +15,6 @@ export const getDocCollections = cache(async (): Promise<DocCollection[]> => {
   return loadDocCollections()
 })
 
-export const getDocCollectionsForBuildTime = getDocCollections
-
 export const getDocsHomeContent = cache(async () => {
   if (!isDocsModuleEnabled()) {
     return undefined
