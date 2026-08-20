@@ -32,6 +32,12 @@ type UserMetricsResponse = {
   series: MetricsSeries;
 };
 
+// The console's Frontend Router reserves `/api/admin/*` for the Edge Gateway
+// admin boundary. The portal is served behind that router, so requesting the
+// metrics through the auth boundary keeps the session-protected Accounts
+// endpoint on the route that is available from the console host.
+const USER_METRICS_ENDPOINT = "/api/auth/admin/users/metrics";
+
 type AdminSettingsResponse = {
   version: number;
   matrix: PermissionMatrix;
@@ -133,7 +139,7 @@ export default function UserCenterManagementRoute() {
   >("users");
 
   const metricsSWR = useSWR<UserMetricsResponse>(
-    canAccess ? "/api/admin/users/metrics" : null,
+    canAccess ? USER_METRICS_ENDPOINT : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
