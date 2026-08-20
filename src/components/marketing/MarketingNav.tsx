@@ -10,7 +10,7 @@
  * 避免 .xds 的 :where() 基线重置反噬到页面正文里的 Tailwind 排版。
  */
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Github, LogOut, Menu, Star, X } from "lucide-react";
 
@@ -75,9 +75,9 @@ function NavLink({
   }
 
   return (
-    <Link href={link.href} onClick={onNavigate}>
+    <BoundaryLink href={link.href} onClick={onNavigate}>
       {link.label}
-    </Link>
+    </BoundaryLink>
   );
 }
 
@@ -216,7 +216,7 @@ export default function MarketingNav() {
               {openDropdown === index ? (
                 <div className="xds-mnav-menu">
                   {dropdown.columns.map((item) => (
-                    <Link
+                    <BoundaryLink
                       key={item.href + item.label}
                       href={item.href}
                       className="xds-mnav-menu-item"
@@ -224,7 +224,7 @@ export default function MarketingNav() {
                     >
                       <span className="xds-mnav-menu-label">{item.label}</span>
                       <span className="xds-t-caption">{item.description}</span>
-                    </Link>
+                    </BoundaryLink>
                   ))}
                 </div>
               ) : null}
@@ -334,24 +334,27 @@ export default function MarketingNav() {
                 ) : null}
               </div>
 
-              <Link
+              <BoundaryLink
                 href={consoleHref}
                 className="xds-btn xds-btn-primary xds-btn-sm"
               >
                 {content.nav.enterConsole}
-              </Link>
+              </BoundaryLink>
             </>
           ) : (
             <>
-              <Link href="/login" className="xds-btn xds-btn-ghost xds-btn-sm">
+              <BoundaryLink
+                href="/login"
+                className="xds-btn xds-btn-ghost xds-btn-sm"
+              >
                 {content.nav.login}
-              </Link>
-              <Link
+              </BoundaryLink>
+              <BoundaryLink
                 href={content.hero.primaryCta.href}
                 className="xds-btn xds-btn-primary xds-btn-sm"
               >
                 {content.hero.primaryCta.label}
-              </Link>
+              </BoundaryLink>
             </>
           )}
         </div>
@@ -378,13 +381,13 @@ export default function MarketingNav() {
               <div key={dropdown.label} className="xds-mnav-mobile-group">
                 <span className="xds-mnav-group-label">{dropdown.label}</span>
                 {dropdown.columns.map((item) => (
-                  <Link
+                  <BoundaryLink
                     key={item.href + item.label}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                   >
                     {item.label}
-                  </Link>
+                  </BoundaryLink>
                 ))}
               </div>
             ))}
@@ -418,22 +421,22 @@ export default function MarketingNav() {
                     <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
                     {content.nav.logout}
                   </button>
-                  <Link
+                  <BoundaryLink
                     href={consoleHref}
                     className="xds-btn xds-btn-primary xds-btn-sm"
                     onClick={() => setMobileOpen(false)}
                   >
                     {content.nav.enterConsole}
-                  </Link>
+                  </BoundaryLink>
                 </>
               ) : (
-                <Link
+                <BoundaryLink
                   href="/login"
                   className="xds-btn xds-btn-primary xds-btn-sm"
                   onClick={() => setMobileOpen(false)}
                 >
                   {content.nav.login}
-                </Link>
+                </BoundaryLink>
               )}
             </div>
           </div>

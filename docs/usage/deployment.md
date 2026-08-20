@@ -88,8 +88,28 @@ Repository/environment variables recommended:
 - `NEXT_PUBLIC_GISCUS_*`
 - `NEXT_PUBLIC_STRIPE_*`
 - `NEXT_PUBLIC_PAYPAL_CLIENT_ID`
+- `NEXT_PUBLIC_ANALYTICS_*` (see below)
 - `CLOUDFLARE_ZONE_TAG` if homepage Cloudflare analytics are enabled at runtime
 - `CLOUDFLARE_DNS_ZONE_TAG` only for single-domain manual DNS override; the GitHub Actions DNS stage resolves zones from each domain automatically
+
+### Analytics switches
+
+No analytics vendor is hardcoded in the source any more. Every provider is off unless the
+build environment supplies its id, so GitOps decides what a given environment reports to.
+These are read at **build time** (the public boundary prerenders `layout.tsx`), so they must
+be present in the build environment — putting them in Worker runtime vars alone is too late.
+
+| Variable | Effect |
+| --- | --- |
+| `NEXT_PUBLIC_ANALYTICS_DISABLED` | `1` turns every provider off. Use for preview/self-hosted builds. |
+| `NEXT_PUBLIC_ANALYTICS_GOOGLE_ID` | Google Analytics measurement id. |
+| `NEXT_PUBLIC_ANALYTICS_CLOUDFLARE_TOKEN` | Cloudflare Web Analytics beacon token — map `CLOUDFLARE_WEB_ANALYTICS_SITE_TAG` onto this in the build env. |
+| `NEXT_PUBLIC_ANALYTICS_DATAFAST_ID` | DataFast website id. |
+| `NEXT_PUBLIC_ANALYTICS_VERCEL` | `1` enables Vercel Web Analytics. Leave off anywhere that is not Vercel: `/_vercel/insights/script.js` does not exist there, so it only costs a 404 per page load. |
+
+Set a variable to an empty string, `off`, `false`, or `0` to disable that provider explicitly.
+Leaving it unset falls back to the historical default where one exists (see
+`src/lib/siteAnalytics.ts`); those fallbacks can be deleted once GitOps ships every value.
 
 ## Release Flow
 

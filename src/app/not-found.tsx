@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import BoundaryLink from '@/components/common/BoundaryLink'
 import { Home, Search, FileQuestion } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -39,21 +39,21 @@ export default function NotFound() {
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-                    <Link
+                    <BoundaryLink
                         href="/"
                         className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-primary-hover transition-all"
                     >
                         <Home className="h-4 w-4" aria-hidden="true" />
                         Back to homepage
-                    </Link>
+                    </BoundaryLink>
 
-                    <Link
+                    <BoundaryLink
                         href="/docs"
                         className="inline-flex items-center justify-center gap-2 rounded-full border border-surface-border bg-surface px-6 py-3 text-sm font-semibold text-text hover:bg-surface-hover transition-all"
                     >
                         <Search className="h-4 w-4" aria-hidden="true" />
                         Browse documentation
-                    </Link>
+                    </BoundaryLink>
                 </div>
 
                 {/* Helpful Links */}
@@ -62,24 +62,24 @@ export default function NotFound() {
                         Popular pages
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                        <Link
+                        <BoundaryLink
                             href="/services"
                             className="text-primary hover:text-primary-hover hover:underline"
                         >
                             Services
-                        </Link>
-                        <Link
+                        </BoundaryLink>
+                        <BoundaryLink
                             href="/docs"
                             className="text-primary hover:text-primary-hover hover:underline"
                         >
                             Documentation
-                        </Link>
-                        <Link
+                        </BoundaryLink>
+                        <BoundaryLink
                             href="/blogs"
                             className="text-primary hover:text-primary-hover hover:underline"
                         >
                             Blog
-                        </Link>
+                        </BoundaryLink>
                     </div>
                 </div>
             </div>

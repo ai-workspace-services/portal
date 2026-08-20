@@ -10,7 +10,7 @@
  * 导航与页脚用 xds 版站点组件，整页都在 .xds 作用域内。
  */
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import {
   Activity,
   ArrowRight,
@@ -328,13 +328,13 @@ export default function XConnectPage() {
             </h1>
             <p className="xds-t-lead xds-hero-sub">{t.heroSub}</p>
             <div className="xds-hero-cta">
-              <Link href="/download" className="xds-btn xds-btn-primary xds-btn-lg">
+              <BoundaryLink href="/download" className="xds-btn xds-btn-primary xds-btn-lg">
                 <Download className="h-4 w-4" aria-hidden="true" />
                 {t.ctaDownload}
-              </Link>
-              <Link href="/panel" className="xds-btn xds-btn-secondary xds-btn-lg">
+              </BoundaryLink>
+              <BoundaryLink href="/panel" className="xds-btn xds-btn-secondary xds-btn-lg">
                 {t.ctaConsole}
-              </Link>
+              </BoundaryLink>
             </div>
             <div className="xds-platform-line">
               <Monitor className="h-3.5 w-3.5" aria-hidden="true" />
@@ -478,14 +478,14 @@ export default function XConnectPage() {
 
             {/* 区块内唯一 primary */}
             <div className="xds-row" style={{ marginTop: 24, gap: 12 }}>
-              <Link href="/register" className="xds-btn xds-btn-primary">
+              <BoundaryLink href="/register" className="xds-btn xds-btn-primary">
                 {t.wizardCta}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
-              <Link href="/docs" className="xds-link-arrow">
+              </BoundaryLink>
+              <BoundaryLink href="/docs" className="xds-link-arrow">
                 {t.wizardDocs}
                 <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
+              </BoundaryLink>
             </div>
           </div>
         </section>
@@ -554,10 +554,10 @@ export default function XConnectPage() {
                 title={t.dlTitle}
                 lead={t.dlLead}
               />
-              <Link href="/download" className="xds-link-arrow">
+              <BoundaryLink href="/download" className="xds-link-arrow">
                 {t.dlHistory}
                 <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
+              </BoundaryLink>
             </div>
 
             <XdsCard style={{ marginTop: 32, overflow: "hidden" }}>
@@ -587,12 +587,12 @@ export default function XConnectPage() {
                         <td className="xds-t-mono xds-subtle">{row.f}</td>
                         <td className="xds-num xds-subtle">{row.s}</td>
                         <td>
-                          <Link
+                          <BoundaryLink
                             href="/download"
                             className="xds-btn xds-btn-secondary xds-btn-sm"
                           >
                             {t.dlAction}
-                          </Link>
+                          </BoundaryLink>
                         </td>
                       </tr>
                     );
@@ -703,10 +703,10 @@ export default function XConnectPage() {
                 {t.finalSub}
               </p>
               <div className="xds-hero-cta" style={{ marginTop: 32 }}>
-                <Link href="/register" className="xds-btn xds-btn-primary xds-btn-lg">
+                <BoundaryLink href="/register" className="xds-btn xds-btn-primary xds-btn-lg">
                   {t.finalCta}
-                </Link>
-                <Link
+                </BoundaryLink>
+                <BoundaryLink
                   href="/docs"
                   className="xds-btn xds-btn-lg"
                   style={{
@@ -716,7 +716,7 @@ export default function XConnectPage() {
                   }}
                 >
                   {t.finalDocs}
-                </Link>
+                </BoundaryLink>
               </div>
             </div>
           </div>

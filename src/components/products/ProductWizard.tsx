@@ -10,7 +10,7 @@
  */
 
 import { ArrowRight, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import type { WebsiteWizardPayload } from "@/lib/docsServiceClient";
 
 interface ProductWizardProps {
@@ -65,14 +65,14 @@ export default function ProductWizard({
                     <p className="xds-t-caption">{step.platforms}</p>
                   ) : null}
                   {step.link ? (
-                    <Link
+                    <BoundaryLink
                       href={step.link}
                       className="xds-link-arrow xds-t-caption"
                       style={{ display: "inline-flex", marginTop: 12 }}
                     >
                       {isEn ? "Open" : "前往"}
                       <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Link>
+                    </BoundaryLink>
                   ) : null}
                 </div>
               ) : null}
@@ -81,14 +81,14 @@ export default function ProductWizard({
         </div>
 
         <div className="xds-row" style={{ marginTop: 24, gap: 12 }}>
-          <Link href="/register" className="xds-btn xds-btn-primary">
+          <BoundaryLink href="/register" className="xds-btn xds-btn-primary">
             {isEn ? "Create an account, start step 1" : "创建账户，开始第 1 步"}
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-          <Link href="/docs" className="xds-link-arrow">
+          </BoundaryLink>
+          <BoundaryLink href="/docs" className="xds-link-arrow">
             {isEn ? "Read the full guide first" : "先看完整部署文档"}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
+          </BoundaryLink>
         </div>
       </div>
     </section>

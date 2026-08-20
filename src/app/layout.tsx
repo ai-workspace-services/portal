@@ -3,9 +3,8 @@
 
 import './globals.css'
 import type { Metadata } from 'next'
-import Script from 'next/script'
-import { Analytics } from '@vercel/analytics/react'
 import { AppProviders } from './AppProviders'
+import { SiteAnalyticsBody, SiteAnalyticsScripts } from '@/components/analytics/SiteAnalytics'
 import { resolveWebReleaseMetadata } from '@/lib/webReleaseMetadata'
 import { getConsoleIntegrationDefaults } from '@/server/consoleIntegrations'
 
@@ -85,7 +84,6 @@ export const metadata: Metadata = {
 
 const htmlAttributes = { lang: 'zh' }
 const bodyClassName = 'bg-[var(--color-background)] text-[var(--color-text)]'
-const GA_ID = 'G-T4VM8G4Q42'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const assistantDefaults = getConsoleIntegrationDefaults()
@@ -129,32 +127,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }).replace(/</g, '\\u003c'),
           }}
         />
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-        <Script id="gtag-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_ID}');
-          `}
-        </Script>
-        {/* Cloudflare Web Analytics */}
-        <Script
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "CF_TOKEN_PLACEHOLDER"}'
-          strategy="afterInteractive"
-        />
-        {/* End Cloudflare Web Analytics */}
-        <Script
-          src="https://datafa.st/js/script.js"
-          data-website-id="dfid_RRpFATHOgNffArMsKNpYT"
-          data-domain={SITE_HOST}
-          strategy="afterInteractive"
-        />
+        <SiteAnalyticsScripts siteHost={SITE_HOST} />
       </head>
       <body className={bodyClassName}>
         <AppProviders assistantDefaults={assistantDefaults}>{children}</AppProviders>
-        <Analytics />
+        <SiteAnalyticsBody />
       </body>
     </html>
   )

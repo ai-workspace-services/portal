@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import {
   Activity,
   Check,
@@ -410,9 +410,9 @@ export function VlessConnectionCard({
               <Download className="h-3.5 w-3.5" aria-hidden="true" />
               {zh ? "下载配置" : "Download config"}
             </XdsButton>
-            <Link href="/docs" className="xds-link-arrow xds-t-caption">
+            <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
               {zh ? "导入教程" : "Import guide"}
-            </Link>
+            </BoundaryLink>
           </div>
         </div>
       </XdsCardBody>
@@ -509,13 +509,13 @@ export function QuotaCard({
           </span>
         </div>
 
-        <Link
+        <BoundaryLink
           href="/panel/subscription"
           className="xds-btn xds-btn-secondary xds-btn-block"
           style={{ marginTop: 16 }}
         >
           {zh ? "管理订阅与配额" : "Manage subscription and quota"}
-        </Link>
+        </BoundaryLink>
       </XdsCardBody>
     </XdsCard>
   );
@@ -663,9 +663,9 @@ export function NodesTable({ zh }: { zh: boolean }) {
                 : "Nodes are delivered server-side by policy group once account setup is complete."
             }
             action={
-              <Link href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
+              <BoundaryLink href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
                 {zh ? "查看部署文档" : "Read the deployment guide"}
-              </Link>
+              </BoundaryLink>
             }
           />
         </XdsCardBody>
@@ -711,10 +711,10 @@ export function NodesTable({ zh }: { zh: boolean }) {
           <span className="xds-t-caption">
             {zh ? `显示 ${nodes.length} 个节点` : `${nodes.length} node(s)`}
           </span>
-          <Link href="/docs" className="xds-link-arrow xds-t-caption">
+          <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
             {zh ? "节点与协议说明" : "Nodes and protocols"}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
+          </BoundaryLink>
         </div>
       </XdsCardFoot>
     </XdsCard>

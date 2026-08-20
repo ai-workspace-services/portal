@@ -13,7 +13,7 @@
  * 公开页在 EXTRA_LABELS 里补，最后兜底把未知路径段还原成可读文本。
  */
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { Zap } from "lucide-react";
@@ -110,7 +110,7 @@ export default function MarketingBreadcrumbs() {
   // 首页只留图标锚点，子页整块换成面包屑——左上角始终只有一个「我在哪」的答案。
   if (crumbs.length === 0) {
     return (
-      <Link
+      <BoundaryLink
         href="/"
         className="xds-logo xds-mnav-lockup"
         aria-label={HOME_LABEL[locale]}
@@ -118,7 +118,7 @@ export default function MarketingBreadcrumbs() {
         <span className="xds-logo-mark">
           <Zap className="h-3.5 w-3.5" aria-hidden="true" />
         </span>
-      </Link>
+      </BoundaryLink>
     );
   }
 
@@ -136,7 +136,7 @@ export default function MarketingBreadcrumbs() {
               </span>
             ) : null}
             {crumb.href ? (
-              <Link href={crumb.href}>{crumb.label}</Link>
+              <BoundaryLink href={crumb.href}>{crumb.label}</BoundaryLink>
             ) : (
               <span className="xds-cur" aria-current="page">
                 {crumb.label}

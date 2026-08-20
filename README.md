@@ -13,7 +13,7 @@ Cloud Neutral Toolkit 的开放云控制面板 (Open Cloud Control Panel).
 | Node.js     | `>=18.17 <25`      | 推荐使用 `.nvmrc`                     |
 | 包管理      | Yarn (推荐) 或 npm | Yarn 推荐配合 Corepack                |
 | Git         | 必需               | 用于拉取仓库                          |
-| 部署 (可选) | Vercel / 自建      | 部署方式见 `docs/usage/deployment.md` |
+| 部署 (可选) | Cloudflare Workers / 自建 | 部署方式见 `docs/usage/deployment.md` |
 
 ## 快速开始 (Quickstart)
 

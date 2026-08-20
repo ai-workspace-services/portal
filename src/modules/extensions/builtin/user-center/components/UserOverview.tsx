@@ -104,9 +104,9 @@ export default function UserOverview({
 
   const handleLogout = useCallback(async () => {
     await logout();
-    router.replace("/login");
-    router.refresh();
-  }, [logout, router]);
+    // 跨 boundary（console → auth）只能整页跳转；退登后整页重载也顺手清干净了客户端状态
+    window.location.assign("/login");
+  }, [logout]);
 
   return (
     <div className="space-y-6 text-[var(--color-text)] transition-colors">

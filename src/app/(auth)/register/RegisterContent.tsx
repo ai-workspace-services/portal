@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { Github } from "lucide-react";
 import {
   ChangeEvent,
@@ -722,9 +722,9 @@ export default function RegisterContent({
               />
               <span>
                 {t.form.agreement}{" "}
-                <Link href="/docs" className={AUTH_TEXT_LINK_CLASS}>
+                <BoundaryLink href="/docs" className={AUTH_TEXT_LINK_CLASS}>
                   {t.form.terms}
-                </Link>
+                </BoundaryLink>
               </span>
             </label>
           </>

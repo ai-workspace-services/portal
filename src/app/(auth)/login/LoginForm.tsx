@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import {
@@ -20,7 +20,6 @@ import { useUserStore } from "@lib/userStore";
 import { codeRequiresMfa, resolveLoginErrorMessage } from "./loginErrors";
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { language } = useLanguage();
   const pageCopy = translations[language].login;
@@ -230,8 +229,8 @@ export function LoginForm() {
         // screen to take over. The account service just asks for the code, so
         // stay on the form and prompt for it.
         if (payload.needMfa) {
-          router.replace("/panel/account?setupMfa=1");
-          router.refresh();
+          // 跨 boundary（auth → console）只能整页跳转，router 的软导航到不了
+          window.location.assign("/panel/account?setupMfa=1");
           return;
         }
         setError(
@@ -279,7 +278,7 @@ export function LoginForm() {
   };
 
   const handleLogout = () => {
-    router.push("/logout");
+    window.location.href = "/logout";
   };
 
   const requiresTotpInput = mfaRequirement === "required";
