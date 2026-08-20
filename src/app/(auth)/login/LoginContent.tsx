@@ -111,8 +111,13 @@ export default function LoginContent({
           throw new Error("Token exchange failed");
         }
 
-        router.push("/");
-        router.refresh();
+        const target =
+          redirectParam &&
+          redirectParam.startsWith("/") &&
+          !redirectParam.startsWith("//")
+            ? redirectParam
+            : "/panel";
+        window.location.assign(target);
       } catch (error) {
         console.error("Token exchange failed:", error);
         setAlert({ type: "error", message: alerts.genericError });
@@ -328,8 +333,8 @@ export default function LoginContent({
           !redirectParam.startsWith("//")
             ? redirectParam
             : undefined;
-        router.push(redirectTarget || data?.redirectTo || "/");
-        router.refresh();
+        const target = redirectTarget || data?.redirectTo || "/panel";
+        window.location.assign(target);
       } catch (error) {
         console.error("Failed to submit login request", error);
         setAlert({ type: "error", message: alerts.genericError });

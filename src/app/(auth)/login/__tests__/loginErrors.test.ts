@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { translations } from "@i18n/translations";
+import { translations } from "../../../../i18n/translations";
 
 import { codeRequiresMfa, resolveLoginErrorMessage } from "../loginErrors";
 

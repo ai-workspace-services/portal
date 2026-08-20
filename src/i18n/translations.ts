@@ -637,6 +637,8 @@ export type Translation = {
     passwordLabel: string
     submit: string
     success: string
+    goToPanel: string
+    redirecting: string
     goHome: string
     missingUsername: string
     missingPassword: string
@@ -789,6 +791,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
       passwordLabel: 'Password',
       submit: 'Sign in',
       success: 'Welcome back, {username}! 🎉',
+      goToPanel: 'Enter User Center',
+      redirecting: 'Redirecting to user center...',
       goHome: 'Return to homepage',
       missingUsername: 'Please enter a username to continue.',
       missingPassword: 'Please enter your password or switch to email + authenticator mode.',
@@ -1682,6 +1686,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
       passwordLabel: '密码',
       submit: '立即登录',
       success: '{username}，欢迎回来！🎉',
+      goToPanel: '进入用户中心',
+      redirecting: '正在自动跳转到用户中心...',
       goHome: '返回首页',
       missingUsername: '请输入用户名后再尝试登录。',
       missingPassword: '请输入密码，或切换为“邮箱 + 动态口令”模式。',
