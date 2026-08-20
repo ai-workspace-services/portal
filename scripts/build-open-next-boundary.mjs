@@ -147,6 +147,10 @@ await writeFile(
     images: { binding: "IMAGES" },
     ...incrementalCacheBinding(),
     vars: {
+      // The Worker process does not inherit the build shell's RUNTIME_ENV.
+      // Inject the selected deployment environment so server-only API routes
+      // resolve the matching Accounts endpoint at request time.
+      RUNTIME_ENV: deploymentEnvironment,
       CONTENT_LANGUAGE_MODE: process.env.CONTENT_LANGUAGE_MODE || "static",
       ...(process.env.CONTENT_REVALIDATE_SECONDS
         ? { CONTENT_REVALIDATE_SECONDS: process.env.CONTENT_REVALIDATE_SECONDS }
