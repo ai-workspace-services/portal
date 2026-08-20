@@ -10,8 +10,7 @@
  * 正文 + 右侧目录三栏。有真实文档服务时展示第一篇文章，取不到时退回设计稿
  * 里的示例文案，保证本地没有 docs 后端也能正常渲染。
  */
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
 
 import type { LucideIcon } from "lucide-react";
 import {
@@ -32,9 +31,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { headers } from "next/headers";
 
 import MarketingNav from "@/components/marketing/MarketingNav";
+import { getContentLanguage } from "@server/contentLanguage";
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
 import {
   getDocCollections,
@@ -214,9 +213,7 @@ const FALLBACK_ARTICLE = {
 } as const;
 
 export default async function SupportPage() {
-  const headerStore = await headers();
-  const preferred = headerStore.get("x-language") ?? headerStore.get("accept-language") ?? "";
-  const language: "zh" | "en" = preferred.toLowerCase().includes("zh") ? "zh" : "en";
+  const language = await getContentLanguage();
   const isChinese = language === "zh";
 
   let home;

@@ -1,4 +1,5 @@
-export const dynamic = "force-dynamic";
+// The download catalog is built from hourly manifests, not from the request.
+export const revalidate = 3600;
 
 import { notFound } from "next/navigation";
 

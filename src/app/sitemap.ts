@@ -5,11 +5,17 @@ import { PRODUCT_LIST } from '@/modules/products/registry'
 
 const baseUrl = 'https://www.svc.plus'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Revalidate every hour
+// `force-dynamic` used to cancel out the revalidate window below; the sitemap
+// is now generated once per hour and served from the cache in between.
+export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { posts } = await getBlogList({ page: 1, pageSize: 500 })
+  // The sitemap is now prerendered, so an unreachable content service has to
+  // degrade to the static routes rather than fail the build.
+  const { posts } = await getBlogList({ page: 1, pageSize: 500 }).catch((error) => {
+    console.warn('Sitemap blog entries unavailable', error)
+    return { posts: [] }
+  })
 
   const staticEntries: MetadataRoute.Sitemap = [
     {

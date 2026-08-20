@@ -1,9 +1,30 @@
 import "server-only";
 
-import { headers } from "next/headers";
-
 import { buildInternalServiceHeaders } from "@/server/internalServiceAuth";
+import { getContentLanguage, type ContentLanguage } from "@server/contentLanguage";
 import { getDocsServiceBaseUrl } from "@server/serviceConfig";
+
+// Cache tags let a single revalidation invalidate a whole content family
+// instead of a page at a time.
+export const CONTENT_CACHE_TAGS = {
+  all: "content",
+  docs: "content:docs",
+  blogs: "content:blogs",
+  products: "content:products",
+  website: "content:website",
+} as const;
+
+// The content service rebuilds its snapshot from git on a timer
+// (DOCS_RELOAD_INTERVAL, 5m by default), so revalidating faster than that only
+// buys extra requests, not fresher content. `CONTENT_REVALIDATE_SECONDS` keeps
+// the two intervals aligned from one place; `0` restores uncached fetches.
+const REVALIDATE_SECONDS = readRevalidateSeconds();
+
+function readRevalidateSeconds(): number {
+  const raw = Number.parseInt((process.env.CONTENT_REVALIDATE_SECONDS || "").trim(), 10);
+  if (Number.isFinite(raw) && raw >= 0) return raw;
+  return 300;
+}
 
 export type DocsHomePayload = {
   title: string;
@@ -142,17 +163,24 @@ export type WebsiteProductSummaryPayload = {
   href: string;
 };
 
-async function detectLanguage(): Promise<"zh" | "en"> {
-  const store = await headers();
-  const preferred =
-    store.get("x-language") ?? store.get("accept-language") ?? "";
-  return preferred.toLowerCase().includes("zh") ? "zh" : "en";
+async function detectLanguage(): Promise<ContentLanguage> {
+  return getContentLanguage();
 }
 
-async function request<T>(path: string): Promise<T> {
+type RequestOptions = {
+  /** Cache tags to attach, on top of the always-present `content` tag. */
+  tags?: string[];
+  /** Override the shared revalidation window, in seconds. */
+  revalidate?: number;
+};
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const baseUrl = getDocsServiceBaseUrl();
+  const revalidate = options.revalidate ?? REVALIDATE_SECONDS;
   const response = await fetch(`${baseUrl}${path}`, {
-    cache: "no-store",
+    ...(revalidate > 0
+      ? { next: { revalidate, tags: [CONTENT_CACHE_TAGS.all, ...(options.tags ?? [])] } }
+      : { cache: "no-store" as const }),
     headers: buildInternalServiceHeaders({
       Accept: "application/json",
     }),
@@ -165,41 +193,51 @@ async function request<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-export async function getDocsHome(): Promise<DocsHomePayload> {
-  const lang = await detectLanguage();
-  return request<DocsHomePayload>(`/api/v1/docs/home?lang=${lang}`);
+export async function getDocsHome(
+  langOverride?: ContentLanguage,
+): Promise<DocsHomePayload> {
+  const lang = langOverride || (await detectLanguage());
+  return request<DocsHomePayload>(`/api/v1/docs/home?lang=${lang}`, {
+    tags: [CONTENT_CACHE_TAGS.docs],
+  });
 }
 
-export async function getDocCollections(): Promise<DocCollectionPayload[]> {
-  const lang = await detectLanguage();
-  return request<DocCollectionPayload[]>(
-    `/api/v1/docs/collections?lang=${lang}`,
-  );
+export async function getDocCollections(
+  langOverride?: ContentLanguage,
+): Promise<DocCollectionPayload[]> {
+  const lang = langOverride || (await detectLanguage());
+  return request<DocCollectionPayload[]>(`/api/v1/docs/collections?lang=${lang}`, {
+    tags: [CONTENT_CACHE_TAGS.docs],
+  });
 }
 
 export async function getDocPage(
   collection: string,
   slug: string,
+  langOverride?: ContentLanguage,
 ): Promise<DocPagePayload> {
-  const lang = await detectLanguage();
-  return request<DocPagePayload>(
-    `/api/v1/docs/pages/${collection}/${slug}?lang=${lang}`,
-  );
+  const lang = langOverride || (await detectLanguage());
+  return request<DocPagePayload>(`/api/v1/docs/pages/${collection}/${slug}?lang=${lang}`, {
+    tags: [CONTENT_CACHE_TAGS.docs],
+  });
 }
 
 export async function searchDocs(
   query: string,
   limit = 10,
+  langOverride?: ContentLanguage,
 ): Promise<DocSearchHitPayload[]> {
-  const lang = await detectLanguage();
+  const lang = langOverride || (await detectLanguage());
   const search = new URLSearchParams({
     lang,
     query,
     limit: String(limit),
   });
-  return request<DocSearchHitPayload[]>(
-    `/api/v1/docs/search?${search.toString()}`,
-  );
+  // Search keys are unbounded and already only reachable from a dynamic API
+  // route, so caching them would fill the store without ever being reused.
+  return request<DocSearchHitPayload[]>(`/api/v1/docs/search?${search.toString()}`, {
+    revalidate: 0,
+  });
 }
 
 export async function getBlogList(params?: {
@@ -207,39 +245,49 @@ export async function getBlogList(params?: {
   pageSize?: number;
   category?: string;
   query?: string;
+  lang?: ContentLanguage;
 }): Promise<BlogListPayload> {
-  const lang = await detectLanguage();
+  const lang = params?.lang || (await detectLanguage());
   const search = new URLSearchParams();
   search.set("lang", lang);
   search.set("page", String(params?.page ?? 1));
   search.set("pageSize", String(params?.pageSize ?? 10));
   if (params?.category) search.set("category", params.category);
   if (params?.query) search.set("query", params.query);
-  return request<BlogListPayload>(`/api/v1/blogs?${search.toString()}`);
+  return request<BlogListPayload>(`/api/v1/blogs?${search.toString()}`, {
+    // A free-text query is per visitor; only the browsable listings are cached.
+    ...(params?.query ? { revalidate: 0 } : { tags: [CONTENT_CACHE_TAGS.blogs] }),
+  });
 }
 
-export async function getBlogPost(slug: string): Promise<BlogPostPayload> {
-  const lang = await detectLanguage();
-  return request<BlogPostPayload>(`/api/v1/blogs/${slug}?lang=${lang}`);
+export async function getBlogPost(
+  slug: string,
+  langOverride?: ContentLanguage,
+): Promise<BlogPostPayload> {
+  const lang = langOverride || (await detectLanguage());
+  return request<BlogPostPayload>(`/api/v1/blogs/${slug}?lang=${lang}`, {
+    tags: [CONTENT_CACHE_TAGS.blogs],
+  });
 }
 
 export async function getLatestBlogPosts(
   limit = 7,
+  langOverride?: ContentLanguage,
 ): Promise<BlogPostPayload[]> {
-  const lang = await detectLanguage();
-  return request<BlogPostPayload[]>(
-    `/api/v1/home/latest-blogs?lang=${lang}&limit=${limit}`,
-  );
+  const lang = langOverride || (await detectLanguage());
+  return request<BlogPostPayload[]>(`/api/v1/home/latest-blogs?lang=${lang}&limit=${limit}`, {
+    tags: [CONTENT_CACHE_TAGS.blogs],
+  });
 }
 
 export async function getProducts(
-  langOverride?: "zh" | "en",
+  langOverride?: ContentLanguage,
 ): Promise<WebsiteProductSummaryPayload[]> {
   const lang = langOverride || (await detectLanguage());
   try {
-    return await request<WebsiteProductSummaryPayload[]>(
-      `/api/v1/products?lang=${lang}`,
-    );
+    return await request<WebsiteProductSummaryPayload[]>(`/api/v1/products?lang=${lang}`, {
+      tags: [CONTENT_CACHE_TAGS.products],
+    });
   } catch (error) {
     console.warn("Failed to fetch products from content-service", error);
     return [];
@@ -248,13 +296,13 @@ export async function getProducts(
 
 export async function getProduct(
   slug: string,
-  langOverride?: "zh" | "en",
+  langOverride?: ContentLanguage,
 ): Promise<WebsiteProductPayload | null> {
   const lang = langOverride || (await detectLanguage());
   try {
-    return await request<WebsiteProductPayload>(
-      `/api/v1/products/${slug}?lang=${lang}`,
-    );
+    return await request<WebsiteProductPayload>(`/api/v1/products/${slug}?lang=${lang}`, {
+      tags: [CONTENT_CACHE_TAGS.products],
+    });
   } catch (error) {
     console.warn(`Failed to fetch product ${slug} from content-service`, error);
     return null;
@@ -262,11 +310,13 @@ export async function getProduct(
 }
 
 export async function getWebsiteHomepage(
-  langOverride?: "zh" | "en",
+  langOverride?: ContentLanguage,
 ): Promise<any | null> {
   const lang = langOverride || (await detectLanguage());
   try {
-    return await request<any>(`/api/v1/website/homepage?lang=${lang}`);
+    return await request<any>(`/api/v1/website/homepage?lang=${lang}`, {
+      tags: [CONTENT_CACHE_TAGS.website],
+    });
   } catch (error) {
     console.warn("Failed to fetch homepage marketing from content-service", error);
     return null;

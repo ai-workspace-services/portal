@@ -122,6 +122,7 @@ export function DocsMobileNav({
             return (
               <Link
                 key={collection.slug}
+                prefetch={false}
                 href={
                   "/docs/" +
                   collection.slug +

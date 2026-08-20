@@ -1,4 +1,7 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
+// Posts published between two builds still render on first request and are
+// cached from then on.
+export const dynamicParams = true;
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -7,7 +10,19 @@ import { notFound } from "next/navigation";
 import BrandCTA from "@components/BrandCTA";
 import BlogArticle from "@components/blog/BlogArticle";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
-import { getBlogPost } from "@lib/docsServiceClient";
+import { getBlogList, getBlogPost } from "@lib/docsServiceClient";
+
+export async function generateStaticParams() {
+  try {
+    const { posts } = await getBlogList({ page: 1, pageSize: 500 });
+    return posts.map((post) => ({ slug: post.slug.split("/") }));
+  } catch (error) {
+    // A content service that is down must not fail the build; every post then
+    // falls back to on-demand rendering plus caching.
+    console.warn("Skipping blog prerender: content service unavailable", error);
+    return [];
+  }
+}
 
 type PageProps = {
   params: Promise<{ slug: string | string[] }>;

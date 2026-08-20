@@ -1,3 +1,8 @@
+// Marketing copy changes with a content push, not with a request. Prerender it
+// and refresh in the background.
+export const revalidate = 900;
+export const dynamicParams = true;
+
 import { notFound } from "next/navigation";
 import { getProduct, type WebsiteProductPayload } from "@/lib/docsServiceClient";
 import ProductPageTemplate from "@/components/products/ProductPageTemplate";
@@ -13,6 +18,10 @@ const STATIC_FALLBACKS: Record<string, any> = {
   "open-platform": openPlatformData,
   "ai-workspace": aiWorkspaceData,
 };
+
+export function generateStaticParams() {
+  return Object.keys(STATIC_FALLBACKS).map((slug) => ({ slug }));
+}
 
 interface ProductSlugPageProps {
   params: Promise<{ slug: string }>;

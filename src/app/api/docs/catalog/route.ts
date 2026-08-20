@@ -107,10 +107,9 @@ function toProductCollections(
 
 export async function GET(request: Request): Promise<NextResponse> {
   try {
-    const [home, collections] = await Promise.all([
-      getDocsHome(),
-      getDocCollections(),
-    ]);
+    // Pages are rendered in the pinned default language so they stay
+    // cacheable; this route is the dynamic escape hatch the client uses when
+    // the visitor's preference differs, so it negotiates per request.
     const preferredLanguage =
       request.headers.get("x-language") ??
       request.headers.get("accept-language") ??
@@ -118,6 +117,10 @@ export async function GET(request: Request): Promise<NextResponse> {
     const language = preferredLanguage.toLowerCase().includes("zh")
       ? "zh"
       : "en";
+    const [home, collections] = await Promise.all([
+      getDocsHome(language),
+      getDocCollections(language),
+    ]);
     return NextResponse.json({
       home,
       collections: toProductCollections(collections, language),
