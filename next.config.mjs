@@ -17,6 +17,7 @@ const nextConfig = {
 
   // 配置允许的外部图片域名
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
