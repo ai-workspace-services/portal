@@ -44,6 +44,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  boundary-links:
+    name: Boundary link guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # 跨 SSR boundary 用 next/link 会静默挂死（点了没反应、零报错），
+      # 只能靠静态守卫拦住，跑起来才发现就太晚了。不需要装依赖。
+      - name: Check cross-boundary links
+        run: node scripts/check-boundary-links.mjs
+
   next-builds:
     name: Node 24 / ${{ matrix.target }}
     runs-on: ubuntu-latest

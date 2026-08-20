@@ -191,8 +191,11 @@ function detectHostname(hostnameOverride?: string): { hostname?: string; detecte
     { source: 'RUNTIME_HOSTNAME', value: process.env.RUNTIME_HOSTNAME },
     { source: 'NEXT_RUNTIME_HOSTNAME', value: process.env.NEXT_RUNTIME_HOSTNAME },
     { source: 'DEPLOYMENT_HOSTNAME', value: process.env.DEPLOYMENT_HOSTNAME },
-    { source: 'VERCEL_URL', value: process.env.VERCEL_URL },
-    { source: 'NEXT_PUBLIC_VERCEL_URL', value: process.env.NEXT_PUBLIC_VERCEL_URL },
+    // 平台专有变量（Vercel 的 VERCEL_URL、Cloudflare Pages 的 CF_PAGES_URL 等）
+    // 不在代码里逐个特判：由部署侧把它映射成 DEPLOYMENT_URL 下发，
+    // 这样换平台只动部署配置，不动源码。
+    { source: 'DEPLOYMENT_URL', value: process.env.DEPLOYMENT_URL },
+    { source: 'NEXT_PUBLIC_SITE_URL', value: process.env.NEXT_PUBLIC_SITE_URL },
     { source: 'URL', value: process.env.URL },
     { source: 'HOSTNAME', value: process.env.HOSTNAME },
   ]

@@ -4,6 +4,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { resolveIncrementalCacheTarget } from "./incremental-cache-target.mjs";
+import { buildBoundaryRoutes, resolveBoundaryForPath, routeUrlPath } from "./ssr-boundary-routes.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const appRoot = path.join(projectRoot, "src", "app");
@@ -20,46 +21,22 @@ if (!environmentConfig || !boundaryConfig) {
   throw new Error(`Cloudflare boundary config is missing environment=${deploymentEnvironment} boundary=${boundary}`);
 }
 
-const boundaries = {
-  public: {
-    workerName: boundaryConfig.worker_name,
-    owns: (relativePath) => !isApi(relativePath) && !startsWithAny(relativePath, [
-      "(auth)/",
-      "blogs/",
-      "docs/",
-      "download/",
-      "logout/",
-      "panel/",
-      "ai-workspace/",
-      "cloud_iac/",
-      "support/",
-      "xworkmate/",
-      "xworkmate-suite/",
-    ]),
-  },
-  content: {
-    workerName: boundaryConfig.worker_name,
-    owns: (relativePath) => startsWithAny(relativePath, ["blogs/", "docs/", "download/"]),
-  },
-  auth: {
-    workerName: boundaryConfig.worker_name,
-    owns: (relativePath) => startsWithAny(relativePath, ["(auth)/", "logout/"]),
-  },
-  console: {
-    workerName: boundaryConfig.worker_name,
-    owns: (relativePath) => startsWithAny(relativePath, ["panel/"]),
-  },
-  workspace: {
-    workerName: boundaryConfig.worker_name,
-    owns: (relativePath) => startsWithAny(relativePath, [
-      "ai-workspace/",
-      "cloud_iac/",
-      "support/",
-      "xworkmate/",
-      "xworkmate-suite/",
-    ]),
-  },
-};
+// 页面归属只有一份真相：GitOps EdgeRoutingConfig 里的 route_suffixes，
+// 也就是 frontend-router 实际分发用的那张表。以前这里另抄了一份目录前缀清单，
+// 两边一旦漂移就会出现「router 把请求送到 A worker，可 A 的 build 里没这个页面」。
+// 同一张表还会注入到客户端（见下面的 next.config），供 BoundaryLink 判断跨界。
+const boundaryRoutes = buildBoundaryRoutes(cloudflareConfig.boundaries);
+if (boundaryRoutes.length === 0) {
+  throw new Error("Cloudflare boundary config declares no route_suffixes; cannot derive page ownership");
+}
+
+const boundaries = Object.fromEntries(
+  Object.keys(cloudflareConfig.boundaries ?? {}).map((id) => [id, {
+    workerName: cloudflareConfig.boundaries[id].worker_name,
+    owns: (relativePath) =>
+      !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id,
+  }]),
+);
 
 const definition = boundaries[boundary];
 if (!definition) {
@@ -111,6 +88,13 @@ await writeFile(
     "  ...baseConfig,",
     `  assetPrefix: process.env.NEXT_PUBLIC_STATIC_CDN_URL ? \`\${process.env.NEXT_PUBLIC_STATIC_CDN_URL.replace(/\\/$/, "")}/_edge/${boundary}\` : "/_edge/${boundary}",`,
     `  generateBuildId: async () => "${boundary}-${releaseId()}",`,
+    // 客户端要知道「我是哪个 boundary」和「哪个前缀归谁」，BoundaryLink 才能在
+    // 跨界时退回原生 <a>。单体构建不写这两个变量，于是全站继续走 next/link。
+    "  env: {",
+    "    ...(baseConfig.env ?? {}),",
+    `    NEXT_PUBLIC_SSR_BOUNDARY: ${JSON.stringify(boundary)},`,
+    `    NEXT_PUBLIC_SSR_BOUNDARY_ROUTES: ${JSON.stringify(JSON.stringify(boundaryRoutes))},`,
+    "  },",
     "};",
     "",
   ].join("\n"),
@@ -296,10 +280,6 @@ function releaseId() {
 
 function isApi(relativePath) {
   return relativePath === "api" || relativePath.startsWith("api/");
-}
-
-function startsWithAny(value, prefixes) {
-  return prefixes.some((prefix) => value.startsWith(prefix));
 }
 
 function parentPaths(relativePath) {

@@ -36,20 +36,26 @@
     },
     "showcases": [
       {
-        "title": "全球 AI 链路专线加速",
+        "title": "全球 AI 链路专线加速"
+      },
+      {
         "description": "多区域节点智能调度与最优路由算法，大幅降低大模型 API 与 Agent 调用的延迟与抖动。",
         "icon": "zap",
         "image": "/marketing/xconnect/product.png"
       },
       {
-        "title": "私有环境与本地 Workspace 穿透",
+        "title": "私有环境与本地 Workspace 穿透"
+      },
+      {
         "description": "安全穿越复杂网络环境，将本地代码仓库、内网数据库与专有算力无缝接入云端 AI 工作台。",
         "icon": "shield-check",
         "image": "/marketing/xconnect/panel.png",
         "reverse": true
       },
       {
-        "title": "全平台客户端统一体验",
+        "title": "全平台客户端统一体验"
+      },
+      {
         "description": "覆盖桌面与移动端主流操作系统，快速安装即开即用（macOS · Windows · Linux · iOS · Android，明确不支持鸿蒙OS）。",
         "icon": "monitor",
         "image": "/marketing/xconnect/homepage.png"
@@ -93,20 +99,26 @@
     },
     "showcases": [
       {
-        "title": "Global AI Link Acceleration",
+        "title": "Global AI Link Acceleration"
+      },
+      {
         "description": "Smart multi-region node dispatching and optimal routing to minimize latency and jitter for LLM and Agent calls.",
         "icon": "zap",
         "image": "/marketing/xconnect/product.png"
       },
       {
-        "title": "Private Environment Tunneling",
+        "title": "Private Environment Tunneling"
+      },
+      {
         "description": "Securely traverse complex networks to bridge local repositories, private databases, and dedicated compute to cloud AI Workspaces.",
         "icon": "shield-check",
         "image": "/marketing/xconnect/panel.png",
         "reverse": true
       },
       {
-        "title": "Unified Cross-Platform Experience",
+        "title": "Unified Cross-Platform Experience"
+      },
+      {
         "description": "Full support across mainstream desktop and mobile operating systems (macOS · Windows · Linux · iOS · Android, HarmonyOS explicitly not supported).",
         "icon": "monitor",
         "image": "/marketing/xconnect/homepage.png"

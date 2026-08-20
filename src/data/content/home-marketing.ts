@@ -1,8 +1,8 @@
 export const homeMarketingContentData = {
   "zh": {
     "brand": {
-      "title": "Open Workspace for AI",
-      "tagline": ""
+      "title": "XWorkmate",
+      "tagline": "AI 工作空间"
     },
     "nav": {
       "dropdowns": [
@@ -64,8 +64,8 @@ export const homeMarketingContentData = {
       ],
       "links": [
         {
-          "label": "GitHub",
-          "href": "/github"
+          "label": "定价",
+          "href": "/prices"
         },
         {
           "label": "关于我们",
@@ -481,8 +481,8 @@ export const homeMarketingContentData = {
   },
   "en": {
     "brand": {
-      "title": "Open Workspace for AI",
-      "tagline": ""
+      "title": "XWorkmate",
+      "tagline": "AI workspace"
     },
     "nav": {
       "dropdowns": [
@@ -544,8 +544,8 @@ export const homeMarketingContentData = {
       ],
       "links": [
         {
-          "label": "GitHub",
-          "href": "/github"
+          "label": "Pricing",
+          "href": "/prices"
         },
         {
           "label": "About Us",

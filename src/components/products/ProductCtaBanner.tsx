@@ -6,7 +6,7 @@
  */
 
 import { Download } from "lucide-react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import type { WebsiteHeroPayload } from "@/lib/docsServiceClient";
 
 interface ProductCtaBannerProps {
@@ -36,13 +36,13 @@ export default function ProductCtaBanner({
             {hero.subtitle}
           </p>
           <div className="xds-hero-cta" style={{ marginTop: 32 }}>
-            <Link href={primaryHref} className="xds-btn xds-btn-primary xds-btn-lg">
+            <BoundaryLink href={primaryHref} className="xds-btn xds-btn-primary xds-btn-lg">
               {isDownload ? (
                 <Download className="h-4 w-4" aria-hidden="true" />
               ) : null}
               {hero.cta?.label || (isEn ? "Get started" : "立即体验")}
-            </Link>
-            <Link
+            </BoundaryLink>
+            <BoundaryLink
               href="/docs"
               className="xds-btn xds-btn-lg"
               style={{
@@ -52,7 +52,7 @@ export default function ProductCtaBanner({
               }}
             >
               {isEn ? "Read the docs" : "阅读文档"}
-            </Link>
+            </BoundaryLink>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@
  */
 
 import { useCallback, useMemo } from "react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { BookOpen, Copy, RefreshCw } from "lucide-react";
@@ -160,10 +160,10 @@ export default function UserCenterAccountRoute() {
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                 {zh ? "刷新状态" : "Refresh"}
               </XdsButton>
-              <Link href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
+              <BoundaryLink href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
                 <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
                 {zh ? "部署向导" : "Deployment guide"}
-              </Link>
+              </BoundaryLink>
             </div>
           </div>
         </header>

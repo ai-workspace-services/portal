@@ -1,6 +1,6 @@
 "use client";
 import { Github, Linkedin, Moon, Sun, Twitter } from "lucide-react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { useLanguage } from "../i18n/LanguageProvider";
 
 import { useThemeStore } from "@components/theme";
@@ -58,15 +58,15 @@ export default function Footer() {
     >
       <div className="flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-between">
         <div className="flex gap-4 order-2 sm:order-1">
-          <Link href="/terms" className={linkClassName}>
+          <BoundaryLink href="/terms" className={linkClassName}>
             {isChinese ? "服务条款" : "Terms of Service"}
-          </Link>
-          <Link href="/privacy" className={linkClassName}>
+          </BoundaryLink>
+          <BoundaryLink href="/privacy" className={linkClassName}>
             {isChinese ? "隐私政策" : "Privacy Policy"}
-          </Link>
-          <Link href="/support" className={linkClassName}>
+          </BoundaryLink>
+          <BoundaryLink href="/support" className={linkClassName}>
             {isChinese ? "联系我们" : "Contact Us"}
-          </Link>
+          </BoundaryLink>
         </div>
 
         <div className="flex items-center justify-center gap-3 order-1 sm:order-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import type { MouseEvent, ReactNode } from "react";
 
 type SwitchAction = {
@@ -66,7 +66,7 @@ function AuthLayoutTab({
   children: ReactNode;
 }) {
   return (
-    <Link
+    <BoundaryLink
       href={href}
       className={clsx(
         "flex min-h-10 items-center justify-center rounded-[12px] px-4 py-2 text-sm font-semibold transition",
@@ -77,7 +77,7 @@ function AuthLayoutTab({
       aria-current={active ? "page" : undefined}
     >
       {children}
-    </Link>
+    </BoundaryLink>
   );
 }
 
@@ -148,14 +148,14 @@ export function AuthLayout({
       >
         <div className="w-full max-w-[32rem]">
           <div className="mb-6 flex items-center justify-between gap-4">
-            <a href="/" className="space-y-1">
+            <BoundaryLink href="/" className="space-y-1">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
                 XWork Tech Toolkit
               </p>
               <p className="text-2xl font-semibold tracking-[-0.04em] text-slate-900">
                 Svc.Plus
               </p>
-            </a>
+            </BoundaryLink>
             <span className="rounded-[12px] border border-slate-900/8 bg-white/88 px-3 py-1.5 text-xs font-semibold text-slate-600">
               {modeLabel}
             </span>
@@ -227,9 +227,12 @@ export function AuthLayout({
 
               <p className="text-sm text-slate-600">
                 {switchAction.text}{" "}
-                <Link href={switchAction.href} className={AUTH_TEXT_LINK_CLASS}>
+                <BoundaryLink
+                  href={switchAction.href}
+                  className={AUTH_TEXT_LINK_CLASS}
+                >
                   {switchAction.linkLabel}
-                </Link>
+                </BoundaryLink>
               </p>
 
               {footnote ? (

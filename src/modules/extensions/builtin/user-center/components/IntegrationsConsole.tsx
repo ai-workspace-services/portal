@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Workflow,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { resolveCredentialReady } from "@/lib/integrations/credentialStatus";
 import type { IntegrationDefaults } from "@/lib/openclaw/types";
@@ -105,7 +104,6 @@ export function IntegrationsConsole({
   defaults,
   onOpenAssistant,
 }: IntegrationsConsoleProps) {
-  const router = useRouter();
   const [loadingTarget, setLoadingTarget] = useState<ProbeTarget | null>(null);
   const [resolvedDefaults, setResolvedDefaults] = useState<IntegrationDefaults>(
     defaults ?? EMPTY_DEFAULTS,
@@ -321,7 +319,8 @@ export function IntegrationsConsole({
                 onOpenAssistant();
                 return;
               }
-              router.push("/xworkmate");
+              // 跨 boundary（console → workspace）只能整页跳转
+              window.location.assign("/xworkmate");
             }}
             className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)]"
           >

@@ -28,7 +28,7 @@ RAG (Retrieval-Augmented Generation) 服务器提供以下功能：
 - **LLM Provider**: NVIDIA AI (integrate.api.nvidia.com)
 - **向量数据库**: PostgreSQL with pgvector
 - **认证服务**: accounts-svc-plus
-- **前端服务**: console.svc.plus (Vercel)
+- **前端服务**: console.svc.plus (Cloudflare Workers)
 
 ## 🏗️ 架构说明
 
@@ -36,7 +36,7 @@ RAG (Retrieval-Augmented Generation) 服务器提供以下功能：
 ```
 用户 (https://www.svc.plus)
   ↓
-Console Frontend (Vercel)
+Console Frontend (Cloudflare Workers)
   ↓
 Next.js API Routes (/api/askai, /api/rag/query)
   ↓

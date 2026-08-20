@@ -9,7 +9,7 @@
  */
 
 import { ArrowRight, Download, Monitor, Zap } from "lucide-react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import type { WebsiteHeroPayload } from "@/lib/docsServiceClient";
 
 interface ProductHeroProps {
@@ -39,16 +39,16 @@ export default function ProductHero({
         <p className="xds-t-lead xds-hero-sub">{hero.subtitle}</p>
 
         <div className="xds-hero-cta">
-          <a href={primaryHref} className="xds-btn xds-btn-primary xds-btn-lg">
+          <BoundaryLink href={primaryHref} className="xds-btn xds-btn-primary xds-btn-lg">
             {isDownloadCta ? (
               <Download className="h-4 w-4" aria-hidden="true" />
             ) : null}
             {hero.cta?.label || (isEn ? "Get started" : "立即体验")}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </a>
-          <a href="/panel" className="xds-btn xds-btn-secondary xds-btn-lg">
+          </BoundaryLink>
+          <BoundaryLink href="/panel" className="xds-btn xds-btn-secondary xds-btn-lg">
             {isEn ? "Console workspace" : "进入控制台"}
-          </a>
+          </BoundaryLink>
         </div>
 
         {hero.supportedPlatforms ? (

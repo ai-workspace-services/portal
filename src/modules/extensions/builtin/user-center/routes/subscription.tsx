@@ -17,7 +17,7 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import useSWR from "swr";
 import {
   ChevronRight,
@@ -203,9 +203,9 @@ export default function UserCenterSubscriptionRoute() {
                     : "Register a standard account for real quota and nodes."
                 }
                 action={
-                  <Link href="/register" className="xds-btn xds-btn-primary xds-btn-sm">
+                  <BoundaryLink href="/register" className="xds-btn xds-btn-primary xds-btn-sm">
                     {zh ? "创建标准账户" : "Create an account"}
-                  </Link>
+                  </BoundaryLink>
                 }
               />
             </XdsCardBody>
@@ -251,14 +251,14 @@ export default function UserCenterSubscriptionRoute() {
                   : "Viewing usage, quota and invoices is unaffected. A second factor is required before Stripe purchases, subscription changes or the customer portal."}
               </p>
             </div>
-            <Link
+            <BoundaryLink
               href="/panel/account?setupMfa=1"
               className="xds-btn xds-btn-primary"
               style={{ flex: "none" }}
             >
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
               {zh ? "去绑定 MFA" : "Bind MFA"}
-            </Link>
+            </BoundaryLink>
           </div>
         ) : null}
 
@@ -434,12 +434,12 @@ export default function UserCenterSubscriptionRoute() {
                       : "Once usage accrues, per-period entries appear here for reconciliation."
                   }
                   action={
-                    <Link
+                    <BoundaryLink
                       href="/panel/account"
                       className="xds-btn xds-btn-secondary xds-btn-sm"
                     >
                       {zh ? "去建立连接" : "Set up a connection"}
-                    </Link>
+                    </BoundaryLink>
                   }
                 />
               </XdsCardBody>
@@ -567,10 +567,10 @@ export default function UserCenterSubscriptionRoute() {
                 <span className="xds-t-caption">
                   {zh ? `共 ${records.length} 条` : `${records.length} record(s)`}
                 </span>
-                <Link href="/docs" className="xds-link-arrow xds-t-caption">
+                <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
                   {zh ? "计费与退款说明" : "Billing and refund policy"}
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                </Link>
+                </BoundaryLink>
               </div>
             </XdsCardFoot>
           </XdsCard>

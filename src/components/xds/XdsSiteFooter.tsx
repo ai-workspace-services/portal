@@ -9,7 +9,7 @@
  * 链接沿用站点既有路由，不新增内容源。
  */
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { Zap } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -114,12 +114,12 @@ export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProp
       <div className="xds-container">
         <div className="xds-footer-grid">
           <div>
-            <Link className="xds-logo" href="/">
+            <BoundaryLink className="xds-logo" href="/">
               <span className="xds-logo-mark">
                 <Zap className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
               {brand}
-            </Link>
+            </BoundaryLink>
             <p
               className="xds-t-caption"
               style={{ marginTop: "var(--sp-3)", maxWidth: "26ch" }}
@@ -134,7 +134,7 @@ export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProp
               <ul>
                 {column.items.map((item) => (
                   <li key={item.href + item.label}>
-                    <Link href={item.href}>{item.label}</Link>
+                    <BoundaryLink href={item.href}>{item.label}</BoundaryLink>
                   </li>
                 ))}
               </ul>

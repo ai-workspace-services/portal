@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import {
   AppWindow,
   ArrowRight,
@@ -113,19 +113,19 @@ export default function XWorkmateSuiteMarketing() {
             助手变成能持续处理任务的工作区。
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Link
+            <BoundaryLink
               href="/download"
               className="tactile-button tactile-button-primary h-11 px-5"
             >
               下载客户端
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link
+            </BoundaryLink>
+            <BoundaryLink
               href="https://github.com/x-evor/xworkmate-app.git"
               className="tactile-button tactile-button-soft h-11 px-5"
             >
               查看开源仓库
-            </Link>
+            </BoundaryLink>
           </div>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             {outcomes.map((item) => (
@@ -194,13 +194,13 @@ export default function XWorkmateSuiteMarketing() {
                 <p className="mt-3 flex-1 text-sm leading-6 text-text-muted">
                   {description}
                 </p>
-                <Link
+                <BoundaryLink
                   href={href}
                   className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover"
                 >
                   {repo}
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
+                </BoundaryLink>
               </article>
             ),
           )}
