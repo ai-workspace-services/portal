@@ -17,7 +17,6 @@ import {
   X,
 } from "lucide-react";
 
-import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { useUserStore } from "@lib/userStore";
 
 type BillingPlan = {
@@ -257,13 +256,6 @@ export default function OpsPlanCatalog() {
 
   return (
     <div className="space-y-5 pb-8">
-      <Breadcrumbs
-        items={[
-          { label: "总览", href: "/panel" },
-          { label: "运营工作台", href: "/panel/ops" },
-          { label: "套餐与订阅", href: "/panel/ops/billing/plans" },
-        ]}
-      />
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">

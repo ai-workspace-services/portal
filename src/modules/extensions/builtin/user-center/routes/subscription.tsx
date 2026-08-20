@@ -29,7 +29,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { openStripePortal } from "@components/billing/stripe-client";
 import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
 import { formatBytes } from "@lib/format";
@@ -182,13 +181,7 @@ export default function UserCenterSubscriptionRoute() {
   if (isReadOnlyRole) {
     return (
       <div className="xds" style={{ background: "transparent" }}>
-        <Breadcrumbs
-          items={[
-            { label: "Dashboard", href: "/panel" },
-            { label: "Subscription", href: "/panel/subscription" },
-          ]}
-        />
-        <div className="xds-stack" style={{ marginTop: 16 }}>
+        <div className="xds-stack">
           <header className="xds-page-head">
             <h1 className="xds-page-title">
               {zh ? "订阅与配额" : "Subscription and quota"}
@@ -224,14 +217,7 @@ export default function UserCenterSubscriptionRoute() {
 
   return (
     <div className="xds" style={{ background: "transparent" }}>
-      <Breadcrumbs
-        items={[
-          { label: "Dashboard", href: "/panel" },
-          { label: "Subscription", href: "/panel/subscription" },
-        ]}
-      />
-
-      <div className="xds-stack" style={{ marginTop: 16 }}>
+      <div className="xds-stack">
         <header className="xds-page-head">
           <h1 className="xds-page-title">
             {zh ? "订阅与配额" : "Subscription and quota"}

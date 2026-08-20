@@ -13,8 +13,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
-
 type AuditEntry = {
   uuid: string;
   action: string;
@@ -135,14 +133,6 @@ export default function OpsAuditConsole() {
 
   return (
     <div className="space-y-5 pb-8">
-      <Breadcrumbs
-        items={[
-          { label: "总览", href: "/panel" },
-          { label: "运营工作台", href: "/panel/ops" },
-          { label: "审计与系统", href: "/panel/ops/audit" },
-        ]}
-      />
-
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">

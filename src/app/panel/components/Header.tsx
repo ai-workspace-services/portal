@@ -9,6 +9,7 @@ import type { UserRole } from "@lib/userStore";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
 import LanguageToggle from "@components/LanguageToggle";
+import Breadcrumbs from "./Breadcrumbs";
 
 const ROLE_BADGES: Record<UserRole, { label: string; className: string }> = {
   user: {
@@ -78,11 +79,11 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-30 overflow-hidden border-b border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)] text-[var(--color-text)] shadow-[var(--shadow-soft)] backdrop-blur-xl transition-colors">
-      <div className="flex items-center justify-between px-4 py-2.5 md:px-5">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between px-3 py-2.5 sm:px-4 md:px-5">
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
           <button
             type="button"
-            className="tactile-button tactile-button-soft gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)] md:hidden"
+            className="tactile-button tactile-button-soft shrink-0 gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)] md:hidden"
             onClick={onMenu}
             aria-label={language === "zh" ? "切换导航菜单" : "Toggle navigation menu"}
           >
@@ -93,11 +94,11 @@ export default function Header({
           {onCollapse && (
             <button
               type="button"
-              className="tactile-button tactile-button-soft hidden h-8 w-8 items-center justify-center p-0 text-[var(--color-text-subtle)] md:flex"
+              className="tactile-button tactile-button-soft hidden h-8 w-8 shrink-0 items-center justify-center p-0 text-[var(--color-text-subtle)] md:flex"
               onClick={onCollapse}
-            aria-label={isCollapsed
-              ? (language === "zh" ? "展开侧边栏" : "Expand sidebar")
-              : (language === "zh" ? "收起侧边栏" : "Collapse sidebar")}
+              aria-label={isCollapsed
+                ? (language === "zh" ? "展开侧边栏" : "Expand sidebar")
+                : (language === "zh" ? "收起侧边栏" : "Collapse sidebar")}
             >
               {isCollapsed ? (
                 <ChevronRight className="h-4 w-4" />
@@ -106,13 +107,17 @@ export default function Header({
               )}
             </button>
           )}
+
+          <div className="hidden h-4 w-px bg-[var(--color-surface-border)] sm:block shrink-0" />
+
+          <Breadcrumbs />
         </div>
 
-        <div className="flex flex-1 items-center justify-end gap-4 md:justify-end">
-          <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center justify-end gap-3 pl-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="tactile-button tactile-button-soft gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)]"
+              className="tactile-button tactile-button-soft hidden gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)] sm:inline-flex"
             >
               {language === "zh" ? "返回主页" : "Back to homepage"}
             </Link>
@@ -129,7 +134,7 @@ export default function Header({
                 accountInitial
               )}
             </div>
-            <div className="hidden flex-col text-right text-xs text-[var(--color-text-subtle)] transition-colors sm:flex">
+            <div className="hidden flex-col text-right text-xs text-[var(--color-text-subtle)] transition-colors md:flex">
               <span className="text-[13px] font-semibold text-[var(--color-text)]">
                 {accountLabel}
               </span>

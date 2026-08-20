@@ -21,7 +21,6 @@ import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { BookOpen, Copy, RefreshCw } from "lucide-react";
 
-import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { useUserStore } from "@lib/userStore";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
@@ -145,14 +144,7 @@ export default function UserCenterAccountRoute() {
 
   return (
     <div className="xds" style={{ background: "transparent" }}>
-      <Breadcrumbs
-        items={[
-          { label: copy.breadcrumbs.dashboard, href: "/panel" },
-          { label: copy.breadcrumbs.account, href: "/panel/account" },
-        ]}
-      />
-
-      <div className="xds-stack" style={{ marginTop: 16 }}>
+      <div className="xds-stack">
         <header className="xds-page-head">
           <div className="xds-row-between">
             <div>
