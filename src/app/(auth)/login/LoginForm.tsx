@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import {
@@ -21,6 +21,7 @@ import { codeRequiresMfa, resolveLoginErrorMessage } from "./loginErrors";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { language } = useLanguage();
   const pageCopy = translations[language].login;
   const authCopy = translations[language].auth.login;
@@ -38,6 +39,30 @@ export function LoginForm() {
   const [mfaRequirement, setMfaRequirement] = useState<"optional" | "required">(
     () => (user?.mfaEnabled ? "required" : "optional"),
   );
+
+  const targetUrl = useMemo(() => {
+    const redirectParam =
+      searchParams.get("redirect") ??
+      searchParams.get("returnTo") ??
+      searchParams.get("redirectTo");
+    if (
+      redirectParam &&
+      redirectParam.startsWith("/") &&
+      !redirectParam.startsWith("//")
+    ) {
+      return redirectParam;
+    }
+    return "/panel";
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (user) {
+      const timer = window.setTimeout(() => {
+        window.location.assign(targetUrl);
+      }, 800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [user, targetUrl]);
 
   useEffect(() => {
     if (userEmail && identifier.trim().length === 0) {
@@ -236,7 +261,7 @@ export function LoginForm() {
       }
 
       await login();
-      window.location.href = "/";
+      window.location.assign(targetUrl);
     } catch (submitError) {
       console.warn("Login failed", submitError);
       setError(pageCopy.genericError);
@@ -245,8 +270,12 @@ export function LoginForm() {
     }
   };
 
+  const handleGoToPanel = () => {
+    window.location.assign(targetUrl);
+  };
+
   const handleGoHome = () => {
-    window.location.href = "/";
+    window.location.assign("/");
   };
 
   const handleLogout = () => {
@@ -262,14 +291,26 @@ export function LoginForm() {
     <>
       {user ? (
         <div className={`space-y-4 ${AUTH_HINT_PANEL_CLASS}`}>
-          <p className="text-base font-semibold">
-            {pageCopy.success.replace("{username}", user.username)}
-          </p>
+          <div className="space-y-1">
+            <p className="text-base font-semibold">
+              {pageCopy.success.replace("{username}", user.username)}
+            </p>
+            <p className="text-xs text-slate-500 animate-pulse">
+              {pageCopy.redirecting}
+            </p>
+          </div>
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={handleGoHome}
+              onClick={handleGoToPanel}
               className={AUTH_PRIMARY_BUTTON_CLASS}
+            >
+              {pageCopy.goToPanel}
+            </button>
+            <button
+              type="button"
+              onClick={handleGoHome}
+              className={AUTH_SECONDARY_BUTTON_CLASS}
             >
               {pageCopy.goHome}
             </button>

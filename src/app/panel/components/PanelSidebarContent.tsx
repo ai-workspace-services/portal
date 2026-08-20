@@ -170,7 +170,11 @@ export function PanelSidebarContent({
 
   return (
     <>
-      <div className="xds-sidebar-brand">
+      <a
+        href="/"
+        className="xds-sidebar-brand block hover:opacity-85 transition-opacity"
+        title={language === "zh" ? "返回主页" : "Back to homepage"}
+      >
         <span className="xds-logo-mark">
           <Zap className="xds-ico" aria-hidden="true" />
         </span>
@@ -180,7 +184,7 @@ export function PanelSidebarContent({
           </div>
           <div className="xds-t-caption">{copy.overview.heading}</div>
         </div>
-      </div>
+      </a>
 
       <nav className="xds-sidebar-nav">
         {primarySections.map(renderSection)}
