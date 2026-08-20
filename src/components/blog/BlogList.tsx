@@ -253,6 +253,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                 </p>
                 <Link
                   href={"/blogs/" + featuredPost.slug}
+                  prefetch={false}
                   className="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary"
                 >
                   {isChinese ? "阅读精选" : "Read featured note"}
@@ -324,6 +325,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                     )}
                     <Link
                       href={"/blogs/" + post.slug}
+                      prefetch={false}
                       className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5 hover:text-primary-hover"
                     >
                       {isChinese ? "继续阅读" : "Read more"}

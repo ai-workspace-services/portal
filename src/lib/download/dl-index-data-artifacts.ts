@@ -10,11 +10,14 @@ const LOCAL_FALLBACK_ARTIFACTS = Array.isArray(fallbackArtifacts)
   ? (fallbackArtifacts as DirListing[])
   : []
 
+const MANIFEST_REVALIDATE_SECONDS = 3600
+
 async function fetchListings(url: string, useCache?: boolean): Promise<DirListing[]> {
   try {
     const response = await fetch(url, {
-      // 运行时使用缓存策略，减少API调用
-      next: useCache ? { revalidate: 3600 } : undefined,
+      // 运行时也走缓存：清单每小时最多回源一次，其余请求命中增量缓存，
+      // 既省 Worker 子请求，也让 /download 可以被预渲染。
+      next: { revalidate: useCache === false ? 0 : MANIFEST_REVALIDATE_SECONDS },
     })
 
     if (!response.ok) {

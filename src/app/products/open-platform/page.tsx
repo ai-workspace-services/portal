@@ -1,4 +1,6 @@
-export const dynamic = "force-dynamic";
+// Marketing copy changes with a content push, not with a request. Prerender it
+// and refresh in the background.
+export const revalidate = 900;
 
 import { getProduct } from "@/lib/docsServiceClient";
 import ProductPageTemplate from "@/components/products/ProductPageTemplate";

@@ -20,6 +20,15 @@
   "images": {
     "binding": "IMAGES"
   },
+  // Add an incremental cache binding to keep prerendered pages and cached
+  // content fetches out of the render path. The per-boundary workers get this
+  // generated from PORTAL_INCREMENTAL_CACHE_* (see
+  // docs/architecture/content-caching.md); this single-worker target has to
+  // declare it by hand, and runs without a cache until it does:
+  //
+  // "r2_buckets": [
+  //   { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "<bucket>" }
+  // ],
   "env": {
     "sit": {
       "name": "frontend-server-edge-sit",

@@ -10,8 +10,8 @@ const OFFLINE_PACKAGE_URL = 'https://dl.svc.plus/dl-index/offline-package-manife
 export async function fetchOfflinePackageListings(options?: { useCache?: boolean }): Promise<DirListing[]> {
   try {
     const response = await fetch(OFFLINE_PACKAGE_URL, {
-      // 运行时使用缓存策略，减少API调用
-      next: options?.useCache ? { revalidate: 3600 } : undefined,
+      // 同 artifacts 清单：默认缓存一小时，避免每次渲染都回源 dl.svc.plus。
+      next: { revalidate: options?.useCache === false ? 0 : 3600 },
     })
 
     if (!response.ok) {

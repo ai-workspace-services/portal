@@ -330,6 +330,7 @@ function SidebarLink({
     <li>
       <Link
         href={href}
+        prefetch={false}
         className={`group flex items-center gap-2 rounded-[10px] px-3 py-2 text-sm transition-all duration-200 ${
           isPageActive
             ? "bg-primary/10 text-primary font-medium shadow-[var(--shadow-sm)]"

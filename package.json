@@ -21,6 +21,7 @@
     "build:ssr:auth": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && node scripts/build-open-next-boundary.mjs --boundary auth",
     "build:ssr:console": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && node scripts/build-open-next-boundary.mjs --boundary console",
     "build:ssr:workspace": "SKIP_CONTENTLAYER=true bash scripts/prebuild.sh && node scripts/build-open-next-boundary.mjs --boundary workspace",
+  "deploy:ssr": "node scripts/deploy-open-next-boundary.mjs",
     "preview:workers": "yarn build:workers && opennextjs-cloudflare preview --config wrangler.worker.jsonc",
     "build:frontend-server:worker": "yarn build:workers",
     "preview:frontend-server:worker": "yarn preview:workers",

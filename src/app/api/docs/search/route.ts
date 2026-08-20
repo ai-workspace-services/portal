@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { searchDocs } from "@/lib/docsServiceClient";
+import { getRequestContentLanguage } from "@server/contentLanguage";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const hits = await searchDocs(query, 12);
+    const hits = await searchDocs(query, 12, await getRequestContentLanguage());
     return NextResponse.json(hits);
   } catch (error) {
     console.error("docs search failed", { query, error });

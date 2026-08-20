@@ -1,8 +1,8 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
+// Documents added between two builds still render on first request.
+export const dynamicParams = true;
 
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
@@ -10,10 +10,15 @@ import { ChevronRight } from "lucide-react";
 import DocMetaPanel from "@/components/doc/DocMetaPanel";
 import { PublicPageIntro } from "@/components/public/PublicPageShell";
 import { isFeatureEnabled } from "@lib/featureToggles";
+import { getContentLanguage } from "@server/contentLanguage";
 
 import Feedback from "../../Feedback";
 import DocActions from "../../DocActions";
 import { getDocVersion, getDocVersionParams } from "../../resources.server";
+
+export async function generateStaticParams() {
+  return getDocVersionParams();
+}
 
 function DocsBreadcrumbs({
   items,
@@ -80,13 +85,8 @@ export default async function DocVersionPage({
   }
 
   const { collection, version } = doc;
-  const requestHeaders = await headers();
-  const preferredLanguage =
-    requestHeaders.get("x-language") ??
-    requestHeaders.get("accept-language") ??
-    "";
   const isChinese =
-    version.language === "zh" || preferredLanguage.toLowerCase().includes("zh");
+    version.language === "zh" || (await getContentLanguage()) === "zh";
   const breadcrumbs = [
     { label: isChinese ? "文档中心" : "Documentation", href: "/docs" },
     { label: collection.title, href: `/docs/${collection.slug}` },

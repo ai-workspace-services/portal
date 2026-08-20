@@ -3,6 +3,8 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+import { resolveIncrementalCacheTarget } from "./incremental-cache-target.mjs";
+
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const appRoot = path.join(projectRoot, "src", "app");
 const generatedRoot = path.join(projectRoot, ".edge-build");
@@ -113,12 +115,12 @@ await writeFile(
     "",
   ].join("\n"),
 );
+// One source of truth for the cache overrides: the boundary reuses the repo
+// level config instead of shipping a second, silently diverging copy.
 await writeFile(
   path.join(boundaryRoot, "open-next.config.ts"),
   [
-    'import { defineCloudflareConfig } from "@opennextjs/cloudflare";',
-    "",
-    "export default defineCloudflareConfig({});",
+    'export { default } from "../../open-next.config";',
     "",
   ].join("\n"),
 );
@@ -159,6 +161,13 @@ await writeFile(
     assets: { directory: ".open-next/assets", binding: "ASSETS" },
     services: [{ binding: "WORKER_SELF_REFERENCE", service: definition.workerName }],
     images: { binding: "IMAGES" },
+    ...incrementalCacheBinding(),
+    vars: {
+      CONTENT_LANGUAGE_MODE: process.env.CONTENT_LANGUAGE_MODE || "static",
+      ...(process.env.CONTENT_REVALIDATE_SECONDS
+        ? { CONTENT_REVALIDATE_SECONDS: process.env.CONTENT_REVALIDATE_SECONDS }
+        : {}),
+    },
   }, null, 2)}\n`,
 );
 
@@ -244,6 +253,20 @@ console.log(`Built SSR boundary ${boundary}: ${selectedPages.length} page entrie
 function readBoundary(args) {
   const index = args.indexOf("--boundary");
   return index >= 0 ? args[index + 1] : "";
+}
+
+// Binding for whichever incremental cache open-next.config.ts selected. Both
+// read the same resolver so the override and the binding cannot drift apart.
+function incrementalCacheBinding() {
+  const target = resolveIncrementalCacheTarget();
+  switch (target.store) {
+    case "kv":
+      return { kv_namespaces: [{ binding: "NEXT_INC_CACHE_KV", id: target.kvId }] };
+    case "r2":
+      return { r2_buckets: [{ binding: "NEXT_INC_CACHE_R2_BUCKET", bucket_name: target.bucket }] };
+    default:
+      return {};
+  }
 }
 
 function normaliseCloudflareConfig(config) {

@@ -1,8 +1,13 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
+export const dynamicParams = true
 
 import { notFound, redirect } from 'next/navigation'
 
-import { getDocResource } from '../resources.server'
+import { getDocCollectionParams, getDocResource } from '../resources.server'
+
+export async function generateStaticParams() {
+  return getDocCollectionParams()
+}
 import { isFeatureEnabled } from '@lib/featureToggles'
 
 export default async function CollectionPage({
