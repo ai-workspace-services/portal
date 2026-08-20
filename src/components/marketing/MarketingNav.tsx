@@ -6,13 +6,15 @@ import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useUserStore } from "@lib/userStore";
 import { cn } from "@/lib/utils";
 
 export default function MarketingNav() {
   const { language } = useLanguage();
-  const content = (homeMarketingContent as any)[language] || (homeMarketingContent as any).zh;
+  const brand = useSiteBrand();
+  const content = homeMarketingContent[brand][language];
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);

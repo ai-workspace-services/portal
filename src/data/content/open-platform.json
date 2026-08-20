@@ -7,6 +7,10 @@
       "cta": {
         "label": "了解更多",
         "href": "/panel"
+      },
+      "github": {
+        "label": "GitHub · ai-workspace-infra",
+        "url": "https://github.com/ai-workspace-infra"
       }
     },
     "showcases": [
@@ -39,6 +43,10 @@
       "cta": {
         "label": "Learn More",
         "href": "/panel"
+      },
+      "github": {
+        "label": "GitHub · ai-workspace-infra",
+        "url": "https://github.com/ai-workspace-infra"
       }
     },
     "showcases": [

@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import { marketingTheme } from "@/components/marketing/theme";
 import {
   loadHomepageHeroAsset,
@@ -16,7 +17,8 @@ import Carousel from "@/components/marketing/Carousel";
 
 export default function HeroSection() {
   const { language } = useLanguage();
-  const { hero } = homeMarketingContent[language];
+  const brand = useSiteBrand();
+  const { hero } = homeMarketingContent[brand][language];
   const [asset, setAsset] = useState<HomepageHeroAsset>({});
 
   useEffect(() => {

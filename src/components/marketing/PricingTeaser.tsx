@@ -5,11 +5,13 @@ import { Check } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import { marketingTheme } from "@/components/marketing/theme";
 
 export default function PricingTeaser() {
   const { language } = useLanguage();
-  const { pricingTeaser } = homeMarketingContent[language];
+  const brand = useSiteBrand();
+  const { pricingTeaser } = homeMarketingContent[brand][language];
 
   return (
     <section className={marketingTheme.section.container}>

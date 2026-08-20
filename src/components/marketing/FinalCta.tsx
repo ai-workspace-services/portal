@@ -5,11 +5,13 @@ import { ArrowRight } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import { marketingTheme } from "@/components/marketing/theme";
 
 export default function FinalCta() {
   const { language } = useLanguage();
-  const { finalCta } = homeMarketingContent[language];
+  const brand = useSiteBrand();
+  const { finalCta } = homeMarketingContent[brand][language];
 
   return (
     <section className={`${marketingTheme.section.container} pb-16 sm:pb-20`}>

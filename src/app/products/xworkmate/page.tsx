@@ -3,7 +3,7 @@
 import Footer from "@/components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { marketingTheme } from "@/components/marketing/theme";
-import { ArrowRight, Bot, Cpu, Network, ShieldCheck, Lock, Layers, Activity, Monitor } from "lucide-react";
+import { ArrowRight, Bot, Cpu, Network, ShieldCheck, Lock, Layers, Activity, Monitor, Github } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import xworkmateContent from "@/data/content/xworkmate";
@@ -39,10 +39,21 @@ export default function XworkmatePage() {
           <p className="mx-auto max-w-2xl text-lg text-slate-600 mb-10">
             {hero.subtitle}
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <Link href={hero.cta.href} className={marketingTheme.cta.primary}>
               {hero.cta.label} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
+            {hero.github && (
+              <a
+                href={hero.github.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={marketingTheme.cta.secondary}
+              >
+                <Github className="mr-2 h-4 w-4" aria-hidden />
+                {hero.github.label}
+              </a>
+            )}
           </div>
         </section>
 

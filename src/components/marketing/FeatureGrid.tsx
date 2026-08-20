@@ -4,6 +4,7 @@ import { Layers, Globe, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import { marketingTheme } from "@/components/marketing/theme";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -15,7 +16,8 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function FeatureGrid() {
   const { language } = useLanguage();
-  const { featureGrid } = homeMarketingContent[language];
+  const brand = useSiteBrand();
+  const { featureGrid } = homeMarketingContent[brand][language];
 
   return (
     <section className={marketingTheme.section.container}>

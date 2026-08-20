@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Cloud, Eye, RefreshCw, ShieldCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, Cloud, CreditCard, Eye, LayoutDashboard, Network, Plug, RefreshCw, Rocket, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import { marketingTheme } from "@/components/marketing/theme";
 import Carousel from "@/components/marketing/Carousel";
 
@@ -13,11 +14,18 @@ const ICONS: Record<string, LucideIcon> = {
   cloud: Cloud,
   eye: Eye,
   shield: ShieldCheck,
+  console: LayoutDashboard,
+  gateway: Network,
+  api: Plug,
+  billing: CreditCard,
+  accounts: Users,
+  deploy: Rocket,
 };
 
 export default function ProductGrid() {
   const { language } = useLanguage();
-  const { productGrid } = homeMarketingContent[language];
+  const brand = useSiteBrand();
+  const { productGrid } = homeMarketingContent[brand][language];
 
   return (
     <section className={`${marketingTheme.section.container} ${marketingTheme.section.spacingY}`}>

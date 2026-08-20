@@ -3,7 +3,12 @@
 // namespace is already consumed by unrelated components (ProductMatrix,
 // ContactPanel, HeroBanner, etc.) — editing homepage copy here can never
 // break those.
+//
+// The portal serves two brands from the same routes and layout; each brand
+// carries its own per-language copy set (see siteBrand.ts for how the brand
+// is resolved from the hostname).
 import type { Language } from "@/i18n/LanguageProvider";
+import type { SiteBrand } from "@/lib/siteBrand";
 
 export type NavLinkItem = {
   label: string;
@@ -15,6 +20,20 @@ export type NavDropdown = {
   label: string;
   columns: NavLinkItem[];
 };
+
+export type ProductGridItemIcon =
+  | "refresh"
+  | "cloud"
+  | "eye"
+  | "shield"
+  | "console"
+  | "gateway"
+  | "api"
+  | "billing"
+  | "accounts"
+  | "deploy";
+
+export type StatsBarIcon = "globe" | "users" | "shield" | "zap" | "refresh" | "eye";
 
 export type HomeMarketingContent = {
   brand: {
@@ -50,7 +69,7 @@ export type HomeMarketingContent = {
     title: string;
     subtitle: string;
     items: {
-      icon: "refresh" | "cloud" | "eye" | "shield";
+      icon: ProductGridItemIcon;
       name: string;
       description: string;
       href: string;
@@ -59,7 +78,7 @@ export type HomeMarketingContent = {
     }[];
   };
   statsBar: {
-    icon: "globe" | "users" | "shield" | "zap";
+    icon: StatsBarIcon;
     value: string;
     label: string;
   }[];
@@ -92,4 +111,7 @@ export type HomeMarketingContent = {
 
 import { homeMarketingContentData } from "@/data/content/home-marketing";
 
-export const homeMarketingContent: Record<Language, HomeMarketingContent> = homeMarketingContentData as any;
+export const homeMarketingContent: Record<
+  SiteBrand,
+  Record<Language, HomeMarketingContent>
+> = homeMarketingContentData as any;

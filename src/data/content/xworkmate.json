@@ -7,6 +7,10 @@
       "cta": {
         "label": "立即体验",
         "href": "/panel"
+      },
+      "github": {
+        "label": "GitHub · ai-workspace-lab",
+        "url": "https://github.com/ai-workspace-lab"
       }
     },
     "showcases": [
@@ -39,6 +43,10 @@
       "cta": {
         "label": "Experience Now",
         "href": "/panel"
+      },
+      "github": {
+        "label": "GitHub · ai-workspace-lab",
+        "url": "https://github.com/ai-workspace-lab"
       }
     },
     "showcases": [

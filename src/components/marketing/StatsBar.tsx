@@ -4,6 +4,7 @@ import { Globe, ShieldCheck, Users, Zap, RefreshCw, Eye, type LucideIcon } from 
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";
+import { useSiteBrand } from "@/lib/siteBrand";
 import { marketingTheme } from "@/components/marketing/theme";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -17,7 +18,8 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function StatsBar() {
   const { language } = useLanguage();
-  const { statsBar } = homeMarketingContent[language];
+  const brand = useSiteBrand();
+  const { statsBar } = homeMarketingContent[brand][language];
 
   return (
     <section className={marketingTheme.section.container}>

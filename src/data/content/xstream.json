@@ -7,6 +7,10 @@
       "cta": {
         "label": "立即体验",
         "href": "/panel"
+      },
+      "github": {
+        "label": "GitHub · ai-workspace-xstream",
+        "url": "https://github.com/ai-workspace-xstream"
       }
     },
     "showcases": [
@@ -33,6 +37,10 @@
       "cta": {
         "label": "Experience Now",
         "href": "/panel"
+      },
+      "github": {
+        "label": "GitHub · ai-workspace-xstream",
+        "url": "https://github.com/ai-workspace-xstream"
       }
     },
     "showcases": [
