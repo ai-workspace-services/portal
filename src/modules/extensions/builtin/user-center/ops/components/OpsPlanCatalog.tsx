@@ -20,34 +20,13 @@ import {
 import { useUserStore } from "@lib/userStore";
 
 import { ADMIN_API_BASE } from "../../lib/adminApi";
-
-type BillingPlan = {
-  planId: string;
-  stripePriceId?: string;
-  displayName?: string;
-  kind: "trial" | "subscription" | "paygo_topup" | string;
-  includedQuotaBytes?: number;
-  packageName?: string;
-  priceMultipliers?: Record<string, number>;
-  features?: Record<string, unknown>;
-  trialDays?: number;
-  active?: boolean;
-  sortOrder?: number;
-};
+import {
+  buildPlanUpsertBody,
+  type BillingPlan,
+  type PlanForm,
+} from "../planUpsert";
 
 type PlansResponse = { plans?: BillingPlan[] };
-type PlanForm = {
-  planId: string;
-  displayName: string;
-  kind: string;
-  packageName: string;
-  stripePriceId: string;
-  includedQuotaBytes: string;
-  trialDays: string;
-  sortOrder: string;
-  active: boolean;
-  reason: string;
-};
 
 const surface =
   "rounded-[var(--radius-xl)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)]";
@@ -189,18 +168,10 @@ export default function OpsPlanCatalog() {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({
-            planId: form.planId.trim(),
-            displayName: form.displayName.trim(),
-            kind: form.kind,
-            packageName: form.packageName.trim() || "default",
-            stripePriceId: form.stripePriceId.trim(),
-            includedQuotaBytes,
-            trialDays,
-            sortOrder,
-            active: form.active,
-            reason: form.reason.trim(),
-          }),
+          // `editing` is the row this form was opened from, and carries the
+          // price and entitlement fields the form does not expose. Without it
+          // the upsert would blank them.
+          body: JSON.stringify(buildPlanUpsertBody(form, editing ?? undefined)),
         },
       );
       const payload = await response.json().catch(() => null);
