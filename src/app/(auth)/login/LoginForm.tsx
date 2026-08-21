@@ -191,18 +191,32 @@ export function LoginForm() {
     setError(null);
     setIsSubmitting(true);
     try {
+      const loginBody: {
+        identifier: string;
+        password: string;
+        totp?: string;
+        totpCode?: string;
+        remember: boolean;
+      } = {
+        identifier: trimmedIdentifier,
+        password,
+        remember,
+      };
+      if (sanitizedTotp.length === 6) {
+        // Accounts is the active UAT API boundary and reads `totpCode`.
+        // `totp` keeps compatibility with the Portal BFF contract used by
+        // environments that still proxy the request through Next.js.
+        loginBody.totp = sanitizedTotp;
+        loginBody.totpCode = sanitizedTotp;
+      }
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          identifier: trimmedIdentifier,
-          password,
-          totp: sanitizedTotp.length === 6 ? sanitizedTotp : undefined,
-          remember,
-        }),
+        body: JSON.stringify(loginBody),
         credentials: "include",
       });
 
