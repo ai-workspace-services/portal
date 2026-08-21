@@ -26,17 +26,13 @@ import type { HomepageVideoSettingsResponse } from "@/lib/home/homepageVideo";
 import { useUserStore } from "@lib/userStore";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
+import { ADMIN_API_BASE } from "../lib/adminApi";
 
 type UserMetricsResponse = {
   overview: MetricsOverview;
   series: MetricsSeries;
 };
 
-// The console's Frontend Router reserves `/api/admin/*` for the Edge Gateway
-// admin boundary. The portal is served behind that router, so requesting the
-// metrics through the auth boundary keeps the session-protected Accounts
-// endpoint on the route that is available from the console host.
-const USER_METRICS_ENDPOINT = "/api/auth/admin/users/metrics";
 
 type AdminSettingsResponse = {
   version: number;
@@ -139,14 +135,14 @@ export default function UserCenterManagementRoute() {
   >("users");
 
   const metricsSWR = useSWR<UserMetricsResponse>(
-    canAccess ? USER_METRICS_ENDPOINT : null,
+    canAccess ? `${ADMIN_API_BASE}/users/metrics` : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
     },
   );
   const settingsSWR = useSWR<AdminSettingsResponse>(
-    canAccess ? "/api/admin/settings" : null,
+    canAccess ? `${ADMIN_API_BASE}/settings` : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
@@ -160,7 +156,7 @@ export default function UserCenterManagementRoute() {
     },
   );
   const homepageVideoSWR = useSWR<HomepageVideoSettingsResponse>(
-    canAccess ? "/api/admin/homepage-video" : null,
+    canAccess ? `${ADMIN_API_BASE}/homepage-video` : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
@@ -215,7 +211,7 @@ export default function UserCenterManagementRoute() {
     setMatrixStatus(undefined);
     setMatrixError(undefined);
     try {
-      const response = await fetch("/api/admin/settings", {
+      const response = await fetch(`${ADMIN_API_BASE}/settings`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -302,7 +298,7 @@ export default function UserCenterManagementRoute() {
       setGroupsUpdateMessage(undefined);
       markGroupsPending(userId, true);
       try {
-        await jsonFetcher(`/api/admin/users/${userId}/groups`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/groups`, {
           method: "PUT",
           credentials: "include",
           headers: {
@@ -331,7 +327,7 @@ export default function UserCenterManagementRoute() {
       setRoleUpdateMessage(undefined);
       markRolePending(userId, true);
       try {
-        await jsonFetcher(`/api/admin/users/${userId}/role`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/role`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -361,7 +357,7 @@ export default function UserCenterManagementRoute() {
       setRoleUpdateMessage(undefined);
       markRolePending(userId, true);
       try {
-        await jsonFetcher(`/api/admin/users/${userId}/role`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/role`, {
           method: "DELETE",
           credentials: "include",
           headers: {
@@ -385,7 +381,7 @@ export default function UserCenterManagementRoute() {
   const handlePauseUser = useCallback(
     async (userId: string) => {
       try {
-        await jsonFetcher(`/api/admin/users/${userId}/pause`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/pause`, {
           method: "POST",
         });
         usersSWR.mutate();
@@ -399,7 +395,7 @@ export default function UserCenterManagementRoute() {
   const handleResumeUser = useCallback(
     async (userId: string) => {
       try {
-        await jsonFetcher(`/api/admin/users/${userId}/resume`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/resume`, {
           method: "POST",
         });
         usersSWR.mutate();
@@ -413,7 +409,7 @@ export default function UserCenterManagementRoute() {
   const handleDeleteUser = useCallback(
     async (userId: string) => {
       try {
-        await jsonFetcher(`/api/admin/users/${userId}`, { method: "DELETE" });
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}`, { method: "DELETE" });
         usersSWR.mutate();
       } catch (error) {
         alert(error instanceof Error ? error.message : "操作失败");
@@ -427,7 +423,7 @@ export default function UserCenterManagementRoute() {
       const days = prompt("设置过期天数 (0 为永久):", "0");
       if (days === null) return;
       try {
-        await jsonFetcher(`/api/admin/users/${userId}/renew-uuid`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/renew-uuid`, {
           method: "POST",
           body: JSON.stringify({ expires_in_days: parseInt(days) || 0 }),
         });
@@ -446,7 +442,7 @@ export default function UserCenterManagementRoute() {
         throw new Error("仅 root 管理员可创建自定义 UUID 用户");
       }
 
-      await jsonFetcher("/api/admin/users", {
+      await jsonFetcher(`${ADMIN_API_BASE}/users`, {
         method: "POST",
         body: JSON.stringify({
           email: input.email,
@@ -467,7 +463,7 @@ export default function UserCenterManagementRoute() {
       setHomepageVideoError(undefined);
 
       try {
-        const response = await fetch("/api/admin/homepage-video", {
+        const response = await fetch(`${ADMIN_API_BASE}/homepage-video`, {
           method: "PUT",
           credentials: "include",
           headers: {
