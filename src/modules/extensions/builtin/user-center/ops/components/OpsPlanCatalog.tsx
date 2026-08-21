@@ -19,6 +19,8 @@ import {
 
 import { useUserStore } from "@lib/userStore";
 
+import { ADMIN_API_BASE } from "../../lib/adminApi";
+
 type BillingPlan = {
   planId: string;
   stripePriceId?: string;
@@ -106,7 +108,7 @@ function emptyForm(plan?: BillingPlan): PlanForm {
 
 export default function OpsPlanCatalog() {
   const user = useUserStore((state) => state.user);
-  const plansSWR = useSWR<PlansResponse>("/api/admin/billing/plans", fetcher, {
+  const plansSWR = useSWR<PlansResponse>(`${ADMIN_API_BASE}/billing/plans`, fetcher, {
     revalidateOnFocus: false,
   });
   const [editing, setEditing] = useState<BillingPlan | null | undefined>();
@@ -179,7 +181,7 @@ export default function OpsPlanCatalog() {
     setError(undefined);
     try {
       const response = await fetch(
-        `/api/admin/billing/plans/${encodeURIComponent(form.planId.trim())}`,
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(form.planId.trim())}`,
         {
           method: "PUT",
           credentials: "include",
@@ -232,7 +234,7 @@ export default function OpsPlanCatalog() {
     try {
       const query = new URLSearchParams({ reason: deleteReason.trim() });
       const response = await fetch(
-        `/api/admin/billing/plans/${encodeURIComponent(deleting.planId)}?${query}`,
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(deleting.planId)}?${query}`,
         {
           method: "DELETE",
           credentials: "include",

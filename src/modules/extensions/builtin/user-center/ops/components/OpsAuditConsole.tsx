@@ -13,6 +13,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+import { ADMIN_API_BASE } from "../../lib/adminApi";
+
 type AuditEntry = {
   uuid: string;
   action: string;
@@ -85,7 +87,7 @@ function toQuery(filters: Filters) {
   if (filters.action.trim()) params.set("action", filters.action.trim());
   if (filters.actor.trim()) params.set("actor", filters.actor.trim());
   if (filters.target.trim()) params.set("target", filters.target.trim());
-  return `/api/admin/audit?${params.toString()}`;
+  return `${ADMIN_API_BASE}/audit?${params.toString()}`;
 }
 
 export default function OpsAuditConsole() {
