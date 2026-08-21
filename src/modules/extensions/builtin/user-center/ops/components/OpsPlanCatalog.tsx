@@ -19,33 +19,14 @@ import {
 
 import { useUserStore } from "@lib/userStore";
 
-type BillingPlan = {
-  planId: string;
-  stripePriceId?: string;
-  displayName?: string;
-  kind: "trial" | "subscription" | "paygo_topup" | string;
-  includedQuotaBytes?: number;
-  packageName?: string;
-  priceMultipliers?: Record<string, number>;
-  features?: Record<string, unknown>;
-  trialDays?: number;
-  active?: boolean;
-  sortOrder?: number;
-};
+import { ADMIN_API_BASE } from "../../lib/adminApi";
+import {
+  buildPlanUpsertBody,
+  type BillingPlan,
+  type PlanForm,
+} from "../planUpsert";
 
 type PlansResponse = { plans?: BillingPlan[] };
-type PlanForm = {
-  planId: string;
-  displayName: string;
-  kind: string;
-  packageName: string;
-  stripePriceId: string;
-  includedQuotaBytes: string;
-  trialDays: string;
-  sortOrder: string;
-  active: boolean;
-  reason: string;
-};
 
 const surface =
   "rounded-[var(--radius-xl)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)]";
@@ -106,7 +87,7 @@ function emptyForm(plan?: BillingPlan): PlanForm {
 
 export default function OpsPlanCatalog() {
   const user = useUserStore((state) => state.user);
-  const plansSWR = useSWR<PlansResponse>("/api/admin/billing/plans", fetcher, {
+  const plansSWR = useSWR<PlansResponse>(`${ADMIN_API_BASE}/billing/plans`, fetcher, {
     revalidateOnFocus: false,
   });
   const [editing, setEditing] = useState<BillingPlan | null | undefined>();
@@ -179,7 +160,7 @@ export default function OpsPlanCatalog() {
     setError(undefined);
     try {
       const response = await fetch(
-        `/api/admin/billing/plans/${encodeURIComponent(form.planId.trim())}`,
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(form.planId.trim())}`,
         {
           method: "PUT",
           credentials: "include",
@@ -187,18 +168,10 @@ export default function OpsPlanCatalog() {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({
-            planId: form.planId.trim(),
-            displayName: form.displayName.trim(),
-            kind: form.kind,
-            packageName: form.packageName.trim() || "default",
-            stripePriceId: form.stripePriceId.trim(),
-            includedQuotaBytes,
-            trialDays,
-            sortOrder,
-            active: form.active,
-            reason: form.reason.trim(),
-          }),
+          // `editing` is the row this form was opened from, and carries the
+          // price and entitlement fields the form does not expose. Without it
+          // the upsert would blank them.
+          body: JSON.stringify(buildPlanUpsertBody(form, editing ?? undefined)),
         },
       );
       const payload = await response.json().catch(() => null);
@@ -232,7 +205,7 @@ export default function OpsPlanCatalog() {
     try {
       const query = new URLSearchParams({ reason: deleteReason.trim() });
       const response = await fetch(
-        `/api/admin/billing/plans/${encodeURIComponent(deleting.planId)}?${query}`,
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(deleting.planId)}?${query}`,
         {
           method: "DELETE",
           credentials: "include",

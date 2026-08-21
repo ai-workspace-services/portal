@@ -41,6 +41,8 @@ import { useUserStore } from "@lib/userStore";
 import OpsAuditConsole from "./OpsAuditConsole";
 import OpsPlanCatalog from "./OpsPlanCatalog";
 
+import { ADMIN_API_BASE } from "../../lib/adminApi";
+
 type ManagedUser = {
   id: string;
   email: string;
@@ -271,12 +273,17 @@ export default function OpsAccountTriage() {
   const [actionError, setActionError] = useState<string | undefined>();
 
   const canAccess = Boolean(user);
+  // Still on /api/admin: Accounts implements no `/admin/billing/accounts`
+  // collection, no `/admin/billing/overview` and no `/admin/billing/ledger`
+  // under either boundary -- only the portal BFF has them, proxying to
+  // handlers that were never written. Moving the prefix would swap a gateway
+  // 404 for an accounts 404, so these wait on the upstream handlers.
   const usersSWR = useSWR<ManagedUser[]>(canAccess ? "/api/admin/billing/accounts" : null, jsonFetcher, {
     revalidateOnFocus: false,
   });
   const selected = selectedId ?? usersSWR.data?.[0]?.id;
   const billingSWR = useSWR<BillingAccountResponse>(
-    selected ? `/api/admin/billing/accounts/${encodeURIComponent(selected)}` : null,
+    selected ? `${ADMIN_API_BASE}/billing/accounts/${encodeURIComponent(selected)}` : null,
     jsonFetcher,
     { revalidateOnFocus: false },
   );
@@ -364,7 +371,7 @@ export default function OpsAccountTriage() {
     setActionStatus("提交中…");
     setActionError(undefined);
     try {
-      const response = await fetch(`/api/admin/billing/accounts/${encodeURIComponent(selected)}/${action}`, {
+      const response = await fetch(`${ADMIN_API_BASE}/billing/accounts/${encodeURIComponent(selected)}/${action}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json", Accept: "application/json" },

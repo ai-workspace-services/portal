@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Card from '../../components/Card'
+import { ADMIN_API_BASE } from '../../lib/adminApi'
 
 type EmailBlacklistProps = {
     isOpen: boolean
@@ -17,7 +18,7 @@ export function EmailBlacklist({ isOpen, onClose }: EmailBlacklistProps) {
     const fetchBlacklist = async () => {
         setIsLoading(true)
         try {
-            const response = await fetch('/api/admin/blacklist')
+            const response = await fetch(`${ADMIN_API_BASE}/blacklist`)
             if (response.ok) {
                 const data = await response.json()
                 setBlacklist(data.blacklist || [])
@@ -41,7 +42,7 @@ export function EmailBlacklist({ isOpen, onClose }: EmailBlacklistProps) {
 
         setIsSubmitting(true)
         try {
-            const response = await fetch('/api/admin/blacklist', {
+            const response = await fetch(`${ADMIN_API_BASE}/blacklist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: newEmail }),
@@ -59,7 +60,7 @@ export function EmailBlacklist({ isOpen, onClose }: EmailBlacklistProps) {
 
     const handleRemove = async (email: string) => {
         try {
-            const response = await fetch(`/api/admin/blacklist/${encodeURIComponent(email)}`, {
+            const response = await fetch(`${ADMIN_API_BASE}/blacklist/${encodeURIComponent(email)}`, {
                 method: 'DELETE',
             })
             if (response.ok) {
