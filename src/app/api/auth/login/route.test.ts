@@ -86,4 +86,46 @@ describe("/api/auth/login", () => {
       }),
     );
   });
+
+  it("forwards the canonical totpCode field to Accounts", async () => {
+    process.env.ACCOUNT_SERVICE_URL = "https://accounts.svc.plus";
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          token: "session-token",
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { POST } = await import("./route");
+    const request = new NextRequest("https://console.svc.plus/api/auth/login", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        host: "console.svc.plus",
+      },
+      body: JSON.stringify({
+        identifier: "admin@svc.plus",
+        password: "Secret123!",
+        totpCode: "123456",
+      }),
+    });
+
+    const response = await POST(request);
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body)) as Record<string, string>;
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      identifier: "admin@svc.plus",
+      password: "Secret123!",
+      totpCode: "123456",
+    });
+  });
 });

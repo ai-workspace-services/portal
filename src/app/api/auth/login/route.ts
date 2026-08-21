@@ -22,6 +22,7 @@ type LoginPayload = {
   password?: string;
   remember?: boolean;
   totp?: string;
+  totpCode?: string;
   code?: string;
   token?: string;
 };
@@ -60,7 +61,9 @@ export async function POST(request: NextRequest) {
   const identifier = normalizeIdentifier(payload?.identifier ?? payload?.email);
   const password =
     typeof payload?.password === "string" ? payload.password : "";
-  const totpCode = normalizeCode(payload?.totp ?? payload?.code);
+  const totpCode = normalizeCode(
+    payload?.totpCode ?? payload?.totp ?? payload?.code,
+  );
   const remember = Boolean(payload?.remember);
 
   if (!identifier || !password) {
