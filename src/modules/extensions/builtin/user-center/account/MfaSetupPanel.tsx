@@ -9,6 +9,10 @@ import Card from '../components/Card'
 import { useLanguage } from '@i18n/LanguageProvider'
 import { translations } from '@i18n/translations'
 import { useUserStore } from '@lib/userStore'
+import {
+  normalizeMfaProvisionResponse,
+  resolveMfaOtpAuthUri,
+} from './mfaProvisioning'
 
 type TotpStatus = {
   totpEnabled?: boolean
@@ -16,15 +20,6 @@ type TotpStatus = {
   totpSecretIssuedAt?: string
   totpConfirmedAt?: string
   totpLockedUntil?: string
-}
-
-type ProvisionResponse = {
-  secret?: string
-  otpauth_url?: string
-  issuer?: string
-  account?: string
-  mfa?: TotpStatus
-  user?: { mfa?: TotpStatus }
 }
 
 type VerifyResponse = {
@@ -42,48 +37,6 @@ type VerifyResponse = {
 }
 
 const DEFAULT_TOTP_ISSUER = 'svc.plus'
-
-function applyTotpUriOverrides(originalUri: string, issuer: string, accountName: string) {
-  const trimmedUri = originalUri.trim()
-  if (!trimmedUri) {
-    return ''
-  }
-
-  const normalizedIssuer = issuer.trim()
-  const normalizedAccount = accountName.trim()
-
-  if (!normalizedIssuer && !normalizedAccount) {
-    return trimmedUri
-  }
-
-  try {
-    const uri = new URL(trimmedUri)
-    if (uri.protocol !== 'otpauth:') {
-      return trimmedUri
-    }
-
-    if (normalizedIssuer) {
-      uri.searchParams.set('issuer', normalizedIssuer)
-    }
-
-    const labelParts: string[] = []
-    if (normalizedIssuer) {
-      labelParts.push(encodeURIComponent(normalizedIssuer))
-    }
-    if (normalizedAccount) {
-      labelParts.push(encodeURIComponent(normalizedAccount))
-    }
-
-    if (labelParts.length > 0) {
-      uri.pathname = `/${labelParts.join(':')}`
-    }
-
-    return uri.toString()
-  } catch (error) {
-    console.warn('Failed to normalize otpauth URI', error)
-    return trimmedUri
-  }
-}
 
 function formatTimestamp(value?: string) {
   if (!value) {
@@ -243,14 +196,14 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       const payload = (await response.json().catch(() => ({}))) as {
         success?: boolean
         error?: string | null
-        data?: ProvisionResponse
+        data?: unknown
       }
-      if (!payload?.success || !payload?.data) {
+      const data = normalizeMfaProvisionResponse(payload?.data)
+      if (!payload?.success || !data) {
         setError(resolveErrorMessage(payload?.error))
         return
       }
 
-      const data = payload.data
       const nextSecret = typeof data?.secret === 'string' ? data.secret.trim() : ''
       const nextUri = typeof data?.otpauth_url === 'string' ? data.otpauth_url.trim() : ''
       const nextAccount = typeof data?.account === 'string' ? data.account.trim() : ''
@@ -272,7 +225,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       })()
 
       const resolvedIssuer = DEFAULT_TOTP_ISSUER
-      const updatedUri = applyTotpUriOverrides(nextUri, resolvedIssuer, resolvedAccountLabel)
+      const updatedUri = resolveMfaOtpAuthUri(nextUri, nextSecret, resolvedIssuer, resolvedAccountLabel)
 
       setSecret(nextSecret)
       setUri(updatedUri)
