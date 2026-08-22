@@ -68,16 +68,16 @@ function useXconnectCards(
         name: isChinese ? "Free 体验版" : "Free",
         price: isChinese ? "¥0" : "$0",
         description: isChinese
-          ? "登录即可体验：高速流量每周 1 小时，用完自动降级为标准 VPS 流量，不断线。"
-          : "Sign in and try it: 1 hour of accelerated traffic per week, then a seamless fallback to standard VPS traffic.",
+          ? "登录即可体验：每月 5 GB 高速流量，用完自动降级为标准 VPS 流量，不断线。"
+          : "Sign in and try it: 5 GB of accelerated traffic per month, then a seamless fallback to standard VPS traffic.",
         features: isChinese
           ? [
-              "每周 1 小时高速流量，用完降级 VPS",
+              "每月 5 GB 高速流量，用完降级 VPS",
               "Demo 资源卡片：每天 1 次、每次 1 小时",
               "不承诺 SLA，不提供多端会话持久化",
             ]
           : [
-              "1 hour of accelerated traffic per week, then VPS fallback",
+              "5 GB of accelerated traffic per month, then VPS fallback",
               "Demo resource card: 1 run/day, 1 hour/run",
               "No SLA, no persisted multi-device sessions",
             ],
