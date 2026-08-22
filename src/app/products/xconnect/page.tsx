@@ -43,10 +43,40 @@ import {
   XdsSectionHead,
 } from "@/components/ui/xds";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import {
+  formatPlanPrice,
+  PLAN_COPY,
+  useBillingCatalog,
+} from "@modules/billing/catalog";
 import ProductShotFrame from "@/components/products/ProductShotFrame";
 import xconnectContent from "@/data/content/xconnect.json";
 
 type Lang = "zh" | "en";
+
+/**
+ * A pricing card on the product page.
+ *
+ * A card that sells a catalog plan carries `planId` and nothing else about
+ * money: the amount comes from the live catalog and the feature bullets from
+ * PLAN_COPY, so this page and /prices cannot quote different numbers for the
+ * same plan. Cards with no catalog row behind them -- the free tier and the
+ * custom tier -- supply their own `amt` and `feats`.
+ */
+type ProductPlan = {
+  name: string;
+  tag: string;
+  tone: "neutral" | "info";
+  sub: string;
+  per: string;
+  cta: string;
+  href: string;
+  primary: boolean;
+  amt?: string;
+  feats?: string[];
+  planId?: keyof typeof PLAN_COPY;
+  /** Rendered as a secondary line under the headline price. */
+  yearlyPlanId?: keyof typeof PLAN_COPY;
+};
 
 const COPY = {
   zh: {
@@ -155,33 +185,37 @@ const COPY = {
         sub: "评估与个人试用",
         amt: "¥0",
         per: " /月",
-        feats: ["10 GB 月度配额", "3 个区域节点", "社区支持"],
+        feats: ["每月 5 GB 高速流量", "用完自动降级 VPS 流量，不断线", "不承诺 SLA，社区支持"],
         cta: "继续使用",
+        href: "/register",
         primary: false,
       },
       {
+        // Amount and feature copy come from the live catalog; see planId.
         name: "Pro",
         tag: "推荐",
         tone: "info" as const,
         sub: "个人开发者与小团队",
-        amt: "¥69",
+        planId: "PRO-MONTHLY",
+        yearlyPlanId: "PRO-YEARLY",
         per: " /月",
-        feats: ["500 GB 月度配额", "全部 32 个节点", "私有环境穿透", "超额按 ¥0.12/GB 计费"],
         cta: "升级到 Pro",
+        href: "/prices",
         primary: true,
       },
       {
         name: "Team",
-        tag: "5 席起",
+        tag: "定制服务",
         tone: "neutral" as const,
         sub: "需要策略组与对账的团队",
-        amt: "¥199",
-        per: " /月",
-        feats: ["2 TB 共享配额", "策略组与成员配额", "用量导出与发票抬头", "SLA 99.95%"],
+        amt: "定制",
+        per: "",
+        feats: ["策略组与成员配额", "用量导出与发票抬头", "合同级 SLA 与专属交付"],
         cta: "联系我们",
+        href: "/support",
         primary: false,
       },
-    ],
+    ] as ProductPlan[],
     faqEyebrow: "FAQ",
     faqTitle: "常见问题",
     faqs: [
@@ -271,10 +305,10 @@ const COPY = {
     priceLead:
       "Every plan maps to the same price configuration; purchases sync to your subscription record and are managed in the customer portal.",
     plans: [
-      { name: "Free", tag: "Current", tone: "neutral" as const, sub: "Evaluation and personal use", amt: "¥0", per: " /mo", feats: ["10 GB monthly quota", "3 regional nodes", "Community support"], cta: "Stay on Free", primary: false },
-      { name: "Pro", tag: "Recommended", tone: "info" as const, sub: "Individual devs and small teams", amt: "¥69", per: " /mo", feats: ["500 GB monthly quota", "All 32 nodes", "Private tunnelling", "Overage at ¥0.12/GB"], cta: "Upgrade to Pro", primary: true },
-      { name: "Team", tag: "From 5 seats", tone: "neutral" as const, sub: "Teams needing policy groups and reconciliation", amt: "¥199", per: " /mo", feats: ["2 TB shared quota", "Policy groups and per-member quota", "Usage export and invoice details", "99.95% SLA"], cta: "Talk to us", primary: false },
-    ],
+      { name: "Free", tag: "Current", tone: "neutral" as const, sub: "Evaluation and personal use", amt: "¥0", per: " /mo", feats: ["5 GB of accelerated traffic per month", "Seamless fallback to VPS traffic once spent", "No SLA, community support"], cta: "Stay on Free", href: "/register", primary: false },
+      { name: "Pro", tag: "Recommended", tone: "info" as const, sub: "Individual devs and small teams", planId: "PRO-MONTHLY", yearlyPlanId: "PRO-YEARLY", per: " /mo", cta: "Upgrade to Pro", href: "/prices", primary: true },
+      { name: "Team", tag: "Custom", tone: "neutral" as const, sub: "Teams needing policy groups and reconciliation", amt: "Custom", per: "", feats: ["Policy groups and per-member quota", "Usage export and invoice details", "Contractual SLA and dedicated delivery"], cta: "Talk to us", href: "/support", primary: false },
+    ] as ProductPlan[],
     faqEyebrow: "FAQ",
     faqTitle: "Frequently asked",
     faqs: [
@@ -296,6 +330,7 @@ export default function XConnectPage() {
   const { language } = useLanguage();
   const lang: Lang = language === "en" ? "en" : "zh";
   const t = COPY[lang];
+  const catalog = useBillingCatalog();
   const localized = xconnectContent as unknown as Record<
     string,
     | {
@@ -625,42 +660,69 @@ export default function XConnectPage() {
               lead={t.priceLead}
             />
             <div className="xds-price-grid">
-              {t.plans.map((plan) => (
-                <article
-                  key={plan.name}
-                  className={`xds-card xds-price-card${plan.primary ? " xds-is-featured" : ""}`}
-                >
-                  <div className="xds-row-between">
-                    <h4>{plan.name}</h4>
-                    <XdsBadge tone={plan.tone} dot={false}>
-                      {plan.tag}
-                    </XdsBadge>
-                  </div>
-                  <p className="xds-t-caption" style={{ marginTop: 6 }}>
-                    {plan.sub}
-                  </p>
-                  <div className="xds-price-amt" style={{ marginTop: 20 }}>
-                    {plan.amt}
-                    <span className="xds-per">{plan.per}</span>
-                  </div>
-                  <ul className="xds-price-feats">
-                    {plan.feats.map((f) => (
-                      <li key={f}>
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <XdsLinkButton
-                    href="/prices"
-                    variant={plan.primary ? "primary" : "secondary"}
-                    block
-                    style={{ marginTop: 24 }}
+              {t.plans.map((plan) => {
+                const priced = plan.planId
+                  ? formatPlanPrice(catalog.get(plan.planId), lang)
+                  : null;
+                const yearly = plan.yearlyPlanId
+                  ? formatPlanPrice(catalog.get(plan.yearlyPlanId), lang)
+                  : null;
+                // A catalog-backed card with no published price is not for
+                // sale yet; borrowing a number from the copy is how this page
+                // came to quote three times what Stripe charges.
+                const amount =
+                  priced?.amount ??
+                  plan.amt ??
+                  (lang === "zh" ? "即将上线" : "Coming soon");
+                const period = priced ? priced.period : plan.per;
+                const feats = plan.planId
+                  ? PLAN_COPY[plan.planId][lang].features
+                  : (plan.feats ?? []);
+
+                return (
+                  <article
+                    key={plan.name}
+                    className={`xds-card xds-price-card${plan.primary ? " xds-is-featured" : ""}`}
                   >
-                    {plan.cta}
-                  </XdsLinkButton>
-                </article>
-              ))}
+                    <div className="xds-row-between">
+                      <h4>{plan.name}</h4>
+                      <XdsBadge tone={plan.tone} dot={false}>
+                        {plan.tag}
+                      </XdsBadge>
+                    </div>
+                    <p className="xds-t-caption" style={{ marginTop: 6 }}>
+                      {plan.sub}
+                    </p>
+                    <div className="xds-price-amt" style={{ marginTop: 20 }}>
+                      {amount}
+                      <span className="xds-per">{period}</span>
+                    </div>
+                    {yearly ? (
+                      <p className="xds-t-caption" style={{ marginTop: 6 }}>
+                        {lang === "zh"
+                          ? `年付 ${yearly.amount}${yearly.period}`
+                          : `or ${yearly.amount}${yearly.period}`}
+                      </p>
+                    ) : null}
+                    <ul className="xds-price-feats">
+                      {feats.map((f) => (
+                        <li key={f}>
+                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <XdsLinkButton
+                      href={plan.href}
+                      variant={plan.primary ? "primary" : "secondary"}
+                      block
+                      style={{ marginTop: 24 }}
+                    >
+                      {plan.cta}
+                    </XdsLinkButton>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
