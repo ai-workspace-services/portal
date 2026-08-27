@@ -1,3 +1,42 @@
+# AI Workspace Web parity design QA
+
+Date: 2026-08-28
+
+Result: **BLOCKED for authenticated end-to-end sign-off; visual and responsive QA passed.**
+
+## Reference and implementation captures
+
+- Desktop reference: `/Users/shenlan/workspaces/ai-workspace-lab/xworkmate-app/images/Desktop-APP.png`
+- Mobile reference: `/Users/shenlan/workspaces/ai-workspace-lab/xworkmate-app/images/mobile-app.PNG`
+- Desktop implementation: `/tmp/xworkmate-portal-design-qa-20260828/design-qa-desktop-conversation.png`
+- Mobile implementation: `/tmp/xworkmate-portal-design-qa-20260828/design-qa-mobile.png`
+- Desktop side-by-side: `/tmp/xworkmate-portal-design-qa-20260828/design-qa-compare-desktop.png`
+- Mobile side-by-side: `/tmp/xworkmate-portal-design-qa-20260828/design-qa-compare-mobile.png`
+
+## Passed
+
+- Desktop shell preserves the App hierarchy: task navigation, conversation header, central message surface, context controls, and bottom composer.
+- Mobile shell provides a task drawer, safe header spacing, conversation/task/history bottom navigation, touch-sized controls, and no document-level horizontal overflow at 390 × 844.
+- Workbench and conversation screens expose loading, empty, authentication error, and retry states without creating local fallback sessions.
+- Session UI is projected from the Bridge snapshot and ordered events; Portal does not persist session truth or artifact payloads.
+- Semantic tablist, navigation, alert, search, and button labels are present in the rendered DOM.
+
+## Blocking external checks
+
+- The local browser had no authenticated Portal account, so real cross-terminal history, message append, and task-state replay could not be exercised against a live Bridge principal.
+- Accounts introspection must return a stable `accountId` before the new Bridge session REST endpoints will authorize requests. The endpoints intentionally fail closed without it.
+- The production build compiles the changed Portal source successfully, then stops on the pre-existing `src/app/cloud_iac/[provider]/[service]/page.tsx` `PageProps.params` type mismatch.
+
+## Release acceptance
+
+Repeat the desktop and 390 × 844 checks with an authenticated UAT account after Accounts and Bridge are deployed. Confirm that a message submitted on one terminal appears on another through increasing event sequence numbers, and that no artifact binary, path, URL, attachment, or full tool output is written to PostgreSQL.
+
+---
+
+## Previous design QA records
+
+The following records are preserved from earlier repository work.
+
 # XWorkmate `/ai-workspace` Design QA
 
 - Source visual truth: `docs/design/ai-workspace/data-overview.png`, `docs/design/ai-workspace/model-analysis.png`
