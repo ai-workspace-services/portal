@@ -277,13 +277,18 @@ export function AiWorkspaceOverview(): ReactNode {
   const [sessions, setSessions] = useState<ServerSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastSyncedAt, setLastSyncedAt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         const result = await loadServerSessions();
-        if (!cancelled) setSessions(result);
+        if (!cancelled) {
+          setSessions(result);
+          setLastSyncedAt(Date.now());
+          setError("");
+        }
       } catch (reason) {
         if (!cancelled) {
           setError(
@@ -295,8 +300,10 @@ export function AiWorkspaceOverview(): ReactNode {
       }
     }
     void load();
+    const timer = window.setInterval(() => void load(), 12_000);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -307,7 +314,7 @@ export function AiWorkspaceOverview(): ReactNode {
 
   return (
     <main className="flex h-full min-h-0 flex-col bg-[#fbfcfe] text-[#17181c]">
-      <header className="flex min-h-[72px] shrink-0 items-stretch border-b border-[#e4e8ef] px-5 lg:px-8">
+      <header className="flex min-h-[72px] shrink-0 items-stretch border-b border-[#e4e8ef] pl-14 pr-3 md:px-5 lg:px-8">
         <div
           role="tablist"
           aria-label="工作台视图"
@@ -333,6 +340,27 @@ export function AiWorkspaceOverview(): ReactNode {
           ))}
         </div>
         <div className="ml-3 flex shrink-0 items-center gap-3">
+          <div className="hidden text-right text-xs text-[#697386] xl:block">
+            <div
+              className={cn(
+                "font-semibold",
+                error ? "text-[#b42318]" : "text-[#1260cc]",
+              )}
+            >
+              {error
+                ? lastSyncedAt
+                  ? "云端历史记忆同步中断"
+                  : "云端历史记忆连接失败"
+                : lastSyncedAt
+                  ? "云端历史记忆已同步"
+                  : "正在连接云端历史记忆"}
+            </div>
+            <div>
+              {lastSyncedAt
+                ? `最近同步 ${formatDate(lastSyncedAt)}`
+                : error || "正在连接会话服务…"}
+            </div>
+          </div>
           <div className="flex rounded-xl bg-[#f3f5f8] p-1">
             {(
               [
