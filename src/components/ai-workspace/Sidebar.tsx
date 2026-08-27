@@ -1,134 +1,226 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Plus, Settings, Languages, Sun, ChevronsLeft, Search, MessageSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { taskStore, type TaskItem } from '@/lib/xworkmate/taskStore';
+import {
+  ChevronsLeft,
+  Languages,
+  LayoutDashboard,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  Sun,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import {
+  listTaskNamespaces,
+  listTaskSessions,
+  type TaskSessionSnapshot,
+} from "@/lib/ai-workspace/sessionApi";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   onHide?: () => void;
+  mobile?: boolean;
 }
 
-export default function Sidebar({ onHide }: SidebarProps) {
-  const pathname = usePathname();
-  const [isTrialEntry, setIsTrialEntry] = useState(false);
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+function updatedAt(session: TaskSessionSnapshot): number {
+  const value = Date.parse(session.updatedAt ?? session.createdAt ?? "");
+  return Number.isFinite(value) ? value : 0;
+}
 
-  useEffect(() => {
-    setIsTrialEntry(new URLSearchParams(window.location.search).get('entry') === 'trial');
-    setTasks(taskStore.getTasks());
-    const unsubscribe = taskStore.subscribe(() => {
-      setTasks([...taskStore.getTasks()]);
-    });
-    return unsubscribe;
+function statusLabel(session: TaskSessionSnapshot): string {
+  const state = String(
+    session.taskRun?.state ?? session.lifecycleState ?? "",
+  ).toLowerCase();
+  if (["queued", "running", "active", "processing"].includes(state))
+    return "运行中";
+  if (["completed", "succeeded", "done"].includes(state)) return "已完成";
+  if (["failed", "cancelled", "canceled"].includes(state)) return "失败";
+  return "等待中";
+}
+
+export default function Sidebar({ onHide, mobile = false }: SidebarProps) {
+  const pathname = usePathname();
+  const [sessions, setSessions] = useState<TaskSessionSnapshot[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const namespaces = await listTaskNamespaces();
+      const lists = await Promise.all(
+        namespaces.map(({ namespaceId }) => listTaskSessions(namespaceId)),
+      );
+      setSessions(
+        lists.flat().sort((left, right) => updatedAt(right) - updatedAt(left)),
+      );
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "历史会话暂时不可用");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const filteredTasks = (isTrialEntry ? [] : tasks).filter(t =>
-    t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.preview.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    void load();
+  }, [load, pathname]);
+
+  const filteredSessions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return query
+      ? sessions.filter((session) =>
+          `${session.title ?? ""} ${session.sessionId}`
+            .toLowerCase()
+            .includes(query),
+        )
+      : sessions;
+  }, [searchQuery, sessions]);
 
   return (
-    <aside className="w-64 shrink-0 bg-[#f7f7f8] flex flex-col h-full border-r border-gray-200/80 transition-all duration-300 ease-in-out">
-      {/* Top Search & Collapse */}
-      <div className="p-3 pb-2 flex items-center gap-2">
+    <aside
+      aria-label="任务导航"
+      className={cn(
+        "flex h-full w-[292px] shrink-0 flex-col border-r border-[#e4e8ef] bg-[#fbfcfe]",
+        mobile && "w-[min(88vw,340px)] shadow-2xl",
+      )}
+    >
+      <div className="flex items-center gap-2 p-4 pb-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input 
-            type="text" 
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#7b8494]" />
+          <input
+            type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索任务"
-            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-500 shadow-sm"
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="搜索任务 / 会话"
+            className="h-11 w-full rounded-xl border border-[#dfe4eb] bg-white pl-10 pr-3 text-sm outline-none transition focus:border-[#1260cc] focus:ring-2 focus:ring-blue-100"
           />
         </div>
-        {onHide && (
-          <button 
-            onClick={onHide} 
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors flex-shrink-0"
-            title="收起边栏"
-          >
-            <ChevronsLeft className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-
-      {/* Main Action Buttons */}
-      <div className="px-3 space-y-2 mt-1">
-        <Link
-          href="/ai-workspace" 
-          className="flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
+        <button
+          type="button"
+          onClick={onHide}
+          className="grid size-10 place-items-center rounded-xl text-[#697386] hover:bg-[#edf1f6]"
+          aria-label={mobile ? "关闭任务导航" : "收起任务导航"}
         >
-          <LayoutDashboard className="w-4 h-4" />
-          <span>工作台</span>
-        </Link>
-        <Link 
-          href="/ai-workspace/conversation/new" 
-          className={cn(
-            "flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm text-sm"
+          {mobile ? (
+            <X className="size-5" />
+          ) : (
+            <ChevronsLeft className="size-5" />
           )}
+        </button>
+      </div>
+      <div className="px-4">
+        <Link
+          href="/ai-workspace/conversation/new"
+          onClick={mobile ? onHide : undefined}
+          className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#075ecc] text-sm font-bold text-white shadow-sm transition hover:bg-[#0452b6]"
         >
-          <Plus className="w-4 h-4" />
-          <span>新对话</span>
+          <Plus className="size-4" /> 新对话
         </Link>
       </div>
-
-      {/* Task List Header & Items */}
-      <div className="flex-1 overflow-y-auto px-3 mt-4">
-        <div className="px-2 pb-2 text-xs font-bold text-gray-700 flex items-center gap-1.5">
-          <span className="text-gray-400">≡</span> 任务列表
+      <div className="mt-5 flex min-h-0 flex-1 flex-col">
+        <div className="flex items-center px-5 pb-2">
+          <span className="text-sm font-bold">任务列表</span>
+          <span className="ml-2 text-xs text-[#7b8494]">{sessions.length}</span>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="ml-auto rounded-lg p-1.5 text-[#7b8494] hover:bg-[#edf1f6]"
+            aria-label="刷新历史会话"
+          >
+            <RefreshCw className={cn("size-4", loading && "animate-spin")} />
+          </button>
         </div>
-        
-        <div className="space-y-1">
-          {filteredTasks.length > 0 ? (
-            filteredTasks.map(task => (
-              <Link 
-                key={task.sessionKey}
-                href={`/ai-workspace/conversation/${task.sessionKey}`}
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+          <Link
+            href="/ai-workspace"
+            onClick={mobile ? onHide : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold",
+              pathname === "/ai-workspace"
+                ? "bg-[#eaf2fd] text-[#075ecc]"
+                : "text-[#566174] hover:bg-[#f0f3f7]",
+            )}
+          >
+            <LayoutDashboard className="size-5" /> 工作台
+          </Link>
+          {filteredSessions.map((session) => {
+            const href = `/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`;
+            return (
+              <Link
+                key={`${session.namespaceId}-${session.sessionId}`}
+                href={href}
+                onClick={mobile ? onHide : undefined}
                 className={cn(
-                  "flex items-start gap-2.5 w-full p-2.5 rounded-xl transition-colors text-xs",
-                  pathname === `/ai-workspace/conversation/${task.sessionKey}` ? "bg-white shadow-sm text-gray-900 font-semibold border border-gray-100" : "text-gray-600 hover:bg-gray-200/50"
+                  "flex items-start gap-3 rounded-xl px-3 py-3 text-sm transition",
+                  pathname === href
+                    ? "border border-[#dce6f4] bg-white text-[#17181c] shadow-sm"
+                    : "text-[#566174] hover:bg-[#f0f3f7]",
                 )}
               >
-                <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-gray-900 truncate">{task.title}</div>
-                  <div className="text-[11px] text-gray-400 truncate mt-0.5">{task.preview}</div>
-                </div>
+                <MessageSquare className="mt-0.5 size-4 shrink-0 text-[#248b51]" />
+                <span className="min-w-0 flex-1">
+                  <strong className="block truncate font-semibold">
+                    {session.title?.trim() || "未命名会话"}
+                  </strong>
+                  <span className="mt-1 block truncate text-xs text-[#8a93a2]">
+                    {statusLabel(session)} · {session.lastEventSeq ?? 0} events
+                  </span>
+                </span>
               </Link>
-            ))
-          ) : (
-            <div className="px-2 py-6 text-center text-xs leading-5 text-gray-400">
-              {isTrialEntry ? '访客模式不保存任务' : '暂无关联任务'}
-            </div>
-          )}
-        </div>
+            );
+          })}
+          {loading && !sessions.length ? (
+            <p className="px-3 py-7 text-center text-xs text-[#8a93a2]">
+              正在同步历史会话…
+            </p>
+          ) : null}
+          {error ? (
+            <button
+              type="button"
+              onClick={() => void load()}
+              className="w-full px-3 py-6 text-center text-xs leading-5 text-[#a54841]"
+            >
+              {error}
+              <br />
+              点击重试
+            </button>
+          ) : null}
+          {!loading && !error && !filteredSessions.length ? (
+            <p className="px-3 py-7 text-center text-xs text-[#8a93a2]">
+              暂无服务端会话
+            </p>
+          ) : null}
+        </nav>
       </div>
-
-      {/* Bottom Actions */}
-      <div className="p-3 border-t border-gray-200/60 space-y-1">
-        <button className="flex items-center justify-between w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-xs">
-          <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            <span>设置</span>
-          </div>
+      <div className="space-y-1 border-t border-[#e4e8ef] p-3">
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-[#566174] hover:bg-[#edf1f6]"
+        >
+          <Settings className="size-4" />
+          设置
         </button>
-        <button className="flex items-center justify-between w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-xs">
-          <div className="flex items-center gap-2">
-            <Languages className="w-4 h-4" />
-            <span>语言</span>
-          </div>
-          <span className="text-[11px] px-2 py-0.5 bg-gray-200/60 text-gray-600 rounded-md font-medium">中</span>
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-[#566174] hover:bg-[#edf1f6]"
+        >
+          <Languages className="size-4" />
+          语言 · 中
         </button>
-        <button className="flex items-center justify-between w-full p-2 text-gray-600 hover:bg-gray-200/50 rounded-lg transition-colors text-xs">
-          <div className="flex items-center gap-2">
-            <Sun className="w-4 h-4" />
-            <span>主题</span>
-          </div>
-          <span className="text-[11px] px-2 py-0.5 bg-gray-200/60 text-gray-600 rounded-md font-medium">跟随</span>
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-[#566174] hover:bg-[#edf1f6]"
+        >
+          <Sun className="size-4" />
+          主题 · 跟随
         </button>
       </div>
     </aside>
