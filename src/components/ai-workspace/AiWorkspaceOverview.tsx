@@ -13,6 +13,10 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import {
+  listTaskNamespaces,
+  listTaskSessions,
+} from "@/lib/ai-workspace/sessionApi";
 import { cn } from "@/lib/utils";
 
 type WorkbenchTab = "overview" | "models" | "todo" | "projects" | "inbox";
@@ -192,61 +196,17 @@ function normalizeSession(
   };
 }
 
-function extractArray(payload: unknown, keys: string[]): unknown[] {
-  if (Array.isArray(payload)) return payload;
-  const record = recordValue(payload);
-  for (const key of keys) {
-    if (Array.isArray(record[key])) return record[key] as unknown[];
-  }
-  return [];
-}
-
-async function fetchJson(url: string): Promise<unknown> {
-  const response = await fetch(url, {
-    credentials: "include",
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
-  const payload = (await response.json()) as unknown;
-  if (!response.ok) {
-    throw new Error(
-      stringValue(
-        recordValue(recordValue(payload).error).message,
-        recordValue(payload).message,
-      ) || `请求失败：${response.status}`,
-    );
-  }
-  return payload;
-}
-
 async function loadServerSessions(): Promise<ServerSession[]> {
-  const namespacePayload = await fetchJson(
-    "/api/ai-workspace/sessions/namespaces",
-  );
-  const namespaces = extractArray(namespacePayload, [
-    "namespaces",
-    "items",
-    "data",
-  ]);
-  const ids = namespaces
-    .map((item) => {
-      const record = recordValue(item);
-      return stringValue(record.namespaceId, record.id, record.key, item);
-    })
-    .filter(Boolean);
+  const namespaces = await listTaskNamespaces();
   const sessionPayloads = await Promise.all(
-    ids.map(async (namespaceId) => ({
+    namespaces.map(async ({ namespaceId }) => ({
       namespaceId,
-      payload: await fetchJson(
-        `/api/ai-workspace/sessions/namespaces/${encodeURIComponent(namespaceId)}/sessions`,
-      ),
+      sessions: await listTaskSessions(namespaceId),
     })),
   );
   return sessionPayloads
-    .flatMap(({ namespaceId, payload }) =>
-      extractArray(payload, ["sessions", "items", "data"]).map((session) =>
-        normalizeSession(session, namespaceId),
-      ),
+    .flatMap(({ namespaceId, sessions }) =>
+      sessions.map((session) => normalizeSession(session, namespaceId)),
     )
     .filter((session): session is ServerSession => session !== null)
     .sort((left, right) => right.updatedAt - left.updatedAt);
