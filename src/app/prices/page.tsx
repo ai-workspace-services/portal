@@ -65,11 +65,11 @@ function useXconnectCards(
     const cards: PricingCard[] = [
       {
         key: "xconnect-free",
-        name: isChinese ? "Free 体验版" : "Free",
+        name: isChinese ? "Free" : "Free",
         price: isChinese ? "¥0" : "$0",
         description: isChinese
-          ? "登录即可体验：每月 5 GB 高速流量，用完自动降级为标准 VPS 流量，不断线。"
-          : "Sign in and try it: 5 GB of accelerated traffic per month, then a seamless fallback to standard VPS traffic.",
+          ? "登录即可使用：每月 5 GB 高速流量，用完自动降级为标准 VPS 流量，不断线。"
+          : "Sign in to use it: 5 GB of accelerated traffic per month, then a seamless fallback to standard VPS traffic.",
         features: isChinese
           ? [
               "每月 5 GB 高速流量，用完降级 VPS",
