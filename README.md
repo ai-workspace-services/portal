@@ -96,18 +96,11 @@ NEXT_PUBLIC_HOME_HERO_ASSET_VERSION=2026-07-11.1
 
 ## Stripe 配置 (Stripe Billing Setup)
 
-`/prices`、产品页和账户中心的购买入口现在统一读取前端公开的 Stripe `price_id`：
+`/prices`、产品页和账户中心统一从 Accounts 的套餐目录读取可售计划和公开
+`price_...` 标识。Portal 只将用户选中的计划提交给 Accounts；Stripe Secret Key 和
+Webhook Secret 都不进入 Portal 构建或运行时环境。
 
-| 变量                                               | 用途                |
-| -------------------------------------------------- | ------------------- |
-| `NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_PAYGO`           | Xstream 按量购买    |
-| `NEXT_PUBLIC_STRIPE_PRICE_XSTREAM_SUBSCRIPTION`    | Xstream 订阅        |
-| `NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_PAYGO`         | XScopeHub 按量购买  |
-| `NEXT_PUBLIC_STRIPE_PRICE_XSCOPEHUB_SUBSCRIPTION`  | XScopeHub 订阅      |
-| `NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_PAYGO`        | XCloudFlow 按量购买 |
-| `NEXT_PUBLIC_STRIPE_PRICE_XCLOUDFLOW_SUBSCRIPTION` | XCloudFlow 订阅     |
-
-这些值应填写为 Stripe Dashboard 中对应套餐的 `price_...` 标识。联调步骤见 `docs/integrations/stripe-billing.md`。
+联调步骤见 `docs/integrations/stripe-billing.md`。
 
 ## 核心特性 & 技术栈 (Features & Tech Stack)
 
