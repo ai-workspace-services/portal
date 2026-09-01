@@ -173,6 +173,14 @@ export default function UserCenterAccountRoute() {
           <OnboardingProgress
             zh={zh}
             onSetupMfa={handleSetupMfa}
+            connectionContent={
+              <VlessConnectionCard
+                proxyUuid={proxyUuid}
+                nodes={nodeList}
+                zh={zh}
+                embedded
+              />
+            }
             state={{
               emailVerified: Boolean(user?.email),
               mfaEnabled: Boolean(user?.mfaEnabled),
@@ -222,9 +230,7 @@ export default function UserCenterAccountRoute() {
         />
 
         {/* ── 连接凭据 ── */}
-        <section className="xds-uc-hero">
-          <VlessConnectionCard proxyUuid={proxyUuid} nodes={nodeList} zh={zh} />
-
+        <section className="xds-grid" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
           <XdsCard className="xds-uuid-card">
             <XdsCardHead
               title={zh ? "代理 UUID" : "Proxy UUID"}

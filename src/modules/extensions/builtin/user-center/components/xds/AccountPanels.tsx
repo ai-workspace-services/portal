@@ -41,12 +41,9 @@ import {
   XdsEmpty,
   XdsMeter,
   XdsTag,
-  XdsValueBox,
 } from "@/components/ui/xds";
 import {
-  buildVlessConfig,
   buildVlessUri,
-  serializeConfigForDownload,
   type VlessNode,
 } from "../../lib/vless";
 import { fetchAgentNodes } from "../../lib/fetchAgentNodes";
@@ -94,10 +91,12 @@ export function OnboardingProgress({
   state,
   zh,
   onSetupMfa,
+  connectionContent,
 }: {
   state: OnboardingState;
   zh: boolean;
   onSetupMfa: () => void;
+  connectionContent?: ReactNode;
 }) {
   const step1Done = state.emailVerified && state.mfaEnabled && !state.mfaPending;
   const step2Done = state.credentialsReady;
@@ -229,6 +228,10 @@ export function OnboardingProgress({
               ))}
             </div>
 
+            {i === 1 && connectionContent ? (
+              <div className="xds-s3-connection">{connectionContent}</div>
+            ) : null}
+
             <div className="xds-s3-act">
               {i === 0 ? (
                 <XdsButton
@@ -242,7 +245,7 @@ export function OnboardingProgress({
                     : zh ? "去绑定 MFA" : "Bind MFA"}
                 </XdsButton>
               ) : null}
-              {i === 1 ? (
+              {i === 1 && !connectionContent ? (
                 <a
                   href="#xds-vless"
                   className={`xds-btn xds-btn-sm ${i === activeIndex ? "xds-btn-primary" : "xds-btn-secondary"}`}
@@ -292,11 +295,13 @@ export function VlessConnectionCard({
   proxyUuid,
   nodes,
   zh,
+  embedded = false,
 }: {
   /** 代理 UUID —— VLESS 访问凭据，与账户身份 uuid 是两个字段（见 #220） */
   proxyUuid: string | null;
   nodes: VlessNode[];
   zh: boolean;
+  embedded?: boolean;
 }) {
   const node = nodes[0];
   const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
@@ -336,18 +341,67 @@ export function VlessConnectionCard({
   }, [uri]);
 
   const handleDownload = useCallback(() => {
-    const config = buildVlessConfig(proxyUuid, node);
-    if (!config) return;
-    const blob = new Blob([serializeConfigForDownload(config)], {
-      type: "application/json",
+    if (!uri) return;
+    const blob = new Blob([uri], {
+      type: "text/plain;charset=utf-8",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "xconnect-config.json";
+    a.download = "xconnect-subscription.txt";
     a.click();
     URL.revokeObjectURL(url);
-  }, [proxyUuid, node]);
+  }, [uri]);
+
+  const cardBody = (
+    <XdsCardBody className="xds-vless-body">
+      <div className="xds-qr">
+        {qr ? (
+          <Image
+            src={qr}
+            alt={zh ? "VLESS 订阅二维码" : "VLESS subscription QR code"}
+            width={102}
+            height={102}
+            unoptimized
+            style={{ width: "100%", height: "auto" }}
+          />
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              placeItems: "center",
+              height: "100%",
+              fontSize: "var(--fs-micro)",
+              color: "var(--text-tertiary)",
+            }}
+          >
+            {DASH}
+          </div>
+        )}
+      </div>
+
+      <div style={{ minWidth: 0 }}>
+        <div className="xds-row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <XdsButton variant="primary" size="sm" onClick={handleCopy} disabled={!uri}>
+            {copied ? (
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            {copied
+              ? zh ? "已复制" : "Copied"
+              : zh ? "复制订阅链接" : "Copy subscription link"}
+          </XdsButton>
+          <XdsButton size="sm" onClick={handleDownload} disabled={!uri}>
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />
+            {zh ? "下载订阅链接" : "Download subscription"}
+          </XdsButton>
+        </div>
+      </div>
+    </XdsCardBody>
+  );
+
+  if (embedded) return <div className="xds-vless-embedded">{cardBody}</div>;
 
   return (
     <XdsCard id="xds-vless">
@@ -366,56 +420,7 @@ export function VlessConnectionCard({
           )
         }
       />
-      <XdsCardBody className="xds-vless-body">
-        <div className="xds-qr">
-          {qr ? (
-            <Image
-              src={qr}
-              alt={zh ? "VLESS 订阅二维码" : "VLESS subscription QR code"}
-              width={102}
-              height={102}
-              unoptimized
-              style={{ width: "100%", height: "auto" }}
-            />
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                placeItems: "center",
-                height: "100%",
-                fontSize: "var(--fs-micro)",
-                color: "var(--text-tertiary)",
-              }}
-            >
-              {DASH}
-            </div>
-          )}
-        </div>
-
-        <div style={{ minWidth: 0 }}>
-          <div className="xds-t-eyebrow">Subscription URL</div>
-          <XdsValueBox className="xds-mt-7">{uri ?? DASH}</XdsValueBox>
-          <div className="xds-row" style={{ gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-            <XdsButton variant="primary" size="sm" onClick={handleCopy} disabled={!uri}>
-              {copied ? (
-                <Check className="h-3.5 w-3.5" aria-hidden="true" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-              )}
-              {copied
-                ? zh ? "已复制" : "Copied"
-                : zh ? "复制订阅链接" : "Copy subscription link"}
-            </XdsButton>
-            <XdsButton size="sm" onClick={handleDownload} disabled={!uri}>
-              <Download className="h-3.5 w-3.5" aria-hidden="true" />
-              {zh ? "下载配置" : "Download config"}
-            </XdsButton>
-            <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
-              {zh ? "导入教程" : "Import guide"}
-            </BoundaryLink>
-          </div>
-        </div>
-      </XdsCardBody>
+      {cardBody}
       <XdsCardFoot>
         <span className="xds-t-caption">
           {zh
