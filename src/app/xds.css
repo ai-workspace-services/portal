@@ -632,6 +632,9 @@
   .xds-s3-check.xds-ok .xds-ic { color: var(--success); }
   .xds-s3-check.xds-todo { color: var(--text-tertiary); }
   .xds-s3-act { margin-top: var(--sp-4); }
+  .xds-s3-connection { margin-top: var(--sp-4); }
+  .xds-vless-embedded .xds-vless-body { padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-3); }
+  .xds-vless-embedded .xds-qr { width: 128px; height: 128px; }
 
   .xds-uuid-card .xds-value-box { font-size: var(--fs-body-sm); line-height: 1.5; }
   .xds-vless-body { display: grid; grid-template-columns: 116px minmax(0,1fr); gap: var(--sp-4); }
