@@ -315,7 +315,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2.7rem 2.2rem;
+  padding: 2.1rem 1.1rem;
   -webkit-clip-path: polygon(
     27% 0,
     73% 0,
@@ -444,21 +444,21 @@ body {
 .hero-product-workspace {
   position: absolute;
   top: 0;
-  width: 32%;
+  width: 31%;
   height: 26%;
 }
 .hero-product-connect {
-  left: 1%;
+  left: 0;
 }
 .hero-product-workspace {
-  right: 1%;
+  right: 0;
 }
 .hero-product-center {
   position: absolute;
   top: 19%;
-  left: 34%;
+  left: 32%;
   z-index: 2;
-  width: 32%;
+  width: 36%;
   height: 28%;
 }
 .hero-product-platform {
