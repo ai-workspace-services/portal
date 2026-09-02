@@ -12,15 +12,13 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
-type Product = {
-  title: string;
-  label: string;
-  description: string;
-  /** 描述下方的补充行；只有 Open Platform 用得上，设计稿里它是独立一行。 */
-  caption?: string;
-  Icon: LucideIcon;
-};
-type Capability = { label: string; sublabel: string; icon: LucideIcon };
+/**
+ * 节点只保留图标 + 名称。辅助描述曾经挤在六边形里，靠上、靠下都会撞上
+ * 斜边被 clip-path 裁掉；名称单独放在最宽的中段才稳。三个文案字段留成
+ * 可选，样式还在，将来要加回来不用改结构。
+ */
+type Product = { title: string; note: string; Icon: LucideIcon };
+type Capability = { label: string; note: string; icon: LucideIcon };
 
 const copy: Record<
   "zh" | "en",
@@ -30,74 +28,68 @@ const copy: Record<
     products: {
       workmate: {
         title: "XWorkmate",
-        label: "多种形态",
-        description: "个人 · 团队 · 组织",
+        note: "多种形态 · 个人 · 团队 · 组织",
         Icon: X,
       },
       connect: {
         title: "XConnect",
-        label: "连接能力",
-        description: "安全 · 私有 · 全球覆盖",
+        note: "连接能力 · 安全 · 私有 · 全球覆盖",
         Icon: Network,
       },
       workspace: {
         title: "AI 工作空间",
-        label: "",
-        description: "上下文 · 记忆 · 协作 · 执行",
+        note: "上下文 · 记忆 · 协作 · 执行",
         Icon: Users,
       },
       platform: {
         title: "Open Platform",
-        label: "开放平台",
-        description: "基础设施与服务",
-        caption: "云中立 · 开放 · 可扩展",
+        note: "开放平台 · 云中立 · 开放 · 可扩展",
         Icon: Boxes,
       },
     },
     capabilities: [
-      { label: "Models", sublabel: "模型", icon: Boxes },
-      { label: "Agents", sublabel: "智能体", icon: Bot },
-      { label: "Tools", sublabel: "工具", icon: Wrench },
-      { label: "Data", sublabel: "数据", icon: Database },
+      { label: "Models", note: "模型", icon: Boxes },
+      { label: "Agents", note: "智能体", icon: Bot },
+      { label: "Tools", note: "工具", icon: Wrench },
+      { label: "Data", note: "数据", icon: Database },
     ],
   },
   en: {
     products: {
       workmate: {
         title: "XWorkmate",
-        label: "Every context",
-        description: "Personal · Team · Organization",
+        note: "Every context · Personal · Team · Organization",
         Icon: X,
       },
       connect: {
         title: "XConnect",
-        label: "Connectivity",
-        description: "Secure · Private · Global",
+        note: "Connectivity · Secure · Private · Global",
         Icon: Network,
       },
       workspace: {
         title: "AI Workspace",
-        label: "",
-        description: "Context · Memory · Collaboration · Execution",
+        note: "Context · Memory · Collaboration · Execution",
         Icon: Users,
       },
       platform: {
         title: "Open Platform",
-        label: "Open foundation",
-        description: "Infrastructure & services",
-        caption: "Cloud-neutral · Open · Extensible",
+        note: "Open foundation · Cloud-neutral · Open · Extensible",
         Icon: Boxes,
       },
     },
     capabilities: [
-      { label: "Models", sublabel: "", icon: Boxes },
-      { label: "Agents", sublabel: "", icon: Bot },
-      { label: "Tools", sublabel: "", icon: Wrench },
-      { label: "Data", sublabel: "", icon: Database },
+      { label: "Models", note: "Model catalogue", icon: Boxes },
+      { label: "Agents", note: "Autonomous agents", icon: Bot },
+      { label: "Tools", note: "Tool calls", icon: Wrench },
+      { label: "Data", note: "Data sources", icon: Database },
     ],
   },
 };
 
+/**
+ * 注释必须挂在 shell 上、六边形外面：clip-path 会把子元素一起裁掉，
+ * 放进 <article> 里一浮出就被切掉。
+ */
 function ProductHex({
   product,
   featured = false,
@@ -107,24 +99,20 @@ function ProductHex({
 }) {
   const { Icon } = product;
   return (
-    <article
-      className={`hero-product ${featured ? "hero-product-featured" : ""}`}
-    >
-      <Icon
-        className="hero-product-icon"
-        strokeWidth={featured ? 3 : 2}
-        aria-hidden="true"
-      />
-      {/* 图内标签不是文档层级，用 h2 会和首屏 h1 抢大纲。 */}
-      <p className="hero-product-title">{product.title}</p>
-      {product.label ? (
-        <p className="hero-product-label">{product.label}</p>
-      ) : null}
-      <p className="hero-product-description">{product.description}</p>
-      {product.caption ? (
-        <p className="hero-product-caption">{product.caption}</p>
-      ) : null}
-    </article>
+    <div className="hero-node">
+      <article
+        className={`hero-product ${featured ? "hero-product-featured" : ""}`}
+      >
+        <Icon
+          className="hero-product-icon"
+          strokeWidth={featured ? 3 : 2}
+          aria-hidden="true"
+        />
+        {/* 图内标签不是文档层级，用 h2 会和首屏 h1 抢大纲。 */}
+        <p className="hero-product-title">{product.title}</p>
+      </article>
+      <span className="hero-node-note">{product.note}</span>
+    </div>
   );
 }
 
@@ -137,10 +125,12 @@ function CapabilityNode({
 }) {
   const Icon = item.icon;
   return (
-    <div className={`hero-capability ${position}`}>
-      <Icon className="hero-capability-icon" aria-hidden="true" />
-      <span>{item.label}</span>
-      {item.sublabel ? <small>{item.sublabel}</small> : null}
+    <div className={`hero-node hero-capability-slot ${position}`}>
+      <div className="hero-capability">
+        <Icon className="hero-capability-icon" aria-hidden="true" />
+        <span>{item.label}</span>
+      </div>
+      <span className="hero-node-note">{item.note}</span>
     </div>
   );
 }
@@ -154,11 +144,20 @@ export default function HeroWorkspacePreview() {
     <div
       className="hero-network"
       role="img"
-      aria-label={
+      /* role="img" 让内部文字不再被读屏播报，注释又只在 hover 时可见，
+         所以完整描述必须收进 aria-label，否则这部分信息对 AT 丢失。 */
+      aria-label={[
         language === "zh"
-          ? "XWorkmate 产品与 AI 能力关系图"
-          : "XWorkmate product and AI capability map"
-      }
+          ? "XWorkmate 产品与 AI 能力关系图。"
+          : "XWorkmate product and AI capability map.",
+        ...[
+          products.connect,
+          centerProduct,
+          rightProduct,
+          products.platform,
+        ].map((p) => `${p.title}：${p.note}`),
+        capabilities.map((c) => `${c.label}（${c.note}）`).join("、"),
+      ].join(" ")}
     >
       <div className="hero-network-lines" aria-hidden="true">
         <span className="hero-line hero-line-up" />
