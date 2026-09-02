@@ -36,14 +36,6 @@ export default defineConfig({
         "modules",
         "extensions",
       ),
-      "@templates": path.resolve(
-        __dirname,
-        "..",
-        "..",
-        "src",
-        "modules",
-        "templates",
-      ),
       "@theme": path.resolve(
         __dirname,
         "..",
