@@ -16,6 +16,8 @@ type Product = {
   title: string;
   label: string;
   description: string;
+  /** 描述下方的补充行；只有 Open Platform 用得上，设计稿里它是独立一行。 */
+  caption?: string;
   Icon: LucideIcon;
 };
 type Capability = { label: string; sublabel: string; icon: LucideIcon };
@@ -28,8 +30,8 @@ const copy: Record<
     products: {
       workmate: {
         title: "XWorkmate",
-        label: "AI 工作空间",
-        description: "上下文 · 记忆 · 协作 · 执行",
+        label: "多种形态",
+        description: "个人 · 团队 · 组织",
         Icon: X,
       },
       connect: {
@@ -39,15 +41,16 @@ const copy: Record<
         Icon: Network,
       },
       workspace: {
-        title: "AI Workspace",
-        label: "多种形态",
-        description: "个人 · 团队 · 组织",
+        title: "AI 工作空间",
+        label: "",
+        description: "上下文 · 记忆 · 协作 · 执行",
         Icon: Users,
       },
       platform: {
         title: "Open Platform",
         label: "开放平台",
-        description: "基础设施与服务 · 云中立 · 开放 · 可扩展",
+        description: "基础设施与服务",
+        caption: "云中立 · 开放 · 可扩展",
         Icon: Boxes,
       },
     },
@@ -62,8 +65,8 @@ const copy: Record<
     products: {
       workmate: {
         title: "XWorkmate",
-        label: "AI Workspace",
-        description: "Context · Memory · Collaboration · Execution",
+        label: "Every context",
+        description: "Personal · Team · Organization",
         Icon: X,
       },
       connect: {
@@ -74,14 +77,15 @@ const copy: Record<
       },
       workspace: {
         title: "AI Workspace",
-        label: "Every context",
-        description: "Personal · Team · Organization",
+        label: "",
+        description: "Context · Memory · Collaboration · Execution",
         Icon: Users,
       },
       platform: {
         title: "Open Platform",
         label: "Open foundation",
-        description: "Infrastructure · Cloud-neutral · Open · Extensible",
+        description: "Infrastructure & services",
+        caption: "Cloud-neutral · Open · Extensible",
         Icon: Boxes,
       },
     },
@@ -111,9 +115,15 @@ function ProductHex({
         strokeWidth={featured ? 3 : 2}
         aria-hidden="true"
       />
-      <h2>{product.title}</h2>
-      <p className="hero-product-label">{product.label}</p>
+      {/* 图内标签不是文档层级，用 h2 会和首屏 h1 抢大纲。 */}
+      <p className="hero-product-title">{product.title}</p>
+      {product.label ? (
+        <p className="hero-product-label">{product.label}</p>
+      ) : null}
       <p className="hero-product-description">{product.description}</p>
+      {product.caption ? (
+        <p className="hero-product-caption">{product.caption}</p>
+      ) : null}
     </article>
   );
 }
@@ -143,6 +153,7 @@ export default function HeroWorkspacePreview() {
   return (
     <div
       className="hero-network"
+      role="img"
       aria-label={
         language === "zh"
           ? "XWorkmate 产品与 AI 能力关系图"
@@ -150,8 +161,8 @@ export default function HeroWorkspacePreview() {
       }
     >
       <div className="hero-network-lines" aria-hidden="true">
-        <span className="hero-line hero-line-horizontal" />
-        <span className="hero-line hero-line-vertical" />
+        <span className="hero-line hero-line-up" />
+        <span className="hero-line hero-line-down" />
         <span className="hero-line hero-line-left" />
         <span className="hero-line hero-line-right" />
       </div>
