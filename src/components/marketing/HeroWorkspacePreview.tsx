@@ -28,8 +28,8 @@ const copy: Record<
     products: {
       workmate: {
         title: "XWorkmate",
-        label: "AI 工作空间",
-        description: "上下文 · 记忆 · 协作 · 执行",
+        label: "多种形态",
+        description: "个人 · 团队 · 组织",
         Icon: X,
       },
       connect: {
@@ -39,9 +39,9 @@ const copy: Record<
         Icon: Network,
       },
       workspace: {
-        title: "AI Workspace",
-        label: "多种形态",
-        description: "个人 · 团队 · 组织",
+        title: "AI 工作空间",
+        label: "",
+        description: "上下文 · 记忆 · 协作 · 执行",
         Icon: Users,
       },
       platform: {
@@ -62,8 +62,8 @@ const copy: Record<
     products: {
       workmate: {
         title: "XWorkmate",
-        label: "AI Workspace",
-        description: "Context · Memory · Collaboration · Execution",
+        label: "Every context",
+        description: "Personal · Team · Organization",
         Icon: X,
       },
       connect: {
@@ -74,8 +74,8 @@ const copy: Record<
       },
       workspace: {
         title: "AI Workspace",
-        label: "Every context",
-        description: "Personal · Team · Organization",
+        label: "",
+        description: "Context · Memory · Collaboration · Execution",
         Icon: Users,
       },
       platform: {
@@ -112,7 +112,9 @@ function ProductHex({
         aria-hidden="true"
       />
       <h2>{product.title}</h2>
-      <p className="hero-product-label">{product.label}</p>
+      {product.label ? (
+        <p className="hero-product-label">{product.label}</p>
+      ) : null}
       <p className="hero-product-description">{product.description}</p>
     </article>
   );
