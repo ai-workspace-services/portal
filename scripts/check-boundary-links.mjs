@@ -47,7 +47,6 @@ const ALIASES = [
   ["@server/", "src/server/"],
   ["@extensions/", "src/modules/extensions/"],
   ["@modules/", "src/modules/"],
-  ["@templates/", "src/modules/templates/"],
   ["@theme/", "src/components/theme/"],
 ];
 const EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", ".mjs"];
