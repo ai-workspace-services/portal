@@ -158,11 +158,25 @@ export default function HeroWorkspacePreview() {
     >
       {/* 六条辐条按 60° 等分，角度是唯一的差异，长度与起点完全一致。 */}
       <div className="hero-network-lines" aria-hidden="true">
-        {[-30, -90, -150, -210, -270, -330].map((deg) => (
+        {[
+          // 大节点在 30° / 150° / 270°，离中心近；小节点在 90° / 210° / 330°，
+          // 离得远。辐条各自填满所在的空隙，同类三条完全等长。
+          { deg: -30, len: "2.3cqw" },
+          { deg: -150, len: "2.3cqw" },
+          { deg: -270, len: "2.3cqw" },
+          { deg: -90, len: "8.2cqw" },
+          { deg: -210, len: "8.2cqw" },
+          { deg: -330, len: "8.2cqw" },
+        ].map(({ deg, len }) => (
           <span
             key={deg}
             className="hero-line"
-            style={{ "--hero-spoke": `${deg}deg` } as React.CSSProperties}
+            style={
+              {
+                "--hero-spoke": `${deg}deg`,
+                "--hero-spoke-len": len,
+              } as React.CSSProperties
+            }
           />
         ))}
       </div>
