@@ -52,7 +52,6 @@ const nextConfig = {
       "@modules": path.join(__dirname, "src", "modules"),
       "@extensions": path.join(__dirname, "src", "modules", "extensions"),
       "@theme": path.join(__dirname, "src", "components", "theme"),
-      "@templates": path.join(__dirname, "src", "modules", "templates"),
       "@src": path.join(__dirname, "src"),
       "@": path.join(__dirname, "src"),
     };

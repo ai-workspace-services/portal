@@ -28,7 +28,6 @@
       "@extensions/*": ["src/modules/extensions/*"],
       "@theme": ["src/components/theme"],
       "@theme/*": ["src/components/theme/*"],
-      "@templates/*": ["src/modules/templates/*"],
       "@src/*": ["src/*"]
     },
     "types": ["node", "vitest/globals", "@testing-library/jest-dom"],
