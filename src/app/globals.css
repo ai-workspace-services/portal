@@ -263,8 +263,9 @@ body {
   /* 节点全部按容器百分比定位，所以必须锁定宽高比，否则六边形会被压扁。
      宽度再被视口高度反向约束一次，首屏才装得下 Open Platform 与 Data；
      此前这里是 min-height: 52rem，把 .hero-shell 的 100vh 自适应架空了。 */
-  width: min(100%, 52rem, calc((100vh - 11rem) * 42 / 52));
-  aspect-ratio: 42 / 52;
+  /* 正方形容器：只有 1:1 时「%偏移 = 等距」，60° 等分与旋转才不被拉伸。 */
+  width: min(100%, 46rem, calc(100vh - 11rem));
+  aspect-ratio: 1 / 1;
   /* 整张图是一个固定宽高比的图形，内部字号必须跟容器走。用 vw 会让
      盒子随容器缩、字却随视口走，窄容器下必然换行并被 clip-path 裁掉。 */
   container-type: size;
@@ -284,41 +285,20 @@ body {
   display: block;
   opacity: 0.72;
 }
-.hero-line-up,
-.hero-line-down {
+/* 环心在 (50%, 48.25%)。每条辐条都从半径 12 起、长 8.5，
+   落在中心六边形边缘与环上节点边缘之间的空隙里。 */
+.hero-line {
+  top: 48.25%;
   left: 50%;
-  width: 1px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--hero-line-dash) 0 4px,
-    transparent 4px 10px
-  );
-}
-.hero-line-up {
-  top: 13.5%;
-  height: 5%;
-}
-.hero-line-down {
-  top: 47.5%;
-  height: 3.5%;
-}
-.hero-line-left,
-.hero-line-right {
-  top: 33%;
+  width: 8.5cqw;
   height: 1px;
+  transform-origin: 0 50%;
+  transform: rotate(var(--hero-spoke)) translateX(12cqw);
   background-image: repeating-linear-gradient(
     to right,
     var(--hero-line-dash) 0 4px,
     transparent 4px 10px
   );
-}
-.hero-line-left {
-  left: 19.5%;
-  width: 14%;
-}
-.hero-line-right {
-  right: 19.5%;
-  width: 14%;
 }
 /* 产品节点的外壳：不裁切，注释挂在这里 */
 .hero-node {
@@ -356,17 +336,20 @@ body {
   opacity: 1;
   transform: translate(-50%, 0);
 }
-/* 最下面两个节点的注释往上浮，否则会顶出容器 */
+/* 环下半部的三个节点，注释往上浮，否则会顶出容器 */
 .hero-product-platform .hero-node-note,
-.hero-capability-bottom .hero-node-note {
+.hero-capability-lower-left .hero-node-note,
+.hero-capability-lower-right .hero-node-note {
   top: auto;
   bottom: calc(100% + 0.5rem);
   transform: translate(-50%, 0.35rem);
 }
 .hero-product-platform .hero-node:hover .hero-node-note,
 .hero-product-platform .hero-node:focus-within .hero-node-note,
-.hero-capability-bottom:hover .hero-node-note,
-.hero-capability-bottom:focus-within .hero-node-note {
+.hero-capability-lower-left:hover .hero-node-note,
+.hero-capability-lower-left:focus-within .hero-node-note,
+.hero-capability-lower-right:hover .hero-node-note,
+.hero-capability-lower-right:focus-within .hero-node-note {
   transform: translate(-50%, 0);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -483,39 +466,40 @@ body {
 /* 八个节点的外接盒两两不相交：上排 XConnect / Models / AI 形态，
    中排 Agents · 中心 · Tools（三者共用中心的垂直中线 33%），
    下排 Data，再下 Open Platform。 */
+/* 环上三个大节点：120° 间隔（150° / 30° / 270°），尺寸完全相同。 */
 .hero-product-connect,
-.hero-product-workspace {
+.hero-product-workspace,
+.hero-product-platform {
   position: absolute;
-  top: 0;
-  width: 31%;
-  height: 26%;
+  width: 21.4%;
+  height: 18.5%;
 }
 .hero-product-connect {
-  left: 0;
+  top: 24%;
+  left: 13.32%;
 }
 .hero-product-workspace {
-  right: 0;
+  top: 24%;
+  left: 65.28%;
 }
 .hero-product-center {
   position: absolute;
-  top: 19%;
-  left: 31%;
+  top: 37.25%;
+  left: 37.3%;
   z-index: 2;
-  width: 38%;
-  height: 28%;
+  width: 25.4%;
+  height: 22%;
 }
 .hero-product-platform {
-  position: absolute;
-  top: 67%;
-  left: 27%;
-  width: 46%;
-  height: 28%;
+  top: 69%;
+  left: 39.3%;
 }
+/* 环上三个小节点：与大节点交错，同样 120° 间隔（90° / 210° / 330°）。 */
 .hero-capability-slot {
   position: absolute;
   z-index: 3;
-  width: 19%;
-  height: 13%;
+  width: 13.3%;
+  height: 11.5%;
 }
 .hero-capability {
   position: relative;
@@ -556,20 +540,16 @@ body {
   font-weight: 700;
 }
 .hero-capability-slot.hero-capability-top {
-  top: 0;
-  left: 40.5%;
+  top: 12.5%;
+  left: 43.35%;
 }
-.hero-capability-slot.hero-capability-left {
-  top: 26.5%;
-  left: 0;
+.hero-capability-slot.hero-capability-lower-left {
+  top: 57.5%;
+  left: 17.37%;
 }
-.hero-capability-slot.hero-capability-right {
-  top: 26.5%;
-  right: 0;
-}
-.hero-capability-slot.hero-capability-bottom {
-  top: 51%;
-  left: 40.5%;
+.hero-capability-slot.hero-capability-lower-right {
+  top: 57.5%;
+  left: 69.33%;
 }
 @media (max-width: 1180px) {
   .hero-container {
@@ -604,10 +584,9 @@ body {
     justify-content: center;
   }
   .hero-network {
-    /* 纵向堆叠后首屏不再是一屏，交回已验证过的固定高度比例。 */
-    width: min(100%, 48rem);
-    min-height: 44rem;
-    aspect-ratio: auto;
+    /* 容器必须始终是正方形，环形几何才不会被压成椭圆；
+       纵向堆叠后只需要收一下上限。 */
+    width: min(100%, 34rem);
   }
 }
 @media (max-width: 560px) {
@@ -634,61 +613,6 @@ body {
   }
   .hero-button {
     width: 100%;
-  }
-  .hero-network {
-    min-height: 36rem;
-  }
-  .hero-product-connect,
-  .hero-product-workspace {
-    top: 19%;
-    width: 49%;
-    height: 36%;
-  }
-  .hero-product-center {
-    top: 30%;
-    left: 25%;
-    width: 50%;
-    height: 34%;
-  }
-  .hero-product-platform {
-    right: 5%;
-    width: 90%;
-    height: 34%;
-  }
-  .hero-product {
-    padding: 2rem 1.5rem;
-  }
-  .hero-product-icon {
-    width: 1.6rem;
-    height: 1.6rem;
-    margin-bottom: 0.4rem;
-  }
-  .hero-product-featured .hero-product-icon {
-    width: 2.6rem;
-    height: 2.6rem;
-    margin-bottom: 0.55rem;
-  }
-  .hero-capability-slot {
-    width: 4.7rem;
-    height: 4.7rem;
-  }
-  .hero-capability-icon {
-    width: 1.2rem;
-    height: 1.2rem;
-    margin-bottom: 0.25rem;
-  }
-  .hero-capability span {
-    font-size: 0.65rem;
-  }
-  .hero-capability-slot.hero-capability-top,
-  .hero-capability-slot.hero-capability-bottom {
-    left: calc(50% - 2.35rem);
-  }
-  .hero-capability-slot.hero-capability-left {
-    left: -0.25rem;
-  }
-  .hero-capability-slot.hero-capability-right {
-    right: -0.25rem;
   }
   /* 触屏没有 hover，注释在小屏上不出现 */
   .hero-node-note {
