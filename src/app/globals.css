@@ -128,14 +128,23 @@ body {
   position: relative;
   z-index: 1;
   display: grid;
-  width: min(calc(100% - 3rem), 72rem);
+  /* 与 marketingTheme.section.container（max-w-6xl + px-6/lg:px-8）同一套
+     外框与内边距，首屏内容左右边缘才和下方各 section、页脚落在同一条线上。
+     此前首屏靠 width 自带 3rem 外边距、padding 为 0，内容比下方整整少缩
+     24–32px，整页从上到下有两条不同的左边缘。 */
+  width: min(100%, 72rem);
   max-width: 72rem;
   min-height: min(56rem, calc(100vh - 4.75rem));
   margin: 0 auto;
   grid-template-columns: minmax(22rem, 0.88fr) minmax(36rem, 1.12fr);
   align-items: center;
   gap: 1.5rem;
-  padding: 5rem 0;
+  padding: 5rem 1.5rem;
+}
+@media (min-width: 1024px) {
+  .hero-container {
+    padding-inline: 2rem;
+  }
 }
 .hero-grid {
   position: absolute;
@@ -541,7 +550,8 @@ body {
     flex-direction: column;
     align-items: stretch;
     gap: 2.5rem;
-    padding: 4rem 0 3rem;
+    /* 横向保留与 section 相同的 1.5rem 留白，别用简写把它清零 */
+    padding: 4rem 1.5rem 3rem;
   }
   .hero-copy {
     max-width: 40rem;
@@ -568,7 +578,10 @@ body {
 }
 @media (max-width: 560px) {
   .hero-container {
-    width: min(100% - 2rem, 34rem);
+    /* 横向留白已交给 padding。这里不要再叠外边距或宽度上限，否则窄屏下
+       首屏内容会比下方 section 多缩几个像素；文案自身的 40rem 上限
+       已经在 900 断点里限制了行长。 */
+    width: 100%;
     padding-top: 3rem;
   }
   .hero-title {
