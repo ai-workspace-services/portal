@@ -3,7 +3,6 @@
 import {
   Bot,
   Boxes,
-  Database,
   Network,
   Users,
   Wrench,
@@ -51,7 +50,6 @@ const copy: Record<
       { label: "Models", note: "模型", icon: Boxes },
       { label: "Agents", note: "智能体", icon: Bot },
       { label: "Tools", note: "工具", icon: Wrench },
-      { label: "Data", note: "数据", icon: Database },
     ],
   },
   en: {
@@ -81,7 +79,6 @@ const copy: Record<
       { label: "Models", note: "Model catalogue", icon: Boxes },
       { label: "Agents", note: "Autonomous agents", icon: Bot },
       { label: "Tools", note: "Tool calls", icon: Wrench },
-      { label: "Data", note: "Data sources", icon: Database },
     ],
   },
 };
@@ -159,18 +156,24 @@ export default function HeroWorkspacePreview() {
         capabilities.map((c) => `${c.label}（${c.note}）`).join("、"),
       ].join(" ")}
     >
+      {/* 六条辐条按 60° 等分，角度是唯一的差异，长度与起点完全一致。 */}
       <div className="hero-network-lines" aria-hidden="true">
-        <span className="hero-line hero-line-up" />
-        <span className="hero-line hero-line-down" />
-        <span className="hero-line hero-line-left" />
-        <span className="hero-line hero-line-right" />
+        {[-30, -90, -150, -210, -270, -330].map((deg) => (
+          <span
+            key={deg}
+            className="hero-line"
+            style={{ "--hero-spoke": `${deg}deg` } as React.CSSProperties}
+          />
+        ))}
       </div>
       <CapabilityNode item={capabilities[0]} position="hero-capability-top" />
-      <CapabilityNode item={capabilities[1]} position="hero-capability-left" />
-      <CapabilityNode item={capabilities[2]} position="hero-capability-right" />
       <CapabilityNode
-        item={capabilities[3]}
-        position="hero-capability-bottom"
+        item={capabilities[1]}
+        position="hero-capability-lower-left"
+      />
+      <CapabilityNode
+        item={capabilities[2]}
+        position="hero-capability-lower-right"
       />
       <div className="hero-product-connect">
         <ProductHex product={products.connect} />
