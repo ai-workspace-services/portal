@@ -128,13 +128,14 @@ body {
   position: relative;
   z-index: 1;
   display: grid;
-  width: min(100% - 3rem, 90rem);
+  width: min(calc(100% - 3rem), 72rem);
+  max-width: 72rem;
   min-height: min(56rem, calc(100vh - 4.75rem));
   margin: 0 auto;
-  grid-template-columns: minmax(25rem, 0.88fr) minmax(42rem, 1.12fr);
+  grid-template-columns: minmax(22rem, 0.88fr) minmax(36rem, 1.12fr);
   align-items: center;
-  gap: 2rem;
-  padding: 5.5rem 0 4rem;
+  gap: 1.5rem;
+  padding: 5rem 0;
 }
 .hero-grid {
   position: absolute;
