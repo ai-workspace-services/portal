@@ -184,10 +184,11 @@ body {
   max-width: none;
   margin: 1.7rem 0 0;
   color: #101c44;
-  font-size: clamp(3.5rem, 4.4vw, 4.8rem);
+  /* 单行由字号上限保证，不再靠压字距硬撑——-0.075em 会把中文挤在一起。 */
+  font-size: clamp(3rem, 4vw, 4.2rem);
   font-weight: 700;
   line-height: 1.03;
-  letter-spacing: -0.075em;
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 .hero-title-accent {
@@ -250,8 +251,11 @@ body {
 }
 .hero-network {
   position: relative;
-  width: min(100%, 52rem);
-  min-height: 52rem;
+  /* 节点全部按容器百分比定位，所以必须锁定宽高比，否则六边形会被压扁。
+     宽度再被视口高度反向约束一次，首屏才装得下 Open Platform 与 Data；
+     此前这里是 min-height: 52rem，把 .hero-shell 的 100vh 自适应架空了。 */
+  width: min(100%, 52rem, calc((100vh - 11rem) * 42 / 52));
+  aspect-ratio: 42 / 52;
   margin: 0 auto;
 }
 .hero-network-lines {
@@ -259,38 +263,49 @@ body {
   inset: 0;
   pointer-events: none;
 }
+/* 设计稿里是中心到四个能力节点的四段短虚线，不是贯穿全图的实线十字，
+   也没有斜线。四段只落在节点与中心之间的空隙里。 */
 .hero-line {
+  --hero-line-dash: #7b7cf2;
   position: absolute;
   display: block;
-  background: #7b7cf2;
   opacity: 0.72;
 }
-.hero-line-horizontal {
-  top: 50%;
-  left: 17%;
-  right: 17%;
-  height: 1px;
-}
-.hero-line-vertical {
-  top: 16%;
-  bottom: 16%;
+.hero-line-up,
+.hero-line-down {
   left: 50%;
   width: 1px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--hero-line-dash) 0 4px,
+    transparent 4px 10px
+  );
+}
+.hero-line-up {
+  top: 13.5%;
+  height: 5%;
+}
+.hero-line-down {
+  top: 47.5%;
+  height: 3.5%;
 }
 .hero-line-left,
 .hero-line-right {
-  top: 50%;
-  width: 22%;
+  top: 33%;
   height: 1px;
-  transform-origin: left center;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--hero-line-dash) 0 4px,
+    transparent 4px 10px
+  );
 }
 .hero-line-left {
-  left: 27%;
-  transform: rotate(-28deg);
+  left: 19.5%;
+  width: 14%;
 }
 .hero-line-right {
-  right: 27%;
-  transform: rotate(208deg);
+  right: 19.5%;
+  width: 14%;
 }
 .hero-product {
   position: relative;
@@ -300,7 +315,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2.7rem 2.2rem;
+  padding: 2.1rem 1.1rem;
   -webkit-clip-path: polygon(
     27% 0,
     73% 0,
@@ -387,9 +402,10 @@ body {
 .hero-product-featured .hero-product-icon {
   color: #fff;
 }
-.hero-product h2 {
+.hero-product-title {
   margin: 0;
   color: inherit;
+  font-weight: 700;
   font-size: clamp(1.1rem, 1.8vw, 1.65rem);
   line-height: 1.15;
 }
@@ -405,19 +421,31 @@ body {
 }
 .hero-product-description {
   margin: 0.4rem 0 0;
-  color: #647094;
+  color: #56628a;
   font-size: 0.75rem;
   line-height: 1.45;
+}
+.hero-product-caption {
+  margin: 0.15rem 0 0;
+  color: #56628a;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+.hero-product-featured .hero-product-caption {
+  color: #d8ddff;
 }
 .hero-product-platform .hero-product {
   background: rgba(242, 244, 255, 0.97);
 }
+/* 八个节点的外接盒两两不相交：上排 XConnect / Models / AI 形态，
+   中排 Agents · 中心 · Tools（三者共用中心的垂直中线 33%），
+   下排 Data，再下 Open Platform。 */
 .hero-product-connect,
 .hero-product-workspace {
   position: absolute;
-  top: 16%;
-  width: 41%;
-  height: 39%;
+  top: 0;
+  width: 31%;
+  height: 26%;
 }
 .hero-product-connect {
   left: 0;
@@ -427,34 +455,47 @@ body {
 }
 .hero-product-center {
   position: absolute;
-  top: 29%;
-  left: 30.5%;
+  top: 19%;
+  left: 32%;
   z-index: 2;
-  width: 39%;
-  height: 31%;
+  width: 36%;
+  height: 28%;
 }
 .hero-product-platform {
   position: absolute;
-  right: 21%;
-  bottom: 0;
-  width: 58%;
-  height: 36%;
+  top: 67%;
+  left: 27%;
+  width: 46%;
+  height: 28%;
 }
 .hero-capability {
   position: absolute;
   z-index: 3;
   display: flex;
-  width: 6.3rem;
-  height: 6.3rem;
+  width: 19%;
+  height: 13%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid #d5d8ff;
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.9);
+  /* 与主节点同一套形状语言。clip-path 会连边框一起裁掉，所以描边改由
+     父级底色 + 内缩 1px 的伪元素叠出来，和 .hero-product 用的是同一招。 */
+  -webkit-clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  border: 0;
+  background: #d5d8ff;
   color: #1c2e67;
-  box-shadow: 0 10px 26px rgba(93, 94, 181, 0.08);
   text-align: center;
+}
+.hero-capability::before {
+  position: absolute;
+  inset: 1px;
+  clip-path: inherit;
+  background: #fff;
+  content: "";
+}
+/* 伪元素是首个子盒，同层按树序绘制，正文提到它上面。 */
+.hero-capability > * {
+  position: relative;
 }
 .hero-capability-icon {
   width: 1.55rem;
@@ -473,28 +514,24 @@ body {
 }
 .hero-capability-top {
   top: 0;
-  left: calc(50% - 3.15rem);
+  left: 40.5%;
 }
 .hero-capability-left {
-  top: calc(50% - 3.15rem);
+  top: 26.5%;
   left: 0;
 }
 .hero-capability-right {
-  top: calc(50% - 3.15rem);
+  top: 26.5%;
   right: 0;
 }
 .hero-capability-bottom {
-  bottom: 25%;
-  left: calc(50% - 3.15rem);
+  top: 51%;
+  left: 40.5%;
 }
 @media (max-width: 1180px) {
   .hero-container {
     grid-template-columns: minmax(22rem, 0.8fr) minmax(36rem, 1.2fr);
     gap: 0;
-  }
-  .hero-network {
-    transform: scale(0.82);
-    transform-origin: center right;
   }
 }
 @media (max-width: 900px) {
@@ -523,9 +560,10 @@ body {
     justify-content: center;
   }
   .hero-network {
+    /* 纵向堆叠后首屏不再是一屏，交回已验证过的固定高度比例。 */
     width: min(100%, 48rem);
     min-height: 44rem;
-    transform: none;
+    aspect-ratio: auto;
   }
 }
 @media (max-width: 560px) {
@@ -593,7 +631,6 @@ body {
   .hero-capability {
     width: 4.7rem;
     height: 4.7rem;
-    border-radius: 0.75rem;
   }
   .hero-capability-icon {
     width: 1.2rem;
