@@ -136,7 +136,7 @@ body {
   max-width: 72rem;
   min-height: min(56rem, calc(100vh - 4.75rem));
   margin: 0 auto;
-  grid-template-columns: minmax(22rem, 0.88fr) minmax(36rem, 1.12fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   gap: 1.5rem;
   padding: 5rem 1.5rem;
@@ -263,8 +263,9 @@ body {
   /* 节点全部按容器百分比定位，所以必须锁定宽高比，否则六边形会被压扁。
      宽度再被视口高度反向约束一次，首屏才装得下 Open Platform 与 Data；
      此前这里是 min-height: 52rem，把 .hero-shell 的 100vh 自适应架空了。 */
-  /* 正方形容器：只有 1:1 时「%偏移 = 等距」，60° 等分与旋转才不被拉伸。 */
-  width: min(100%, 46rem, calc(100vh - 11rem));
+  /* 正方形容器：只有 1:1 时「%偏移 = 等距」，60° 等分与旋转才不被拉伸。
+     图形自身撑满这半栏，不再预留外围留白——节点排布已经贴着容器四边。 */
+  width: min(100%, calc(100vh - 11rem));
   aspect-ratio: 1 / 1;
   /* 整张图是一个固定宽高比的图形，内部字号必须跟容器走。用 vw 会让
      盒子随容器缩、字却随视口走，窄容器下必然换行并被 clip-path 裁掉。 */
@@ -285,15 +286,15 @@ body {
   display: block;
   opacity: 0.72;
 }
-/* 环心在 (50%, 48.25%)。每条辐条都从半径 12 起、长 8.5，
-   落在中心六边形边缘与环上节点边缘之间的空隙里。 */
+/* 环心 (50%, 47.02%)。辐条从中心六边形边缘（半径 19.3）起，
+   落在它与环上节点边缘之间的空隙里：大节点近、小节点远，各自三条等长。 */
 .hero-line {
-  top: 48.25%;
+  top: 47.02%;
   left: 50%;
-  width: 8.5cqw;
+  width: var(--hero-spoke-len);
   height: 1px;
   transform-origin: 0 50%;
-  transform: rotate(var(--hero-spoke)) translateX(12cqw);
+  transform: rotate(var(--hero-spoke)) translateX(19.3cqw);
   background-image: repeating-linear-gradient(
     to right,
     var(--hero-line-dash) 0 4px,
@@ -366,7 +367,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 7cqh 4cqw;
+  padding: 6cqh 3.2cqw;
   -webkit-clip-path: polygon(
     27% 0,
     73% 0,
@@ -457,7 +458,7 @@ body {
   margin: 0;
   color: inherit;
   font-weight: 700;
-  font-size: 4.1cqw;
+  font-size: 3.7cqw;
   line-height: 1.15;
 }
 .hero-product-platform .hero-product {
@@ -471,35 +472,35 @@ body {
 .hero-product-workspace,
 .hero-product-platform {
   position: absolute;
-  width: 21.4%;
-  height: 18.5%;
+  width: 35.78%;
+  height: 30.98%;
 }
 .hero-product-connect {
-  top: 24%;
-  left: 13.32%;
+  top: 12.99%;
+  left: 0;
 }
 .hero-product-workspace {
-  top: 24%;
-  left: 65.28%;
+  top: 12.99%;
+  left: 64.22%;
 }
 .hero-product-center {
   position: absolute;
-  top: 37.25%;
-  left: 37.3%;
+  top: 28.43%;
+  left: 28.53%;
   z-index: 2;
-  width: 25.4%;
-  height: 22%;
+  width: 42.93%;
+  height: 37.18%;
 }
 .hero-product-platform {
-  top: 69%;
-  left: 39.3%;
+  top: 68.61%;
+  left: 32.11%;
 }
 /* 环上三个小节点：与大节点交错，同样 120° 间隔（90° / 210° / 330°）。 */
 .hero-capability-slot {
   position: absolute;
   z-index: 3;
-  width: 13.3%;
-  height: 11.5%;
+  width: 22%;
+  height: 19.05%;
 }
 .hero-capability {
   position: relative;
@@ -540,16 +541,16 @@ body {
   font-weight: 700;
 }
 .hero-capability-slot.hero-capability-top {
-  top: 12.5%;
-  left: 43.35%;
+  top: 0.41%;
+  left: 39%;
 }
 .hero-capability-slot.hero-capability-lower-left {
-  top: 57.5%;
-  left: 17.37%;
+  top: 56.03%;
+  left: 6.89%;
 }
 .hero-capability-slot.hero-capability-lower-right {
-  top: 57.5%;
-  left: 69.33%;
+  top: 56.03%;
+  left: 71.11%;
 }
 @media (max-width: 1180px) {
   .hero-container {
