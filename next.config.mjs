@@ -66,6 +66,25 @@ const nextConfig = {
     return config;
   },
   async headers() {
+    // immutable 的前提是「URL 变了内容才会变」。只有 /_next/static 满足：
+    // 生产构建给它内容哈希文件名。其余路径都是稳定 URL、内容可变，标成
+    // immutable 就意味着改动在缓存过期前到不了回访用户。
+    //
+    // dev 例外：Turbopack 会复用 chunk 文件名（同一个 _abc1234._.js 内容已变），
+    // 配上 immutable 后浏览器永不重取——改动看不到，严重时旧 chunk 还 import
+    // 已删除的模块导致白屏。所以开发环境一律不缓存。
+    const isDev = process.env.NODE_ENV === "development";
+    const hashedAsset = isDev
+      ? "no-store, must-revalidate"
+      : "public, max-age=604800, s-maxage=604800, immutable";
+    // 稳定 URL 的静态资源：边缘仍长缓存，浏览器每小时回源校验一次
+    const stableAsset = isDev
+      ? "no-store, must-revalidate"
+      : "public, max-age=3600, s-maxage=604800, stale-while-revalidate=86400";
+    // 爬虫读取且随内容变化的文件，不能让浏览器/边缘长期钉住
+    const crawlerFile = isDev
+      ? "no-store, must-revalidate"
+      : "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
     return [
       {
         // 首页与全站公共营销页开启 Cloudflare 边缘 1 小时缓存 (s-maxage=3600)
@@ -98,65 +117,37 @@ const nextConfig = {
       {
         // 静态资产开启 168 小时 (7 天 = 604800 秒) 强缓存
         source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: hashedAsset },
         ],
       },
       {
         source: "/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: stableAsset },
         ],
       },
       {
         source: "/assets/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: stableAsset },
         ],
       },
       {
         source: "/marketing/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: stableAsset },
         ],
       },
       {
         source: "/favicon.ico",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: stableAsset },
         ],
       },
       {
         source: "/robots.txt",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: crawlerFile },
         ],
       },
       {
         source: "/sitemap.xml",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, s-maxage=604800, immutable",
-          },
+        headers: [{ key: "Cache-Control", value: crawlerFile },
         ],
       },
       {
