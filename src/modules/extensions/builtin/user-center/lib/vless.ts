@@ -134,7 +134,43 @@ function renderVlessUriFromScheme(scheme: string, values: Record<string, string>
     rendered = rendered.split('${' + key + '}').join(value)
   }
 
-  return rendered
+  return removeEmptyXhttpPadding(rendered)
+}
+
+/**
+ * Some clients serialize an unset XHTTP padding option as `x_padding=`.
+ * That is not part of the connection contract and makes Xray reject the
+ * request. Remove only the empty option while preserving the server-provided
+ * URI, including its parameter order, path, and non-empty padding values.
+ */
+function removeEmptyXhttpPadding(uri: string): string {
+  const fragmentIndex = uri.indexOf('#')
+  const beforeFragment = fragmentIndex >= 0 ? uri.slice(0, fragmentIndex) : uri
+  const fragment = fragmentIndex >= 0 ? uri.slice(fragmentIndex) : ''
+  const queryIndex = beforeFragment.indexOf('?')
+
+  if (queryIndex < 0) {
+    return uri
+  }
+
+  const base = beforeFragment.slice(0, queryIndex)
+  const query = beforeFragment.slice(queryIndex + 1)
+  const params = query.split('&').filter((param) => {
+    const equalsIndex = param.indexOf('=')
+    const rawKey = equalsIndex >= 0 ? param.slice(0, equalsIndex) : param
+    const rawValue = equalsIndex >= 0 ? param.slice(equalsIndex + 1) : ''
+
+    let key = rawKey
+    try {
+      key = decodeURIComponent(rawKey.replace(/\+/g, ' '))
+    } catch {
+      // Keep malformed, unrelated parameters unchanged.
+    }
+
+    return !(key === 'x_padding' && rawValue === '')
+  })
+
+  return `${base}${params.length > 0 ? `?${params.join('&')}` : ''}${fragment}`
 }
 
 export function buildVlessUri(rawUuid: string | null | undefined, node?: VlessNode): string | null {
@@ -234,5 +270,4 @@ export function buildVlessConfig(rawUuid: string | null | undefined, node?: Vles
 export function serializeConfigForDownload(config: XrayConfig): string {
   return `${JSON.stringify(config, null, 2)}\n`
 }
-
 
