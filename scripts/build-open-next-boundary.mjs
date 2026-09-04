@@ -33,8 +33,13 @@ if (boundaryRoutes.length === 0) {
 const boundaries = Object.fromEntries(
   Object.keys(cloudflareConfig.boundaries ?? {}).map((id) => [id, {
     workerName: cloudflareConfig.boundaries[id].worker_name,
-    owns: (relativePath) =>
-      !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id,
+    owns: (relativePath) => {
+      // MFA is a same-origin BFF: its handlers read and update Portal cookies
+      // before calling Accounts. Keep those route handlers with the auth SSR
+      // Worker rather than sending them to the generic auth gateway.
+      if (isMfaApi(relativePath)) return id === "auth";
+      return !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id;
+    },
   }]),
 );
 
@@ -161,6 +166,7 @@ await writeFile(
 
 const entries = await findRouteEntries(appRoot);
 const selectedPages = entries.filter((entry) => entry.kind === "page" && definition.owns(entry.relativePath));
+const selectedRouteHandlers = entries.filter((entry) => entry.kind === "route" && definition.owns(entry.relativePath));
 if (selectedPages.length === 0) {
   throw new Error(`SSR boundary ${boundary} selected no pages`);
 }
@@ -174,6 +180,9 @@ for (const page of selectedPages) {
       if (entries.some((entry) => entry.relativePath === candidate)) selected.add(candidate);
     }
   }
+}
+for (const routeHandler of selectedRouteHandlers) {
+  selected.add(routeHandler.relativePath);
 }
 if (boundary === "public") {
   for (const entry of entries) {
@@ -191,6 +200,10 @@ for (const relativePath of selected) {
   }
   const target = path.join(boundaryRoot, "src", "app", relativePath);
   await mkdir(path.dirname(target), { recursive: true });
+  if (relativePath.endsWith("/route.ts") || relativePath === "route.ts") {
+    await cp(source, target);
+    continue;
+  }
   if (relativePath === "layout.tsx") {
     const appProvidersImport = relativeImport(target, path.join(appRoot, "AppProviders.tsx"));
     const layoutSource = (await readFile(source, "utf8"))
@@ -236,7 +249,7 @@ await run(
 );
 await namespaceStaticAssets(boundaryRoot, boundary);
 
-console.log(`Built SSR boundary ${boundary}: ${selectedPages.length} page entries`);
+console.log(`Built SSR boundary ${boundary}: ${selectedPages.length} page entries, ${selectedRouteHandlers.length} route handlers`);
 
 function readBoundary(args) {
   const index = args.indexOf("--boundary");
@@ -286,6 +299,10 @@ function isApi(relativePath) {
   return relativePath === "api" || relativePath.startsWith("api/");
 }
 
+function isMfaApi(relativePath) {
+  return relativePath === "api/auth/mfa" || relativePath.startsWith("api/auth/mfa/");
+}
+
 function parentPaths(relativePath) {
   const parentPaths = [];
   const segments = relativePath.split("/").slice(0, -1);
@@ -305,7 +322,7 @@ async function findRouteEntries(directory, prefix = "") {
       continue;
     }
     if (!directoryEntry.isFile()) continue;
-    const kind = directoryEntry.name === "page.tsx" ? "page" : "entry";
+    const kind = directoryEntry.name === "page.tsx" ? "page" : directoryEntry.name === "route.ts" ? "route" : "entry";
     entries.push({ relativePath, kind });
   }
   return entries;
