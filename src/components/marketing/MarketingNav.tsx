@@ -241,7 +241,7 @@ export default function MarketingNav() {
           className="xds-row xds-mnav-actions xds-mnav-desktop"
           style={{ gap: "var(--sp-3)" }}
         >
-          <LanguageToggle />
+          <LanguageToggle size="md" />
 
           {isLoading ? (
             <span className="xds-mnav-skeleton" aria-hidden="true" />
@@ -337,7 +337,7 @@ export default function MarketingNav() {
 
               <BoundaryLink
                 href={consoleHref}
-                className="xds-btn xds-btn-primary xds-btn-sm"
+                className="xds-btn xds-btn-primary"
               >
                 {content.nav.enterConsole}
               </BoundaryLink>
@@ -346,13 +346,13 @@ export default function MarketingNav() {
             <>
               <BoundaryLink
                 href="/login"
-                className="xds-btn xds-btn-ghost xds-btn-sm"
+                className="xds-btn xds-btn-ghost"
               >
                 {content.nav.login}
               </BoundaryLink>
               <BoundaryLink
                 href={content.hero.primaryCta.href}
-                className="xds-btn xds-btn-primary xds-btn-sm"
+                className="xds-btn xds-btn-primary"
               >
                 {content.hero.primaryCta.label}
               </BoundaryLink>
@@ -411,7 +411,7 @@ export default function MarketingNav() {
             ) : null}
 
             <div className="xds-row xds-mnav-mobile-actions">
-              <LanguageToggle />
+              <LanguageToggle size="md" />
               {isLoading ? null : isAuthenticated ? (
                 <>
                   <button
