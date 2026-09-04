@@ -460,14 +460,14 @@
 /* ============================================================
    Marketing nav / footer
    ============================================================ */
-.xds-mnav { position: sticky; top: 0; z-index: 20; height: 56px; border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.82); backdrop-filter: blur(12px); }
+.xds-mnav { position: sticky; top: 0; z-index: 20; height: 64px; border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.82); backdrop-filter: blur(12px); }
 .xds-mnav-inner { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--sp-6); }
 .xds-mnav-wayfind { min-width: 0; justify-self: start; }
 .xds-mnav-actions { justify-self: end; }
 .xds-logo { display: flex; align-items: center; gap: 8px; font-size: var(--fs-h4); font-weight: var(--fw-semibold); letter-spacing: -0.02em; }
 .xds-logo-mark { width: 22px; height: 22px; border-radius: var(--r-xs); background: var(--blue-500); display: grid; place-items: center; color: #fff; }
 .xds-mnav-links { display: flex; align-items: center; gap: var(--sp-6); }
-.xds-mnav-links a { font-size: var(--fs-body-sm); color: var(--text-secondary); transition: color var(--dur-fast) var(--ease-out); }
+.xds-mnav-links a { font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-secondary); transition: color var(--dur-fast) var(--ease-out); }
 .xds-mnav-links a:hover { color: var(--text-primary); }
 .xds-footer { border-top: 1px solid var(--border-default); background: var(--bg-surface); padding: var(--sp-14) 0 var(--sp-8); }
 .xds-footer-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: var(--sp-8); }
@@ -763,7 +763,7 @@
 
 /* ---------- 站点导航（xds 版）---------- */
 .xds-mnav-item { position: relative; }
-.xds-mnav-trigger { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.xds-mnav-trigger { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-secondary); }
 .xds-mnav-trigger:hover { color: var(--text-primary); }
 .xds-mnav-menu {
   position: absolute; left: 0; top: calc(100% + 6px); z-index: 30;
@@ -777,7 +777,7 @@
 .xds-mnav-menu-item:hover { background: var(--bg-hover); }
 .xds-mnav-menu-label { display: flex; align-items: center; gap: 6px; font-size: var(--fs-body-sm); font-weight: var(--fw-medium); color: var(--text-primary); }
 .xds-mnav-skeleton { width: 32px; height: 32px; border-radius: var(--r-pill); background: var(--bg-sunken); }
-.xds-mnav-account { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 4px; border: 1px solid var(--border-default); border-radius: var(--r-pill); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.xds-mnav-account { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px 0 4px; border: 1px solid var(--border-default); border-radius: var(--r-pill); font-size: var(--fs-body-sm); color: var(--text-secondary); }
 .xds-mnav-account:hover { background: var(--bg-hover); color: var(--text-primary); }
 .xds-mnav-avatar { display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--r-pill); background: var(--blue-500); color: #fff; font-size: var(--fs-micro); font-weight: var(--fw-semibold); }
 .xds-mnav-account-label { max-width: 10rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
