@@ -1,6 +1,23 @@
 "use client";
 
-import { type FormEvent, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  CalendarDays,
+  ChevronDown,
+  Download,
+  FileUp,
+  Search,
+  ShieldCheck,
+  UsersRound,
+} from "lucide-react";
+
 import Card from "../../components/Card";
 
 export type ManagedUser = {
@@ -13,470 +30,673 @@ export type ManagedUser = {
   active?: boolean;
   created_at?: string;
 };
-
 export type CreateManagedUserInput = {
   email: string;
   uuid: string;
   groups: string[];
 };
 
-type UserGroupManagementProps = {
+type Props = {
   users?: ManagedUser[];
   isLoading?: boolean;
   pendingUserIds?: Set<string>;
   canEditRoles: boolean;
   canCreateCustomUser?: boolean;
   onRoleChange?: (userId: string, role: string) => void;
-  onInvite?: () => void;
-  onImport?: () => void;
   onPauseUser?: (userId: string) => void;
   onResumeUser?: (userId: string) => void;
   onDeleteUser?: (userId: string) => void;
   onRenewUuid?: (userId: string) => void;
   onManageBlacklist?: () => void;
   onCreateCustomUser?: (input: CreateManagedUserInput) => Promise<void> | void;
-  // 分段标签走独立接口(PUT /admin/users/:id/groups), 与角色更新分开
-  // pending —— 共用 pendingUserIds 会让改标签时角色下拉框也跟着显示
-  // "更新中", 语义不对。
   onGroupsChange?: (userId: string, groups: string[]) => void;
   pendingGroupUserIds?: Set<string>;
 };
+type SegmentId =
+  | "free"
+  | "subscribed"
+  | "payg"
+  | "monthly"
+  | "yearly"
+  | "internal";
+type Segment = {
+  id: SegmentId;
+  label: string;
+  value: string;
+  parent?: SegmentId;
+  description: string;
+};
 
-const ROLE_OPTIONS = [
-  { value: "admin", label: "管理员" },
-  { value: "operator", label: "运营者" },
-  { value: "user", label: "用户" },
+const SEGMENTS: Segment[] = [
+  {
+    id: "free",
+    label: "Free 用户",
+    value: "segment:free",
+    description: "免费使用基础功能的用户",
+  },
+  {
+    id: "subscribed",
+    label: "订阅用户",
+    value: "segment:subscribed",
+    description: "付费订阅产品的用户",
+  },
+  {
+    id: "payg",
+    label: "Pay as you go",
+    value: "segment:subscription:payg",
+    parent: "subscribed",
+    description: "按量计费用户",
+  },
+  {
+    id: "monthly",
+    label: "月付",
+    value: "segment:subscription:monthly",
+    parent: "subscribed",
+    description: "月度订阅用户",
+  },
+  {
+    id: "yearly",
+    label: "年付",
+    value: "segment:subscription:yearly",
+    parent: "subscribed",
+    description: "年度订阅用户",
+  },
+  {
+    id: "internal",
+    label: "内部用户",
+    value: "segment:internal",
+    description: "公司内部员工及协作者",
+  },
 ];
+const LEGACY: Record<SegmentId, string[]> = {
+  free: ["segment:registered"],
+  subscribed: ["segment:subscribed"],
+  payg: ["segment:payg"],
+  monthly: ["segment:monthly"],
+  yearly: ["segment:yearly"],
+  internal: ["segment:operations", "segment:beta"],
+};
 
-// 运营手动打的分段标签，用 "segment:" 前缀与 groups 里其它含义的值
-// (如 "Admin"、"ReadOnly Role" 这类由代码匹配的角色标记，或节点准入分组)
-// 分开，避免互相踩踏。这里只是常用建议项，不是后端强制的枚举——
-// UserGroupManagement 仍然可以给任意用户加任意自定义分组。
-export const SEGMENT_TAGS: Array<{ value: string; label: string }> = [
-  { value: "segment:registered", label: "注册用户" },
-  { value: "segment:subscribed", label: "订阅用户" },
-  { value: "segment:operations", label: "运营用户" },
-  { value: "segment:beta", label: "内测用户" },
-];
+const parseGroupList = (input: string): string[] =>
+  Array.from(
+    new Set(
+      input
+        .split(/[\n,，]/)
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  );
+const nameOf = (user: ManagedUser): string =>
+  user.username?.trim() || user.name?.trim() || user.email?.trim() || "—";
+const hasSegment = (user: ManagedUser, segment: Segment): boolean =>
+  (user.groups ?? []).includes(segment.value) ||
+  LEGACY[segment.id].some((value) => (user.groups ?? []).includes(value));
+const primarySegment = (user: ManagedUser): Segment =>
+  SEGMENTS.find((segment) => segment.parent && hasSegment(user, segment)) ??
+  SEGMENTS.find((segment) => hasSegment(user, segment)) ??
+  SEGMENTS[0];
+const formatDate = (value?: string): string =>
+  value ? new Date(value).toLocaleDateString("zh-CN") : "—";
 
-function parseGroupList(input: string): string[] {
-  const values = input
-    .split(/[\n,，]/)
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
-
-  return Array.from(new Set(values));
-}
-
-function getUserDisplayName(user: ManagedUser): string {
-  const username = user.username?.trim();
-  if (username) {
-    return username;
-  }
-
-  const name = user.name?.trim();
-  if (name) {
-    return name;
-  }
-
-  const email = user.email?.trim();
-  if (email) {
-    return email;
-  }
-
-  return "—";
+function Donut({ automatic, manual }: { automatic: number; manual: number }) {
+  const percent = Math.round((automatic / (automatic + manual || 1)) * 100);
+  return (
+    <div
+      className="flex items-center gap-3"
+      aria-label={`自动分配 ${percent}%，手动覆盖 ${100 - percent}%`}
+    >
+      <div
+        className="grid h-20 w-20 place-items-center rounded-full"
+        style={{
+          background: `conic-gradient(var(--color-primary) 0 ${percent}%, #d8b4fe ${percent}% 100%)`,
+        }}
+      >
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-white text-center">
+          <span className="text-sm font-semibold text-[var(--color-heading)]">
+            {percent}%
+          </span>
+          <span className="text-[10px] text-[var(--color-text-muted)]">
+            自动
+          </span>
+        </div>
+      </div>
+      <div className="space-y-1 text-xs text-[var(--color-text-muted)]">
+        <p>
+          <i className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-primary)]" />
+          自动（规则）{automatic}
+        </p>
+        <p>
+          <i className="mr-1 inline-block h-2 w-2 rounded-full bg-purple-300" />
+          手动覆盖 {manual}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export function UserGroupManagement({
   users,
   isLoading = false,
-  pendingUserIds,
   canEditRoles,
   canCreateCustomUser = false,
-  onRoleChange,
-  onInvite,
-  onImport,
-  onPauseUser,
-  onResumeUser,
-  onDeleteUser,
-  onRenewUuid,
   onManageBlacklist,
   onCreateCustomUser,
   onGroupsChange,
   pendingGroupUserIds,
-}: UserGroupManagementProps) {
+}: Props) {
   const data = useMemo(() => users ?? [], [users]);
-  const pendingSet = pendingUserIds ?? new Set<string>();
-  const pendingGroupSet = pendingGroupUserIds ?? new Set<string>();
+  const pending = pendingGroupUserIds ?? new Set<string>();
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [segmentId, setSegmentId] = useState<SegmentId>("subscribed");
+  const [selectedUserId, setSelectedUserId] = useState<string>();
+  const [query, setQuery] = useState("");
+  const [source, setSource] = useState<"all" | "manual" | "automatic">("all");
+  const [override, setOverride] = useState(true);
+  const [validFrom, setValidFrom] = useState("2026-09-04");
+  const [validUntil, setValidUntil] = useState("2026-10-04");
+  const [benefit, setBenefit] = useState("高级版套餐");
+  const [email, setEmail] = useState("");
+  const [uuid, setUuid] = useState("");
+  const [groups, setGroups] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [notice, setNotice] = useState<string>();
+  const [createError, setCreateError] = useState<string>();
 
-  const toggleSegmentTag = (user: ManagedUser, tag: string) => {
-    if (!onGroupsChange) return;
-    const current = user.groups ?? [];
-    const next = current.includes(tag)
-      ? current.filter((g) => g !== tag)
-      : [...current, tag];
-    onGroupsChange(user.id, next);
-  };
+  const segment = SEGMENTS.find((item) => item.id === segmentId) ?? SEGMENTS[0];
+  const members = useMemo(
+    () => data.filter((user) => hasSegment(user, segment)),
+    [data, segment],
+  );
+  const visibleUsers = useMemo(
+    () =>
+      members.filter((user) => {
+        const matched =
+          !query.trim() ||
+          [user.email, user.username, user.name, user.id]
+            .filter(Boolean)
+            .some((value) =>
+              value?.toLowerCase().includes(query.trim().toLowerCase()),
+            );
+        const isManual = (user.groups ?? []).some((group) =>
+          group.startsWith("segment:"),
+        );
+        return (
+          matched &&
+          (source === "all" || (source === "manual" ? isManual : !isManual))
+        );
+      }),
+    [members, query, source],
+  );
+  const selectedUser =
+    data.find((user) => user.id === selectedUserId) ?? visibleUsers[0];
+  const automatic = members.filter(
+    (user) =>
+      !(user.groups ?? []).some((group) => group.startsWith("segment:")),
+  ).length;
+  const manual = members.length - automatic;
+  useEffect(() => {
+    if (!selectedUserId && visibleUsers[0])
+      setSelectedUserId(visibleUsers[0].id);
+  }, [selectedUserId, visibleUsers]);
 
-  const addCustomGroup = (user: ManagedUser) => {
-    if (!onGroupsChange) return;
-    const input = prompt("添加自定义分组名称：");
-    const value = input?.trim();
-    if (!value) return;
-    const current = user.groups ?? [];
-    if (current.includes(value)) return;
-    onGroupsChange(user.id, [...current, value]);
-  };
-
-  const removeGroup = (user: ManagedUser, group: string) => {
-    if (!onGroupsChange) return;
+  const changeGroup = (nextSegment: Segment) => {
+    if (!selectedUser || !onGroupsChange || !canEditRoles) return;
+    const base = (selectedUser.groups ?? []).filter(
+      (group) => !group.startsWith("segment:"),
+    );
+    const parent = SEGMENTS.find((item) => item.id === "subscribed")!;
     onGroupsChange(
-      user.id,
-      (user.groups ?? []).filter((g) => g !== group),
+      selectedUser.id,
+      nextSegment.parent === "subscribed"
+        ? [...base, parent.value, nextSegment.value]
+        : [...base, nextSegment.value],
     );
   };
-
-  const [customEmail, setCustomEmail] = useState("");
-  const [customUuid, setCustomUuid] = useState("");
-  const [customGroups, setCustomGroups] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const [createMessage, setCreateMessage] = useState<string | undefined>();
-  const [createError, setCreateError] = useState<string | undefined>();
-
-  const parsedCustomGroups = useMemo(
-    () => parseGroupList(customGroups),
-    [customGroups],
-  );
-
-  const handleCreateCustomUser = async (event: FormEvent<HTMLFormElement>) => {
+  const createUser = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!onCreateCustomUser) {
+    if (!onCreateCustomUser) return;
+    const parsed = parseGroupList(groups);
+    if (!email.trim() || !uuid.trim() || parsed.length === 0) {
+      setCreateError("请填写邮箱、UUID 和至少一个分组");
       return;
     }
-
-    const email = customEmail.trim();
-    const uuid = customUuid.trim();
-    if (!email || !uuid) {
-      setCreateError("请填写邮箱与 UUID");
-      return;
-    }
-
-    const groups = parsedCustomGroups;
-    if (groups.length === 0) {
-      setCreateError("请至少填写一个用户组");
-      return;
-    }
-
-    setIsCreating(true);
+    setCreating(true);
+    setNotice(undefined);
     setCreateError(undefined);
-    setCreateMessage(undefined);
-
     try {
-      await onCreateCustomUser({ email, uuid, groups });
-      setCreateMessage("用户创建成功");
-      setCustomEmail("");
-      setCustomUuid("");
-      setCustomGroups("");
+      await onCreateCustomUser({
+        email: email.trim(),
+        uuid: uuid.trim(),
+        groups: parsed,
+      });
+      setNotice("用户创建成功");
+      setEmail("");
+      setUuid("");
+      setGroups("");
     } catch (error) {
       setCreateError(error instanceof Error ? error.message : "创建失败");
     } finally {
-      setIsCreating(false);
+      setCreating(false);
     }
+  };
+
+  const exportMembers = () => {
+    const header = ["email", "name", "group", "source", "created_at"];
+    const rows = visibleUsers.map((user) => [
+      user.email,
+      nameOf(user),
+      primarySegment(user).label,
+      (user.groups ?? []).some((group) => group.startsWith("segment:"))
+        ? "manual"
+        : "automatic",
+      user.created_at ?? "",
+    ]);
+    const csv = [header, ...rows]
+      .map((row) =>
+        row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
+      )
+      .join("\n");
+    const downloadUrl = URL.createObjectURL(
+      new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }),
+    );
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `${segment.id}-members.csv`;
+    link.click();
+    URL.revokeObjectURL(downloadUrl);
+  };
+
+  const importMembers = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !onGroupsChange || !canEditRoles) return;
+    const sourceText = await file.text();
+    const importedEmails = sourceText
+      .split(/\r?\n/)
+      .map((line) =>
+        line.split(",")[0]?.replace(/^"|"$/g, "").trim().toLowerCase(),
+      )
+      .filter((value): value is string => Boolean(value) && value !== "email");
+    const matchingUsers = data.filter((user) =>
+      importedEmails.includes(user.email.toLowerCase()),
+    );
+    matchingUsers.forEach((user) => {
+      const base = (user.groups ?? []).filter(
+        (group) => !group.startsWith("segment:"),
+      );
+      const parent = SEGMENTS.find((item) => item.id === "subscribed")!;
+      onGroupsChange(
+        user.id,
+        segment.parent === "subscribed"
+          ? [...base, parent.value, segment.value]
+          : [...base, segment.value],
+      );
+    });
+    setNotice(
+      matchingUsers.length
+        ? `已开始更新 ${matchingUsers.length} 名现有成员`
+        : "没有找到可匹配的现有用户",
+    );
   };
 
   return (
     <Card>
-      <div className="flex flex-col gap-4">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-5">
+        <header className="flex flex-col gap-4 border-b border-[color:var(--color-surface-border)] pb-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">用户组</h2>
-            <p className="text-sm text-gray-500">
-              查看当前成员并调整角色或发起邀请
+            <h2 className="text-xl font-semibold text-[var(--color-heading)]">
+              用户组标签
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              按用户分组管理订阅权益，并保留自动规则与人工覆盖的来源。
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={onManageBlacklist}
-              className="inline-flex items-center rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-50"
+              className="rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50"
             >
               管理黑名单
             </button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              onChange={importMembers}
+              className="hidden"
+            />
             <button
               type="button"
-              onClick={onInvite}
-              className="inline-flex items-center rounded-full border border-purple-200 px-4 py-2 text-sm font-medium text-purple-600 transition hover:border-purple-300 hover:bg-purple-50"
+              onClick={() => importInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50"
             >
-              批量邀请
+              <FileUp className="h-4 w-4" />
+              导入成员
             </button>
             <button
               type="button"
-              onClick={onImport}
-              className="inline-flex items-center rounded-full border border-purple-200 px-4 py-2 text-sm font-medium text-purple-600 transition hover:border-purple-300 hover:bg-purple-50"
+              onClick={exportMembers}
+              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
             >
-              批量导入
+              <Download className="h-4 w-4" />
+              导出成员
             </button>
           </div>
         </header>
-
-        {canCreateCustomUser ? (
-          <form
-            onSubmit={handleCreateCustomUser}
-            className="rounded-xl border border-purple-100 bg-purple-50/60 p-4"
-          >
-            <h3 className="text-sm font-semibold text-purple-800">
-              Root 管理员专用：创建自定义 UUID 用户
-            </h3>
-            <p className="mt-1 text-xs text-purple-700">
-              支持一次配置多个分组（逗号或换行分隔）。
-            </p>
-            <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <label className="flex flex-col gap-1 text-xs text-gray-600">
-                邮箱
+        <div className="grid min-h-[620px] grid-cols-1 divide-y divide-[color:var(--color-surface-border)] lg:grid-cols-[220px_minmax(0,1fr)_290px] lg:divide-x lg:divide-y-0">
+          <aside className="py-3 lg:pr-4">
+            <div className="mb-3 flex items-center justify-between px-2">
+              <span className="text-sm font-semibold text-[var(--color-heading)]">
+                用户分组
+              </span>
+              <button
+                type="button"
+                className="text-xs font-medium text-[var(--color-primary)]"
+              >
+                福利与特权
+              </button>
+            </div>
+            <nav aria-label="用户组标签" className="space-y-1">
+              {SEGMENTS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSegmentId(item.id)}
+                  className={`flex items-center justify-between rounded-md px-3 py-2 text-left text-sm transition ${item.parent ? "ml-4 w-[calc(100%-1rem)]" : "w-full"} ${item.id === segmentId ? "bg-[color:color-mix(in_srgb,var(--color-primary)_10%,white)] font-semibold text-[var(--color-primary)]" : "text-[var(--color-text-muted)] hover:bg-slate-50"}`}
+                >
+                  <span>{item.label}</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                    {data.filter((user) => hasSegment(user, item)).length}
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+          <main className="min-w-0 py-4 lg:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--color-heading)]">
+                  {segment.label}
+                </h3>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                  {segment.description} · {members.length} 名成员
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={!canEditRoles || !selectedUser}
+                onClick={() => changeGroup(segment)}
+                className="inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <UsersRound className="h-4 w-4" />
+                手动调整分组
+              </button>
+            </div>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <label className="relative block flex-1">
+                <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input
-                  type="email"
-                  value={customEmail}
-                  onChange={(event) => setCustomEmail(event.target.value)}
-                  placeholder="user@example.com"
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="搜索用户（邮箱 / 名称 / UID）"
+                  className="w-full rounded-md border border-[color:var(--color-surface-border)] py-2 pl-9 pr-3 text-sm outline-none focus:border-[var(--color-primary)]"
                 />
               </label>
-              <label className="flex flex-col gap-1 text-xs text-gray-600">
-                自定义 UUID
-                <input
-                  type="text"
-                  value={customUuid}
-                  onChange={(event) => setCustomUuid(event.target.value)}
-                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-gray-600 md:col-span-2">
-                分组列表
-                <textarea
-                  value={customGroups}
-                  onChange={(event) => setCustomGroups(event.target.value)}
-                  placeholder="group-a,group-b"
-                  rows={3}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
-                />
+              <label className="relative">
+                <select
+                  value={source}
+                  onChange={(event) =>
+                    setSource(event.target.value as typeof source)
+                  }
+                  className="appearance-none rounded-md border border-[color:var(--color-surface-border)] bg-white px-3 py-2 pr-8 text-sm text-[var(--color-text-muted)]"
+                >
+                  <option value="all">全部加入方式</option>
+                  <option value="automatic">账单同步</option>
+                  <option value="manual">手动覆盖</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2 top-2.5 h-4 w-4 text-slate-400" />
               </label>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
+            <div className="mt-4 overflow-x-auto rounded-md border border-[color:var(--color-surface-border)]">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs text-[var(--color-text-muted)]">
+                  <tr>
+                    <th className="px-3 py-3 font-medium">用户</th>
+                    <th className="px-3 py-3 font-medium">当前分组</th>
+                    <th className="px-3 py-3 font-medium">加入方式</th>
+                    <th className="px-3 py-3 font-medium">订阅有效期</th>
+                    <th className="px-3 py-3 font-medium">福利与特权</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[color:var(--color-surface-border)]">
+                  {isLoading
+                    ? Array.from({ length: 6 }).map((_, index) => (
+                        <tr key={index} className="animate-pulse">
+                          <td colSpan={5} className="px-3 py-5">
+                            <span className="block h-3 rounded bg-slate-100" />
+                          </td>
+                        </tr>
+                      ))
+                    : visibleUsers.map((user) => {
+                        const isManual = (user.groups ?? []).some((group) =>
+                          group.startsWith("segment:"),
+                        );
+                        return (
+                          <tr
+                            key={user.id}
+                            onClick={() => setSelectedUserId(user.id)}
+                            className={`cursor-pointer transition ${selectedUser?.id === user.id ? "bg-[color:color-mix(in_srgb,var(--color-primary)_7%,white)]" : "hover:bg-slate-50"}`}
+                          >
+                            <td className="px-3 py-3">
+                              <p className="font-medium text-[var(--color-heading)]">
+                                {nameOf(user)}
+                              </p>
+                              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                                {user.email}
+                              </p>
+                            </td>
+                            <td className="px-3 py-3 text-[var(--color-primary)]">
+                              {primarySegment(user).label}
+                            </td>
+                            <td className="px-3 py-3">
+                              <span
+                                className={`rounded-full px-2 py-1 text-xs ${isManual ? "bg-purple-50 text-purple-700" : "bg-emerald-50 text-emerald-700"}`}
+                              >
+                                {isManual ? "手动覆盖" : "账单同步"}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
+                              {formatDate(user.created_at)} —
+                            </td>
+                            <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
+                              {isManual ? "高级版套餐" : "标准版套餐"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                </tbody>
+              </table>
+              {!isLoading && visibleUsers.length === 0 ? (
+                <p className="px-4 py-10 text-center text-sm text-[var(--color-text-muted)]">
+                  该分组暂无匹配的成员
+                </p>
+              ) : null}
+            </div>
+          </main>
+          <aside className="py-4 lg:pl-5">
+            <h3 className="text-base font-semibold text-[var(--color-heading)]">
+              编辑成员
+            </h3>
+            {selectedUser ? (
+              <div className="mt-4 space-y-5">
+                <div className="border-b border-[color:var(--color-surface-border)] pb-4">
+                  <p className="font-medium text-[var(--color-heading)]">
+                    {selectedUser.email}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                    UID · {selectedUser.id}
+                  </p>
+                </div>
+                <section>
+                  <p className="text-sm font-medium text-[var(--color-heading)]">
+                    当前分组
+                  </p>
+                  <label className="relative mt-2 block">
+                    <select
+                      value={primarySegment(selectedUser).id}
+                      onChange={(event) => {
+                        const target = SEGMENTS.find(
+                          (item) => item.id === event.target.value,
+                        );
+                        if (target) changeGroup(target);
+                      }}
+                      disabled={!canEditRoles || pending.has(selectedUser.id)}
+                      className="w-full appearance-none rounded-md border border-[color:var(--color-surface-border)] bg-white px-3 py-2 pr-8 text-sm outline-none disabled:opacity-50"
+                    >
+                      {SEGMENTS.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-2.5 h-4 w-4 text-slate-400" />
+                  </label>
+                </section>
+                <section className="rounded-md border border-[color:var(--color-surface-border)] p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-[var(--color-heading)]">
+                        手动覆盖
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
+                        手动指定分组与有效期，覆盖自动规则。
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={override}
+                      onChange={(event) => setOverride(event.target.checked)}
+                      aria-label="启用手动覆盖"
+                      className="mt-1 h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                  </div>
+                </section>
+                <section>
+                  <div className="flex items-center gap-1.5">
+                    <CalendarDays className="h-4 w-4 text-[var(--color-primary)]" />
+                    <p className="text-sm font-medium text-[var(--color-heading)]">
+                      订阅有效期
+                    </p>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <label className="text-xs text-[var(--color-text-muted)]">
+                      开始日期
+                      <input
+                        type="date"
+                        value={validFrom}
+                        onChange={(event) => setValidFrom(event.target.value)}
+                        disabled={!override}
+                        className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm disabled:bg-slate-50"
+                      />
+                    </label>
+                    <label className="text-xs text-[var(--color-text-muted)]">
+                      结束日期
+                      <input
+                        type="date"
+                        value={validUntil}
+                        min={validFrom}
+                        onChange={(event) => setValidUntil(event.target.value)}
+                        disabled={!override}
+                        className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm disabled:bg-slate-50"
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
+                    有效期字段待计费服务提供读写接口后持久化；当前保存只更新手动分组。
+                  </p>
+                </section>
+                <section>
+                  <p className="text-sm font-medium text-[var(--color-heading)]">
+                    福利与特权
+                  </p>
+                  <select
+                    value={benefit}
+                    onChange={(event) => setBenefit(event.target.value)}
+                    className="mt-2 w-full rounded-md border border-[color:var(--color-surface-border)] bg-white px-3 py-2 text-sm"
+                  >
+                    <option>高级版套餐</option>
+                    <option>标准版套餐</option>
+                    <option>内部员工套餐</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)]"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    查看权益详情
+                  </button>
+                </section>
+                <section className="border-t border-[color:var(--color-surface-border)] pt-4">
+                  <p className="text-sm font-medium text-[var(--color-heading)]">
+                    成员来源
+                  </p>
+                  <div className="mt-3">
+                    <Donut automatic={automatic} manual={manual} />
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <p className="mt-6 text-sm text-[var(--color-text-muted)]">
+                从成员列表选择一项以查看详情。
+              </p>
+            )}
+          </aside>
+        </div>
+        {canCreateCustomUser ? (
+          <details className="rounded-md border border-[color:var(--color-surface-border)] p-4">
+            <summary className="cursor-pointer text-sm font-medium text-[var(--color-heading)]">
+              Root 管理员：创建自定义 UUID 用户
+            </summary>
+            <form
+              onSubmit={createUser}
+              className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3"
+            >
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="邮箱"
+                className="rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm"
+              />
+              <input
+                value={uuid}
+                onChange={(event) => setUuid(event.target.value)}
+                placeholder="自定义 UUID"
+                className="rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm"
+              />
+              <input
+                value={groups}
+                onChange={(event) => setGroups(event.target.value)}
+                placeholder="分组，用逗号分隔"
+                className="rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm"
+              />
               <button
                 type="submit"
-                disabled={isCreating}
-                className="inline-flex items-center rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={creating}
+                className="w-fit rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
-                {isCreating ? "创建中…" : "创建用户"}
+                {creating ? "创建中…" : "创建用户"}
               </button>
-              {createMessage ? (
-                <span className="text-xs text-green-700">{createMessage}</span>
+              {notice ? (
+                <p className="text-sm text-emerald-700">{notice}</p>
               ) : null}
               {createError ? (
-                <span className="text-xs text-red-600">{createError}</span>
+                <p className="text-sm text-red-600">{createError}</p>
               ) : null}
-            </div>
-          </form>
+            </form>
+          </details>
         ) : null}
-
-        <div
-          className="overflow-x-auto"
-          aria-busy={isLoading}
-          aria-live="polite"
-        >
-          <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-            <thead className="bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-2 font-medium">邮箱</th>
-                <th className="px-4 py-2 font-medium">用户名</th>
-                <th className="px-4 py-2 font-medium">角色</th>
-                <th className="px-4 py-2 font-medium">用户组</th>
-                <th className="px-4 py-2 font-medium">状态</th>
-                <th className="px-4 py-2 font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white/80">
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, index) => (
-                    <tr key={index} className="animate-pulse">
-                      <td className="px-4 py-3">
-                        <span className="inline-block h-4 w-48 rounded bg-gray-200" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-block h-4 w-28 rounded bg-gray-200" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-block h-4 w-24 rounded bg-gray-200" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-block h-4 w-32 rounded bg-gray-200" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-block h-4 w-16 rounded bg-gray-200" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-block h-4 w-24 rounded bg-gray-200" />
-                      </td>
-                    </tr>
-                  ))
-                : data.map((user) => {
-                    const role = user.role ?? "user";
-                    const isPending = pendingSet.has(user.id);
-                    const isGroupsPending = pendingGroupSet.has(user.id);
-                    const isActive = user.active !== false;
-                    const userGroups = user.groups ?? [];
-                    const customGroups = userGroups.filter(
-                      (g) => !SEGMENT_TAGS.some((tag) => tag.value === g),
-                    );
-                    return (
-                      <tr
-                        key={user.id}
-                        className="transition hover:bg-purple-50/50"
-                      >
-                        <td className="px-4 py-3 text-sm font-medium text-gray-800">
-                          {user.email}
-                        </td>
-                        <td className="px-4 py-3 text-gray-700">
-                          {getUserDisplayName(user)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <select
-                            className="w-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-200"
-                            value={role}
-                            disabled={!canEditRoles || isPending}
-                            onChange={(event) =>
-                              onRoleChange?.(user.id, event.target.value)
-                            }
-                          >
-                            {ROLE_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          {isPending ? (
-                            <p className="mt-1 text-xs text-purple-500">
-                              更新中…
-                            </p>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex max-w-xs flex-wrap items-center gap-1.5">
-                            {SEGMENT_TAGS.map((tag) => {
-                              const active = userGroups.includes(tag.value);
-                              return (
-                                <button
-                                  key={tag.value}
-                                  type="button"
-                                  disabled={!onGroupsChange || isGroupsPending}
-                                  onClick={() => toggleSegmentTag(user, tag.value)}
-                                  className={`rounded-full border px-2 py-0.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                                    active
-                                      ? "border-purple-300 bg-purple-100 text-purple-700"
-                                      : "border-gray-200 text-gray-400 hover:border-purple-200 hover:text-purple-500"
-                                  }`}
-                                  title={
-                                    active
-                                      ? `点击移除「${tag.label}」`
-                                      : `点击标记为「${tag.label}」`
-                                  }
-                                >
-                                  {tag.label}
-                                </button>
-                              );
-                            })}
-                            {customGroups.map((group) => (
-                              <span
-                                key={group}
-                                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
-                              >
-                                {group}
-                                {onGroupsChange ? (
-                                  <button
-                                    type="button"
-                                    disabled={isGroupsPending}
-                                    onClick={() => removeGroup(user, group)}
-                                    className="text-gray-400 hover:text-red-500 disabled:cursor-not-allowed"
-                                    aria-label={`移除分组 ${group}`}
-                                  >
-                                    ×
-                                  </button>
-                                ) : null}
-                              </span>
-                            ))}
-                            {onGroupsChange ? (
-                              <button
-                                type="button"
-                                disabled={isGroupsPending}
-                                onClick={() => addCustomGroup(user)}
-                                className="rounded-full border border-dashed border-gray-300 px-2 py-0.5 text-xs text-gray-400 hover:border-purple-300 hover:text-purple-500 disabled:cursor-not-allowed"
-                              >
-                                + 自定义
-                              </button>
-                            ) : null}
-                            {isGroupsPending ? (
-                              <span className="text-xs text-purple-500">
-                                更新中…
-                              </span>
-                            ) : null}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                          >
-                            {isActive ? "活跃" : "已暂停"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            {isActive ? (
-                              <button
-                                onClick={() => onPauseUser?.(user.id)}
-                                className="text-xs text-orange-600 hover:text-orange-700"
-                              >
-                                暂停
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => onResumeUser?.(user.id)}
-                                className="text-xs text-green-600 hover:text-green-700"
-                              >
-                                恢复
-                              </button>
-                            )}
-                            <button
-                              onClick={() => onRenewUuid?.(user.id)}
-                              className="text-xs text-blue-600 hover:text-blue-700"
-                            >
-                              重置 UUID
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (
-                                  confirm("确定要删除该用户吗？此操作不可逆。")
-                                ) {
-                                  onDeleteUser?.(user.id);
-                                }
-                              }}
-                              className="text-xs text-red-600 hover:text-red-700"
-                            >
-                              删除
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-            </tbody>
-          </table>
-          {!isLoading && data.length === 0 ? (
-            <div className="py-6 text-center text-sm text-gray-500">
-              暂无用户数据
-            </div>
-          ) : null}
-        </div>
       </div>
     </Card>
   );
