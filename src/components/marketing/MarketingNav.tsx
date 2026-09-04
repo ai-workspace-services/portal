@@ -12,7 +12,8 @@
 
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Github, LogOut, Menu, Star, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Star, X } from "lucide-react";
+import { Github } from "@/components/icons/brand";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { homeMarketingContent } from "@/components/marketing/content";

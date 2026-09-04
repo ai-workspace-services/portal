@@ -33,7 +33,7 @@ export default function BrandCTA({
       }`}
     >
       <div className="flex-1 text-left">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+        <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
           {lang === "zh" ? "官方渠道" : "Official channel"}
         </p>
         <p className="mt-3 text-base font-semibold text-slate-900">

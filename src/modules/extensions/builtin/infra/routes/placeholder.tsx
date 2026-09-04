@@ -218,7 +218,7 @@ function SectionShell({
       )}
     >
       <div className="mb-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
+        <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
           {eyebrow}
         </p>
         <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--color-heading)]">

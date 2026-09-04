@@ -456,7 +456,7 @@ export function QuotaCard({
       />
       <XdsCardBody>
         <div className="xds-row-between" style={{ alignItems: "flex-end" }}>
-          <div className="xds-stat-value" style={{ fontSize: "2rem" }}>
+          <div className="xds-stat-value" style={{ fontSize: "var(--fs-h1)" }}>
             {pct(percent)}
             <span className="xds-unit">%</span>
           </div>

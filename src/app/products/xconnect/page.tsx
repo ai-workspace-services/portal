@@ -387,7 +387,7 @@ export default function XConnectPage() {
                   <div className="xds-trust-v">
                     {cell.v}
                     {"unit" in cell && cell.unit ? (
-                      <span className="xds-subtle" style={{ fontSize: "1rem" }}>
+                      <span className="xds-subtle" style={{ fontSize: "var(--fs-body-lg)" }}>
                         {cell.unit}
                       </span>
                     ) : null}

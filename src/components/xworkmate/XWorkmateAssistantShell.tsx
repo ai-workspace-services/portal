@@ -213,7 +213,7 @@ export function XWorkmateAssistantShell({
               "What would you like to ask?",
             )}
             className={cn(
-              "w-full resize-none bg-transparent px-4 py-2 text-[15px] leading-relaxed text-[var(--color-heading)] outline-none placeholder:text-[var(--color-text-subtle)]",
+              "w-full resize-none bg-transparent px-4 py-2 text-body leading-relaxed text-[var(--color-heading)] outline-none placeholder:text-[var(--color-text-subtle)]",
               mode === "hero" ? "min-h-[120px]" : "min-h-[80px]",
             )}
           />
@@ -232,7 +232,7 @@ export function XWorkmateAssistantShell({
                 type="button"
                 className="inline-flex h-8 items-center gap-1.5 rounded-md bg-white px-2.5 text-xs font-medium text-black transition hover:bg-[var(--color-surface-hover)]"
               >
-                <span className="flex h-4 w-4 items-center justify-center rounded bg-black text-[10px] font-bold text-white">
+                <span className="flex h-4 w-4 items-center justify-center rounded bg-black text-eyebrow font-bold text-white">
                   Z
                 </span>
                 GLM-5.0
@@ -272,7 +272,7 @@ export function XWorkmateAssistantShell({
               key={suggestion}
               type="button"
               onClick={() => onPromptChange(suggestion)}
-              className="inline-flex h-8 items-center rounded-full border border-[color:var(--color-surface-border)] bg-white px-3.5 text-[13px] text-[var(--color-text-subtle)] transition hover:border-[color:var(--color-text-subtle)] hover:text-black"
+              className="inline-flex h-8 items-center rounded-full border border-[color:var(--color-surface-border)] bg-white px-3.5 text-caption text-[var(--color-text-subtle)] transition hover:border-[color:var(--color-text-subtle)] hover:text-black"
             >
               {suggestion}
             </button>

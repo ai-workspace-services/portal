@@ -11,7 +11,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Github } from "lucide-react";
+import { Github } from "@/components/icons/brand";
 
 import {
   AUTH_CHECKBOX_CLASS,

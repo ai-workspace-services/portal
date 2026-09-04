@@ -134,13 +134,13 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             }
             titleClassName={
               isChinese
-                ? "text-[2.65rem] tracking-[-0.08em] sm:text-[3.5rem]"
-                : "editorial-display text-[2.9rem] tracking-[-0.06em] sm:text-[3.6rem]"
+                ? "text-5xl tracking-[-0.08em] sm:text-6xl"
+                : "editorial-display text-5xl tracking-[-0.06em] sm:text-6xl"
             }
           />
 
           <div className="rounded-[1.25rem] border border-slate-900/10 bg-white/80 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] backdrop-blur-sm">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {isChinese ? "搜索文章" : "Search notes"}
             </p>
             <div className="mt-3">
@@ -245,7 +245,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                     </time>
                   ) : null}
                 </div>
-                <h2 className="mt-6 max-w-3xl text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.05em] sm:text-[2.45rem]">
+                <h2 className="mt-6 max-w-3xl text-3xl font-semibold leading-[1.08] tracking-[-0.05em] sm:text-4xl">
                   {featuredPost.title}
                 </h2>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
@@ -295,7 +295,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                   </div>
 
                   <div className="mt-5 flex-1 space-y-3">
-                    <h2 className="text-[1.35rem] font-semibold leading-[1.1] tracking-[-0.04em] text-slate-900">
+                    <h2 className="text-xl font-semibold leading-[1.1] tracking-[-0.04em] text-slate-900">
                       {post.title}
                     </h2>
                     {post.author ? (
@@ -314,7 +314,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                         {post.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-2.5 py-1 text-[11px] font-medium text-slate-600"
+                            className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-2.5 py-1 text-eyebrow font-medium text-slate-600"
                           >
                             {tag}
                           </span>

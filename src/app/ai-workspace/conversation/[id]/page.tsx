@@ -139,7 +139,7 @@ export default function ConversationPage() {
             <h1 className="truncate text-sm font-bold sm:text-base">
               {sessionId ? sessionTitle(snapshot) : "新对话"}
             </h1>
-            <div className="mt-1 flex items-center gap-2 text-[11px] text-[#7b8494]">
+            <div className="mt-1 flex items-center gap-2 text-eyebrow text-[#7b8494]">
               <span
                 className={cn(
                   "inline-flex items-center gap-1 font-semibold",
@@ -226,7 +226,7 @@ export default function ConversationPage() {
                       </p>
                       <span
                         className={cn(
-                          "mt-2 block text-[10px]",
+                          "mt-2 block text-eyebrow",
                           message.role === "user"
                             ? "text-blue-100"
                             : "text-[#8a93a2]",
@@ -249,7 +249,7 @@ export default function ConversationPage() {
               onSubmitted={handleSubmitted}
             />
           </div>
-          <p className="mt-2 text-center text-[10px] text-[#8a93a2]">
+          <p className="mt-2 text-center text-eyebrow text-[#8a93a2]">
             会话和任务状态由 Bridge 持久化，并在所有终端按事件序号同步
           </p>
         </footer>

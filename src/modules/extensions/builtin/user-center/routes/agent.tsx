@@ -123,7 +123,7 @@ export default function UserCenterAgentRoute() {
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-primary-muted)] text-[var(--color-primary)]">
                         <Server className="h-5 w-5" />
                       </div>
-                      <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-green-600 dark:bg-green-500/20 dark:text-green-400">
+                      <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-eyebrow font-bold uppercase tracking-wider text-green-600 dark:bg-green-500/20 dark:text-green-400">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                         Online
                       </span>
@@ -135,7 +135,7 @@ export default function UserCenterAgentRoute() {
                     </div>
 
                     <div className="mt-6 flex items-center justify-between border-t border-[color:var(--color-surface-border)] pt-4">
-                      <div className="text-[10px] text-[var(--color-text-subtle)]">
+                      <div className="text-eyebrow text-[var(--color-text-subtle)]">
                         Port: <span className="font-medium text-[var(--color-text)]">{node.port || 443}</span>
                       </div>
                       <button className="text-[var(--color-primary)] transition-transform hover:scale-110">
