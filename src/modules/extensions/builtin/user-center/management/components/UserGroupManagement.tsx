@@ -155,7 +155,7 @@ function Donut({ automatic, manual }: { automatic: number; manual: number }) {
           <span className="text-sm font-semibold text-[var(--color-heading)]">
             {percent}%
           </span>
-          <span className="text-[10px] text-[var(--color-text-muted)]">
+          <span className="text-eyebrow text-[var(--color-text-muted)]">
             自动
           </span>
         </div>
