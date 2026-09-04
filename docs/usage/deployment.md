@@ -24,7 +24,7 @@ This is intentionally static-first for the current weak-IO single-node host. Dyn
 
 ## Control Plane & DNS Stage
 
-The control repo (`github-org-x-evor`) tracks `console.svc.plus` through `console.svc.plus.code-workspace` and keeps the `subrepos/accounts.svc.plus` pointer in sync via `skills/cross-repo-upstream-submodule-sync`. Releases resolve metadata with that workspace and the `config/single-node-release` manifests. After `.github/workflows/pipeline.yaml` finishes pushing the new image, the control-plane DNS automation calls `scripts/github-actions/update-release-dns.sh` to update Cloudflare DNS so the new endpoint is reachable through the current production host `jp-xhttp-contabo.svc.plus`.
+The control repo (`github-org-x-evor`) tracks `console.svc.plus` through `console.svc.plus.code-workspace` and keeps the `subrepos/accounts.svc.plus` pointer in sync via `skills/cross-repo-upstream-submodule-sync`. Releases resolve metadata with that workspace and the `config/single-node-release` manifests. After `.github/workflows/ci-pipeline.yml` finishes pushing the new image, the control-plane DNS automation calls `scripts/github-actions/ensure-frontend-dns.sh` to update Cloudflare DNS so the new endpoint is reachable through the current production host `jp-xhttp-contabo.svc.plus`.
 
 ## Runtime Layout
 
@@ -53,7 +53,7 @@ Containers:
 Workflow:
 
 ```text
-.github/workflows/pipeline.yaml
+.github/workflows/ci-pipeline.yml
 ```
 
 Secrets required:
@@ -136,7 +136,7 @@ rm -f deploy/single-node/.env.runtime
 python3 - <<'PY'
 from pathlib import Path
 import yaml
-yaml.safe_load(Path('.github/workflows/pipeline.yaml').read_text())
+yaml.safe_load(Path('.github/workflows/ci-pipeline.yml').read_text())
 print('workflow yaml ok')
 PY
 ```
