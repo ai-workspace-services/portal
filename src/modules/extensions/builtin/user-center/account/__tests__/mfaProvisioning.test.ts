@@ -6,7 +6,7 @@ import {
 } from '../mfaProvisioning'
 
 describe('MFA provisioning helpers', () => {
-  it('accepts both direct and one-level nested provisioning payloads', () => {
+  it('accepts direct and nested provisioning payloads from every proxy boundary', () => {
     const direct = normalizeMfaProvisionResponse({
       secret: 'JBSWY3DPEHPK3PXP',
       otpauth_url: 'otpauth://totp/svc.plus:user?secret=JBSWY3DPEHPK3PXP',
@@ -17,9 +17,19 @@ describe('MFA provisioning helpers', () => {
         otpauthUrl: 'otpauth://totp/svc.plus:user?secret=JBSWY3DPEHPK3PXP',
       },
     })
+    const edgeNested = normalizeMfaProvisionResponse({
+      success: true,
+      data: {
+        data: {
+          secret: 'JBSWY3DPEHPK3PXP',
+          otpauth_url: 'otpauth://totp/svc.plus:user?secret=JBSWY3DPEHPK3PXP',
+        },
+      },
+    })
 
     expect(direct?.secret).toBe('JBSWY3DPEHPK3PXP')
     expect(nested?.otpauth_url).toContain('otpauth://totp/')
+    expect(edgeNested?.secret).toBe('JBSWY3DPEHPK3PXP')
   })
 
   it('rebuilds a scannable URI when the backend omits otpauth_url', () => {

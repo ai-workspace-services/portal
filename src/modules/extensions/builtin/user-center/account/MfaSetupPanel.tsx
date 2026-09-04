@@ -198,8 +198,11 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
         error?: string | null
         data?: unknown
       }
-      const data = normalizeMfaProvisionResponse(payload?.data)
-      if (!payload?.success || !data) {
+      // Accept both the BFF envelope and direct account-service responses.
+      // The latter has no `success` field, but a 2xx response with a secret is
+      // a successful provisioning result and must render its QR code.
+      const data = normalizeMfaProvisionResponse(payload)
+      if (!response.ok || payload?.success === false || !data) {
         setError(resolveErrorMessage(payload?.error))
         return
       }
@@ -323,7 +326,8 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       !displayStatus?.totpEnabled &&
       !secret &&
       !hasPendingMfa &&
-      !isProvisioning
+      !isProvisioning &&
+      !error
     ) {
       void handleProvision()
     }
@@ -333,6 +337,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
     hasPendingMfa,
     isDialogOpen,
     isProvisioning,
+    error,
     secret,
     setupRequested,
   ])
@@ -472,7 +477,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
           aria-modal="true"
         >
           <div
-            className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-md)]"
+            className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-md)]"
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -484,25 +489,30 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
               ×
             </button>
             <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
-              <h3 className="text-xl font-semibold text-[var(--color-text)]">
-                {isMandatorySetup ? copy.modal.setupTitle : copy.modal.title}
-              </h3>
-              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-                {isMandatorySetup
-                  ? copy.modal.setupDescription
-                  : displayStatus?.totpEnabled
-                    ? copy.enabledHint
-                    : copy.subtitle}
-              </p>
+              <div className="border-b border-[color:var(--color-surface-border)] pb-5 pr-10">
+                <h3 className="text-xl font-semibold text-[var(--color-text)]">
+                  {isMandatorySetup ? copy.modal.setupTitle : copy.modal.title}
+                </h3>
+                <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+                  {isMandatorySetup
+                    ? copy.modal.setupDescription
+                    : displayStatus?.totpEnabled
+                      ? copy.enabledHint
+                      : copy.subtitle}
+                </p>
+              </div>
 
-              <div className="mt-6 space-y-6">
+              <div className="mt-5 space-y-5">
                 {isMandatorySetup ? (
                   <div
                     role="alert"
-                    className="rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-4 text-sm text-[var(--color-warning-foreground)]"
+                    className="flex items-start gap-3 rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] px-4 py-3 text-sm text-[var(--color-warning-foreground)]"
                   >
-                    <p className="font-semibold">{copy.modal.setupTitle}</p>
-                    <p className="mt-1">{copy.lockedMessage}</p>
+                    <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[var(--color-warning-foreground)]" aria-hidden="true" />
+                    <div>
+                      <p className="font-semibold">{copy.modal.setupTitle}</p>
+                      <p className="mt-0.5">{copy.lockedMessage}</p>
+                    </div>
                   </div>
                 ) : null}
                 {displayStatus?.totpEnabled ? (
@@ -540,11 +550,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                     {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
                   </div>
                 ) : (
-                  <div className="space-y-5">
-                    <p className="rounded-lg border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-3 text-sm text-[var(--color-warning-foreground)]">
-                      {hasPendingMfa ? copy.lockedMessage : copy.subtitle}
-                    </p>
-
+                  <div className="space-y-4">
                     {lockoutActive ? (
                       <p className="rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-3 text-sm text-[var(--color-danger-foreground)]">
                         {copy.errors.locked}
@@ -554,24 +560,24 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       </p>
                     ) : null}
 
-                    <ol className="space-y-4">
-                      <li className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
+                    <ol className="space-y-3">
+                      <li className="rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] p-4">
                         <h4 className="text-sm font-semibold text-[var(--color-text)]">{copy.guide.step1Title}</h4>
-                        <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.guide.step1Description}</p>
-                        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[var(--color-text-subtle)]">
+                        <p className="mt-1.5 text-sm text-[var(--color-text-subtle)]">{copy.guide.step1Description}</p>
+                        <ul className="mt-2.5 list-disc space-y-1 pl-5 text-sm text-[var(--color-text-subtle)]">
                           <li>{copy.guide.step1Ios}</li>
                           <li>{copy.guide.step1Android}</li>
                         </ul>
                       </li>
 
-                      <li className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
+                      <li className="rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4">
                         <h4 className="text-sm font-semibold text-[var(--color-text)]">{copy.guide.step2Title}</h4>
                         <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.guide.step2Description}</p>
-                        <div className="mt-4 flex flex-col gap-6 lg:flex-row lg:items-start">
+                        <div className="mt-4 grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
                           {qrCodeDataUrl ? (
-                            <div className="flex justify-center lg:w-60 lg:justify-start">
+                            <div className="flex justify-center">
                               <div className="rounded-xl border border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-3">
-                                <div className="flex items-center justify-center rounded-lg border border-[color:var(--color-primary-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)]">
+                                <div className="flex items-center justify-center rounded-lg bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)]">
                                   <Image
                                     src={qrCodeDataUrl}
                                     alt={copy.qrLabel}
@@ -583,12 +589,21 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                                 </div>
                               </div>
                             </div>
-                          ) : null}
-                          <div className="flex-1 space-y-3">
-                            <div>
-                              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
-                              <code className="mt-1 block break-all rounded bg-[var(--color-primary-muted)] px-3 py-2 text-sm text-[var(--color-primary)]">{secret}</code>
+                          ) : (
+                            <div
+                              className="flex min-h-52 items-center justify-center rounded-xl border border-dashed border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-5 text-center text-sm text-[var(--color-text-subtle)]"
+                              aria-live="polite"
+                            >
+                              {isProvisioning ? '正在生成认证二维码…' : error ? copy.errors.provisioningFailed : '认证二维码准备中…'}
                             </div>
+                          )}
+                          <div className="flex-1 space-y-3">
+                            {secret ? (
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
+                                <code className="mt-1 block break-all rounded bg-[var(--color-primary-muted)] px-3 py-2 text-sm text-[var(--color-primary)]">{secret}</code>
+                              </div>
+                            ) : null}
                             {issuer ? (
                               <div>
                                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.issuerLabel}</p>
@@ -599,19 +614,6 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                               <div>
                                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.accountLabel}</p>
                                 <p className="mt-1 break-all text-sm text-[var(--color-text-subtle)]">{accountLabel}</p>
-                              </div>
-                            ) : null}
-                            {uri ? (
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.uriLabel}</p>
-                                <a
-                                  href={uri}
-                                  className="mt-1 block break-all text-sm text-[var(--color-primary)] underline"
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  {uri}
-                                </a>
                               </div>
                             ) : null}
                             <p className="text-xs text-[var(--color-text-subtle)] opacity-80">{copy.manualHint}</p>
@@ -627,7 +629,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                         </div>
                       </li>
 
-                      <li className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
+                      <li className="rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4">
                         <h4 className="text-sm font-semibold text-[var(--color-text)]">{copy.guide.step3Title}</h4>
                         <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.guide.step3Description}</p>
                         <form
