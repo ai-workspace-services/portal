@@ -91,4 +91,10 @@ case "$CHOICE" in
 esac
 
 echo ""
-echo "For more details, read: skills/git.secret-incident-response.v1.md"
+echo "Playbooks:"
+echo "  Rotation and access governance:"
+echo "    xworkspace-core-skills: operations-management/secrets-identity-and-access-governance"
+echo "  Git history cleanup:"
+echo "    skills/git-history-secret-remediation/SKILL.md"
+echo "  Incident declaration and tracking:"
+echo "    xworkspace-core-skills: operations-management/incident-response-and-change-management"
