@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "${SCRIPT_DIR}/.." && pwd)
 CONTENT_DIR="${CONTENT_LOCAL_DIR:-${REPO_ROOT}/src/content}"
-REMOTE_REPO="${WEBSITE_CONTENT_REPOSITORY:-https://github.com/haitaopanhq/knowledge.git}"
+REMOTE_REPO="${WEBSITE_CONTENT_REPOSITORY:-https://github.com/ai-workspace-services/knowledge.git}"
 REMOTE_BRANCH="${WEBSITE_CONTENT_REF:-main}"
 REMOTE_SUBDIR="${WEBSITE_CONTENT_SUBDIR:-content/website}"
 
@@ -14,7 +14,7 @@ Usage: $(basename "$0") pull
 
 Environment variables:
   WEBSITE_CONTENT_REPOSITORY Git URL or local path of the Git-backed CMS repository
-                            (default: https://github.com/haitaopanhq/knowledge.git)
+                            (default: https://github.com/ai-workspace-services/knowledge.git)
   WEBSITE_CONTENT_REF        Branch, tag, or commit ref to sync (default: main)
   WEBSITE_CONTENT_SUBDIR     Directory inside the CMS repository (default: content/website)
   CONTENT_LOCAL_DIR          Local target directory (default: src/content)
