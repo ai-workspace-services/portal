@@ -11,7 +11,7 @@ on:
       - '*-release-*'
       - '*daily-build-*'
     paths:
-      - ".github/workflows/pipeline.yaml"
+      - ".github/workflows/ci-pipeline.yml"
       - "Dockerfile"
       - "deploy/single-node/**"
       - "package.json"

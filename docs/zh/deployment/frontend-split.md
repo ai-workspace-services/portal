@@ -57,11 +57,35 @@ Worker 是可选适配模式，不改变 Node/VPS 默认构建。包含文件系
 - `deploy_cloud_run=true|false`
 - `verify_supabase=true|false`
 - `initialize_supabase=true|false`
-- `portal_repository=ai-workspace-services/portal`
 - `vault_env_path=sit | uat | prod`
-- `portal_ref=<不可变发布 tag、portal PR head SHA 或分支名>`
+- `tag_ref=<不可变发布 tag，例如 daily-build-2026.09.04-r1>`
+
+> 参数名以 `ai-workspace-infra/platform-ops-toolkit` 的
+> `.github/workflows/serverless-orchestrator.yml` 为准。此处此前记为
+> `portal_repository` / `portal_ref`，与实际输入不符，已更正为 `tag_ref`。
 
 该模式将 Cloudflare、GCP Cloud Run、Supabase 作为可组合节点：可全选执行完整验证，也可只选择其中任意部分。Cloudflare 节点会检出指定 portal ref，部署 `static-dashboard/out` 至同名 Pages 分支，并将 `frontend-server` 通过 OpenNext 部署为 `frontend-server-edge-sit`、`frontend-server-edge-uat` 或 `frontend-server-edge-prod` Worker；Cloud Run 节点部署后端服务并注入 Supabase 连接；Supabase 节点校验 Vault 中的连接契约，`initialize_supabase=true` 时先初始化 Accounts schema。任何已选择节点失败都会使编排失败。
+
+## UAT 常规更新入口
+
+上面的 `Serverless Orchestrator` 用于**手动验证某个 ref**。日常把 main 推到 UAT
+走的是另一条链路 —— `platform-ops-toolkit` 的 **Daily Main Snapshot**：
+
+- 每日 16:00 UTC（北京时间 00:00）定时执行，也可手动触发
+- `deploy_env=uat`
+- `snapshot_tag` 留空自动解析；手填时 SIT/UAT 用 `daily-build-*` 或
+  `uat-daily-build-*`，**`v*` 是 Prod 专用命名**
+- `snapshot_source_ref` 留空即取各仓库 main
+
+它跨全部组织统一打不可变 tag、构建，并在成功后自动派发 UAT serverless 部署。
+
+> **不要传 `repositories` 过滤。** workflow 里对部署步骤有
+> `(inputs.repositories || '') == ''` 的守卫（注释原文：*Never derive a deploy
+> tag from a partial or filtered snapshot*）—— 一旦按仓库过滤，只会打 tag，
+> 部署会被静默跳过。
+
+本仓库的 `ci-pipeline.yml` **不部署任何 Cloudflare 资源**，它只做构建与制品发布；
+`deployment_environment` 仅用于选择 Vault 角色和标记构建产物。
 
 ## 推荐路由
 
