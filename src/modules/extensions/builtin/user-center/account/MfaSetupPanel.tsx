@@ -325,7 +325,6 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       (setupRequested || isDialogOpen) &&
       !displayStatus?.totpEnabled &&
       !secret &&
-      !hasPendingMfa &&
       !isProvisioning &&
       !error
     ) {
