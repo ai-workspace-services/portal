@@ -137,7 +137,7 @@ export default function OpsAuditConsole() {
     <div className="space-y-5 pb-8">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
+          <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
             Operations / audit trail
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-heading)] sm:text-3xl">
@@ -236,7 +236,7 @@ export default function OpsAuditConsole() {
                           </button>
                           <span className="px-3 text-xs text-[var(--color-text-muted)]">{formatDate(entry.createdAt)}</span>
                           <span className="truncate px-3 font-mono text-xs text-[var(--color-text-muted)]" title={entry.actorUuid}>{entry.actorUuid || "系统"}</span>
-                          <span className="px-3"><span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-1 text-xs text-[var(--color-primary)]">{actionLabel(entry.action)}</span><span className="mt-1 block truncate font-mono text-[11px] text-[var(--color-text-subtle)]">{entry.action}</span></span>
+                          <span className="px-3"><span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-1 text-xs text-[var(--color-primary)]">{actionLabel(entry.action)}</span><span className="mt-1 block truncate font-mono text-eyebrow text-[var(--color-text-subtle)]">{entry.action}</span></span>
                           <span className="truncate px-3 font-mono text-xs text-[var(--color-text-muted)]" title={target}>{target}</span>
                           <span className="px-3 text-right text-xs text-[var(--color-primary)]">{isExpanded ? "收起" : "展开"}</span>
                         </div>

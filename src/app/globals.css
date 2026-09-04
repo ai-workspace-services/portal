@@ -79,16 +79,70 @@
   --radius-xl: 0.5rem;
   --radius-pill: 999px;
 
-  --type-body-size: 0.8125rem;
-  --type-body-line-height: 1.1538;
-  --type-sidebar-size: 0.8125rem;
-  --type-sidebar-line-height: 1.1538;
-  --type-meta-size: 0.75rem;
-  --type-meta-line-height: 1.3334;
-  --type-heading-1-size: 1.5rem;
-  --type-heading-2-size: 1.25rem;
-  --type-heading-3-size: 0.8125rem;
-  --type-heading-line-height: 1.1667;
+  /* ============================================================
+     排版系统 —— 全站唯一字号阶梯 (Type Scale, single source of truth)
+     ------------------------------------------------------------
+     合并前：globals.css 的 --type-* 与 xds.css 的 --fs-* 两套并行，
+     另有 171 处写死的任意字号，首页实测 16 种字号 / 23 种字号字重组合，
+     且出现 51.2 / 19.684 / 16.8 / 13.76 / 12.48 / 11.438px 等非整数字号。
+
+     合并后：13 级整数阶梯，marketing 与 console 共用同一把尺子。
+     阶梯与 Tailwind 默认 text-* 对齐，因此既有 1388 处 text-* 用法零位移；
+     11 / 13 / 15px 三个中间级补齐站点真实需要，取代原先的碎小数字号。
+
+     取值一律用 token，禁止再写 text-[13px] / font-size: 0.86rem 这类字面量。
+     ============================================================ */
+
+  /* 字号阶梯 */
+  --fs-eyebrow: 0.6875rem;  /* 11px  全大写眉标 */
+  --fs-micro: 0.75rem;      /* 12px  标签 / 表头 / 角标 */
+  --fs-caption: 0.8125rem;  /* 13px  辅助说明 / 脚注 */
+  --fs-body-sm: 0.875rem;   /* 14px  控制台正文（密度优先） */
+  --fs-body: 0.9375rem;     /* 15px  默认正文 */
+  --fs-body-lg: 1rem;       /* 16px  marketing 正文（阅读优先） */
+  --fs-h4: 1.125rem;        /* 18px  卡片 / 小节标题 */
+  --fs-h3: 1.25rem;         /* 20px  区块小标题 */
+  --fs-h2: 1.5rem;          /* 24px  区块标题 */
+  --fs-h1: 1.875rem;        /* 30px  页面标题 */
+  --fs-display-3: 2.25rem;  /* 36px  大区块标题 */
+  --fs-display-2: 3rem;     /* 48px  section hero */
+  --fs-display-1: clamp(2.5rem, 6vw, 3.75rem); /* 40→60px 首屏 hero，随视口收放 */
+
+  /* hero 别名：首页 .hero-title 与产品页 .xds-t-display-1 共用同一条斜坡，
+     消除此前 51.2px（首页）与 68px（产品页）的割裂。 */
+  --fs-hero: var(--fs-display-1);
+  --fs-hero-sub: clamp(1.125rem, 1.8vw, 1.5rem); /* 18→24px */
+
+  /* 行高（中文正文必须 1.6，此前全站被压到 1.1538） */
+  --lh-display: 1.1;
+  --lh-heading: 1.25;
+  --lh-snug: 1.4;
+  --lh-body: 1.6;
+  --lh-relaxed: 1.75;
+
+  /* 字重（只保留 4 档；正文 400，强调 500，标题 600，仅 hero 用 700） */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* 字距（字号越大收得越紧，小字不收紧以免中文粘连） */
+  --ls-display: -0.022em;
+  --ls-heading: -0.014em;
+  --ls-body: 0;
+  --ls-eyebrow: 0.09em;
+
+  /* ---- 兼容别名：旧 --type-* 全部指向上面的阶梯，逐步淘汰 ---- */
+  --type-body-size: var(--fs-body-sm);
+  --type-body-line-height: var(--lh-body);
+  --type-sidebar-size: var(--fs-body-sm);
+  --type-sidebar-line-height: var(--lh-snug);
+  --type-meta-size: var(--fs-micro);
+  --type-meta-line-height: var(--lh-snug);
+  --type-heading-1-size: var(--fs-h1);
+  --type-heading-2-size: var(--fs-h2);
+  --type-heading-3-size: var(--fs-h4);
+  --type-heading-line-height: var(--lh-heading);
 }
 
 html {
@@ -98,8 +152,9 @@ html {
 
 body {
   font-family: var(--font-geist-sans);
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line-height);
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
   background-color: var(--color-background);
   background-image:
     radial-gradient(
@@ -188,9 +243,9 @@ body {
 .hero-eyebrow {
   margin: 0;
   color: #3f45d8;
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 0.11em;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
 }
 .hero-title {
@@ -198,10 +253,10 @@ body {
   margin: 1.7rem 0 0;
   color: #101c44;
   /* 单行由字号上限保证，不再靠压字距硬撑——-0.075em 会把中文挤在一起。 */
-  font-size: clamp(3rem, 4vw, 4.2rem);
-  font-weight: 700;
-  line-height: 1.03;
-  letter-spacing: -0.02em;
+  font-size: var(--fs-hero);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
   white-space: nowrap;
 }
 .hero-title-accent {
@@ -210,17 +265,17 @@ body {
 .hero-tagline {
   margin: 2rem 0 0;
   color: #273554;
-  font-size: clamp(1.25rem, 1.5vw, 1.65rem);
-  font-weight: 600;
-  line-height: 1.45;
-  letter-spacing: -0.025em;
+  font-size: var(--fs-hero-sub);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-heading);
 }
 .hero-description {
   max-width: 34rem;
   margin: 0.65rem 0 0;
   color: #44516f;
-  font-size: 1.05rem;
-  line-height: 1.8;
+  font-size: var(--fs-body-lg);
+  line-height: var(--lh-relaxed);
 }
 .hero-actions {
   display: flex;
@@ -236,8 +291,8 @@ body {
   gap: 0.65rem;
   border-radius: 0.65rem;
   padding: 0.85rem 1.65rem;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--fs-body-lg);
+  font-weight: var(--fw-semibold);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
@@ -331,8 +386,8 @@ body {
   border-radius: 0.4rem;
   background: #fff;
   color: #3b4570;
-  font-size: 0.78rem;
-  line-height: 1.4;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-snug);
   text-align: center;
   pointer-events: none;
   opacity: 0;
@@ -467,6 +522,7 @@ body {
   margin: 0;
   color: inherit;
   font-weight: 700;
+  /* 受控例外：六边形图形内部文字，随图形容器等比缩放；改成固定字号会破坏图形。 */
   font-size: 3.7cqw;
   line-height: 1.15;
 }
@@ -543,6 +599,7 @@ body {
   color: #5962e9;
 }
 .hero-capability span {
+  /* 受控例外：同上，图形内部标签。 */
   font-size: 2.15cqw;
   font-weight: 700;
 }
@@ -605,15 +662,15 @@ body {
     padding-top: 3rem;
   }
   .hero-title {
-    font-size: clamp(3rem, 14vw, 4.2rem);
+    font-size: clamp(2.25rem, 12vw, var(--fs-display-2));
     white-space: normal;
   }
   .hero-tagline {
     margin-top: 1.5rem;
-    font-size: 1.1rem;
+    font-size: var(--fs-body-lg);
   }
   .hero-description {
-    font-size: 0.95rem;
+    font-size: var(--fs-body);
   }
   .hero-actions {
     flex-direction: column;
@@ -634,14 +691,18 @@ select {
   font: inherit;
 }
 
+/* 正文类元素用 1.6 行高；表单控件另行处理，避免行高撑高按钮改变布局。 */
 p,
 li,
-label,
+label {
+  line-height: var(--lh-body);
+}
+
 input,
 textarea,
 select,
 button {
-  line-height: var(--type-body-line-height);
+  line-height: var(--lh-snug);
 }
 
 @layer base {
@@ -652,26 +713,36 @@ button {
   h5,
   h6 {
     color: var(--color-heading);
-    font-weight: 600;
-    line-height: var(--type-heading-line-height);
-    letter-spacing: -0.03em;
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-heading);
+    letter-spacing: var(--ls-heading);
   }
 
   h1 {
-    font-size: var(--type-heading-1-size);
+    font-size: var(--fs-h1);
   }
 
   h2 {
-    font-size: var(--type-heading-2-size);
+    font-size: var(--fs-h2);
   }
 
+  /* 此前 h3 = 0.8125rem(13px)，比正文还小，层级倒挂。 */
   h3 {
-    font-size: var(--type-heading-3-size);
+    font-size: var(--fs-h3);
+  }
+
+  h4 {
+    font-size: var(--fs-h4);
+  }
+
+  h5,
+  h6 {
+    font-size: var(--fs-body-lg);
   }
 
   small {
-    font-size: var(--type-meta-size);
-    line-height: var(--type-meta-line-height);
+    font-size: var(--fs-micro);
+    line-height: var(--lh-snug);
   }
 
   ::selection {
@@ -689,8 +760,8 @@ button {
     border-radius: 8px;
     border: 1px solid transparent;
     padding: 0.45rem 0.8rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
     line-height: 1;
     transition:
       background-color 160ms ease-in-out,
@@ -755,8 +826,8 @@ button {
   .public-doc-prose {
     max-width: none;
     color: var(--color-text-muted);
-    font-size: 1.05rem;
-    line-height: 1.85;
+    font-size: var(--fs-body-lg);
+    line-height: var(--lh-relaxed);
   }
 
   .public-doc-prose > :first-child {
@@ -787,17 +858,17 @@ button {
   }
 
   .public-doc-prose h1 {
-    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-size: var(--fs-display-3);
   }
 
   .public-doc-prose h2 {
-    font-size: clamp(1.7rem, 2.5vw, 2.2rem);
+    font-size: var(--fs-h1);
     border-bottom: 1px solid var(--color-divider);
     padding-bottom: 0.6rem;
   }
 
   .public-doc-prose h3 {
-    font-size: clamp(1.35rem, 1.8vw, 1.65rem);
+    font-size: var(--fs-h2);
   }
 
   .public-doc-prose p,
@@ -873,8 +944,8 @@ button {
     background: transparent;
     padding: 0;
     color: inherit;
-    font-size: 0.9rem;
-    font-weight: 400;
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-regular);
   }
 
   .public-doc-prose blockquote {
@@ -944,7 +1015,7 @@ button {
 
   .blog-reading-prose {
     max-width: 46rem;
-    font-size: 1.0625rem;
+    font-size: var(--fs-body-lg);
   }
 
   .blog-reading-prose h2 {

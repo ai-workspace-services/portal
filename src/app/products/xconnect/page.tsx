@@ -387,7 +387,7 @@ export default function XConnectPage() {
                   <div className="xds-trust-v">
                     {cell.v}
                     {"unit" in cell && cell.unit ? (
-                      <span className="xds-subtle" style={{ fontSize: "1rem" }}>
+                      <span className="xds-subtle" style={{ fontSize: "var(--fs-body-lg)" }}>
                         {cell.unit}
                       </span>
                     ) : null}
@@ -476,7 +476,7 @@ export default function XConnectPage() {
                           <div className="xds-t-eyebrow">Subscription</div>
                           <div
                             className="xds-value-box"
-                            style={{ marginTop: 6, fontSize: 11 }}
+                            style={{ marginTop: 6, fontSize: "var(--fs-eyebrow)" }}
                           >
                             vless://01a0124f…@sg1.xconn.net
                           </div>

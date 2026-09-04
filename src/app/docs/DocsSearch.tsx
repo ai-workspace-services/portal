@@ -120,7 +120,7 @@ export default function DocsSearch({
             <span className="text-sm">
               {isChinese ? "搜索文档…" : "Search docs…"}
             </span>
-            <kbd className="ml-auto rounded border border-surface-border bg-surface-muted px-1.5 py-0.5 text-[10px] text-text-subtle">
+            <kbd className="ml-auto rounded border border-surface-border bg-surface-muted px-1.5 py-0.5 text-eyebrow text-text-subtle">
               ⌘K
             </kbd>
           </>
@@ -241,7 +241,7 @@ export default function DocsSearch({
                 ))
               )}
             </div>
-            <footer className="flex gap-4 border-t border-surface-border bg-surface-muted/55 px-4 py-2 text-[11px] text-text-subtle">
+            <footer className="flex gap-4 border-t border-surface-border bg-surface-muted/55 px-4 py-2 text-eyebrow text-text-subtle">
               <span>↑↓ {isChinese ? "选择" : "Navigate"}</span>
               <span>↵ {isChinese ? "打开" : "Open"}</span>
               <span>esc {isChinese ? "关闭" : "Close"}</span>

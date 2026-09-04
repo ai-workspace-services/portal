@@ -147,7 +147,7 @@ export default function ThemePreferenceCard() {
                   {option.description}
                 </span>
                 {option.value === 'system' && preference === 'system' ? (
-                  <span className="rounded-full bg-[var(--color-surface-muted)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-text-subtle)] opacity-80">
+                  <span className="rounded-full bg-[var(--color-surface-muted)] px-2 py-0.5 text-eyebrow font-medium text-[var(--color-text-subtle)] opacity-80">
                     当前匹配：{theme === 'dark' ? '深色' : '浅色'}
                   </span>
                 ) : null}

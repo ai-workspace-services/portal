@@ -11798,7 +11798,7 @@ __metadata:
     jsdom: "npm:^24.0.0"
     jszip: "npm:^3.10.1"
     katex: "npm:^0.16.27"
-    lucide-react: "npm:^0.319.0"
+    lucide-react: "npm:^1.40.0"
     marked: "npm:^16.1.2"
     mermaid: "npm:^11.12.2"
     next: "npm:^16.0.9"
@@ -13686,12 +13686,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.319.0":
-  version: 0.319.0
-  resolution: "lucide-react@npm:0.319.0"
+"lucide-react@npm:^1.40.0":
+  version: 1.40.0
+  resolution: "lucide-react@npm:1.40.0"
   peerDependencies:
-    react: ^16.5.1 || ^17.0.0 || ^18.0.0
-  checksum: 10/9802d7ed400694b851f29a459369f0759f381063535f7e667352323bf8dfcdcf70268ff61e6b38f20527063172735df1e66a484edbdf69f07073702f90d9cd23
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/0700a5e1a907c3123f88a62fe2f83e1d711011514fbe7dd8125cbc0d3318fdaa7c00099b3806f7016221cac5009c2cfc108b24e533528ecd3a743a52dbfe8fe2
   languageName: node
   linkType: hard
 

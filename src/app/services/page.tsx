@@ -48,7 +48,7 @@ function ServiceCard({
           <service.icon className="h-5 w-5" aria-hidden />
         </div>
         <div className="space-y-2">
-          <h2 className="text-[1.02rem] font-semibold leading-7 tracking-[-0.03em] text-slate-900">
+          <h2 className="text-base font-semibold leading-7 tracking-[-0.03em] text-slate-900">
             {service.name}
           </h2>
           <p className="text-sm leading-6 text-slate-600">
@@ -91,7 +91,7 @@ function PlaceholderCard({ isChinese }: { isChinese: boolean }) {
           <Box className="h-4 w-4" aria-hidden />
         </div>
         <div className="space-y-2">
-          <h2 className="text-[1.02rem] font-semibold leading-7 tracking-[-0.03em] text-slate-800">
+          <h2 className="text-base font-semibold leading-7 tracking-[-0.03em] text-slate-800">
             {isChinese ? "更多服务即将上线" : "More services coming soon"}
           </h2>
           <p className="text-sm leading-6 text-slate-500">
@@ -237,13 +237,13 @@ export default function ServicesPage() {
             }
             titleClassName={cn(
               isChinese
-                ? "text-[2.7rem] tracking-[-0.08em] sm:text-[3.4rem]"
-                : "editorial-display text-[2.9rem] tracking-[-0.06em] sm:text-[3.6rem]",
+                ? "text-5xl tracking-[-0.08em] sm:text-6xl"
+                : "editorial-display text-5xl tracking-[-0.06em] sm:text-6xl",
             )}
           />
 
           <div className="grid gap-3 rounded-[1.75rem] border border-slate-900/10 bg-white/85 p-5 sm:min-w-[18rem]">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {isChinese ? "页面原则" : "Page rhythm"}
             </p>
             <p className="text-sm leading-6 text-slate-600">
@@ -258,7 +258,7 @@ export default function ServicesPage() {
       <section className="rounded-[2rem] border border-slate-900/10 bg-white/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)] lg:p-7">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {isChinese ? "服务目录" : "Service directory"}
             </p>
             <p className="mt-2 text-sm leading-6 text-text-muted">

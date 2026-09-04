@@ -1,4 +1,5 @@
-import { Github, MessageCircle, Newspaper, PlayCircle, QrCode } from 'lucide-react'
+import { MessageCircle, Newspaper, PlayCircle, QrCode } from 'lucide-react'
+import { Github } from '@/components/icons/brand'
 import Link from 'next/link'
 import { forwardRef } from 'react'
 

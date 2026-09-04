@@ -233,7 +233,7 @@ export default function VlessQrCard({
           <div>
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.label}</p>
-              <span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+              <span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-0.5 text-eyebrow font-semibold uppercase tracking-wide text-[var(--color-primary)]">
                 {effectiveNode?.name || effectiveNode?.address || 'Node'}
               </span>
             </div>
@@ -245,7 +245,7 @@ export default function VlessQrCard({
               <button
                 type="button"
                 onClick={() => setIsSelectorOpen(!isSelectorOpen)}
-                className="inline-flex items-center gap-1 rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2 py-1 text-[10px] font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                className="inline-flex items-center gap-1 rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2 py-1 text-eyebrow font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
               >
                 切换节点
                 <ChevronDown className={`h-3 w-3 transition-transform ${isSelectorOpen ? 'rotate-180' : ''}`} />
@@ -282,7 +282,7 @@ export default function VlessQrCard({
               key={transport}
               type="button"
               onClick={() => setPreferredTransport(transport)}
-              className={`rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors ${preferredTransport === transport
+              className={`rounded-md px-3 py-1 text-eyebrow font-semibold uppercase tracking-wide transition-colors ${preferredTransport === transport
                 ? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
                 : 'bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-border)]'
                 }`}
@@ -346,8 +346,8 @@ export default function VlessQrCard({
               </div>
 
               <div className="flex flex-1 flex-col gap-2 text-xs text-[var(--color-text-subtle)]">
-                <div className="rounded-[var(--radius-lg)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] p-3 text-[11px] text-[var(--color-text)]">
-                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">{copy.linkLabel}</p>
+                <div className="rounded-[var(--radius-lg)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] p-3 text-eyebrow text-[var(--color-text)]">
+                  <p className="mb-1 text-eyebrow font-semibold uppercase tracking-wide text-[var(--color-text-subtle)]">{copy.linkLabel}</p>
                   <p className="font-mono text-xs text-[var(--color-text-subtle)]">{copy.linkHelper}</p>
                 </div>
               </div>

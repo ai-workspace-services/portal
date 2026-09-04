@@ -1,5 +1,6 @@
 "use client";
-import { Github, Linkedin, Moon, Sun, Twitter } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
+import { Github, Linkedin, Twitter } from "@/components/icons/brand";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useLanguage } from "../i18n/LanguageProvider";
 
@@ -54,7 +55,7 @@ export default function Footer() {
 
   return (
     <footer
-      className={`mt-8 flex flex-col items-center justify-center gap-3 rounded-[8px] border px-5 py-4 text-[13px] ${footerClassName}`}
+      className={`mt-8 flex flex-col items-center justify-center gap-3 rounded-[8px] border px-5 py-4 text-caption ${footerClassName}`}
     >
       <div className="flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-between">
         <div className="flex gap-4 order-2 sm:order-1">

@@ -1,7 +1,7 @@
 "use client";
 
 import BoundaryLink from "@/components/common/BoundaryLink";
-import { Github } from "lucide-react";
+import { Github } from "@/components/icons/brand";
 import {
   ChangeEvent,
   ClipboardEvent,

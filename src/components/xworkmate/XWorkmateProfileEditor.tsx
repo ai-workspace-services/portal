@@ -292,7 +292,7 @@ export function XWorkmateProfileEditor({
               />
             </div>
             <div>
-              <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-black">
+              <h1 className="text-2xl font-semibold tracking-[-0.03em] text-black">
                 {payload.profileScope === "tenant-shared"
                   ? "共享集成配置"
                   : "我的集成配置"}

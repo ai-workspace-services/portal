@@ -84,7 +84,7 @@ export default function ProductMatrixClient({ solutions }: ProductMatrixClientPr
               <span className="inline-flex items-center rounded-full border border-brand-border bg-brand-surface px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-brand">
                 {productMatrix.badge}
               </span>
-              <h1 className="text-[30px] font-bold leading-tight text-brand sm:text-[34px] md:text-[36px]">
+              <h1 className="text-3xl font-bold leading-tight text-brand sm:text-4xl md:text-4xl">
                 {productMatrix.title}
               </h1>
               <p className="text-sm text-brand-heading/80 sm:text-base lg:text-lg">
@@ -143,7 +143,7 @@ export default function ProductMatrixClient({ solutions }: ProductMatrixClientPr
                   {activeSolution.tagline}
                 </p>
               ) : null}
-              <h2 className="text-2xl font-semibold text-brand-navy sm:text-[26px]">{activeSolution.title}</h2>
+              <h2 className="text-2xl font-semibold text-brand-navy sm:text-2xl">{activeSolution.title}</h2>
               {activeSolution.description ? (
                 <p className="text-sm text-brand-heading/80 sm:text-base">{activeSolution.description}</p>
               ) : null}

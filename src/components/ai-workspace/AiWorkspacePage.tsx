@@ -389,7 +389,7 @@ export function AiWorkspacePage({
                     <span className="block truncate text-sm font-bold">
                       {task.title}
                     </span>
-                    <span className="shrink-0 text-[10px] font-semibold text-slate-400">
+                    <span className="shrink-0 text-eyebrow font-semibold text-slate-400">
                       {formatRelativeTime(task.updatedAt)}
                     </span>
                   </span>

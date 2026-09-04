@@ -1786,7 +1786,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
       register: {
         badge: '立即注册',
         title: '加入 XWork Tech',
-        subtitle: '我们会先向你的邮箱发送验证码，确认地址后即可进入工作台。',
+        subtitle: '我们会先向你的邮箱发送验证码，确认地址后即可进入工作空间。',
 
         highlights: [
           {
@@ -1958,7 +1958,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     },
     userCenter: {
       sections: {
-        workspace: '工作台',
+        workspace: '工作空间',
         productivity: '生产力工具',
         infra: '资源运维',
         management: '账户与权限',

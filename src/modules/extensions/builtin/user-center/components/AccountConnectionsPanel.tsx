@@ -121,7 +121,7 @@ export default function AccountConnectionsPanel({
                       {node.address}
                     </p>
                   </div>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-primary-muted)] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-primary-muted)] px-2 py-1 text-eyebrow font-semibold uppercase tracking-wide text-[var(--color-primary)]">
                     <ShieldCheck className="h-3 w-3" aria-hidden="true" />
                     {node.transport || "—"}
                   </span>

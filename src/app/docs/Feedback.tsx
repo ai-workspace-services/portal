@@ -10,7 +10,7 @@ export default function Feedback({ isChinese = false }: { isChinese?: boolean })
     <section className="rounded-[0.95rem] border border-slate-900/8 bg-white/82 p-5 shadow-[var(--shadow-soft)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+          <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
             {isChinese ? "反馈" : "Feedback"}
           </p>
           <h3 className="text-lg font-semibold tracking-[-0.03em] text-heading">

@@ -231,7 +231,7 @@ export default function OpsPlanCatalog() {
     <div className="space-y-5 pb-8">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
+          <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
             Operations / plan catalog
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-heading)] sm:text-3xl">
