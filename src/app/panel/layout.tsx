@@ -29,7 +29,9 @@ export default function PanelLayout({
   const [open, setOpen] = useState(false);
   // Keep the console dense by default. The sidebar expands on hover and can
   // be pinned open through the header control for longer navigation sessions.
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  // Keep the primary navigation visible when the panel opens. Users can
+  // still collapse it with the existing header control.
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
