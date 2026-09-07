@@ -49,13 +49,25 @@ if [ "$TARGET" = "static-dashboard" ]; then
   code="$(curl --silent --output /dev/null --write-out '%{http_code}' "${base}/api/ping")"
   [ "$code" = "404" ] || fail "/api/ping 期望 404，实际 ${code}"
 else
-  # 把实际响应打出来再判断，而不是让 grep 静默失败
-  body="$(curl --fail --silent "${base}/api/ping")" || fail "/api/ping 请求失败"
+  # all-in-one 的 Nginx 比 Next standalone 更早监听 8080：根路径成功并不
+  # 表示代理后的 /api/ping 已就绪。等待健康响应，避免刚启动就把竞态误判为失败。
+  body=""
+  for attempt in $(seq 1 30); do
+    if ! docker ps --filter "name=${container}" --format '{{.Names}}' | grep -q "$container"; then
+      fail "容器在 /api/ping 第 ${attempt} 次探测前就退出了"
+    fi
+    candidate="$(curl --fail --silent "${base}/api/ping" 2>/dev/null || true)"
+    case "$candidate" in
+      *'"status":"ok"'*)
+        body="$candidate"
+        echo "/api/ping 在第 ${attempt} 次探测就绪"
+        break
+        ;;
+    esac
+    sleep 1
+  done
+  [ -n "$body" ] || fail "30 次探测后 /api/ping 仍未返回健康响应"
   echo "/api/ping 响应: ${body}"
-  case "$body" in
-    *'"status":"ok"'*) ;;
-    *) fail "/api/ping 未返回 \"status\":\"ok\"" ;;
-  esac
 fi
 
 echo "${TARGET} 冒烟测试通过"
