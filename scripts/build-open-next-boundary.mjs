@@ -42,7 +42,7 @@ const boundaries = Object.fromEntries(
       // Worker. Keep these handlers in the same boundary; otherwise the
       // router reaches a valid Worker that has no matching Next route and
       // returns a misleading 404 while the user's session is still valid.
-      if (isConsoleAgentApi(relativePath)) return id === "console";
+      if (isConsoleBffApi(relativePath)) return id === "console";
       return !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id;
     },
   }]),
@@ -311,9 +311,10 @@ function isAuthBffApi(relativePath) {
     || relativePath.startsWith("api/auth/mfa/");
 }
 
-function isConsoleAgentApi(relativePath) {
+function isConsoleBffApi(relativePath) {
   return relativePath === "api/agent-server/[...segments]/route.ts"
-    || relativePath === "api/agent/[...segments]/route.ts";
+    || relativePath === "api/agent/[...segments]/route.ts"
+    || relativePath === "api/account/[...segments]/route.ts";
 }
 
 function parentPaths(relativePath) {
