@@ -1,5 +1,8 @@
 export const XCONNECT_ZERO_ADMIN_PATHS = {
   overview: "/admin/overview",
+  networks: "/admin/networks",
+  devices: "/admin/devices",
+  invites: "/admin/invites",
 } as const;
 
 export type XConnectZeroAdminPath =
@@ -16,6 +19,40 @@ export interface XConnectZeroAdminOverview {
   networkCount: number;
   deviceCount: number;
   gatewayCount: number;
+}
+
+export interface XConnectZeroNetwork {
+  id: string;
+  display_name: string;
+  cidr: string;
+  gateway_id: string;
+  gateway_endpoint_host: string;
+  gateway_endpoint_port: number;
+  transport_server_name: string;
+  transport_port: number;
+  config_generation?: number;
+}
+
+export interface XConnectZeroDevice {
+  id: string;
+  network_id: string;
+  role?: string;
+  name: string;
+  platform: string;
+  hostname: string;
+  wireguard_address: string;
+  status?: string;
+}
+
+export interface XConnectZeroInvite {
+  id: string;
+  network_id: string;
+  device_id?: string;
+  platform: string;
+  role: string;
+  expires_at: string;
+  remaining_uses: number;
+  consumed_at?: string;
 }
 
 export type XConnectZeroAdapterError =

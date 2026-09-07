@@ -12,8 +12,13 @@ import { isXConnectZeroAdminOverview } from "@lib/xconnectZero";
 
 const ACCOUNT_OVERLAY_API_BASE = `${getAccountServiceBaseUrl()}/api/overlay/v1`;
 const READ_ROLES: AccountUserRole[] = ["admin", "operator"];
-const READ_PERMISSIONS = ["xconnect.zero.read"];
-const ALLOWED_GET_ROUTES = new Map([["overview", "/admin/overview"]]);
+const ALLOWED_ROUTES = new Map([
+  ["GET overview", "/admin/overview"],
+  ["GET networks", "/admin/networks"],
+  ["GET devices", "/admin/devices"],
+  ["GET invites", "/admin/invites"],
+  ["POST networks/bootstrap", "/admin/networks/bootstrap"],
+]);
 
 type ErrorPayload = {
   error:
@@ -28,41 +33,47 @@ function errorResponse(error: ErrorPayload["error"], status: number) {
   return NextResponse.json<ErrorPayload>({ error }, { status });
 }
 
-function resolveRoute(segments: string[] | undefined): string | undefined {
-  if (!segments || segments.length !== 1) {
-    return undefined;
+function resolveRoute(method: string, segments: string[] | undefined): string | undefined {
+  if (!segments) return undefined;
+  const exact = ALLOWED_ROUTES.get(`${method} ${segments.join("/")}`);
+  if (exact) return exact;
+  if (segments.length === 3 && segments[0] === "networks" && segments[2] === "policy") {
+    return `/admin/networks/${encodeURIComponent(segments[1])}/policy`;
   }
-  return ALLOWED_GET_ROUTES.get(segments[0]);
+  if (segments.length === 3 && segments[0] === "devices" && segments[2] === "revoke") {
+    return `/admin/devices/${encodeURIComponent(segments[1])}/revoke`;
+  }
+  return undefined;
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ segments?: string[] }> },
-) {
-  const endpointPath = resolveRoute((await context.params).segments);
-  if (!endpointPath) {
-    return errorResponse("control_plane_unavailable", 404);
-  }
+function requiredPermission(method: string): string {
+  return method === "GET" ? "xconnect.zero.read" : "xconnect.zero.manage";
+}
+
+async function proxy(request: NextRequest, method: string, context: { params: Promise<{ segments?: string[] }> }) {
+  const segments = (await context.params).segments;
+  const endpointPath = resolveRoute(method, segments);
+  if (!endpointPath) return errorResponse("control_plane_unavailable", 404);
 
   const session = await getAccountSession(request);
-  if (!session.user || !session.token) {
-    return errorResponse("unauthenticated", 401);
-  }
-
-  if (
-    !(await userHasRoleOrPermission(session.user, READ_ROLES, READ_PERMISSIONS))
-  ) {
+  if (!session.user || !session.token) return errorResponse("unauthenticated", 401);
+  if (!(await userHasRoleOrPermission(session.user, READ_ROLES, [requiredPermission(method)]))) {
     return errorResponse("forbidden", 403);
   }
+
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${session.token}`,
+    Accept: "application/json",
+  };
+  const body = method === "GET" || method === "HEAD" ? undefined : await request.text();
+  if (body) headers["Content-Type"] = request.headers.get("content-type") ?? "application/json";
 
   let response: Response;
   try {
     response = await fetch(`${ACCOUNT_OVERLAY_API_BASE}${endpointPath}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${session.token}`,
-        Accept: "application/json",
-      },
+      method,
+      headers,
+      body,
       cache: "no-store",
       redirect: "manual",
     });
@@ -70,28 +81,31 @@ export async function GET(
     console.error("XConnect Zero control-plane request failed", error);
     return errorResponse("upstream_unreachable", 502);
   }
-
-  if (response.status === 404) {
-    return errorResponse("control_plane_unavailable", 503);
-  }
-
+  if (response.status === 404) return errorResponse("control_plane_unavailable", 503);
+  if (response.status === 204) return new NextResponse(null, { status: 204 });
   const payload = await response.json().catch(() => null);
-  if (!response.ok || !isXConnectZeroAdminOverview(payload)) {
+  if (method === "GET" && endpointPath === "/admin/overview" && !isXConnectZeroAdminOverview(payload)) {
     return errorResponse("invalid_response", 502);
   }
-
-  return NextResponse.json(payload, {
-    status: response.status,
-    headers: { "Cache-Control": "no-store" },
-  });
+  if (!response.ok) {
+    return NextResponse.json(payload ?? { error: "control_plane_unavailable" }, { status: response.status });
+  }
+  return NextResponse.json(payload, { status: response.status, headers: { "Cache-Control": "no-store" } });
 }
 
-export function POST() {
-  return errorResponse("control_plane_unavailable", 404);
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ segments?: string[] }> },
+) {
+  return proxy(request, "GET", context);
 }
 
-export function PUT() {
-  return errorResponse("control_plane_unavailable", 404);
+export async function POST(request: NextRequest, context: { params: Promise<{ segments?: string[] }> }) {
+  return proxy(request, "POST", context);
+}
+
+export async function PUT(request: NextRequest, context: { params: Promise<{ segments?: string[] }> }) {
+  return proxy(request, "PUT", context);
 }
 
 export function PATCH() {

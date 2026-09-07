@@ -139,8 +139,8 @@ describe("/api/xconnect-zero/[...segments]", () => {
   it("does not expose unregistered adapter paths", async () => {
     const { GET } = await import("./route");
     const response = await GET(
-      new NextRequest("https://console.svc.plus/api/xconnect-zero/devices"),
-      { params: Promise.resolve({ segments: ["devices"] }) },
+      new NextRequest("https://console.svc.plus/api/xconnect-zero/unknown"),
+      { params: Promise.resolve({ segments: ["unknown"] }) },
     );
 
     expect(response.status).toBe(404);
