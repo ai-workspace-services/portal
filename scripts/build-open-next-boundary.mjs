@@ -38,6 +38,11 @@ const boundaries = Object.fromEntries(
       // before calling Accounts. Keep them with the auth SSR Worker rather than
       // sending them to the generic auth gateway.
       if (isAuthBffApi(relativePath)) return id === "auth";
+      // The frontend-router sends the authenticated node BFF to the console
+      // Worker. Keep these handlers in the same boundary; otherwise the
+      // router reaches a valid Worker that has no matching Next route and
+      // returns a misleading 404 while the user's session is still valid.
+      if (isConsoleAgentApi(relativePath)) return id === "console";
       return !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id;
     },
   }]),
@@ -304,6 +309,11 @@ function isAuthBffApi(relativePath) {
     || relativePath === "api/auth/session/route.ts"
     || relativePath === "api/auth/mfa"
     || relativePath.startsWith("api/auth/mfa/");
+}
+
+function isConsoleAgentApi(relativePath) {
+  return relativePath === "api/agent-server/[...segments]/route.ts"
+    || relativePath === "api/agent/[...segments]/route.ts";
 }
 
 function parentPaths(relativePath) {
