@@ -34,10 +34,10 @@ const boundaries = Object.fromEntries(
   Object.keys(cloudflareConfig.boundaries ?? {}).map((id) => [id, {
     workerName: cloudflareConfig.boundaries[id].worker_name,
     owns: (relativePath) => {
-      // MFA is a same-origin BFF: its handlers read and update Portal cookies
-      // before calling Accounts. Keep those route handlers with the auth SSR
-      // Worker rather than sending them to the generic auth gateway.
-      if (isMfaApi(relativePath)) return id === "auth";
+      // These are same-origin BFF handlers: they read or update Portal cookies
+      // before calling Accounts. Keep them with the auth SSR Worker rather than
+      // sending them to the generic auth gateway.
+      if (isAuthBffApi(relativePath)) return id === "auth";
       // The frontend-router sends the authenticated node BFF to the console
       // Worker. Keep these handlers in the same boundary; otherwise the
       // router reaches a valid Worker that has no matching Next route and
@@ -304,8 +304,11 @@ function isApi(relativePath) {
   return relativePath === "api" || relativePath.startsWith("api/");
 }
 
-function isMfaApi(relativePath) {
-  return relativePath === "api/auth/mfa" || relativePath.startsWith("api/auth/mfa/");
+function isAuthBffApi(relativePath) {
+  return relativePath === "api/auth/token/exchange/route.ts"
+    || relativePath === "api/auth/session/route.ts"
+    || relativePath === "api/auth/mfa"
+    || relativePath.startsWith("api/auth/mfa/");
 }
 
 function isConsoleAgentApi(relativePath) {
