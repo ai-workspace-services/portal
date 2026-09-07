@@ -23,6 +23,7 @@ import {
   Circle,
   Copy,
   Download,
+  MapPin,
   RefreshCw,
   Server,
   ShieldCheck,
@@ -291,6 +292,18 @@ export function IdentityStrip({
 
 /* ═══════════════════════════════════ VLESS 连接卡 ═══════════════════════════════════ */
 
+function nodeKey(candidate?: VlessNode): string {
+  return candidate ? `${candidate.address}:${candidate.port}` : "";
+}
+
+function nodeRegion(candidate: VlessNode): string {
+  const identity = `${candidate.name} ${candidate.address}`.toLowerCase();
+  if (identity.includes("jp") || identity.includes("tokyo") || identity.includes("japan")) return "JP";
+  if (identity.includes("us") || identity.includes("oregon") || identity.includes("america")) return "US";
+  if (identity.includes("hk") || identity.includes("hong kong")) return "HK";
+  return "Other";
+}
+
 export function VlessConnectionCard({
   proxyUuid,
   nodes,
@@ -303,7 +316,34 @@ export function VlessConnectionCard({
   zh: boolean;
   embedded?: boolean;
 }) {
-  const node = nodes[0];
+  const [selectedNodeKey, setSelectedNodeKey] = useState<string | null>(null);
+  const regionOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return nodes.reduce<Array<{ key: string; label: string; node: VlessNode }>>((options, candidate) => {
+      const key = nodeRegion(candidate);
+      if (!seen.has(key)) {
+        seen.add(key);
+        options.push({
+          key,
+          label: key === "Other" ? (zh ? "其他地区" : "Other") : `${key} ${zh ? "区域" : "Region"}`,
+          node: candidate,
+        });
+      }
+      return options;
+    }, []);
+  }, [nodes, zh]);
+  const node = useMemo(() => {
+    if (!nodes.length) return undefined;
+    return nodes.find((candidate) => nodeKey(candidate) === selectedNodeKey) ?? regionOptions[0]?.node ?? nodes[0];
+  }, [nodes, regionOptions, selectedNodeKey]);
+  useEffect(() => {
+    if (!node) {
+      setSelectedNodeKey(null);
+      return;
+    }
+    const currentKey = nodeKey(node);
+    if (selectedNodeKey !== currentKey) setSelectedNodeKey(currentKey);
+  }, [node, selectedNodeKey]);
   const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -355,6 +395,30 @@ export function VlessConnectionCard({
 
   const cardBody = (
     <XdsCardBody className="xds-vless-body">
+      {regionOptions.length > 1 ? (
+        <div className="xds-vless-regions" aria-label={zh ? "选择节点区域" : "Choose node region"}>
+          <div className="xds-vless-regions-label">
+            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            {zh ? "节点区域" : "Node region"}
+          </div>
+          <div className="xds-vless-region-list" role="list">
+            {regionOptions.map((option) => {
+              const active = nodeKey(node) === nodeKey(option.node);
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  aria-pressed={active}
+                  className={`xds-vless-region${active ? " xds-is-active" : ""}`}
+                  onClick={() => setSelectedNodeKey(nodeKey(option.node))}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
       <div className="xds-qr">
         {qr ? (
           <Image
