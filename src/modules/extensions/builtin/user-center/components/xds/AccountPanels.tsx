@@ -332,6 +332,7 @@ export function VlessConnectionCard({
       return options;
     }, []);
   }, [nodes, zh]);
+  const useCompactRegionSelect = regionOptions.length > 4;
   const node = useMemo(() => {
     if (!nodes.length) return undefined;
     return nodes.find((candidate) => nodeKey(candidate) === selectedNodeKey) ?? regionOptions[0]?.node ?? nodes[0];
@@ -401,22 +402,37 @@ export function VlessConnectionCard({
             <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
             {zh ? "节点区域" : "Node region"}
           </div>
-          <div className="xds-vless-region-list" role="list">
-            {regionOptions.map((option) => {
-              const active = nodeKey(node) === nodeKey(option.node);
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  aria-pressed={active}
-                  className={`xds-vless-region${active ? " xds-is-active" : ""}`}
-                  onClick={() => setSelectedNodeKey(nodeKey(option.node))}
-                >
+          {useCompactRegionSelect ? (
+            <select
+              className="xds-vless-region-select"
+              aria-label={zh ? "选择节点区域" : "Choose node region"}
+              value={node ? nodeKey(node) : ""}
+              onChange={(event) => setSelectedNodeKey(event.target.value)}
+            >
+              {regionOptions.map((option) => (
+                <option key={option.key} value={nodeKey(option.node)}>
                   {option.label}
-                </button>
-              );
-            })}
-          </div>
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="xds-vless-region-list" role="list">
+              {regionOptions.map((option) => {
+                const active = nodeKey(node) === nodeKey(option.node);
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    aria-pressed={active}
+                    className={`xds-vless-region${active ? " xds-is-active" : ""}`}
+                    onClick={() => setSelectedNodeKey(nodeKey(option.node))}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : null}
       <div className="xds-qr">
