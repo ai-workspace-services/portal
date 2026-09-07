@@ -328,7 +328,7 @@ export function AiWorkspaceOverview(): ReactNode {
               aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "relative shrink-0 px-4 text-[15px] font-semibold text-[#586174] outline-none transition-colors lg:px-6 lg:text-base",
+                "relative shrink-0 px-4 text-body font-semibold text-[#586174] outline-none transition-colors lg:px-6 lg:text-base",
                 activeTab === tab.id && "font-bold text-[#1260cc]",
               )}
             >
@@ -697,7 +697,7 @@ function TokenTrend({ sessions }: { sessions: ServerSession[] }) {
                 className="w-full max-w-6 bg-[#2f73d7]"
                 style={{ height: inputHeight }}
               />
-              <span className="mt-2 text-[11px] text-[#697386]">
+              <span className="mt-2 text-eyebrow text-[#697386]">
                 {month.label}
               </span>
             </div>
@@ -772,7 +772,7 @@ function AnalyticsCard({
 }) {
   return (
     <section className="rounded-xl border border-[#e4e8ef] bg-white p-5">
-      <h2 className="text-[17px] font-bold">{title}</h2>
+      <h2 className="text-base font-bold">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -800,7 +800,7 @@ function SessionTable({
 }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white">
-      <h2 className="px-5 py-4 text-[17px] font-bold">{title}</h2>
+      <h2 className="px-5 py-4 text-base font-bold">{title}</h2>
       <div className="overflow-x-auto border-t border-[#e7ebf1]">
         <table className="w-full min-w-[1040px] table-fixed text-left text-sm">
           <thead className="bg-[#fafbfc] text-xs font-semibold text-[#697386]">

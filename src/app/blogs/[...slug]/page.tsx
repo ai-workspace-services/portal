@@ -112,19 +112,19 @@ export default async function BlogPostPage({ params }: PageProps) {
           </Link>
 
           <div className="mt-6 space-y-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {post.category?.label ?? "Blog"}
             </p>
             <h1
               className={
                 isChinese
-                  ? "text-[2.7rem] font-semibold leading-[0.9] tracking-[-0.08em] text-slate-900 sm:text-[3.4rem]"
-                  : "editorial-display text-[2.9rem] leading-[0.92] tracking-[-0.06em] text-slate-900 sm:text-[3.6rem]"
+                  ? "text-5xl font-semibold leading-[0.9] tracking-[-0.08em] text-slate-900 sm:text-6xl"
+                  : "editorial-display text-5xl leading-[0.92] tracking-[-0.06em] text-slate-900 sm:text-6xl"
               }
             >
               {post.title}
             </h1>
-            <p className="max-w-3xl text-[1rem] leading-8 text-slate-600 sm:text-[1.05rem]">
+            <p className="max-w-3xl text-base leading-8 text-slate-600 sm:text-base">
               {post.excerpt}
             </p>
           </div>

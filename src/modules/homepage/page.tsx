@@ -285,7 +285,7 @@ export default function Homepage() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="rounded-full border border-[color:var(--color-surface-border)] px-3 py-1 text-[11px] font-semibold text-[color:var(--color-text-subtle)] transition-colors hover:border-[color:var(--color-primary-border)] hover:text-[color:var(--color-primary)]"
+              className="rounded-full border border-[color:var(--color-surface-border)] px-3 py-1 text-eyebrow font-semibold text-[color:var(--color-text-subtle)] transition-colors hover:border-[color:var(--color-primary-border)] hover:text-[color:var(--color-primary)]"
             >
               {language === 'zh'
                 ? resolvedTheme === 'dark'
@@ -299,7 +299,7 @@ export default function Homepage() {
         </div>
         <div className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[linear-gradient(135deg,var(--gradient-app-from),var(--gradient-app-to))] p-8 text-[color:var(--color-text)] shadow-[var(--shadow-md)]">
           <div className="flex flex-col gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[color:var(--color-text-subtle)]">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.28em] text-[color:var(--color-text-subtle)]">
               {language === 'zh' ? '控制台入口' : 'Console entry stream'}
             </p>
             <h1 className="text-2xl font-semibold leading-tight text-[color:var(--color-heading)] sm:text-3xl">
@@ -341,14 +341,14 @@ function QuickActionsSection({ quickActions, language }: SectionProps & { quickA
     <section className={sectionCardClass}>
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
+          <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
             {language === 'zh' ? '快捷操作' : 'Quick actions'}
           </p>
           <h2 className="text-lg font-semibold text-[color:var(--color-heading)] sm:text-xl">
             {language === 'zh' ? '快速进入常用任务' : 'Jump into routine tasks'}
           </h2>
         </div>
-        <span className="text-[12px] text-[color:var(--color-text-subtle)]">
+        <span className="text-xs text-[color:var(--color-text-subtle)]">
           {language === 'zh' ? '任务优先' : 'Task-first'}
         </span>
       </div>
@@ -365,7 +365,7 @@ function QuickActionsSection({ quickActions, language }: SectionProps & { quickA
               </span>
               <div className="space-y-1">
                 <h3 className="text-sm font-semibold text-[color:var(--color-heading)]">{item.name}</h3>
-                <p className="text-[13px] leading-snug text-[color:var(--color-text-subtle)]">{item.description}</p>
+                <p className="text-caption leading-snug text-[color:var(--color-text-subtle)]">{item.description}</p>
               </div>
             </div>
             <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)]">
@@ -383,13 +383,13 @@ function ServiceEntryGrid({ services, language }: SectionProps & { services: Ser
   return (
     <section className={sectionCardClass}>
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
+        <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
           {language === 'zh' ? '云中立服务' : 'Cloud-neutral services'}
         </p>
         <h2 className="text-lg font-semibold text-[color:var(--color-heading)] sm:text-xl">
           {language === 'zh' ? '进入各产品控制面' : 'Enter control planes'}
         </h2>
-        <p className="text-[13px] text-[color:var(--color-text-subtle)]">
+        <p className="text-caption text-[color:var(--color-text-subtle)]">
           {language === 'zh'
             ? '保持无渐变、无装饰的卡片布局，突出入口清晰度。'
             : 'Calm, decoration-free cards that keep entry points clear.'}
@@ -408,7 +408,7 @@ function ServiceEntryGrid({ services, language }: SectionProps & { services: Ser
               </span>
               <div className="space-y-1">
                 <h3 className="text-sm font-semibold text-[color:var(--color-heading)]">{item.name}</h3>
-                <p className="text-[13px] leading-snug text-[color:var(--color-text-subtle)]">{item.description}</p>
+                <p className="text-caption leading-snug text-[color:var(--color-text-subtle)]">{item.description}</p>
               </div>
             </div>
             <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)]">
@@ -426,7 +426,7 @@ function NextSteps({ steps, language }: SectionProps & { steps: NextStep[] }) {
   return (
     <section className={sectionCardClass}>
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
+        <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
           {language === 'zh' ? '下一步' : 'Your next steps'}
         </p>
         <h2 className="text-lg font-semibold text-[color:var(--color-heading)] sm:text-xl">
@@ -444,7 +444,7 @@ function NextSteps({ steps, language }: SectionProps & { steps: NextStep[] }) {
             </span>
             <div className="space-y-1">
               <h3 className="text-sm font-semibold text-[color:var(--color-heading)]">{step.title}</h3>
-              <p className="text-[13px] leading-snug text-[color:var(--color-text-subtle)]">{step.description}</p>
+              <p className="text-caption leading-snug text-[color:var(--color-text-subtle)]">{step.description}</p>
             </div>
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)]">
               {language === 'zh' ? '前往' : 'Go to step'}
@@ -461,7 +461,7 @@ function Resources({ resources, language }: SectionProps & { resources: Resource
   return (
     <section className={sectionCardClass}>
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
+        <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
           {language === 'zh' ? '资源与工具' : 'Resources & tools'}
         </p>
         <h2 className="text-lg font-semibold text-[color:var(--color-heading)] sm:text-xl">
@@ -481,7 +481,7 @@ function Resources({ resources, language }: SectionProps & { resources: Resource
               </span>
               <div className="space-y-1">
                 <h3 className="text-sm font-semibold text-[color:var(--color-heading)]">{item.name}</h3>
-                <p className="text-[13px] leading-snug text-[color:var(--color-text-subtle)]">{item.description}</p>
+                <p className="text-caption leading-snug text-[color:var(--color-text-subtle)]">{item.description}</p>
               </div>
             </div>
             <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)]">
@@ -499,7 +499,7 @@ function BlogUpdates({ updates, language }: SectionProps & { updates: Update[] }
   return (
     <section className={sectionCardClass}>
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
+        <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">
           {language === 'zh' ? '博客与更新' : 'Blog & updates'}
         </p>
         <h2 className="text-lg font-semibold text-[color:var(--color-heading)] sm:text-xl">
@@ -512,15 +512,15 @@ function BlogUpdates({ updates, language }: SectionProps & { updates: Update[] }
             key={item.title}
             className="flex h-full flex-col justify-between rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 text-[color:var(--color-text)]"
           >
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-[color:var(--color-text-subtle)]">
-              <span className="rounded-full border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-muted)] px-2 py-1 text-[11px] font-semibold text-[color:var(--color-heading)]">
+            <div className="flex items-center justify-between text-eyebrow uppercase tracking-wide text-[color:var(--color-text-subtle)]">
+              <span className="rounded-full border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface-muted)] px-2 py-1 text-eyebrow font-semibold text-[color:var(--color-heading)]">
                 {item.tag}
               </span>
               <span className="text-xs text-[color:var(--color-text-subtle)]">{item.date}</span>
             </div>
             <div className="mt-3 space-y-2">
               <h3 className="text-sm font-semibold text-[color:var(--color-heading)]">{item.title}</h3>
-              <p className="text-[13px] leading-snug text-[color:var(--color-text-subtle)]">{item.summary}</p>
+              <p className="text-caption leading-snug text-[color:var(--color-text-subtle)]">{item.summary}</p>
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)]">
               {language === 'zh' ? '查看' : 'View'}

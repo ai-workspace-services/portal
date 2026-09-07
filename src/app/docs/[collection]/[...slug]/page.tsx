@@ -102,7 +102,7 @@ export default async function DocVersionPage({
             eyebrow={isChinese ? "文档中心" : "Documentation"}
             title={version.title}
             subtitle={version.description}
-            titleClassName="text-[2.3rem] tracking-[-0.06em] sm:text-[2.9rem]"
+            titleClassName="text-4xl tracking-[-0.06em] sm:text-5xl"
           />
         </section>
 
@@ -123,7 +123,7 @@ export default async function DocVersionPage({
           <div className="rounded-[0.95rem] border border-slate-900/8 bg-white/88 p-5 shadow-[var(--shadow-soft)]">
             {version.toc.length > 0 ? (
               <>
-                <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+                <p className="mb-4 text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
                   {isChinese ? "本页目录" : "On this page"}
                 </p>
                 <nav aria-label={isChinese ? "本页目录" : "On this page"}>
@@ -145,7 +145,7 @@ export default async function DocVersionPage({
                 <div className="my-5 border-t border-slate-900/8" />
               </>
             ) : null}
-            <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+            <p className="mb-4 text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
               {isChinese ? "页面信息" : "Page details"}
             </p>
             <DocMetaPanel

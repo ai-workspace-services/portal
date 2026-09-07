@@ -439,13 +439,13 @@ export function XWorkmateWorkspacePage({
     <main className="flex h-full min-h-0 w-full overflow-hidden bg-[#f7f8fa] text-[#1f2430]">
       <aside className="flex w-[280px] shrink-0 flex-col border-r border-slate-200/80 bg-white">
         <div className="flex h-full min-h-0 flex-col p-4">
-          <div className="mb-3 flex items-center gap-2.5 text-[17px] font-bold text-slate-700">
+          <div className="mb-3 flex items-center gap-2.5 text-base font-bold text-slate-700">
             <span className="h-3 w-3 rounded-full bg-red-400" />
             <span className="h-3 w-3 rounded-full bg-amber-400" />
             <span className="h-3 w-3 rounded-full bg-emerald-400" />
             <span className="ml-2">XWorkmate</span>
             {trialMode && trialStatus?.mode === "trial" ? (
-              <span className="ml-auto rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">
+              <span className="ml-auto rounded-full bg-blue-50 px-2 py-1 text-eyebrow font-semibold text-blue-700">
                 访客试用 · 剩余 {trialStatus.trial?.remaining ?? "—"}/
                 {trialStatus.trial?.limit ?? "—"}
               </span>
@@ -504,7 +504,7 @@ export function XWorkmateWorkspacePage({
                     {task.preview}
                   </span>
                 </span>
-                <span className="flex flex-col items-end gap-2 text-[10px] font-semibold text-slate-400">
+                <span className="flex flex-col items-end gap-2 text-eyebrow font-semibold text-slate-400">
                   {formatRelativeTime(task.updatedAt)}
                   <span className="rounded-md bg-white p-1 shadow-sm">
                     <Copy className="h-3 w-3" />
@@ -557,8 +557,8 @@ export function XWorkmateWorkspacePage({
                 <Pencil className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-[22px] font-bold tracking-tight text-slate-900">开始对话或运行任务</h1>
-                <p className="mt-2 text-[15px] font-medium leading-6 text-slate-500">
+                <h1 className="text-xl font-bold tracking-tight text-slate-900">开始对话或运行任务</h1>
+                <p className="mt-2 text-body font-medium leading-6 text-slate-500">
                   输入需求，连接模型与工具，让 XWorkmate 帮你把想法推进到结果。
                 </p>
               </div>
@@ -584,7 +584,7 @@ export function XWorkmateWorkspacePage({
           </div>
 
           {activeTask?.preview ? (
-            <div className="mx-auto mt-5 w-[min(820px,calc(100%-48px))] rounded-2xl border border-slate-200/80 bg-white p-5 text-[15px] font-medium leading-7 text-slate-700 shadow-sm">
+            <div className="mx-auto mt-5 w-[min(820px,calc(100%-48px))] rounded-2xl border border-slate-200/80 bg-white p-5 text-body font-medium leading-7 text-slate-700 shadow-sm">
               <div className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-400">
                 {activeTask.state === "running" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -658,7 +658,7 @@ export function XWorkmateWorkspacePage({
 
             <textarea
               id="xworkmate-composer"
-              className="h-[104px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-[15px] font-medium leading-6 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+              className="h-[104px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-body font-medium leading-6 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
               placeholder="输入需求、补充上下文，XWorkmate 会沿用当前任务上下文持续处理。"
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
@@ -783,7 +783,7 @@ export function XWorkmateWorkspacePage({
             )}
           </div>
 
-          <div className="rounded-xl bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-500">
+          <div className="rounded-xl bg-slate-50 px-3 py-2 text-eyebrow font-semibold text-slate-500">
             Bridge: {bridgeStatus === "connected" ? "connected" : bridgeStatus}
             {bridgeVersion ? ` · ${bridgeVersion.slice(0, 12)}` : ""}
           </div>

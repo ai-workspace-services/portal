@@ -87,6 +87,55 @@ const tailwindConfig = {
         mono: ['var(--font-geist-mono)', 'monospace'],
       },
 
+      /* ----------------------------------------------------------------
+         字号：与 globals.css :root 的唯一阶梯一一对应。
+         xs–6xl 的 px 值与 Tailwind 默认完全一致，因此既有 1388 处 text-*
+         用法零位移；行高沿用 Tailwind 默认（随字号自动收紧，本身即成体系），
+         仅 5xl/6xl 由 1 放宽到 1.1——中文在 1.0 行高下会切到上下缘。
+
+         新增 eyebrow / caption / body 三级，用来取代此前 171 处
+         text-[11px] / text-[13px] / text-[0.68rem] 之类的写死字号。
+         ---------------------------------------------------------------- */
+      fontSize: {
+        eyebrow: ['var(--fs-eyebrow)', { lineHeight: 'var(--lh-snug)', letterSpacing: 'var(--ls-eyebrow)' }], // 11px
+        xs: ['var(--fs-micro)', { lineHeight: '1rem' }],        // 12px
+        caption: ['var(--fs-caption)', { lineHeight: 'var(--lh-snug)' }], // 13px
+        sm: ['var(--fs-body-sm)', { lineHeight: '1.25rem' }],   // 14px
+        body: ['var(--fs-body)', { lineHeight: 'var(--lh-body)' }], // 15px
+        base: ['var(--fs-body-lg)', { lineHeight: '1.5rem' }],  // 16px
+        lg: ['var(--fs-h4)', { lineHeight: '1.75rem' }],        // 18px
+        xl: ['var(--fs-h3)', { lineHeight: '1.75rem' }],        // 20px
+        '2xl': ['var(--fs-h2)', { lineHeight: '2rem' }],        // 24px
+        '3xl': ['var(--fs-h1)', { lineHeight: '2.25rem' }],     // 30px
+        '4xl': ['var(--fs-display-3)', { lineHeight: '2.5rem' }], // 36px
+        '5xl': ['var(--fs-display-2)', { lineHeight: 'var(--lh-display)' }], // 48px
+        '6xl': ['3.75rem', { lineHeight: 'var(--lh-display)' }], // 60px
+        hero: ['var(--fs-hero)', { lineHeight: 'var(--lh-display)', letterSpacing: 'var(--ls-display)' }],
+        'hero-sub': ['var(--fs-hero-sub)', { lineHeight: 'var(--lh-snug)' }],
+      },
+
+      fontWeight: {
+        regular: 'var(--fw-regular)',
+        medium: 'var(--fw-medium)',
+        semibold: 'var(--fw-semibold)',
+        bold: 'var(--fw-bold)',
+      },
+
+      lineHeight: {
+        display: 'var(--lh-display)',
+        heading: 'var(--lh-heading)',
+        snug: 'var(--lh-snug)',
+        body: 'var(--lh-body)',
+        relaxed: 'var(--lh-relaxed)',
+      },
+
+      letterSpacing: {
+        display: 'var(--ls-display)',
+        heading: 'var(--ls-heading)',
+        body: 'var(--ls-body)',
+        eyebrow: 'var(--ls-eyebrow)',
+      },
+
       // 自定义阴影
       boxShadow: {
         soft: '0 35px 80px -45px rgba(37, 78, 219, 0.35), 0 25px 60px -40px rgba(15, 23, 42, 0.25)',

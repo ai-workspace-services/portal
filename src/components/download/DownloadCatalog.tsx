@@ -7,12 +7,12 @@ import {
   CheckCircle2,
   Download,
   ExternalLink,
-  Github,
   Monitor,
   PackageIcon,
   Smartphone,
   TerminalSquare,
 } from "lucide-react";
+import { Github } from "@/components/icons/brand";
 import type { LucideIcon } from "lucide-react";
 
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -145,7 +145,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
           <div className="rounded-[10px] border border-[color:var(--color-surface-border)] bg-white/90 p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                <p className="text-eyebrow font-semibold uppercase tracking-[0.16em] text-primary">
                   {isChinese ? "当前产品" : "Selected product"}
                 </p>
                 <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-heading">
@@ -196,7 +196,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
                     <span className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-primary/10 text-primary">
                       <PackageIcon className="h-4 w-4" aria-hidden />
                     </span>
-                    <span className="rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] px-2.5 py-1 text-[11px] font-semibold text-text-muted">
+                    <span className="rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] px-2.5 py-1 text-eyebrow font-semibold text-text-muted">
                       {typeLabel}
                     </span>
                   </div>
@@ -227,7 +227,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
               </div>
 
               <div className="border-y border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)]/45 p-5 sm:p-6">
-                <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                <div className="mb-3 flex items-center gap-2 text-eyebrow font-semibold uppercase tracking-[0.16em] text-primary">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
                   {isChinese ? "为当前设备推荐" : "Recommended for your device"}
                 </div>
@@ -251,7 +251,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
                               ? recommendation.labelZh
                               : recommendation.label}
                           </h4>
-                          <p className="mt-1 break-all font-mono text-[11px] text-text-muted">
+                          <p className="mt-1 break-all font-mono text-eyebrow text-text-muted">
                             {recommendation.asset?.name ??
                               (isChinese
                                 ? "最新构建尚未镜像"
@@ -279,7 +279,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
                       </a>
                     </div>
                     {recommendation.asset?.sha256 ? (
-                      <p className="mt-4 border-t border-[color:var(--color-surface-border)] pt-3 font-mono text-[11px] text-text-muted">
+                      <p className="mt-4 border-t border-[color:var(--color-surface-border)] pt-3 font-mono text-eyebrow text-text-muted">
                         SHA-256: {recommendation.asset.sha256}
                       </p>
                     ) : null}
@@ -319,7 +319,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-sm font-semibold text-heading">{label}</span>
-                                <span className="rounded-full bg-[var(--color-surface-muted)] px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                                <span className="rounded-full bg-[var(--color-surface-muted)] px-2 py-0.5 text-eyebrow font-medium text-text-muted">
                                   {platform.supported
                                     ? platform.asset
                                       ? isChinese
@@ -333,7 +333,7 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
                                       : "Unavailable"}
                                 </span>
                               </div>
-                              <p className="mt-1 break-all font-mono text-[11px] text-text-muted">
+                              <p className="mt-1 break-all font-mono text-eyebrow text-text-muted">
                                 {platform.asset?.name ?? detail}
                               </p>
                             </div>

@@ -61,12 +61,12 @@ export default function CommunityFeed({ posts = [] }: CommunityFeedProps) {
     >
       <div className={clsx(designTokens.layout.container, 'flex flex-col gap-6 sm:gap-8')}>
         <div className="space-y-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+          <span className="text-eyebrow font-semibold uppercase tracking-[0.22em] text-slate-500">
             {language === 'zh' ? '更新' : 'Updates'}
           </span>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="space-y-1">
-              <h2 id="community-feed" className="text-2xl font-semibold text-slate-900 sm:text-[24px]">
+              <h2 id="community-feed" className="text-2xl font-semibold text-slate-900 sm:text-2xl">
                 {data.title}
               </h2>
               <p className="text-sm text-slate-600 sm:text-base">{data.subtitle}</p>
@@ -82,8 +82,8 @@ export default function CommunityFeed({ posts = [] }: CommunityFeedProps) {
               key={post.slug}
               className="flex h-full flex-col justify-between rounded-lg border border-black/10 bg-white p-5"
             >
-              <div className="flex items-start justify-between text-[12px] text-slate-500">
-                <span className="rounded-full border border-black/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+              <div className="flex items-start justify-between text-xs text-slate-500">
+                <span className="rounded-full border border-black/10 px-2 py-1 text-eyebrow font-semibold uppercase tracking-wide text-slate-600">
                   Blog
                 </span>
                 <span>{formatDate(post.date, language)}</span>

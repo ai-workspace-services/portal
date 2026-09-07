@@ -63,7 +63,7 @@ export default function RightContextPanel({
             任务上下文会话
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{msgCount} msg · synced</span>
+            <span className="text-eyebrow text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{msgCount} msg · synced</span>
             <ChevronDownIcon className="w-4 h-4 text-gray-400" />
           </div>
         </button>
@@ -100,8 +100,8 @@ export default function RightContextPanel({
                   <Folder className="w-3.5 h-3.5 hover:text-gray-700" />
                 </div>
               </div>
-              <div className="text-[11px] text-gray-400 truncate mb-1">{file.path}</div>
-              <div className="text-[10px] text-gray-400 font-mono">
+              <div className="text-eyebrow text-gray-400 truncate mb-1">{file.path}</div>
+              <div className="text-eyebrow text-gray-400 font-mono">
                 text/markdown · {file.size} · {file.date}
               </div>
             </div>

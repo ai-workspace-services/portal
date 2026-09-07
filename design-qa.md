@@ -147,3 +147,40 @@ Focused-region comparison was not possible: the local capture only includes the 
 - Validate the compact layout at 1440 × 1024 and a narrower desktop breakpoint after an authenticated local session is available.
 
 final result: blocked
+
+---
+
+# 用户组标签设计 QA（2026-09-04）
+
+- Source visual truth: `/Users/shenlan/.codex/generated_images/01a06af1-10b0-7c71-a542-08f4406fe03b/exec-464521dd-5b9d-4967-a7b5-96f46229c6bd.png`（选定图 3）与成员来源环形图方向（图 1）。
+- Implementation route: `/panel/management` → `用户组`。
+- Implementation capture: `.design-qa/user-group-tags-preview-blocked.png`。
+- Target viewport: 1440 × 1024 CSS px; local capture could not reach the target screen because the existing local dev server reports an HMR module-factory error before the route renders.
+- State: selected subscription subgroup, a member selected for editing.
+
+## Findings
+
+- [P1] 本地浏览器预览被既有 Turbopack HMR 错误阻断。
+  - Location: `src/app/panel/components/Header.tsx` importing `lucide-react`.
+  - Evidence: `.design-qa/user-group-tags-preview-blocked.png` shows the runtime overlay before `/panel/management` renders. The error predates this component route and names `ChevronLeft` in the header, not the changed user-group component.
+  - Impact: no browser-rendered implementation capture exists, so source and implementation cannot be placed in the same visual comparison input.
+  - Fix: restart the local development server in a clean HMR state, authenticate as an admin/operator, then capture the group page at 1440 × 1024.
+
+## Required fidelity surfaces
+
+- Fonts and typography: blocked; browser-rendered evidence unavailable.
+- Spacing and layout rhythm: blocked; browser-rendered evidence unavailable.
+- Colors and visual tokens: blocked; browser-rendered evidence unavailable.
+- Image quality and asset fidelity: no custom image assets were introduced; standard UI icons use the existing icon library. The source ring is implemented as a data visualization.
+- Copy and content: reviewed in source; grouping, override, valid-period, import/export, and benefit labels are present in implementation source but require browser verification.
+
+## Implementation checklist
+
+- [x] Add Free, subscription parent/subgroups, and internal-user segmentation.
+- [x] Persist manual group changes through the existing groups callback.
+- [x] Add member import/export entry points and source filtering.
+- [x] Add selected-member editor and automatic/manual composition ring.
+- [x] Add clear validity-period and benefit UI, marked as non-persistent until the billing API supplies a read/write contract.
+- [ ] Run an authenticated browser comparison after the local HMR blocker is cleared.
+
+final result: blocked

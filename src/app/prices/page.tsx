@@ -258,7 +258,7 @@ export default function PricesPage() {
       }`}
     >
       {card.highlight ? (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-eyebrow font-bold uppercase tracking-wider text-white">
           {isChinese ? "推荐" : "Recommended"}
         </div>
       ) : null}

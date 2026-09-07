@@ -63,8 +63,8 @@ export const designTokens = {
         'border border-[color:var(--color-surface-border)] bg-white/88 text-[var(--color-primary)] hover:bg-[var(--color-surface-muted)]',
     } satisfies Record<ButtonVariant, string>,
     shape: {
-      homepage: 'rounded-[8px] px-5 py-2.5 text-[13px]',
-      product: 'rounded-[8px] px-4 py-2 text-[13px]',
+      homepage: 'rounded-[8px] px-5 py-2.5 text-caption',
+      product: 'rounded-[8px] px-4 py-2 text-caption',
     } satisfies Record<PageVariant, string>,
   },
 }

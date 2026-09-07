@@ -1,6 +1,7 @@
 "use client";
 
-import { Bot, Check, Copy, FileText, Github, Printer } from "lucide-react";
+import { Bot, Check, Copy, FileText, Printer } from "lucide-react";
+import { Github } from "@/components/icons/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -60,7 +61,7 @@ export default function DocActions({
 
   return (
     <div className="space-y-2">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+      <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
         {isChinese ? "操作" : "Actions"}
       </p>
       <div className="grid gap-1">

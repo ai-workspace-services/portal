@@ -83,7 +83,7 @@ export default function Header({
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
           <button
             type="button"
-            className="tactile-button tactile-button-soft shrink-0 gap-2 px-3 text-[13px] font-medium text-[var(--color-text-subtle)] md:hidden"
+            className="tactile-button tactile-button-soft shrink-0 gap-2 px-3 text-caption font-medium text-[var(--color-text-subtle)] md:hidden"
             onClick={onMenu}
             aria-label={language === "zh" ? "切换导航菜单" : "Toggle navigation menu"}
           >
@@ -117,7 +117,7 @@ export default function Header({
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href="/"
-              className="tactile-button tactile-button-soft inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition-colors sm:px-3 sm:text-[13px]"
+              className="tactile-button tactile-button-soft inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition-colors sm:px-3 sm:text-caption"
               aria-label={language === "zh" ? "返回主页" : "Back to homepage"}
             >
               <Home className="h-3.5 w-3.5" aria-hidden="true" />
@@ -129,7 +129,7 @@ export default function Header({
             >
               {statusBadge}
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-gradient-to-br from-[var(--gradient-primary-from)] to-[var(--gradient-primary-to)] text-[13px] font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-soft)] transition-colors">
+            <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-gradient-to-br from-[var(--gradient-primary-from)] to-[var(--gradient-primary-to)] text-caption font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-soft)] transition-colors">
               {isLoading ? (
                 <span className="animate-pulse">…</span>
               ) : (
@@ -137,7 +137,7 @@ export default function Header({
               )}
             </div>
             <div className="hidden flex-col text-right text-xs text-[var(--color-text-subtle)] transition-colors md:flex">
-              <span className="text-[13px] font-semibold text-[var(--color-text)]">
+              <span className="text-caption font-semibold text-[var(--color-text)]">
                 {accountLabel}
               </span>
               {shouldRenderPublicEmail ? <span>{user?.email}</span> : null}

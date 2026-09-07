@@ -221,7 +221,7 @@ function CategorySection({
   return (
     <div className="space-y-1">
       <div
-        className={`flex w-full items-center gap-2.5 px-2 py-1 text-[11px] font-bold uppercase tracking-tight ${isActive ? "text-primary" : "text-text-muted/80"}`}
+        className={`flex w-full items-center gap-2.5 px-2 py-1 text-eyebrow font-bold uppercase tracking-tight ${isActive ? "text-primary" : "text-text-muted/80"}`}
       >
         <Icon
           className={`h-3.5 w-3.5 ${isActive ? "text-primary" : "text-text-subtle"}`}
@@ -286,7 +286,7 @@ function AdvancedSection({
             (k) =>
               grouped[k] && (
                 <div key={k} className="space-y-2 py-1">
-                  <div className="flex items-center gap-2 px-3 text-[10px] font-bold uppercase tracking-widest text-text-subtle/50">
+                  <div className="flex items-center gap-2 px-3 text-eyebrow font-bold uppercase tracking-widest text-text-subtle/50">
                     <span className="h-[1px] w-2 bg-surface-border"></span>
                     {humanize(k)}
                   </div>
@@ -347,7 +347,7 @@ function SidebarLink({
       </Link>
       {isPageActive && visibleOutline.length > 0 ? (
         <div className="ml-3 mt-1 border-l border-primary/20 pl-3">
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-subtle">
+          <p className="mb-1 text-eyebrow font-semibold uppercase tracking-[0.18em] text-text-subtle">
             {isChinese ? "目录预览" : "Page outline"}
           </p>
           <ul className="max-h-36 space-y-0.5 overflow-y-auto pr-1">
@@ -366,7 +366,7 @@ function SidebarLink({
             ))}
           </ul>
           {pageOutline.length > visibleOutline.length ? (
-            <p className="mt-1 text-[10px] text-text-subtle">
+            <p className="mt-1 text-eyebrow text-text-subtle">
               {isChinese
                 ? `+${pageOutline.length - visibleOutline.length} 个章节`
                 : `+${pageOutline.length - visibleOutline.length} sections`}

@@ -264,7 +264,7 @@ export default function SubscriptionPanel({
               </p>
               <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-[color:var(--color-surface-border)] pt-3 text-center">
                 <div>
-                  <dt className="text-[10px] uppercase text-[var(--color-text-subtle)]">
+                  <dt className="text-eyebrow uppercase text-[var(--color-text-subtle)]">
                     {copy.last1Hour}
                   </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-[var(--color-heading)]">
@@ -272,7 +272,7 @@ export default function SubscriptionPanel({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase text-[var(--color-text-subtle)]">
+                  <dt className="text-eyebrow uppercase text-[var(--color-text-subtle)]">
                     {copy.last24Hours}
                   </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-[var(--color-heading)]">
@@ -280,7 +280,7 @@ export default function SubscriptionPanel({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase text-[var(--color-text-subtle)]">
+                  <dt className="text-eyebrow uppercase text-[var(--color-text-subtle)]">
                     {copy.monthToDate}
                   </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-[var(--color-heading)]">

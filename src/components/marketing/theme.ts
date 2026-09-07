@@ -28,7 +28,7 @@ export const marketingTheme = {
     base: "rounded-2xl bg-[#0f172a] text-white",
   },
   heading: {
-    eyebrow: "text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-text-subtle",
+    eyebrow: "text-eyebrow font-semibold uppercase tracking-[0.28em] text-text-subtle",
     section: "text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl",
     sectionSubtitle: "mt-2 text-sm leading-relaxed text-slate-500 sm:text-base",
   },

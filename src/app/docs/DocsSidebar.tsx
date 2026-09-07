@@ -95,7 +95,7 @@ export function DocsMobileNav({
               <Menu className="h-4 w-4" aria-hidden />
             </span>
             <span>
-              <span className="block text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-text-subtle">
+              <span className="block text-eyebrow font-semibold uppercase tracking-[0.2em] text-text-subtle">
                 {language === "zh" ? "文档导航" : "Documentation"}
               </span>
               <span className="mt-0.5 block text-sm font-semibold text-text">

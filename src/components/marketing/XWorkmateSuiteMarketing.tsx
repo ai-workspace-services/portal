@@ -105,7 +105,7 @@ export default function XWorkmateSuiteMarketing() {
             <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
             XWorkmate Suite
           </div>
-          <h1 className="mt-5 max-w-3xl text-[2.7rem] font-semibold leading-[0.98] tracking-normal text-slate-950 sm:text-[4.2rem]">
+          <h1 className="mt-5 max-w-3xl text-5xl font-semibold leading-[0.98] tracking-normal text-slate-950 sm:text-6xl">
             XWorkmate 产品矩阵
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-text-muted sm:text-lg">

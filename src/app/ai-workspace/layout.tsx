@@ -84,14 +84,14 @@ function AiWorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
       >
         <Link
           href="/ai-workspace/conversation/new"
-          className="flex flex-col items-center gap-0.5 px-4 py-1 text-[11px] font-semibold text-slate-600"
+          className="flex flex-col items-center gap-0.5 px-4 py-1 text-eyebrow font-semibold text-slate-600"
         >
           <MessageSquarePlus className="size-5" />
           助手
         </Link>
         <Link
           href="/ai-workspace"
-          className="flex flex-col items-center gap-0.5 rounded-xl bg-blue-50 px-5 py-1 text-[11px] font-bold text-[#075ecc]"
+          className="flex flex-col items-center gap-0.5 rounded-xl bg-blue-50 px-5 py-1 text-eyebrow font-bold text-[#075ecc]"
         >
           <LayoutDashboard className="size-5" />
           任务
@@ -99,7 +99,7 @@ function AiWorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           onClick={() => setMobileSidebarOpen(true)}
-          className="flex flex-col items-center gap-0.5 px-4 py-1 text-[11px] font-semibold text-slate-600"
+          className="flex flex-col items-center gap-0.5 px-4 py-1 text-eyebrow font-semibold text-slate-600"
         >
           <History className="size-5" />
           历史

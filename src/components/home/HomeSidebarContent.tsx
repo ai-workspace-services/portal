@@ -78,8 +78,8 @@ export function HomeSidebarContent() {
     return (
         <>
             <SidebarHeader className="space-y-1 mb-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{data.title}</p>
-                <p className="text-[13px] leading-relaxed text-slate-600">
+                <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-slate-500">{data.title}</p>
+                <p className="text-caption leading-relaxed text-slate-600">
                     {language === 'zh'
                         ? '查阅文档、最佳实践与社区讨论，保持交付与治理同频。'
                         : 'Stay aligned with docs, practices, and community conversations.'}
@@ -99,7 +99,7 @@ export function HomeSidebarContent() {
                                     >
                                         {item.label}
                                     </a>
-                                    {item.description && <p className="text-[12px] text-slate-600">{item.description}</p>}
+                                    {item.description && <p className="text-xs text-slate-600">{item.description}</p>}
                                 </li>
                             ))}
                         </ul>

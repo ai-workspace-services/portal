@@ -149,7 +149,7 @@ export function AuthLayout({
         <div className="w-full max-w-[32rem]">
           <div className="mb-6 flex items-center justify-between gap-4">
             <BoundaryLink href="/" className="space-y-1">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-text-subtle">
+              <p className="text-eyebrow font-semibold uppercase tracking-[0.24em] text-text-subtle">
                 XWork Tech Toolkit
               </p>
               <p className="text-2xl font-semibold tracking-[-0.04em] text-slate-900">
@@ -179,7 +179,7 @@ export function AuthLayout({
               ) : null}
 
               <div className="space-y-2">
-                <h1 className="text-[2rem] font-semibold leading-[0.95] tracking-[-0.05em] text-slate-900 sm:text-[2.5rem]">
+                <h1 className="text-3xl font-semibold leading-[0.95] tracking-[-0.05em] text-slate-900 sm:text-4xl">
                   {title}
                 </h1>
                 {description ? (

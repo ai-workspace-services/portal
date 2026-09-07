@@ -60,20 +60,20 @@ export function PublicPageIntro({
   return (
     <header className={cn("space-y-3", className)}>
       {eyebrow ? (
-        <p className="text-[0.75rem] font-semibold uppercase tracking-[0.22em] text-text-subtle">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-subtle">
           {eyebrow}
         </p>
       ) : null}
       <h1
         className={cn(
-          "max-w-4xl text-[1.75rem] font-semibold leading-[1.05] tracking-[-0.035em] text-heading sm:text-[2.2rem]",
+          "max-w-4xl text-3xl font-semibold leading-[1.05] tracking-[-0.035em] text-heading sm:text-4xl",
           titleClassName,
         )}
       >
         {title}
       </h1>
       {subtitle ? (
-        <p className="max-w-3xl text-[0.95rem] leading-7 text-text-muted sm:text-[1rem]">
+        <p className="max-w-3xl text-body leading-7 text-text-muted sm:text-base">
           {subtitle}
         </p>
       ) : null}

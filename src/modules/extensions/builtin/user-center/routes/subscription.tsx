@@ -300,7 +300,7 @@ export default function UserCenterSubscriptionRoute() {
                 label={zh ? "权威用量" : "Authoritative usage"}
                 value={bytesOrDash(usageSummary?.totalBytes)}
                 aside={
-                  <span className="xds-tag xds-t-mono" style={{ fontSize: 10 }}>
+                  <span className="xds-tag xds-t-mono" style={{ fontSize: "var(--fs-eyebrow)" }}>
                     {usageSummary?.sourceOfTruth || DASH}
                   </span>
                 }

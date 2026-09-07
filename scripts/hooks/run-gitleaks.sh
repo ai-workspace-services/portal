@@ -37,8 +37,13 @@ if [ $EXIT_CODE -ne 0 ]; then
     echo "⚠️ Potential secrets detected!"
     echo "Report generated at: $REPORT_PATH"
     echo ""
-    echo "Please review the findings and refer to the security playbook:"
-    echo "skills/git.secret-incident-response.v1.md"
+    echo "Review the findings, then:"
+    echo "  1. Rotate the exposed credential first — do not start with git history."
+    echo "     xworkspace-core-skills: operations-management/secrets-identity-and-access-governance"
+    echo "  2. If it was committed, clean the history:"
+    echo "     skills/git-history-secret-remediation/SKILL.md"
+    echo "  3. Declare and track the incident:"
+    echo "     xworkspace-core-skills: operations-management/incident-response-and-change-management"
     exit $EXIT_CODE
 else
     echo "✅ No secrets detected."

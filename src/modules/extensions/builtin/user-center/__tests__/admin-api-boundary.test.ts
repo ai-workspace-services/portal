@@ -24,17 +24,12 @@ import { describe, expect, it } from "vitest";
 const USER_CENTER_DIR = path.resolve(__dirname, "..");
 
 /**
- * Endpoints the console calls that Accounts does not implement under either
- * boundary -- they exist only as portal BFF routes proxying to handlers that
- * were never written. Rewriting the prefix would turn a 404 from the gateway
- * into a 404 from accounts, so they stay listed here until the upstream
- * handlers land.
+ * The account collection is the only dashboard contract that remains BFF
+ * backed: Accounts exposes its protected directory at `/users`, rather than
+ * a billing collection endpoint.
  */
 const MISSING_UPSTREAM_ENDPOINTS = [
-  "/api/admin/billing/overview",
-  "/api/admin/billing/ledger",
-  // The account list is served by the BFF from `/api/auth/users` and reshaped;
-  // there is no `/admin/billing/accounts` collection endpoint upstream.
+  // The account list is served by the BFF from `/api/auth/users` and reshaped.
   '"/api/admin/billing/accounts"',
 ];
 

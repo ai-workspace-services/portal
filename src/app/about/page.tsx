@@ -45,9 +45,9 @@ export default function AboutPage() {
         <div className="grid gap-6">
           <PublicPageIntro
             title={content.title}
-            titleClassName="editorial-display text-[2.9rem] tracking-[-0.06em] sm:text-[3.6rem]"
+            titleClassName="editorial-display text-5xl tracking-[-0.06em] sm:text-6xl"
           />
-          <div className="space-y-4 text-slate-700 text-[1.1rem] leading-8 max-w-4xl pt-4">
+          <div className="space-y-4 text-slate-700 text-lg leading-8 max-w-4xl pt-4">
             {content.paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}

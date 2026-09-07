@@ -1586,7 +1586,7 @@ export function OpenClawAssistantPane({
               </button>
 
               {!compact && !minimalPage ? (
-                <div className="ml-auto flex items-center gap-2 text-[11px] text-[var(--color-text-subtle)]">
+                <div className="ml-auto flex items-center gap-2 text-eyebrow text-[var(--color-text-subtle)]">
                   <Link2 className="h-3.5 w-3.5" />
                   <span>
                     {activeSession?.derivedTitle ||

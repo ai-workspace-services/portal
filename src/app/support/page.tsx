@@ -21,7 +21,6 @@ import {
   Boxes,
   ChevronRight,
   CreditCard,
-  Github,
   Info,
   Mail,
   MessagesSquare,
@@ -30,6 +29,7 @@ import {
   Rocket,
   Sparkles,
 } from "lucide-react";
+import { Github } from "@/components/icons/brand";
 import Link from "next/link";
 
 import MarketingNav from "@/components/marketing/MarketingNav";
