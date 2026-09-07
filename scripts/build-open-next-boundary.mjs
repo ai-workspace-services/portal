@@ -301,6 +301,7 @@ function isApi(relativePath) {
 
 function isAuthBffApi(relativePath) {
   return relativePath === "api/auth/token/exchange/route.ts"
+    || relativePath === "api/auth/session/route.ts"
     || relativePath === "api/auth/mfa"
     || relativePath.startsWith("api/auth/mfa/");
 }
