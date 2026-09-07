@@ -14,13 +14,13 @@ afterEach(() => {
 });
 
 describe("XConnect Zero extension", () => {
-  it("is disabled by default so the new panel stays gated", () => {
+  it("is visible by default for signed-in user accounts", () => {
     delete process.env[FLAG];
     resetExtensionRegistryCache();
 
     expect(
       getExtensionRegistry().getRoute("/panel/xconnect-zero")?.enabled,
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("loads the protected panel when explicitly enabled", async () => {
@@ -31,7 +31,7 @@ describe("XConnect Zero extension", () => {
     expect(route?.enabled).toBe(true);
     expect(route?.guard).toEqual({
       requireLogin: true,
-      roles: ["admin", "operator"],
+      roles: ["admin", "operator", "user"],
       permissions: ["xconnect.zero.read"],
     });
     await expect(

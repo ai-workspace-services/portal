@@ -11,7 +11,9 @@ import type { AccountUserRole } from "@server/account/session";
 import { isXConnectZeroAdminOverview } from "@lib/xconnectZero";
 
 const ACCOUNT_OVERLAY_API_BASE = `${getAccountServiceBaseUrl()}/api/overlay/v1`;
-const READ_ROLES: AccountUserRole[] = ["admin", "operator"];
+// XConnect Zero is a self-service user feature. The accounts API applies the
+// authoritative owner scope; this BFF only forwards the current session.
+const READ_ROLES: AccountUserRole[] = ["admin", "operator", "user"];
 const ALLOWED_ROUTES = new Map([
   ["GET overview", "/admin/overview"],
   ["GET networks", "/admin/networks"],

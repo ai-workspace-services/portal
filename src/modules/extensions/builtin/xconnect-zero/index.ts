@@ -21,7 +21,7 @@ export const xconnectZeroExtension: DashboardExtension = {
       loader: () => import("./routes/overview"),
       guard: {
         requireLogin: true,
-        roles: ["admin", "operator"],
+        roles: ["admin", "operator", "user"],
         permissions: ["xconnect.zero.read"],
       },
       redirect: { unauthenticated: "/login", forbidden: "/panel" },
@@ -31,7 +31,7 @@ export const xconnectZeroExtension: DashboardExtension = {
         title: "XConnect Zero 控面",
         description: "启用 XConnect Zero WebUI。",
         envVar: "NEXT_PUBLIC_FEATURE_XCONNECT_ZERO_MODULE",
-        defaultEnabled: false,
+        defaultEnabled: true,
       },
     },
   ],
