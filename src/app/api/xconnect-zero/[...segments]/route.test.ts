@@ -102,7 +102,7 @@ describe("/api/xconnect-zero/[...segments]", () => {
       gatewayCount: 1,
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://accounts.svc.plus/api/overlay/v1/admin/overview",
+      "http://127.0.0.1:18081/api/overlay/v1/admin/overview",
       expect.objectContaining({
         method: "GET",
         headers: {
