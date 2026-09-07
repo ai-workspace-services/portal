@@ -20,7 +20,7 @@ describe('fetchAgentNodes', () => {
     await expect(fetchAgentNodes()).resolves.toEqual([{ name: 'JP', address: 'jp-xhttp.svc.plus' }])
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/auth/sync/config?since_version=0',
+      '/api/agent-server/v1/nodes',
       expect.objectContaining({
         cache: 'no-store',
         credentials: 'include',
