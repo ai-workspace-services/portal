@@ -10,10 +10,12 @@ import {
 import type { DashboardExtension } from "../../types";
 import type { AccessRule } from "@lib/accessControl";
 
-const guard: AccessRule = {
+export const platformOperationsAccessRule: AccessRule = {
   requireLogin: true,
+  tenantScoped: true,
   roles: ["admin", "operator"],
   permissions: ["platform.ops.read"],
+  groups: ["platform-ops", "platform-operations"],
 };
 
 export const platformOperationsExtension: DashboardExtension = {
@@ -33,7 +35,7 @@ export const platformOperationsExtension: DashboardExtension = {
       description: "平台运行与操作总览",
       icon: LayoutDashboard,
       loader: () => import("./routes/overview"),
-      guard,
+      guard: platformOperationsAccessRule,
       sidebar: { section: "management", order: 24 },
     },
     {
@@ -43,7 +45,7 @@ export const platformOperationsExtension: DashboardExtension = {
       description: "跨仓库 Tag 与环境发布",
       icon: GitBranch,
       loader: () => import("./routes/releases"),
-      guard,
+      guard: platformOperationsAccessRule,
       sidebar: { section: "management", order: 25 },
     },
     {
@@ -53,7 +55,7 @@ export const platformOperationsExtension: DashboardExtension = {
       description: "Pages、SSR、Cloud Run 与 Hybrid",
       icon: ServerCog,
       loader: () => import("./routes/environments"),
-      guard,
+      guard: platformOperationsAccessRule,
       sidebar: { section: "management", order: 26 },
     },
     {
@@ -63,7 +65,7 @@ export const platformOperationsExtension: DashboardExtension = {
       description: "审批、执行与审计时间线",
       icon: FileClock,
       loader: () => import("./routes/audit"),
-      guard,
+      guard: platformOperationsAccessRule,
       sidebar: { section: "management", order: 27 },
     },
     {
@@ -73,7 +75,7 @@ export const platformOperationsExtension: DashboardExtension = {
       description: "角色声明、MFA 与访问边界",
       icon: ShieldCheck,
       loader: () => import("./routes/vault-access"),
-      guard,
+      guard: platformOperationsAccessRule,
       sidebar: { section: "management", order: 28 },
     },
   ],

@@ -10,6 +10,8 @@ export type TenantMembership = {
   id: string
   name?: string
   role?: UserRole
+  groups?: string[]
+  permissions?: string[]
 }
 
 export type User = {
@@ -205,6 +207,18 @@ async function fetchSessionUser(): Promise<User | null> {
 
           if (typeof tenant.role === 'string' && tenant.role.trim().length > 0) {
             normalizedTenant.role = normalizeRole(tenant.role)
+          }
+
+          if (Array.isArray((tenant as { groups?: unknown }).groups)) {
+            normalizedTenant.groups = (tenant as { groups: unknown[] }).groups
+              .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+              .map((value) => value.trim())
+          }
+
+          if (Array.isArray((tenant as { permissions?: unknown }).permissions)) {
+            normalizedTenant.permissions = (tenant as { permissions: unknown[] }).permissions
+              .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+              .map((value) => value.trim())
           }
 
           return normalizedTenant
