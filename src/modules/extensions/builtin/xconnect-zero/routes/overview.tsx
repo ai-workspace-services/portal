@@ -316,7 +316,7 @@ export default function XConnectZeroOverviewRoute() {
   };
   const pages: [[Page, string], [Page, string], [Page, string]] = [
     ["overview", zh ? "Zero 概览" : "Zero overview"],
-    ["join", zh ? "节点加入" : "Join nodes"],
+    ["join", zh ? "节点管理" : "Node management"],
     ["configuration", zh ? "配置管理" : "Configuration"],
   ];
   return (

@@ -10,7 +10,7 @@ vi.mock("@/app/panel/components/Breadcrumbs", () => ({
 }));
 describe("XConnectZeroOverviewRoute", () => {
   afterEach(() => vi.unstubAllGlobals());
-  it("keeps the experience to overview, node join, and configuration", async () => {
+  it("keeps the experience to overview, node management, and configuration", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
@@ -28,7 +28,7 @@ describe("XConnectZeroOverviewRoute", () => {
     expect(
       screen.getByRole("button", { name: "Zero 概览" }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "节点加入" }));
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
     expect(screen.getByText("安全加入节点")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "配置管理" }));
     expect(screen.getByText("WG 与签名证书")).toBeInTheDocument();
