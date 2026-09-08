@@ -211,6 +211,283 @@ describe("/api/xconnect-zero/[...segments]", () => {
     );
   });
 
+  it("allowlists owner-scoped registration reads with manage permission and no-store", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ registrations: [], has_more: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GET } = await import("./route");
+    const response = await GET(
+      new NextRequest(
+        "https://console-cloudflare-uat.onwalk.net/api/xconnect-zero/registrations",
+      ),
+      { params: Promise.resolve({ segments: ["registrations"] }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    await expect(response.json()).resolves.toEqual({
+      registrations: [],
+      has_more: true,
+    });
+    expect(userHasRoleOrPermissionMock).toHaveBeenCalledWith(
+      { role: "user" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.manage"],
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/overlay\/v1\/admin\/registrations$/),
+      expect.objectContaining({
+        method: "GET",
+        headers: {
+          Authorization: "Bearer account-session-token",
+          Accept: "application/json",
+        },
+      }),
+    );
+  });
+
+  it("forwards only the exact registration approval and rejection paths", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ registration: { status: "approved" } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { POST } = await import("./route");
+    const approved = await POST(
+      new NextRequest(
+        "https://console-cloudflare-uat.onwalk.net/api/xconnect-zero/registrations/reg-1/approve",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ network_id: "net-a" }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["registrations", "reg-1", "approve"],
+        }),
+      },
+    );
+    const rejected = await POST(
+      new NextRequest(
+        "https://console-cloudflare-uat.onwalk.net/api/xconnect-zero/registrations/reg-1/reject",
+        { method: "POST" },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["registrations", "reg-1", "reject"],
+        }),
+      },
+    );
+
+    expect(approved.status).toBe(200);
+    expect(rejected.status).toBe(200);
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/\/admin\/registrations\/reg-1\/approve$/),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ network_id: "net-a" }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(/\/admin\/registrations\/reg-1\/reject$/),
+      expect.objectContaining({ method: "POST", body: undefined }),
+    );
+  });
+
+  it("rejects oversized registration mutations before forwarding", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      new NextRequest(
+        "https://console-cloudflare-uat.onwalk.net/api/xconnect-zero/registrations/reg-1/approve",
+        {
+          method: "POST",
+          headers: { "content-length": "20000" },
+          body: JSON.stringify({ network_id: "net-a" }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["registrations", "reg-1", "approve"],
+        }),
+      },
+    );
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toEqual({
+      error: "request_too_large",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("bounds chunked registration requests without Content-Length and cancels the reader", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "session",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const cancel = vi.fn();
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(17 * 1024));
+      },
+      cancel,
+    });
+    const { POST } = await import("./route");
+    const result = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/registrations/reg/approve",
+        {
+          method: "POST",
+          body: stream,
+          ...({ duplex: "half" } as { duplex: "half" }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["registrations", "reg", "approve"],
+        }),
+      },
+    );
+    expect(result.status).toBe(413);
+    expect(cancel).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("bounds chunked registration responses and handles reader failures", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "session",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const cancel = vi.fn();
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(257 * 1024));
+      },
+      cancel,
+    });
+    const broken = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.error(new Error("private upstream error"));
+      },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response(stream))
+        .mockResolvedValueOnce(new Response(broken)),
+    );
+    const { GET } = await import("./route");
+    for (let i = 0; i < 2; i++) {
+      const result = await GET(
+        new NextRequest(
+          "https://console.svc.plus/api/xconnect-zero/registrations",
+        ),
+        { params: Promise.resolve({ segments: ["registrations"] }) },
+      );
+      expect(result.status).toBe(502);
+      await expect(result.json()).resolves.toEqual({
+        error: "invalid_response",
+      });
+    }
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it("preserves registration mutation 404 and restricts approval to POST", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "session",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ error: "not_found" }), { status: 404 }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    const { POST, GET } = await import("./route");
+    const context = {
+      params: Promise.resolve({
+        segments: ["registrations", "reg", "approve"],
+      }),
+    };
+    const result = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/registrations/reg/approve",
+        { method: "POST" },
+      ),
+      context,
+    );
+    expect(result.status).toBe(404);
+    await expect(result.json()).resolves.toEqual({ error: "not_found" });
+    const denied = await GET(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/registrations/reg/approve",
+      ),
+      context,
+    );
+    expect(denied.status).toBe(404);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not impose registration size caps on existing policy routes", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "session",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const large = JSON.stringify({ policy: "x".repeat(300 * 1024) });
+    const fetchMock = vi.fn().mockResolvedValue(new Response(large));
+    vi.stubGlobal("fetch", fetchMock);
+    const { PUT } = await import("./route");
+    const result = await PUT(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net/policy",
+        { method: "PUT", body: large },
+      ),
+      { params: Promise.resolve({ segments: ["networks", "net", "policy"] }) },
+    );
+    expect(result.status).toBe(200);
+    expect(await result.json()).toEqual(JSON.parse(large));
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ body: large }),
+    );
+  });
+
   it("injects the trusted bootstrap controller while preserving network and invite fields", async () => {
     getAccountSessionMock.mockResolvedValue({
       token: "account-session-token",
@@ -218,15 +495,16 @@ describe("/api/xconnect-zero/[...segments]", () => {
     });
     userHasRoleOrPermissionMock.mockResolvedValue(true);
     let forwardedInit: RequestInit | undefined;
-    const fetchMock = vi.fn(
-      async (_url: string, init?: RequestInit) => {
-        forwardedInit = init;
-        return new Response(JSON.stringify({ join_uri: "xconnect://join/redacted" }), {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      forwardedInit = init;
+      return new Response(
+        JSON.stringify({ join_uri: "xconnect://join/redacted" }),
+        {
           status: 201,
           headers: { "Content-Type": "application/json" },
-        });
-      },
-    );
+        },
+      );
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     const { POST } = await import("./route");

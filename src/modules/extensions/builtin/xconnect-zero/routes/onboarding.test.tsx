@@ -60,6 +60,9 @@ function response(body: unknown, status = 200): Response {
 function installApi(options?: {
   inviteResponse?: Promise<Response> | Response;
   revokeResponse?: Response;
+  registrationResponse?: Response | Promise<Response>;
+  registrationLoadResponse?: Response;
+  registrations?: unknown[];
   devices?: unknown[];
 }) {
   let devices = options?.devices ?? [];
@@ -67,6 +70,17 @@ function installApi(options?: {
     if (url.endsWith("/overview")) return response(overview);
     if (url.endsWith("/networks")) return response(networks);
     if (url.endsWith("/devices")) return response({ devices });
+    if (url.endsWith("/registrations") && init?.method !== "POST")
+      return (
+        options?.registrationLoadResponse ??
+        response({ registrations: options?.registrations ?? [] })
+      );
+    if (url.includes("/registrations/") && init?.method === "POST") {
+      return (
+        options?.registrationResponse ??
+        response({ registration: options?.registrations?.[0] ?? {} })
+      );
+    }
     if (url.endsWith("/invites") && init?.method !== "POST")
       return response({ invites: [] });
     if (url.endsWith("/invites") && init?.method === "POST") {
@@ -237,6 +251,267 @@ describe("XConnect Zero onboarding and management", () => {
       role: "gateway",
       platform: "linux",
     });
+  });
+
+  it("shows an expired request but never enables its approval", async () => {
+    const fetchMock = installApi({
+      registrations: [
+        {
+          registration_id: "reg-expired",
+          network_id: "net-a",
+          device_id: "one-expired",
+          name: "Expired One",
+          hostname: "host",
+          platform: "linux",
+          status: "pending",
+          wireguard_public_key_fingerprint: "public-fingerprint",
+          created_at: "2026-01-01T00:00:00Z",
+          expires_at: "2026-01-01T00:15:00Z",
+        },
+      ],
+    });
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    await screen.findByText("Expired One");
+    await user.selectOptions(
+      screen.getByLabelText("确认所属网络 one-expired"),
+      "net-a",
+    );
+    expect(screen.getByRole("button", { name: "批准" })).toBeDisabled();
+    expect(screen.getByText(/到期时间/)).toHaveTextContent("已过期");
+    expect(
+      fetchMock.mock.calls.some(
+        ([url, init]) =>
+          url.includes("/registrations/") && init?.method === "POST",
+      ),
+    ).toBe(false);
+  });
+
+  it("requires explicit same-network confirmation before approving a One registration", async () => {
+    const registration = {
+      registration_id: "reg-one-1",
+      network_id: "net-a",
+      device_id: "one-self-01",
+      name: "Self registered One",
+      hostname: "one-host",
+      platform: "darwin",
+      status: "pending",
+      wireguard_public_key_fingerprint: "SHA256:declared-fingerprint",
+      created_at: "2026-09-08T10:00:00Z",
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    };
+    const fetchMock = installApi({
+      registrations: [registration],
+      registrationResponse: response({
+        registration: {
+          ...registration,
+          status: "approved",
+          approved_at: "2026-09-08T10:05:00Z",
+        },
+      }),
+    });
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    expect(await screen.findByText("Self registered One")).toBeInTheDocument();
+    expect(screen.getByText(/不是硬件认证/)).toBeInTheDocument();
+    const network = screen.getByLabelText("确认所属网络 one-self-01");
+    const approve = screen.getByRole("button", { name: "批准" });
+    expect(approve).toBeDisabled();
+    await user.selectOptions(network, "net-a");
+    expect(approve).toBeEnabled();
+    await user.click(approve);
+    expect(screen.getByRole("alertdialog")).toHaveTextContent(
+      "采用该网络已有策略",
+    );
+    expect(screen.getByRole("alertdialog")).toHaveTextContent(
+      "自动获取配置并启动 WireGuard/Xray",
+    );
+    expect(
+      fetchMock.mock.calls.some(
+        ([url, init]) =>
+          url.includes("/registrations/") && init?.method === "POST",
+      ),
+    ).toBe(false);
+    await user.click(screen.getByRole("button", { name: "确认批准" }));
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url, init]) =>
+            url.endsWith("/registrations/reg-one-1/approve") &&
+            init?.method === "POST",
+        ),
+      ).toBe(true),
+    );
+    const approval = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        url.endsWith("/registrations/reg-one-1/approve") &&
+        init?.method === "POST",
+    );
+    expect(JSON.parse(String(approval?.[1]?.body))).toEqual({
+      network_id: "net-a",
+    });
+    expect(
+      await screen.findByText("暂无当前所属网络的待确认 One 注册。"),
+    ).toBeInTheDocument();
+  });
+
+  it("requires confirmation before rejecting a pending One registration", async () => {
+    const registration = {
+      registration_id: "reg-one-2",
+      network_id: "net-b",
+      device_id: "one-self-02",
+      name: "Rejectable One",
+      hostname: "one-host-2",
+      platform: "windows",
+      status: "pending",
+      wireguard_public_key_fingerprint: "SHA256:declared-fingerprint-2",
+      created_at: "2026-09-08T10:00:00Z",
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    };
+    const fetchMock = installApi({
+      registrations: [registration],
+      registrationResponse: response({
+        registration: { ...registration, status: "rejected" },
+      }),
+    });
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    await screen.findByText("Rejectable One");
+    await user.selectOptions(
+      screen.getByLabelText("确认所属网络 one-self-02"),
+      "net-b",
+    );
+    await user.click(screen.getByRole("button", { name: "拒绝" }));
+    expect(screen.getByRole("alertdialog")).toHaveTextContent(
+      "拒绝 one-self-02 的 One 注册申请",
+    );
+    await user.click(screen.getByRole("button", { name: "确认拒绝" }));
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([url, init]) =>
+            url.endsWith("/registrations/reg-one-2/reject") &&
+            init?.method === "POST",
+        ),
+      ).toBe(true),
+    );
+    const rejection = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        url.endsWith("/registrations/reg-one-2/reject") &&
+        init?.method === "POST",
+    );
+    expect(rejection?.[1]?.body).toBeUndefined();
+  });
+
+  it("disables a registration decision while its request is pending", async () => {
+    let resolveApproval!: (value: Response) => void;
+    const pendingApproval = new Promise<Response>((resolve) => {
+      resolveApproval = resolve;
+    });
+    const registration = {
+      registration_id: "reg-one-pending",
+      network_id: "net-a",
+      device_id: "one-self-pending",
+      name: "Pending One",
+      hostname: "pending-host",
+      platform: "linux",
+      status: "pending",
+      wireguard_public_key_fingerprint: "SHA256:pending",
+      created_at: "2026-09-08T10:00:00Z",
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    };
+    const fetchMock = installApi({
+      registrations: [registration],
+      registrationResponse: pendingApproval,
+    });
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    await screen.findByText("Pending One");
+    await user.selectOptions(
+      screen.getByLabelText("确认所属网络 one-self-pending"),
+      "net-a",
+    );
+    await user.click(screen.getByRole("button", { name: "批准" }));
+    const confirm = screen.getByRole("button", { name: "确认批准" });
+    await user.click(confirm);
+    await waitFor(() => expect(confirm).toBeDisabled());
+    expect(
+      fetchMock.mock.calls.filter(
+        ([url, init]) =>
+          url.endsWith("/registrations/reg-one-pending/approve") &&
+          init?.method === "POST",
+      ),
+    ).toHaveLength(1);
+    resolveApproval(
+      response({ registration: { ...registration, status: "approved" } }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("keeps a registration rollout failure separate from joined-node data", async () => {
+    const fetchMock = installApi({
+      devices: [
+        {
+          id: "one-existing",
+          network_id: "net-a",
+          role: "one",
+          name: "Existing One",
+          platform: "linux",
+          hostname: "existing-host",
+          wireguard_address: "10.77.0.2/32",
+          connection_status: "recent_ack",
+        },
+      ],
+      registrationLoadResponse: response(
+        { error: "control_plane_unavailable" },
+        503,
+      ),
+    });
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    expect(
+      await screen.findByText(/Accounts 尚未提供待确认 One 注册接口/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Existing One")).toBeInTheDocument();
+    expect(
+      screen.queryByText("暂无当前所属网络的待确认 One 注册。"),
+    ).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/xconnect-zero/registrations",
+      expect.objectContaining({ cache: "no-store" }),
+    );
+  });
+
+  it("does not treat omitted older registrations as an empty history", async () => {
+    const fetchMock = installApi({
+      registrationLoadResponse: response({ registrations: [], has_more: true }),
+    });
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    expect(
+      await screen.findByText(/最近 100 条记录中暂无当前所属网络/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("暂无当前所属网络的待确认 One 注册。"),
+    ).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/xconnect-zero/registrations",
+      expect.objectContaining({ cache: "no-store" }),
+    );
   });
 
   it("requires confirmation for revocation, skips revoked nodes, and keeps failure visible", async () => {
