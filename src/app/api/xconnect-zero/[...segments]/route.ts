@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { getAccountServiceBaseUrl } from "@server/serviceConfig";
+import { getXConnectZeroServiceBaseUrl } from "@server/serviceConfig";
 import {
   getAccountSession,
   userHasRoleOrPermission,
@@ -76,7 +76,7 @@ async function proxy(request: NextRequest, method: string, context: { params: Pr
 
   let response: Response;
   try {
-    const accountOverlayAPIBase = `${getAccountServiceBaseUrl(getRequestHost(request))}/api/overlay/v1`;
+    const accountOverlayAPIBase = `${getXConnectZeroServiceBaseUrl(getRequestHost(request))}/api/overlay/v1`;
     response = await fetch(`${accountOverlayAPIBase}${endpointPath}`, {
       method,
       headers,

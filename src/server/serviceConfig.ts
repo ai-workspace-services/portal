@@ -14,6 +14,12 @@ function getRuntimeDefaultAccountServiceUrl(requestHost?: string | null): string
   return candidate && candidate.length > 0 ? candidate : FALLBACK_ACCOUNT_SERVICE_URL
 }
 
+function getRuntimeDefaultXConnectZeroServiceUrl(requestHost?: string | null): string {
+  const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
+  const candidate = typeof runtime.xconnectZeroUrl === 'string' ? runtime.xconnectZeroUrl.trim() : undefined
+  return candidate && candidate.length > 0 ? candidate : getRuntimeDefaultAccountServiceUrl(requestHost)
+}
+
 function getRuntimeDefaultServerServiceUrl(requestHost?: string | null): string {
   const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
   const candidate = typeof runtime.apiBaseUrl === 'string' ? runtime.apiBaseUrl.trim() : undefined
@@ -111,6 +117,13 @@ export function getAccountServiceApiBaseUrl(requestHost?: string | null): string
     const normalizedBase = normalizeBaseUrl(accountBaseUrl)
     return normalizeBaseUrl(`${normalizedBase}${apiPath}`)
   }
+}
+
+// XConnect Zero traffic is control-plane API traffic, not browser authentication
+// traffic. Environments may intentionally route those boundaries to different
+// origins; use the explicit runtime value when supplied.
+export function getXConnectZeroServiceBaseUrl(requestHost?: string | null): string {
+  return normalizeServiceOrigin(getRuntimeDefaultXConnectZeroServiceUrl(requestHost))
 }
 
 function normalizeHostCandidate(value: string): string {
