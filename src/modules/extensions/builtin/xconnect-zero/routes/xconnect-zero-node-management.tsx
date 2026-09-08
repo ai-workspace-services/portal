@@ -37,6 +37,7 @@ import {
   type XConnectZeroDevice,
   type XConnectZeroInvite,
   type XConnectZeroNetwork,
+  type XConnectZeroRegistration,
 } from "@lib/xconnectZero";
 
 type Page = "overview" | "join" | "configuration";
@@ -45,6 +46,8 @@ type Platform = "linux" | "darwin" | "windows";
 type InvitationTtl = 15 | 30 | 60;
 type ConnectionModeId = "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 type ResourceState = "loading" | "ready" | "error" | "unavailable";
+type RegistrationLoadState = "loading" | "ready" | "error" | "unavailable";
+type RegistrationAction = "approve" | "reject";
 type State =
   | { kind: "loading" }
   | { kind: "available"; overview: XConnectZeroAdminOverview }
@@ -174,6 +177,64 @@ async function getResources(): Promise<Resources> {
   };
 }
 
+type RegistrationRequestError = Error & { status?: number; code?: string };
+
+function isRegistration(value: unknown): value is XConnectZeroRegistration {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const row = value as Record<string, unknown>;
+  return (
+    [
+      "registration_id",
+      "network_id",
+      "device_id",
+      "name",
+      "hostname",
+      "platform",
+      "status",
+      "wireguard_public_key_fingerprint",
+      "created_at",
+      "expires_at",
+    ].every((key) => typeof row[key] === "string") &&
+    Number.isFinite(Date.parse(row.expires_at as string))
+  );
+}
+
+function registrationExpired(registration: XConnectZeroRegistration): boolean {
+  return Date.parse(registration.expires_at) <= Date.now();
+}
+
+async function getRegistrations(): Promise<{
+  registrations: XConnectZeroRegistration[];
+  hasMore: boolean;
+}> {
+  const response = await fetch("/api/xconnect-zero/registrations", {
+    cache: "no-store",
+  });
+  const body = (await response.json().catch(() => null)) as {
+    registrations?: unknown;
+    has_more?: unknown;
+    error?: unknown;
+  } | null;
+  if (
+    !response.ok ||
+    !body ||
+    !Array.isArray(body.registrations) ||
+    !body.registrations.every(isRegistration)
+  ) {
+    const error = new Error(
+      "registrations request failed",
+    ) as RegistrationRequestError;
+    error.status = response.status;
+    error.code = typeof body?.error === "string" ? body.error : undefined;
+    throw error;
+  }
+  const registrations = body.registrations as XConnectZeroRegistration[];
+  return {
+    registrations: registrations.slice(0, 100),
+    hasMore: body.has_more === true || registrations.length > 100,
+  };
+}
+
 function Button({
   children,
   onClick,
@@ -293,6 +354,22 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [state, setState] = useState<State>({ kind: "loading" });
   const [resourceState, setResourceState] = useState<ResourceState>("loading");
   const [resourceData, setResourceData] = useState<Resources | null>(null);
+  const [registrationState, setRegistrationState] =
+    useState<RegistrationLoadState>("loading");
+  const [registrations, setRegistrations] = useState<
+    XConnectZeroRegistration[]
+  >([]);
+  const [registrationsHasMore, setRegistrationsHasMore] = useState(false);
+  const [registrationNetworks, setRegistrationNetworks] = useState<
+    Record<string, string>
+  >({});
+  const [registrationTarget, setRegistrationTarget] =
+    useState<XConnectZeroRegistration | null>(null);
+  const [registrationAction, setRegistrationAction] =
+    useState<RegistrationAction | null>(null);
+  const [registrationError, setRegistrationError] = useState<string | null>(
+    null,
+  );
   const [page, setPage] = useState<Page>("overview");
   const [role, setRole] = useState<NodeRole>("gateway");
   const [platform, setPlatform] = useState<Platform>("linux");
@@ -317,7 +394,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [platformFilter, setPlatformFilter] = useState<"all" | Platform>("all");
   const [connectionMode] = useState<ConnectionModeId>("wg_vless_l3");
 
-  const networks = resourceData?.networks ?? [];
+  const networks = useMemo(() => resourceData?.networks ?? [], [resourceData]);
   const selectedNetwork = networks.find((network) => network.id === networkId);
   const devices = useMemo(() => resourceData?.devices ?? [], [resourceData]);
   const controlPlaneAvailable = state.kind === "available";
@@ -352,11 +429,27 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       ),
     [devices, networkFilter, platformFilter, roleFilter],
   );
+  const pendingRegistrations = useMemo(
+    () =>
+      registrations.filter(
+        (registration) =>
+          registration.status === "pending" &&
+          networks.some((network) => network.id === registration.network_id),
+      ),
+    [networks, registrations],
+  );
 
   const refresh = useCallback(async (): Promise<void> => {
     setState({ kind: "loading" });
     setResourceState("loading");
     setResourceData(null);
+    setRegistrationState("loading");
+    setRegistrations([]);
+    setRegistrationsHasMore(false);
+    setRegistrationNetworks({});
+    setRegistrationTarget(null);
+    setRegistrationAction(null);
+    setRegistrationError(null);
     setError(null);
     const nextState = await getOverview();
     setState(nextState);
@@ -365,14 +458,35 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       setResourceState(
         nextState.kind === "unavailable" ? "unavailable" : "error",
       );
+      setRegistrationState("unavailable");
       return;
     }
-    try {
-      setResourceData(await getResources());
+    const [resourceResult, registrationResult] = await Promise.allSettled([
+      getResources(),
+      getRegistrations(),
+    ]);
+    if (resourceResult.status === "fulfilled") {
+      setResourceData(resourceResult.value);
       setResourceState("ready");
-    } catch {
+    } else {
       setResourceState("error");
       setError(zh ? "加载资源失败" : "Failed to load resources");
+    }
+    if (registrationResult.status === "fulfilled") {
+      setRegistrations(registrationResult.value.registrations);
+      setRegistrationsHasMore(registrationResult.value.hasMore);
+      setRegistrationState("ready");
+    } else {
+      const registrationFailure = registrationResult.reason as
+        | RegistrationRequestError
+        | undefined;
+      setRegistrationState(
+        registrationFailure?.status === 404 ||
+          registrationFailure?.status === 502 ||
+          registrationFailure?.status === 503
+          ? "unavailable"
+          : "error",
+      );
     }
   }, [zh]);
 
@@ -581,6 +695,131 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     }
   };
 
+  const selectRegistrationNetwork = (
+    registration: XConnectZeroRegistration,
+    value: string,
+  ): void => {
+    if (mutationPending) return;
+    setRegistrationNetworks((current) => ({
+      ...current,
+      [registration.registration_id]: value,
+    }));
+    setRegistrationError(null);
+  };
+
+  const openRegistrationAction = (
+    registration: XConnectZeroRegistration,
+    action: RegistrationAction,
+  ): void => {
+    if (
+      !writeReady ||
+      registrationState !== "ready" ||
+      registrationExpired(registration)
+    )
+      return;
+    setRegistrationError(null);
+    setRegistrationTarget(registration);
+    setRegistrationAction(action);
+  };
+
+  const confirmRegistrationAction = async (): Promise<void> => {
+    if (
+      !registrationTarget ||
+      !registrationAction ||
+      !writeReady ||
+      registrationState !== "ready"
+    ) {
+      return;
+    }
+    if (registrationExpired(registrationTarget)) {
+      setRegistrationError(
+        zh
+          ? "该注册已过期，不能处理。"
+          : "This registration has expired and cannot be processed.",
+      );
+      return;
+    }
+    const requestedNetworkId =
+      registrationNetworks[registrationTarget.registration_id] ?? "";
+    const network = networks.find(
+      (item) => item.id === registrationTarget.network_id,
+    );
+    if (!network || requestedNetworkId !== registrationTarget.network_id) {
+      setRegistrationError(
+        zh
+          ? "请明确确认该注册所属的已授权网络；不能跨网络迁移。"
+          : "Confirm this registration's authorized network; cross-network migration is not allowed.",
+      );
+      return;
+    }
+    setMutationPending(true);
+    setRegistrationError(null);
+    const target = registrationTarget;
+    const action = registrationAction;
+    try {
+      const response = await fetch(
+        `/api/xconnect-zero/registrations/${encodeURIComponent(target.registration_id)}/${action}`,
+        {
+          method: "POST",
+          ...(action === "approve"
+            ? {
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ network_id: requestedNetworkId }),
+              }
+            : {}),
+        },
+      );
+      const body = (await response.json().catch(() => null)) as {
+        registration?: XConnectZeroRegistration;
+        error?: unknown;
+      } | null;
+      if (!response.ok) {
+        const failure = new Error(
+          "registration action failed",
+        ) as RegistrationRequestError;
+        failure.status = response.status;
+        failure.code = typeof body?.error === "string" ? body.error : undefined;
+        throw failure;
+      }
+      const updatedRegistration = body?.registration;
+      if (!isRegistration(updatedRegistration)) throw Error();
+      setRegistrations((current) => [
+        ...current.filter(
+          (item) => item.registration_id !== target.registration_id,
+        ),
+        updatedRegistration,
+      ]);
+      setRegistrationTarget(null);
+      setRegistrationAction(null);
+    } catch (failure) {
+      const requestFailure = failure as RegistrationRequestError;
+      setRegistrationError(
+        requestFailure.code === "registration_not_pending" ||
+          requestFailure.status === 409
+          ? zh
+            ? "该注册已不再处于待确认状态，请重新加载列表。"
+            : "This registration is no longer pending; reload the list."
+          : requestFailure.status === 410
+            ? zh
+              ? "该注册已过期，不能处理。"
+              : "This registration has expired and cannot be processed."
+            : requestFailure.status === 404
+              ? zh
+                ? "注册或所属网络不存在。"
+                : "The registration or its network was not found."
+              : zh
+                ? action === "approve"
+                  ? "批准 One 注册失败。"
+                  : "拒绝 One 注册失败。"
+                : action === "approve"
+                  ? "Failed to approve the One registration."
+                  : "Failed to reject the One registration.",
+      );
+    } finally {
+      setMutationPending(false);
+    }
+  };
+
   const status =
     state.kind === "loading"
       ? zh
@@ -626,6 +865,45 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                 ? "没有符合当前筛选条件的节点。"
                 : "No nodes match the current filters."
               : null;
+  const registrationMessage =
+    registrationState === "loading"
+      ? zh
+        ? "正在加载待确认 One 注册…"
+        : "Loading pending One registrations…"
+      : registrationState === "error"
+        ? zh
+          ? "待确认 One 注册加载失败；已有节点数据不受影响，请重新检测。"
+          : "Pending One registrations failed to load; existing node data is unaffected. Check again."
+        : registrationState === "unavailable"
+          ? zh
+            ? "Accounts 尚未提供待确认 One 注册接口；已有邀请和节点管理仍可用。"
+            : "The Accounts registration endpoint is not available yet; existing invites and node management remain available."
+          : resourceState !== "ready"
+            ? zh
+              ? "待授权网络加载完成后，才能验证注册所属网络。"
+              : "Authorized networks must load before a registration network can be verified."
+            : pendingRegistrations.length === 0
+              ? registrationsHasMore
+                ? zh
+                  ? "最近 100 条记录中暂无当前所属网络的待确认 One 注册；仍有更早记录未展示。"
+                  : "No pending One registrations for your networks in the latest 100 records; older records are not shown."
+                : zh
+                  ? "暂无当前所属网络的待确认 One 注册。"
+                  : "No pending One registrations for your networks."
+              : null;
+  const registrationTargetNetwork = registrationTarget
+    ? networks.find((network) => network.id === registrationTarget.network_id)
+    : undefined;
+  const registrationConfirmReady = Boolean(
+    registrationTarget &&
+    !registrationExpired(registrationTarget) &&
+    registrationAction &&
+    registrationTargetNetwork &&
+    registrationNetworks[registrationTarget.registration_id] ===
+      registrationTarget.network_id &&
+    writeReady &&
+    registrationState === "ready",
+  );
 
   return (
     <div className="space-y-5">
@@ -1051,6 +1329,169 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
               <code className="block break-all p-5 text-xs">{joinUri}</code>
             </Frame>
           ) : null}
+          <Frame title={zh ? "待确认 One 注册" : "Pending One registrations"}>
+            <div className="p-5">
+              <p className="text-sm text-[var(--color-text-muted)]">
+                {zh
+                  ? "待确认的 One 尚无网络访问权限。以下是设备声明信息，不是硬件认证。批准后，在线 One 将获取所选网络的配置并启动 WireGuard/Xray 连接；不会跨网络迁移。"
+                  : "Pending One requests have no network access. These are device declarations, not hardware attestation. After approval, an online One retrieves the selected network's configuration and starts WireGuard/Xray; it cannot migrate to another network."}
+              </p>
+              {registrationMessage ? (
+                <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                  {registrationMessage}
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {registrationsHasMore ? (
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      {zh
+                        ? "仅显示最近 100 条注册记录；更早记录未展示。"
+                        : "Only the latest 100 registration records are shown; older records are not displayed."}
+                    </p>
+                  ) : null}
+                  {pendingRegistrations.map((registration) => {
+                    const authorizedNetwork = networks.find(
+                      (network) => network.id === registration.network_id,
+                    );
+                    const selectedRegistrationNetwork =
+                      registrationNetworks[registration.registration_id] ?? "";
+                    const canAct =
+                      writeReady &&
+                      registrationState === "ready" &&
+                      !registrationExpired(registration) &&
+                      Boolean(authorizedNetwork) &&
+                      selectedRegistrationNetwork === registration.network_id;
+                    return (
+                      <div
+                        key={registration.registration_id}
+                        className="rounded border border-[color:var(--color-surface-border)] p-4"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <b className="block text-sm text-[var(--color-heading)]">
+                              {registration.name || registration.device_id}
+                            </b>
+                            <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                              {registration.device_id} · {registration.platform}{" "}
+                              · {registration.hostname || "—"}
+                            </p>
+                            <p className="mt-2 break-all text-xs text-[var(--color-text-muted)]">
+                              {zh ? "WG 公钥指纹" : "WG public-key fingerprint"}
+                              :{" "}
+                              {registration.wireguard_public_key_fingerprint ||
+                                "—"}
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                              {zh ? "到期时间" : "Expires at"}:{" "}
+                              {new Date(registration.expires_at).toLocaleString(
+                                zh ? "zh-CN" : "en-US",
+                              )}
+                              {registrationExpired(registration)
+                                ? zh
+                                  ? " · 已过期"
+                                  : " · Expired"
+                                : ""}
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                              {zh
+                                ? "声明字段，仅用于人工核对；不代表硬件可信认证。"
+                                : "Declared fields for human review only; not hardware attestation."}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-[var(--color-warning-muted)] px-2 py-1 text-xs text-[var(--color-warning-foreground)]">
+                            {zh ? "待确认" : "Pending"}
+                          </span>
+                        </div>
+                        <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                          <div>
+                            <label
+                              htmlFor={`xconnect-registration-network-${registration.registration_id}`}
+                              className="text-xs font-semibold text-[var(--color-heading)]"
+                            >
+                              {zh ? "确认所属网络" : "Confirm network"}
+                            </label>
+                            <select
+                              id={`xconnect-registration-network-${registration.registration_id}`}
+                              aria-label={`${zh ? "确认所属网络" : "Confirm network"} ${registration.device_id}`}
+                              value={selectedRegistrationNetwork}
+                              onChange={(event) =>
+                                selectRegistrationNetwork(
+                                  registration,
+                                  event.target.value,
+                                )
+                              }
+                              disabled={mutationPending || !authorizedNetwork}
+                              className="mt-1 w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2 py-2 text-sm disabled:opacity-50"
+                            >
+                              <option value="">
+                                {authorizedNetwork
+                                  ? zh
+                                    ? "请选择该申请所属网络"
+                                    : "Select this registration's network"
+                                  : zh
+                                    ? "所属网络不可用"
+                                    : "Registration network unavailable"}
+                              </option>
+                              {authorizedNetwork ? (
+                                <option value={authorizedNetwork.id}>
+                                  {authorizedNetwork.display_name} ·{" "}
+                                  {authorizedNetwork.id}
+                                </option>
+                              ) : null}
+                            </select>
+                            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                              {zh
+                                ? `策略归属：${authorizedNetwork?.display_name ?? "无法验证"} · ${registration.network_id}；仅可确认该网络。`
+                                : `Policy owner: ${authorizedNetwork?.display_name ?? "unverified"} · ${registration.network_id}; only this network can be confirmed.`}
+                            </p>
+                          </div>
+                          <div className="flex items-end gap-2">
+                            <Button
+                              primary
+                              onClick={() =>
+                                openRegistrationAction(registration, "approve")
+                              }
+                              disabled={!canAct}
+                            >
+                              {mutationPending &&
+                              registrationAction === "approve" &&
+                              registrationTarget?.registration_id ===
+                                registration.registration_id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : null}
+                              {zh ? "批准" : "Approve"}
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                openRegistrationAction(registration, "reject")
+                              }
+                              disabled={!canAct}
+                            >
+                              {mutationPending &&
+                              registrationAction === "reject" &&
+                              registrationTarget?.registration_id ===
+                                registration.registration_id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : null}
+                              {zh ? "拒绝" : "Reject"}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {registrationError ? (
+                <p
+                  role="alert"
+                  className="mt-4 rounded border border-[color:var(--color-warning-muted)] p-3 text-sm"
+                >
+                  {registrationError}
+                </p>
+              ) : null}
+            </div>
+          </Frame>
           <Frame title={zh ? "已加入节点" : "Joined nodes"}>
             <div className="grid gap-3 border-b border-[color:var(--color-divider)] p-5 md:grid-cols-3">
               <label className="text-xs font-semibold text-[var(--color-text-muted)]">
@@ -1326,6 +1767,83 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
           {error}
         </p>
       ) : null}
+      <AlertDialog.Root
+        open={registrationTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !mutationPending) {
+            setRegistrationTarget(null);
+            setRegistrationAction(null);
+            setRegistrationError(null);
+          }
+        }}
+      >
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-xl)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-lg)]">
+            <AlertDialog.Cancel asChild>
+              <button
+                type="button"
+                className="float-right"
+                disabled={mutationPending}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </AlertDialog.Cancel>
+            <ShieldCheck className="h-6 w-6 text-[var(--color-primary)]" />
+            <AlertDialog.Title className="mt-3 text-xl font-semibold">
+              {registrationAction === "approve"
+                ? zh
+                  ? "批准 One 注册？"
+                  : "Approve this One registration?"
+                : zh
+                  ? "拒绝 One 注册？"
+                  : "Reject this One registration?"}
+            </AlertDialog.Title>
+            <AlertDialog.Description className="mt-2 text-sm text-[var(--color-text-muted)]">
+              {registrationAction === "approve"
+                ? zh
+                  ? `批准 ${registrationTarget?.device_id ?? "该设备"} 加入 ${registrationTargetNetwork?.display_name ?? registrationTarget?.network_id ?? "所选网络"}，采用该网络已有策略。在线 One 将自动获取配置并启动 WireGuard/Xray 连接；不会跨网络迁移。`
+                  : `Approve ${registrationTarget?.device_id ?? "this device"} for ${registrationTargetNetwork?.display_name ?? registrationTarget?.network_id ?? "the selected network"} under its existing policy. An online One automatically retrieves configuration and starts WireGuard/Xray; it cannot migrate to another network.`
+                : zh
+                  ? `确认拒绝 ${registrationTarget?.device_id ?? "该设备"} 的 One 注册申请？拒绝不会创建节点。`
+                  : `Reject the One registration from ${registrationTarget?.device_id ?? "this device"}? Rejection does not create a node.`}
+            </AlertDialog.Description>
+            {registrationError ? (
+              <p
+                role="alert"
+                className="mt-3 rounded border border-[color:var(--color-warning-muted)] p-2 text-sm"
+              >
+                {registrationError}
+              </p>
+            ) : null}
+            <div className="mt-5 flex justify-end gap-2">
+              <AlertDialog.Cancel
+                className="tactile-button tactile-button-soft"
+                disabled={mutationPending}
+              >
+                {zh ? "取消" : "Cancel"}
+              </AlertDialog.Cancel>
+              <button
+                type="button"
+                onClick={() => void confirmRegistrationAction()}
+                disabled={!registrationConfirmReady || mutationPending}
+                className="tactile-button tactile-button-primary disabled:opacity-50"
+              >
+                {mutationPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : null}
+                {registrationAction === "approve"
+                  ? zh
+                    ? "确认批准"
+                    : "Confirm approval"
+                  : zh
+                    ? "确认拒绝"
+                    : "Confirm rejection"}
+              </button>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
       <AlertDialog.Root
         open={revokeTarget !== null}
         onOpenChange={(open) => {

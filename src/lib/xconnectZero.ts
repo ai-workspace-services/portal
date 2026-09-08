@@ -3,6 +3,7 @@ export const XCONNECT_ZERO_ADMIN_PATHS = {
   networks: "/admin/networks",
   devices: "/admin/devices",
   invites: "/admin/invites",
+  registrations: "/admin/registrations",
 } as const;
 
 export type XConnectZeroAdminPath =
@@ -98,6 +99,23 @@ export interface XConnectZeroInvite {
   role: string;
   expires_at: string;
   remaining_uses: number;
+  consumed_at?: string;
+}
+
+/** Owner-scoped, non-secret summary of a self-registered One awaiting review. */
+export interface XConnectZeroRegistration {
+  registration_id: string;
+  network_id: string;
+  device_id: string;
+  name: string;
+  hostname: string;
+  platform: string;
+  status: string;
+  wireguard_public_key_fingerprint: string;
+  created_at: string;
+  expires_at: string;
+  approved_at?: string;
+  rejected_at?: string;
   consumed_at?: string;
 }
 

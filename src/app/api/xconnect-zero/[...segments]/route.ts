@@ -11,6 +11,8 @@ import type { AccountUserRole } from "@server/account/session";
 import { isXConnectZeroAdminOverview } from "@lib/xconnectZero";
 
 const CONTROL_PLANE_TIMEOUT_MS = 8_000;
+const MAX_REQUEST_BODY_BYTES = 16 * 1024;
+const MAX_RESPONSE_BODY_BYTES = 256 * 1024;
 // XConnect Zero is a self-service user feature. The accounts API applies the
 // authoritative owner scope; this BFF only forwards the current session.
 const READ_ROLES: AccountUserRole[] = ["admin", "operator", "user"];
@@ -19,6 +21,7 @@ const ALLOWED_ROUTES = new Map([
   ["GET networks", "/admin/networks"],
   ["GET devices", "/admin/devices"],
   ["GET invites", "/admin/invites"],
+  ["GET registrations", "/admin/registrations"],
   ["POST invites", "/admin/invites"],
   ["POST networks/bootstrap", "/admin/networks/bootstrap"],
 ]);
@@ -29,11 +32,16 @@ type ErrorPayload = {
     | "forbidden"
     | "control_plane_unavailable"
     | "upstream_unreachable"
-    | "invalid_response";
+    | "invalid_response"
+    | "invalid_request"
+    | "request_too_large";
 };
 
 function errorResponse(error: ErrorPayload["error"], status: number) {
-  return NextResponse.json<ErrorPayload>({ error }, { status });
+  return NextResponse.json<ErrorPayload>(
+    { error },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 function resolveRoute(
@@ -57,11 +65,62 @@ function resolveRoute(
   ) {
     return `/admin/devices/${encodeURIComponent(segments[1])}/revoke`;
   }
+  if (
+    method === "POST" &&
+    segments.length === 3 &&
+    segments[0] === "registrations" &&
+    segments[1] &&
+    (segments[2] === "approve" || segments[2] === "reject")
+  ) {
+    return `/admin/registrations/${encodeURIComponent(segments[1])}/${segments[2]}`;
+  }
   return undefined;
 }
 
-function requiredPermission(method: string): string {
+function requiredPermission(method: string, endpointPath: string): string {
+  if (endpointPath === "/admin/registrations") return "xconnect.zero.manage";
   return method === "GET" ? "xconnect.zero.read" : "xconnect.zero.manage";
+}
+
+class BodyLimitError extends Error {}
+
+async function readRegistrationBody(
+  body: ReadableStream<Uint8Array> | null,
+  limit: number,
+): Promise<string> {
+  if (!body) return "";
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(
+      () => reject(new Error("body timeout")),
+      CONTROL_PLANE_TIMEOUT_MS,
+    );
+  });
+  try {
+    while (true) {
+      const { done, value } = await Promise.race([reader.read(), deadline]);
+      if (done) break;
+      total += value.byteLength;
+      if (total > limit) throw new BodyLimitError();
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return new TextDecoder().decode(bytes);
+  } catch (error) {
+    void reader.cancel().catch(() => undefined);
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    reader.releaseLock();
+  }
 }
 
 function getRequestHost(request: NextRequest): string | null {
@@ -100,7 +159,7 @@ async function proxy(
     return errorResponse("unauthenticated", 401);
   if (
     !(await userHasRoleOrPermission(session.user, READ_ROLES, [
-      requiredPermission(method),
+      requiredPermission(method, endpointPath),
     ]))
   ) {
     return errorResponse("forbidden", 403);
@@ -110,8 +169,25 @@ async function proxy(
     Authorization: `Bearer ${session.token}`,
     Accept: "application/json",
   };
-  const body =
-    method === "GET" || method === "HEAD" ? undefined : await request.text();
+  const registrationRoute = endpointPath.startsWith("/admin/registrations");
+  let body: string | undefined;
+  try {
+    const contentLength = Number(request.headers.get("content-length"));
+    if (registrationRoute && contentLength > MAX_REQUEST_BODY_BYTES) {
+      return errorResponse("request_too_large", 413);
+    }
+    if (method !== "GET" && method !== "HEAD") {
+      body =
+        (registrationRoute
+          ? await readRegistrationBody(request.body, MAX_REQUEST_BODY_BYTES)
+          : await request.text()) || undefined;
+    }
+  } catch (error) {
+    return errorResponse(
+      error instanceof BodyLimitError ? "request_too_large" : "invalid_request",
+      error instanceof BodyLimitError ? 413 : 400,
+    );
+  }
   if (body)
     headers["Content-Type"] =
       request.headers.get("content-type") ?? "application/json";
@@ -140,17 +216,32 @@ async function proxy(
     console.error("XConnect Zero control-plane request failed", error);
     return errorResponse("upstream_unreachable", 502);
   }
-  if (response.status === 404)
+  if (response.status === 404 && !(registrationRoute && method === "POST"))
     return errorResponse("control_plane_unavailable", 503);
-  if (response.status === 204) return new NextResponse(null, { status: 204 });
-  const payload = await response.json().catch(() => null);
+  if (response.status === 204) {
+    return new NextResponse(null, {
+      status: 204,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+  let payload: unknown = null;
+  try {
+    payload = registrationRoute
+      ? JSON.parse(
+          await readRegistrationBody(response.body, MAX_RESPONSE_BODY_BYTES),
+        )
+      : await response.json();
+  } catch {
+    if (registrationRoute) return errorResponse("invalid_response", 502);
+    payload = null;
+  }
   // Only successful overview responses have the success schema. Preserve an
   // upstream authorization or validation status so the panel can report the
   // actionable control-plane failure rather than a generic 502.
   if (!response.ok) {
     return NextResponse.json(
       payload ?? { error: "control_plane_unavailable" },
-      { status: response.status },
+      { status: response.status, headers: { "Cache-Control": "no-store" } },
     );
   }
   if (
