@@ -60,6 +60,8 @@ jobs:
       # 只能靠静态守卫拦住，跑起来才发现就太晚了。不需要装依赖。
       - name: Check cross-boundary links
         run: node scripts/check-boundary-links.mjs
+      - name: Check SSR BFF route ownership
+        run: node --test scripts/ssr-bff-boundaries.test.mjs
 
   next-builds:
     name: Node 24 / ${{ matrix.target }}
