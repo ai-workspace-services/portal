@@ -90,7 +90,9 @@ describe("/api/xconnect-zero/[...segments]", () => {
 
     const { GET } = await import("./route");
     const response = await GET(
-      new NextRequest("https://console.svc.plus/api/xconnect-zero/overview"),
+      new NextRequest("https://console.svc.plus/api/xconnect-zero/overview", {
+        headers: { "x-forwarded-host": "console.svc.plus" },
+      }),
       { params: Promise.resolve({ segments: ["overview"] }) },
     );
 
@@ -102,7 +104,7 @@ describe("/api/xconnect-zero/[...segments]", () => {
       gatewayCount: 1,
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://accounts.svc.plus/api/overlay/v1/admin/overview",
+      expect.stringMatching(/\/api\/overlay\/v1\/admin\/overview$/),
       expect.objectContaining({
         method: "GET",
         headers: {

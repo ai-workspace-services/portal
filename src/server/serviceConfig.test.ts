@@ -54,6 +54,6 @@ describe("serviceConfig", () => {
       serviceConfig.getXConnectZeroServiceBaseUrl(
         "console-cloudflare-uat.onwalk.net",
       ),
-    ).toBe("https://accounts-uat.onwalk.net");
+    ).toBe("https://uat-accounts-1004637461064.asia-northeast1.run.app");
   });
 });

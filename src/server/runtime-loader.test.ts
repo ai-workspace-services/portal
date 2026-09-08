@@ -32,8 +32,11 @@ describe("runtime-loader", () => {
 
     const config = loadRuntimeConfig({ hostname: "console-cloudflare-uat.onwalk.net" });
 
-    expect(config.apiBaseUrl).toBe("https://accounts-serverless-uat.onwalk.net/api");
+    expect(config.apiBaseUrl).toBe("https://accounts-cloudflare-uat.onwalk.net/api");
     expect(config.authUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
+    expect(config.xconnectZeroUrl).toBe(
+      "https://uat-accounts-1004637461064.asia-northeast1.run.app",
+    );
     expect(config.dashboardUrl).toBe("https://console-cloudflare-uat.onwalk.net");
   });
 
