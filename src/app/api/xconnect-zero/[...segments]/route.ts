@@ -92,11 +92,14 @@ async function proxy(request: NextRequest, method: string, context: { params: Pr
   if (response.status === 404) return errorResponse("control_plane_unavailable", 503);
   if (response.status === 204) return new NextResponse(null, { status: 204 });
   const payload = await response.json().catch(() => null);
-  if (method === "GET" && endpointPath === "/admin/overview" && !isXConnectZeroAdminOverview(payload)) {
-    return errorResponse("invalid_response", 502);
-  }
+  // Only successful overview responses have the success schema. Preserve an
+  // upstream authorization or validation status so the panel can report the
+  // actionable control-plane failure rather than a generic 502.
   if (!response.ok) {
     return NextResponse.json(payload ?? { error: "control_plane_unavailable" }, { status: response.status });
+  }
+  if (method === "GET" && endpointPath === "/admin/overview" && !isXConnectZeroAdminOverview(payload)) {
+    return errorResponse("invalid_response", 502);
   }
   return NextResponse.json(payload, { status: response.status, headers: { "Cache-Control": "no-store" } });
 }
