@@ -10,7 +10,7 @@ import {
 import type { AccountUserRole } from "@server/account/session";
 import { isXConnectZeroAdminOverview } from "@lib/xconnectZero";
 
-const ACCOUNT_OVERLAY_API_BASE = `${getAccountServiceBaseUrl()}/api/overlay/v1`;
+const CONTROL_PLANE_TIMEOUT_MS = 8_000;
 // XConnect Zero is a self-service user feature. The accounts API applies the
 // authoritative owner scope; this BFF only forwards the current session.
 const READ_ROLES: AccountUserRole[] = ["admin", "operator", "user"];
@@ -52,6 +52,10 @@ function requiredPermission(method: string): string {
   return method === "GET" ? "xconnect.zero.read" : "xconnect.zero.manage";
 }
 
+function getRequestHost(request: NextRequest): string | null {
+  return request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+}
+
 async function proxy(request: NextRequest, method: string, context: { params: Promise<{ segments?: string[] }> }) {
   const segments = (await context.params).segments;
   const endpointPath = resolveRoute(method, segments);
@@ -72,12 +76,14 @@ async function proxy(request: NextRequest, method: string, context: { params: Pr
 
   let response: Response;
   try {
-    response = await fetch(`${ACCOUNT_OVERLAY_API_BASE}${endpointPath}`, {
+    const accountOverlayAPIBase = `${getAccountServiceBaseUrl(getRequestHost(request))}/api/overlay/v1`;
+    response = await fetch(`${accountOverlayAPIBase}${endpointPath}`, {
       method,
       headers,
       body,
       cache: "no-store",
       redirect: "manual",
+      signal: AbortSignal.timeout(CONTROL_PLANE_TIMEOUT_MS),
     });
   } catch (error) {
     console.error("XConnect Zero control-plane request failed", error);
