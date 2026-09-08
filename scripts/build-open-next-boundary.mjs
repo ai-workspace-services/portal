@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { resolveIncrementalCacheTarget } from "./incremental-cache-target.mjs";
 import { buildBoundaryRoutes, resolveBoundaryForPath, routeUrlPath } from "./ssr-boundary-routes.mjs";
+import { bffBoundaryForRoute } from "./ssr-bff-boundaries.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const appRoot = path.join(projectRoot, "src", "app");
@@ -35,14 +36,10 @@ const boundaries = Object.fromEntries(
     workerName: cloudflareConfig.boundaries[id].worker_name,
     owns: (relativePath) => {
       // These are same-origin BFF handlers: they read or update Portal cookies
-      // before calling Accounts. Keep them with the auth SSR Worker rather than
-      // sending them to the generic auth gateway.
-      if (isAuthBffApi(relativePath)) return id === "auth";
-      // The frontend-router sends the authenticated node BFF to the console
-      // Worker. Keep these handlers in the same boundary; otherwise the
-      // router reaches a valid Worker that has no matching Next route and
-      // returns a misleading 404 while the user's session is still valid.
-      if (isConsoleBffApi(relativePath)) return id === "console";
+      // before calling Accounts. Bundle each in the auth/console Worker that
+      // frontend-router selects, never the generic API origin.
+      const bffBoundary = bffBoundaryForRoute(relativePath);
+      if (bffBoundary) return id === bffBoundary;
       return !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id;
     },
   }]),
@@ -302,19 +299,6 @@ function releaseId() {
 
 function isApi(relativePath) {
   return relativePath === "api" || relativePath.startsWith("api/");
-}
-
-function isAuthBffApi(relativePath) {
-  return relativePath === "api/auth/token/exchange/route.ts"
-    || relativePath === "api/auth/session/route.ts"
-    || relativePath === "api/auth/mfa"
-    || relativePath.startsWith("api/auth/mfa/");
-}
-
-function isConsoleBffApi(relativePath) {
-  return relativePath === "api/agent-server/[...segments]/route.ts"
-    || relativePath === "api/agent/[...segments]/route.ts"
-    || relativePath === "api/account/[...segments]/route.ts";
 }
 
 function parentPaths(relativePath) {

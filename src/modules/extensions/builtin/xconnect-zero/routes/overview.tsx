@@ -24,6 +24,8 @@ import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { useLanguage } from "@i18n/LanguageProvider";
 import {
   isXConnectZeroAdminOverview,
+  xconnectNodeStatusLabel,
+  xconnectRoleStatusLabel,
   type XConnectZeroAdminOverview,
   type XConnectZeroAdapterErrorResponse,
   type XConnectZeroDevice,
@@ -88,7 +90,8 @@ const payload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "n
 const deviceInvitePayload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "network_id": "",\n  "device_id": "macos-one",\n  "platform": "darwin",\n  "role": "one",\n  "expires_at": ""\n}`;
 
 function controlPlaneErrorCode(value: unknown): string | undefined {
-  if (!value || typeof value !== "object" || !("error" in value)) return undefined;
+  if (!value || typeof value !== "object" || !("error" in value))
+    return undefined;
   const error = (value as { error?: unknown }).error;
   // The UI deliberately exposes only a compact machine-readable category. It
   // must never surface upstream details, credentials, or signed configuration.
@@ -244,10 +247,17 @@ export default function XConnectZeroOverviewRoute() {
   const oneCount = o
     ? (o.oneCount ?? Math.max(o.deviceCount - o.gatewayCount, 0))
     : "—";
-  const gatewayStatus = o?.gatewayStatus ?? (o?.gatewayCount ? "active" : "not_configured");
-  const oneStatus = o?.oneStatus ?? (oneCount !== "—" && oneCount > 0 ? "active" : "not_configured");
+  const gatewayStatus = o
+    ? (o.gatewayStatus ?? (o.gatewayCount ? "active" : "not_configured"))
+    : undefined;
+  const oneStatus = o
+    ? (o.oneStatus ??
+      (oneCount !== "—" && oneCount > 0 ? "active" : "not_configured"))
+    : undefined;
   const refresh = () => {
     setState({ kind: "loading" });
+    setRs(null);
+    setErr(null);
     void overview().then((s) => {
       setState(s);
       setChecked(new Date());
@@ -296,7 +306,9 @@ export default function XConnectZeroOverviewRoute() {
         request.network_id = rs.networks[0].id;
       }
       if (!request.expires_at) {
-        request.expires_at = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+        request.expires_at = new Date(
+          Date.now() + 15 * 60 * 1000,
+        ).toISOString();
       }
       const r = await fetch("/api/xconnect-zero/invites", {
         method: "POST",
@@ -390,8 +402,8 @@ export default function XConnectZeroOverviewRoute() {
                 title={zh ? "Gateway 节点" : "Gateway nodes"}
                 detail={
                   zh
-                    ? `受控中继与安全连接 · ${gatewayStatus === "active" || gatewayStatus === "connected" ? "已加入" : "未加入"}`
-                    : `Governed relay and secure connection · ${gatewayStatus}`
+                    ? `受控中继与安全连接 · ${xconnectRoleStatusLabel(gatewayStatus, zh)}`
+                    : `Governed relay and secure connection · ${xconnectRoleStatusLabel(gatewayStatus, zh)}`
                 }
                 value={o?.gatewayCount ?? "—"}
                 onClick={() => setPage("join")}
@@ -401,8 +413,8 @@ export default function XConnectZeroOverviewRoute() {
                 title={zh ? "One 节点" : "One nodes"}
                 detail={
                   zh
-                    ? `受策略保护的设备 · ${oneStatus === "active" || oneStatus === "connected" ? "已加入" : "未加入"}`
-                    : `Policy-protected devices · ${oneStatus}`
+                    ? `受策略保护的设备 · ${xconnectRoleStatusLabel(oneStatus, zh)}`
+                    : `Policy-protected devices · ${xconnectRoleStatusLabel(oneStatus, zh)}`
                 }
                 value={oneCount}
                 onClick={() => setPage("join")}
@@ -509,7 +521,9 @@ export default function XConnectZeroOverviewRoute() {
               {rs?.networks.length ? (
                 <div className="mt-5 border-t border-[color:var(--color-divider)] pt-5">
                   <p className="text-sm font-medium text-[var(--color-heading)]">
-                    {zh ? "为已有网络签发设备邀请" : "Issue an invitation for an existing network"}
+                    {zh
+                      ? "为已有网络签发设备邀请"
+                      : "Issue an invitation for an existing network"}
                   </p>
                   <p className="mt-1 text-xs text-[var(--color-text-muted)]">
                     {zh
@@ -551,7 +565,12 @@ export default function XConnectZeroOverviewRoute() {
                   <span className="min-w-0 flex-1">
                     <b className="block text-sm">{d.name || d.id}</b>
                     <small>
-                      {d.role} · {d.platform} · {d.wireguard_address}
+                      {d.role === "gateway" ? "Gateway" : "One"} · {d.platform}{" "}
+                      · {d.wireguard_address} · {xconnectNodeStatusLabel(d, zh)}
+                      {d.last_seen_at &&
+                      !Number.isNaN(Date.parse(d.last_seen_at))
+                        ? ` · ${zh ? "上次配置确认" : "Last config ACK"}: ${new Date(d.last_seen_at).toLocaleString(zh ? "zh-CN" : "en-US")}`
+                        : ""}
                     </small>
                   </span>
                   {d.status !== "revoked" && (

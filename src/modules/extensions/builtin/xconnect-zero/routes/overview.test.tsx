@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import XConnectZeroOverviewRoute from "./overview";
@@ -10,6 +10,72 @@ vi.mock("@/app/panel/components/Breadcrumbs", () => ({
 }));
 describe("XConnectZeroOverviewRoute", () => {
   afterEach(() => vi.unstubAllGlobals());
+  it("shows owner-scoped Gateway and Linux One counts and honest ACK status in the existing layout", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const data = url.endsWith("/overview")
+          ? {
+              status: "available",
+              networkCount: 1,
+              deviceCount: 2,
+              gatewayCount: 1,
+              oneCount: 1,
+              gatewayStatus: "active",
+              oneStatus: "connected",
+            }
+          : url.endsWith("/devices")
+            ? {
+                devices: [
+                  {
+                    id: "gw-test",
+                    name: "UAT Gateway",
+                    role: "gateway",
+                    platform: "linux",
+                    wireguard_address: "10.77.0.1/32",
+                    status: "active",
+                    connection_status: "stale",
+                  },
+                  {
+                    id: "one-test",
+                    name: "UAT Linux One",
+                    role: "one",
+                    platform: "linux",
+                    wireguard_address: "10.77.0.2/32",
+                    status: "active",
+                    connection_status: "recent_ack",
+                  },
+                ],
+              }
+            : url.endsWith("/networks")
+              ? { networks: [] }
+              : { invites: [] };
+        return new Response(JSON.stringify(data), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }),
+    );
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    const gatewayCard = await screen.findByRole("button", {
+      name: /Gateway 节点.*无近期配置确认/,
+    });
+    expect(within(gatewayCard).getByText("1")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("button", { name: /One 节点.*最近配置已确认/ }),
+      ).getByText("1"),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    expect(await screen.findByText("UAT Gateway")).toBeInTheDocument();
+    expect(screen.getByText("UAT Linux One")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Gateway · linux · 10.77.0.1\/32 · 无近期配置确认/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/One · linux · 10.77.0.2\/32 · 最近配置已确认/),
+    ).toBeInTheDocument();
+  });
   it("keeps the experience to overview, node management, and configuration", async () => {
     vi.stubGlobal(
       "fetch",
