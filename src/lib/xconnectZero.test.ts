@@ -42,7 +42,7 @@ describe("Zero runtime status presentation", () => {
         { ...device, connection_status: "never_seen" },
         false,
       ),
-    ).toBe("Awaiting first config ACK");
+    ).toBe("Awaiting current config ACK");
     expect(
       xconnectNodeStatusLabel(
         { ...device, status: "revoked", connection_status: "recent_ack" },

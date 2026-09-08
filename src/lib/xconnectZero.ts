@@ -66,7 +66,7 @@ export function xconnectNodeStatusLabel(
     case "stale":
       return zh ? "无近期配置确认" : "No recent config ACK";
     case "never_seen":
-      return zh ? "等待首次配置确认" : "Awaiting first config ACK";
+      return zh ? "等待当前配置确认" : "Awaiting current config ACK";
     default:
       return zh ? "配置确认状态未知" : "Config ACK status unknown";
   }
