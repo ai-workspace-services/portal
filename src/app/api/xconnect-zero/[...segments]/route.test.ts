@@ -138,6 +138,32 @@ describe("/api/xconnect-zero/[...segments]", () => {
     });
   });
 
+  it("preserves an Accounts authorization error instead of treating it as an invalid overview", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const { GET } = await import("./route");
+    const response = await GET(
+      new NextRequest("https://console.svc.plus/api/xconnect-zero/overview"),
+      { params: Promise.resolve({ segments: ["overview"] }) },
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ error: "forbidden" });
+  });
+
   it("does not expose unregistered adapter paths", async () => {
     const { GET } = await import("./route");
     const response = await GET(
