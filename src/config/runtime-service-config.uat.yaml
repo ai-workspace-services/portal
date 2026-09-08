@@ -6,10 +6,10 @@
 # (127.0.0.1:8080, 在 UAT 主机上并不存在), 同时通过 base 的漏项连着生产认证。
 apiBaseUrl: https://accounts-cloudflare-uat.onwalk.net/api
 authUrl: https://accounts-cloudflare-uat.onwalk.net
-# The authenticated Console BFF reaches the GitOps-declared Accounts Cloud Run
-# origin directly. This avoids re-entering the public Cloudflare edge alias
-# from an SSR worker while keeping browser authentication on the public host.
-xconnectZeroUrl: https://uat-accounts-1004637461064.asia-northeast1.run.app
+# The authenticated Console BFF uses the same formal Accounts edge entrance as
+# the session lookup. This preserves the shared UAT session boundary while the
+# edge routes the request to the GitOps-declared Accounts runtime.
+xconnectZeroUrl: https://accounts-cloudflare-uat.onwalk.net
 dashboardUrl: https://console-cloudflare-uat.onwalk.net
 docsServiceUrl: https://docs.svc.plus
 logLevel: info
