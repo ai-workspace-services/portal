@@ -19,6 +19,7 @@ const ALLOWED_ROUTES = new Map([
   ["GET networks", "/admin/networks"],
   ["GET devices", "/admin/devices"],
   ["GET invites", "/admin/invites"],
+  ["POST invites", "/admin/invites"],
   ["POST networks/bootstrap", "/admin/networks/bootstrap"],
 ]);
 

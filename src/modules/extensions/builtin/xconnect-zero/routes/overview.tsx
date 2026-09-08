@@ -85,6 +85,7 @@ const CONNECTION_MODES: Array<{
   },
 ];
 const payload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "network": {"id":"net_uat","display_name":"UAT private","cidr":"10.77.0.0/24","gateway_id":"gw_uat","gateway_wireguard_public_key":"REPLACE","gateway_wireguard_address":"10.77.0.1/24","gateway_endpoint_host":"REPLACE","gateway_endpoint_port":443,"transport_server_name":"REPLACE","transport_port":443,"transport_auth_id":"REPLACE"},\n  "invite": {"platform":"darwin","role":"one","expires_at":"2030-01-01T00:00:00Z"}\n}`;
+const deviceInvitePayload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "network_id": "",\n  "device_id": "macos-one",\n  "platform": "darwin",\n  "role": "one",\n  "expires_at": ""\n}`;
 async function overview(): Promise<State> {
   try {
     const r = await fetch("/api/xconnect-zero/overview", { cache: "no-store" }),
@@ -220,6 +221,7 @@ export default function XConnectZeroOverviewRoute() {
     [rs, setRs] = useState<Resources | null>(null),
     [page, setPage] = useState<Page>("overview"),
     [json, setJson] = useState(payload),
+    [inviteJson, setInviteJson] = useState(deviceInvitePayload),
     [err, setErr] = useState<string | null>(null),
     [uri, setUri] = useState<string | null>(null),
     [reset, setReset] = useState(false),
@@ -265,6 +267,28 @@ export default function XConnectZeroOverviewRoute() {
       setRs(await resources());
     } catch {
       setErr("创建网络或邀请失败");
+    }
+  };
+  const issueInvite = async () => {
+    try {
+      const request = JSON.parse(inviteJson) as Record<string, unknown>;
+      if (!request.network_id && rs?.networks[0]?.id) {
+        request.network_id = rs.networks[0].id;
+      }
+      if (!request.expires_at) {
+        request.expires_at = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      }
+      const r = await fetch("/api/xconnect-zero/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
+      const x = await r.json().catch(() => null);
+      if (!r.ok || !x?.join_uri) throw Error();
+      setUri(x.join_uri);
+      setRs(await resources());
+    } catch {
+      setErr("签发设备邀请失败");
     }
   };
   const revoke = async (id: string) => {
@@ -458,6 +482,29 @@ export default function XConnectZeroOverviewRoute() {
                 <Plus className="h-4 w-4" />
                 {zh ? "创建网络/邀请" : "Create network / invitation"}
               </Btn>
+              {rs?.networks.length ? (
+                <div className="mt-5 border-t border-[color:var(--color-divider)] pt-5">
+                  <p className="text-sm font-medium text-[var(--color-heading)]">
+                    {zh ? "为已有网络签发设备邀请" : "Issue an invitation for an existing network"}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                    {zh
+                      ? "默认使用第一个已授权网络；填写独立设备标识。邀请仅在本页显示一次。"
+                      : "Uses the first authorized network by default. Supply a distinct device identifier; the invitation is displayed once."}
+                  </p>
+                  <textarea
+                    value={inviteJson}
+                    onChange={(e) => setInviteJson(e.target.value)}
+                    className="mt-3 min-h-40 w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)]/40 p-3 font-mono text-xs"
+                  />
+                  <div className="mt-3">
+                    <Btn primary onClick={issueInvite}>
+                      <Plus className="h-4 w-4" />
+                      {zh ? "签发设备邀请" : "Issue device invitation"}
+                    </Btn>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </Frame>
           {uri && (
