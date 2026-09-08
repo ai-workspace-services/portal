@@ -247,3 +247,42 @@ The original-resolution comparison keeps typography, topology cards, inspector l
 - [x] Compare the rendered implementation against the selected design.
 
 final result: passed
+
+---
+
+# Platform Operations image-to-code QA
+
+## Comparison target
+
+- Source visual truth: `/Users/shenlan/.codex/generated_images/01a08150-7204-78c0-8398-95a54a27a3fa/exec-d926fe4d-af4e-42a7-8d50-eac2a55720cc.png`
+- Implementation URL: `http://127.0.0.1:3000/panel/operations`
+- Implementation screenshot path: not saved; the browser capture was redirected to the Portal login screen before the protected panel could render.
+- Source pixels: 1440 × 1024.
+- Implementation capture: 1280 × 720 browser viewport, device scale 1; not comparable because it shows `/login?redirect=%2Fpanel%2Foperations` rather than the authenticated Operations panel.
+- State: unauthenticated local preview; same authenticated state could not be established without user credentials.
+
+## Evidence and findings
+
+The source image was opened and inspected. The local implementation was opened in the in-app browser and visibly redirected to the existing Portal login gate. No same-state full-view or focused-region comparison is valid yet.
+
+The implementation includes the protected Overview, Releases, Environments, Audit, and Vault & Access routes, plus working local interactions for operation detail, release-plan creation, MFA dialog validation, cross-repo plan creation, and role-diff creation. The browser capture could not verify their rendered layout, responsive behavior, or interaction states.
+
+Required fidelity surfaces remain unverified: typography, spacing/layout, colors/tokens, image/icon fidelity, copy, viewport resilience, and authenticated interaction states.
+
+## Comparison history
+
+1. Initial capture: source image opened; local URL redirected to the existing login gate. No P0/P1/P2 visual finding was filed because the artifacts represented different auth states.
+
+## Implementation checklist
+
+- [x] Reuse Portal's existing panel shell, tokens, Lucide icon system, login gate, and extension registry.
+- [x] Add protected Operations routes without direct browser execution of shell scripts or exposure of Vault values.
+- [x] Add visible immutable-manifest, Workflow allowlist, runtime OIDC/Vault, MFA, approval, and topology-boundary states.
+- [ ] Re-capture authenticated `/panel/operations` at 1440 × 1024 and compare against the source image.
+- [ ] Re-check mobile/tablet responsive states after authenticated capture.
+
+## Final result
+
+final result: blocked
+
+Blocker: an authenticated local Portal session is required to capture the protected implementation at the same route/state as the selected source image.
