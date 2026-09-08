@@ -36,11 +36,54 @@ type State =
   | { kind: "unavailable" }
   | { kind: "error" };
 type Page = "overview" | "join" | "configuration";
+type ConnectionModeId = "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 type Resources = {
   networks: XConnectZeroNetwork[];
   devices: XConnectZeroDevice[];
   invites: XConnectZeroInvite[];
 };
+const CONNECTION_MODES: Array<{
+  id: ConnectionModeId;
+  icon: typeof SlidersHorizontal;
+  name: { zh: string; en: string };
+  technology: string;
+  description: { zh: string; en: string };
+  recommended?: boolean;
+  linuxGatewayOnly?: boolean;
+}> = [
+  {
+    id: "wg_udp_l3",
+    icon: SlidersHorizontal,
+    name: { zh: "高性能直连", en: "High-performance direct" },
+    technology: "WireGuard UDP / L3",
+    description: {
+      zh: "纯三层 VPN，直接使用 WireGuard UDP；延迟最低、吞吐最高，需要网络允许 UDP 51820。",
+      en: "A pure L3 VPN using WireGuard UDP directly for the lowest latency and highest throughput; requires UDP 51820 access.",
+    },
+  },
+  {
+    id: "wg_vless_l3",
+    icon: ShieldCheck,
+    name: { zh: "抗干扰连接", en: "Resilient connection" },
+    technology: "WireGuard over VLESS / L3",
+    description: {
+      zh: "通过 VLESS/TLS/XUDP 封装 WireGuard；适合 UDP 受限或容易受到干扰的网络。",
+      en: "Wraps WireGuard with VLESS/TLS/XUDP for networks where UDP is restricted or easily disrupted.",
+    },
+    recommended: true,
+  },
+  {
+    id: "wg_vless_l2",
+    icon: Network,
+    name: { zh: "二层互联", en: "Layer 2 interconnect" },
+    technology: "WireGuard over VLESS / L2-MAC",
+    description: {
+      zh: "在安全隧道上扩展二层网络；支持 MAC、ARP 和广播，仅限 Linux Gateway。",
+      en: "Extends Layer 2 networking over the secure tunnel with MAC, ARP and broadcast support; Linux Gateways only.",
+    },
+    linuxGatewayOnly: true,
+  },
+];
 const payload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "network": {"id":"net_uat","display_name":"UAT private","cidr":"10.77.0.0/24","gateway_id":"gw_uat","gateway_wireguard_public_key":"REPLACE","gateway_wireguard_address":"10.77.0.1/24","gateway_endpoint_host":"REPLACE","gateway_endpoint_port":443,"transport_server_name":"REPLACE","transport_port":443,"transport_auth_id":"REPLACE"},\n  "invite": {"platform":"darwin","role":"one","expires_at":"2030-01-01T00:00:00Z"}\n}`;
 async function overview(): Promise<State> {
   try {
@@ -180,6 +223,8 @@ export default function XConnectZeroOverviewRoute() {
     [err, setErr] = useState<string | null>(null),
     [uri, setUri] = useState<string | null>(null),
     [reset, setReset] = useState(false),
+    [connectionMode, setConnectionMode] =
+      useState<ConnectionModeId>("wg_vless_l3"),
     [checked, setChecked] = useState<Date | null>(null);
   const connected = state.kind === "available",
     o = connected ? state.overview : null;
@@ -457,6 +502,100 @@ export default function XConnectZeroOverviewRoute() {
       )}
       {page === "configuration" && (
         <div className="grid gap-5 lg:grid-cols-2">
+          <div className="lg:col-span-2">
+            <Frame
+              title={
+                zh
+                  ? "Gateway / One 互联网络模式"
+                  : "Gateway / One connection mode"
+              }
+            >
+              <div className="p-5">
+                <p className="text-sm text-[var(--color-text-subtle)]">
+                  {zh
+                    ? "选择 Gateway 与 One 节点之间的数据传输方式。抗干扰连接是默认模式。"
+                    : "Choose how data travels between Gateway and One nodes. Resilient connection is the default."}
+                </p>
+                <fieldset className="mt-4 grid gap-3 lg:grid-cols-3">
+                  <legend className="sr-only">
+                    {zh ? "选择互联网络模式" : "Select a connection mode"}
+                  </legend>
+                  {CONNECTION_MODES.map((mode) => {
+                    const Icon = mode.icon;
+                    const selected = connectionMode === mode.id;
+                    return (
+                      <label
+                        key={mode.id}
+                        className={`relative flex cursor-pointer flex-col rounded-[var(--radius-lg)] border p-4 transition-colors ${selected ? "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)]/35 ring-1 ring-[color:var(--color-primary)]" : "border-[color:var(--color-surface-border)] hover:bg-[var(--color-surface-hover)]"}`}
+                      >
+                        <input
+                          type="radio"
+                          name="xconnect-connection-mode"
+                          value={mode.id}
+                          checked={selected}
+                          onChange={() => setConnectionMode(mode.id)}
+                          className="sr-only"
+                        />
+                        <span className="flex items-start justify-between gap-3">
+                          <span
+                            className={`rounded-[8px] p-2 ${selected ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-primary-muted)] text-[var(--color-primary)]"}`}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className="flex flex-wrap justify-end gap-1.5">
+                            {mode.recommended ? (
+                              <span className="rounded-full bg-[var(--color-success-muted)] px-2 py-1 text-[11px] font-semibold text-[var(--color-success-foreground)]">
+                                {zh ? "推荐 · 默认" : "Recommended · Default"}
+                              </span>
+                            ) : null}
+                            {mode.linuxGatewayOnly ? (
+                              <span className="rounded-full bg-[var(--color-warning-muted)] px-2 py-1 text-[11px] font-semibold text-[var(--color-warning-foreground)]">
+                                {zh ? "仅 Linux Gateway" : "Linux Gateway only"}
+                              </span>
+                            ) : null}
+                          </span>
+                        </span>
+                        <span className="mt-4 text-sm font-semibold text-[var(--color-heading)]">
+                          {zh ? mode.name.zh : mode.name.en}
+                        </span>
+                        <span className="mt-1 text-xs font-medium text-[var(--color-primary)]">
+                          {mode.technology}
+                        </span>
+                        <span className="mt-3 flex-1 text-xs leading-5 text-[var(--color-text-subtle)]">
+                          {zh ? mode.description.zh : mode.description.en}
+                        </span>
+                        <code className="mt-4 w-fit rounded bg-[var(--color-surface-muted)] px-2 py-1 text-[11px] text-[var(--color-text-muted)]">
+                          {mode.id}
+                        </code>
+                      </label>
+                    );
+                  })}
+                </fieldset>
+                <div
+                  aria-live="polite"
+                  className="mt-4 flex flex-wrap items-center gap-2 rounded-[var(--radius-lg)] bg-[var(--color-surface-muted)]/60 px-4 py-3 text-sm text-[var(--color-text-subtle)]"
+                >
+                  <CheckCircle2 className="h-4 w-4 text-[var(--color-success-foreground)]" />
+                  <span>{zh ? "当前选择" : "Selected"}:</span>
+                  <strong className="text-[var(--color-heading)]">
+                    {zh
+                      ? CONNECTION_MODES.find(
+                          (mode) => mode.id === connectionMode,
+                        )?.name.zh
+                      : CONNECTION_MODES.find(
+                          (mode) => mode.id === connectionMode,
+                        )?.name.en}
+                  </strong>
+                  <code className="text-xs">{connectionMode}</code>
+                  <span className="ml-auto text-xs text-[var(--color-text-muted)]">
+                    {zh
+                      ? "控制面配置同步接口接入后下发至节点"
+                      : "Applied to nodes after control-plane configuration sync is connected"}
+                  </span>
+                </div>
+              </div>
+            </Frame>
+          </div>
           <Frame title={zh ? "VPC 与私有网络" : "VPC and private networks"}>
             <Row
               icon={Network}
