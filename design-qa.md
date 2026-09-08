@@ -1,5 +1,15 @@
 # AI Workspace Web parity design QA
 
+## XConnect Zero three-page redesign — 2026-09-08
+
+Source visual truth: `/Users/shenlan/.codex/generated_images/01a07cc6-1750-7fe0-a8fd-2da03a43c8e4/exec-1bab0cd5-2a9e-45d0-9241-f6c26e20cdb4.png`, with the supplied XConnect overview, node, IP and certificate captures.
+
+Implementation capture: blocked pending a fresh local browser build. The code was reduced to the selected source's three primary destinations: Zero overview, node join, and configuration management. Type checking passed; the direct Vitest invocation is blocked by the repository's alias-resolution configuration (`@lib/xconnectZero`).
+
+Findings: P1 visual comparison and browser interaction checks remain pending. The public UAT still serves the previous deployment and must not be used as evidence for this uncommitted change.
+
+Final result: blocked
+
 Date: 2026-08-28
 
 Result: **BLOCKED for authenticated end-to-end sign-off; visual and responsive QA passed.**
