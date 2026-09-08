@@ -34,7 +34,7 @@ type State =
   | { kind: "loading" }
   | { kind: "available"; overview: XConnectZeroAdminOverview }
   | { kind: "unavailable" }
-  | { kind: "error" };
+  | { kind: "error"; code?: string };
 type Page = "overview" | "join" | "configuration";
 type ConnectionModeId = "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 type Resources = {
@@ -86,6 +86,17 @@ const CONNECTION_MODES: Array<{
 ];
 const payload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "network": {"id":"net_uat","display_name":"UAT private","cidr":"10.77.0.0/24","gateway_id":"gw_uat","gateway_wireguard_public_key":"REPLACE","gateway_wireguard_address":"10.77.0.1/24","gateway_endpoint_host":"REPLACE","gateway_endpoint_port":443,"transport_server_name":"REPLACE","transport_port":443,"transport_auth_id":"REPLACE"},\n  "invite": {"platform":"darwin","role":"one","expires_at":"2030-01-01T00:00:00Z"}\n}`;
 const deviceInvitePayload = `{\n  "controller_url": "https://accounts-uat.onwalk.net",\n  "network_id": "",\n  "device_id": "macos-one",\n  "platform": "darwin",\n  "role": "one",\n  "expires_at": ""\n}`;
+
+function controlPlaneErrorCode(value: unknown): string | undefined {
+  if (!value || typeof value !== "object" || !("error" in value)) return undefined;
+  const error = (value as { error?: unknown }).error;
+  // The UI deliberately exposes only a compact machine-readable category. It
+  // must never surface upstream details, credentials, or signed configuration.
+  return typeof error === "string" && /^[a-z0-9_-]{1,64}$/.test(error)
+    ? error
+    : undefined;
+}
+
 async function overview(): Promise<State> {
   try {
     const r = await fetch("/api/xconnect-zero/overview", { cache: "no-store" }),
@@ -100,7 +111,7 @@ async function overview(): Promise<State> {
       return { kind: "unavailable" };
     return r.ok && isXConnectZeroAdminOverview(p)
       ? { kind: "available", overview: p }
-      : { kind: "error" };
+      : { kind: "error", code: controlPlaneErrorCode(p) };
   } catch {
     return { kind: "error" };
   }
@@ -254,6 +265,10 @@ export default function XConnectZeroOverviewRoute() {
         : zh
           ? "连接异常"
           : "Connection issue";
+  const controlPlaneDetail =
+    state.kind === "error" && state.code
+      ? `accounts /api/overlay/v1/admin/overview · ${state.code}`
+      : "accounts /api/overlay/v1/admin/overview";
   const boot = async () => {
     try {
       const r = await fetch("/api/xconnect-zero/networks/bootstrap", {
@@ -361,7 +376,7 @@ export default function XConnectZeroOverviewRoute() {
               <Row
                 icon={SlidersHorizontal}
                 title={zh ? "控制面连接" : "Control-plane connection"}
-                detail="accounts /api/overlay/v1/admin/overview"
+                detail={controlPlaneDetail}
                 value={status}
                 onClick={() => setPage("configuration")}
               />
