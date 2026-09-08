@@ -115,6 +115,37 @@ describe("/api/xconnect-zero/[...segments]", () => {
     );
   });
 
+  it("forwards an owner-scoped device invite request to Accounts", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ join_uri: "xconnect://join/redacted" }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      new NextRequest("https://console.svc.plus/api/xconnect-zero/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ network_id: "uat-net", device_id: "mac-one", platform: "darwin", role: "one" }),
+      }),
+      { params: Promise.resolve({ segments: ["invites"] }) },
+    );
+
+    expect(response.status).toBe(201);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/overlay\/v1\/admin\/invites$/),
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
   it("turns an unimplemented accounts endpoint into an explicit unavailable response", async () => {
     getAccountSessionMock.mockResolvedValue({
       token: "account-session-token",
