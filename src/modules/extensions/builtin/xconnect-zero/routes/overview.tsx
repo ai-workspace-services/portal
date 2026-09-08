@@ -241,6 +241,11 @@ export default function XConnectZeroOverviewRoute() {
     [checked, setChecked] = useState<Date | null>(null);
   const connected = state.kind === "available",
     o = connected ? state.overview : null;
+  const oneCount = o
+    ? (o.oneCount ?? Math.max(o.deviceCount - o.gatewayCount, 0))
+    : "—";
+  const gatewayStatus = o?.gatewayStatus ?? (o?.gatewayCount ? "active" : "not_configured");
+  const oneStatus = o?.oneStatus ?? (oneCount !== "—" && oneCount > 0 ? "active" : "not_configured");
   const refresh = () => {
     setState({ kind: "loading" });
     void overview().then((s) => {
@@ -385,8 +390,8 @@ export default function XConnectZeroOverviewRoute() {
                 title={zh ? "Gateway 节点" : "Gateway nodes"}
                 detail={
                   zh
-                    ? "受控中继与安全连接"
-                    : "Governed relay and secure connection"
+                    ? `受控中继与安全连接 · ${gatewayStatus === "active" || gatewayStatus === "connected" ? "已加入" : "未加入"}`
+                    : `Governed relay and secure connection · ${gatewayStatus}`
                 }
                 value={o?.gatewayCount ?? "—"}
                 onClick={() => setPage("join")}
@@ -394,8 +399,12 @@ export default function XConnectZeroOverviewRoute() {
               <Row
                 icon={MonitorSmartphone}
                 title={zh ? "One 节点" : "One nodes"}
-                detail={zh ? "受策略保护的设备" : "Policy-protected devices"}
-                value={o?.deviceCount ?? "—"}
+                detail={
+                  zh
+                    ? `受策略保护的设备 · ${oneStatus === "active" || oneStatus === "connected" ? "已加入" : "未加入"}`
+                    : `Policy-protected devices · ${oneStatus}`
+                }
+                value={oneCount}
                 onClick={() => setPage("join")}
               />
               <Row

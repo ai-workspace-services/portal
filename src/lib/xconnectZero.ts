@@ -19,6 +19,12 @@ export interface XConnectZeroAdminOverview {
   networkCount: number;
   deviceCount: number;
   gatewayCount: number;
+  /** Number of owner-scoped controlled-client devices (not Gateways). */
+  oneCount?: number;
+  /** Enrollment/runtime state for the owner-scoped Gateway devices. */
+  gatewayStatus?: "connected" | "active" | "pending" | "not_configured";
+  /** Enrollment/runtime state for the owner-scoped One devices. */
+  oneStatus?: "connected" | "active" | "pending" | "not_configured";
 }
 
 export interface XConnectZeroNetwork {
@@ -70,6 +76,15 @@ function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
+function isOverviewStatus(value: unknown): value is NonNullable<XConnectZeroAdminOverview["gatewayStatus"]> {
+  return (
+    value === "connected" ||
+    value === "active" ||
+    value === "pending" ||
+    value === "not_configured"
+  );
+}
+
 export function isXConnectZeroAdminOverview(
   value: unknown,
 ): value is XConnectZeroAdminOverview {
@@ -79,10 +94,21 @@ export function isXConnectZeroAdminOverview(
 
   const candidate = value as Partial<XConnectZeroAdminOverview>;
   const { networkCount, deviceCount, gatewayCount } = candidate;
-  return (
+  const validBase = (
     candidate.status === "available" &&
     isNonNegativeInteger(networkCount) &&
     isNonNegativeInteger(deviceCount) &&
     isNonNegativeInteger(gatewayCount)
   );
+  if (!validBase) return false;
+  if (candidate.oneCount !== undefined && !isNonNegativeInteger(candidate.oneCount)) {
+    return false;
+  }
+  if (candidate.gatewayStatus !== undefined && !isOverviewStatus(candidate.gatewayStatus)) {
+    return false;
+  }
+  if (candidate.oneStatus !== undefined && !isOverviewStatus(candidate.oneStatus)) {
+    return false;
+  }
+  return true;
 }
