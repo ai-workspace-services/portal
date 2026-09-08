@@ -70,10 +70,14 @@ describe("XConnectZeroOverviewRoute", () => {
     expect(await screen.findByText("UAT Gateway")).toBeInTheDocument();
     expect(screen.getByText("UAT Linux One")).toBeInTheDocument();
     expect(
-      screen.getByText(/Gateway · linux · 10.77.0.1\/32 · 无近期配置确认/),
+      within(screen.getByText("UAT Gateway").parentElement!).getByText(
+        /10.77.0.1\/32/,
+      ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/One · linux · 10.77.0.2\/32 · 最近配置已确认/),
+      within(screen.getByText("UAT Linux One").parentElement!).getByText(
+        /10.77.0.2\/32/,
+      ),
     ).toBeInTheDocument();
   });
   it("keeps the experience to overview, node management, and configuration", async () => {
@@ -102,10 +106,10 @@ describe("XConnectZeroOverviewRoute", () => {
     expect(screen.getByText("wg_udp_l3")).toBeInTheDocument();
     expect(screen.getAllByText("wg_vless_l3").length).toBeGreaterThan(0);
     expect(screen.getByText("wg_vless_l2")).toBeInTheDocument();
-    await user.click(screen.getByRole("radio", { name: /二层互联/ }));
-    expect(screen.getByRole("radio", { name: /二层互联/ })).toBeChecked();
+    expect(screen.getByRole("radio", { name: /二层互联/ })).toBeDisabled();
+    expect(screen.getByRole("radio", { name: /抗干扰连接/ })).toBeChecked();
     expect(screen.getByText("仅 Linux Gateway")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /GPG 证书重置/ }));
-    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    expect(screen.getByText("Ed25519 签名状态")).toBeInTheDocument();
+    expect(screen.queryByText("GPG 证书重置")).not.toBeInTheDocument();
   });
 });
