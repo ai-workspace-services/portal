@@ -36,14 +36,25 @@ function errorResponse(error: ErrorPayload["error"], status: number) {
   return NextResponse.json<ErrorPayload>({ error }, { status });
 }
 
-function resolveRoute(method: string, segments: string[] | undefined): string | undefined {
+function resolveRoute(
+  method: string,
+  segments: string[] | undefined,
+): string | undefined {
   if (!segments) return undefined;
   const exact = ALLOWED_ROUTES.get(`${method} ${segments.join("/")}`);
   if (exact) return exact;
-  if (segments.length === 3 && segments[0] === "networks" && segments[2] === "policy") {
+  if (
+    segments.length === 3 &&
+    segments[0] === "networks" &&
+    segments[2] === "policy"
+  ) {
     return `/admin/networks/${encodeURIComponent(segments[1])}/policy`;
   }
-  if (segments.length === 3 && segments[0] === "devices" && segments[2] === "revoke") {
+  if (
+    segments.length === 3 &&
+    segments[0] === "devices" &&
+    segments[2] === "revoke"
+  ) {
     return `/admin/devices/${encodeURIComponent(segments[1])}/revoke`;
   }
   return undefined;
@@ -57,14 +68,41 @@ function getRequestHost(request: NextRequest): string | null {
   return request.headers.get("x-forwarded-host") ?? request.headers.get("host");
 }
 
-async function proxy(request: NextRequest, method: string, context: { params: Promise<{ segments?: string[] }> }) {
+function addTrustedControllerUrl(
+  body: string | undefined,
+  controllerUrl: string,
+): string | undefined {
+  if (!body) return body;
+  try {
+    const payload = JSON.parse(body) as unknown;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload))
+      return body;
+    return JSON.stringify({
+      ...(payload as Record<string, unknown>),
+      controller_url: controllerUrl,
+    });
+  } catch {
+    return body;
+  }
+}
+
+async function proxy(
+  request: NextRequest,
+  method: string,
+  context: { params: Promise<{ segments?: string[] }> },
+) {
   const segments = (await context.params).segments;
   const endpointPath = resolveRoute(method, segments);
   if (!endpointPath) return errorResponse("control_plane_unavailable", 404);
 
   const session = await getAccountSession(request);
-  if (!session.user || !session.token) return errorResponse("unauthenticated", 401);
-  if (!(await userHasRoleOrPermission(session.user, READ_ROLES, [requiredPermission(method)]))) {
+  if (!session.user || !session.token)
+    return errorResponse("unauthenticated", 401);
+  if (
+    !(await userHasRoleOrPermission(session.user, READ_ROLES, [
+      requiredPermission(method),
+    ]))
+  ) {
     return errorResponse("forbidden", 403);
   }
 
@@ -72,16 +110,28 @@ async function proxy(request: NextRequest, method: string, context: { params: Pr
     Authorization: `Bearer ${session.token}`,
     Accept: "application/json",
   };
-  const body = method === "GET" || method === "HEAD" ? undefined : await request.text();
-  if (body) headers["Content-Type"] = request.headers.get("content-type") ?? "application/json";
+  const body =
+    method === "GET" || method === "HEAD" ? undefined : await request.text();
+  if (body)
+    headers["Content-Type"] =
+      request.headers.get("content-type") ?? "application/json";
 
   let response: Response;
   try {
-    const accountOverlayAPIBase = `${getXConnectZeroServiceBaseUrl(getRequestHost(request))}/api/overlay/v1`;
+    const controllerUrl = getXConnectZeroServiceBaseUrl(
+      getRequestHost(request),
+    );
+    const accountOverlayAPIBase = `${controllerUrl}/api/overlay/v1`;
+    const forwardedBody =
+      method === "POST" &&
+      (endpointPath === "/admin/invites" ||
+        endpointPath === "/admin/networks/bootstrap")
+        ? addTrustedControllerUrl(body, controllerUrl)
+        : body;
     response = await fetch(`${accountOverlayAPIBase}${endpointPath}`, {
       method,
       headers,
-      body,
+      body: forwardedBody,
       cache: "no-store",
       redirect: "manual",
       signal: AbortSignal.timeout(CONTROL_PLANE_TIMEOUT_MS),
@@ -90,19 +140,30 @@ async function proxy(request: NextRequest, method: string, context: { params: Pr
     console.error("XConnect Zero control-plane request failed", error);
     return errorResponse("upstream_unreachable", 502);
   }
-  if (response.status === 404) return errorResponse("control_plane_unavailable", 503);
+  if (response.status === 404)
+    return errorResponse("control_plane_unavailable", 503);
   if (response.status === 204) return new NextResponse(null, { status: 204 });
   const payload = await response.json().catch(() => null);
   // Only successful overview responses have the success schema. Preserve an
   // upstream authorization or validation status so the panel can report the
   // actionable control-plane failure rather than a generic 502.
   if (!response.ok) {
-    return NextResponse.json(payload ?? { error: "control_plane_unavailable" }, { status: response.status });
+    return NextResponse.json(
+      payload ?? { error: "control_plane_unavailable" },
+      { status: response.status },
+    );
   }
-  if (method === "GET" && endpointPath === "/admin/overview" && !isXConnectZeroAdminOverview(payload)) {
+  if (
+    method === "GET" &&
+    endpointPath === "/admin/overview" &&
+    !isXConnectZeroAdminOverview(payload)
+  ) {
     return errorResponse("invalid_response", 502);
   }
-  return NextResponse.json(payload, { status: response.status, headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(payload, {
+    status: response.status,
+    headers: { "Cache-Control": "no-store" },
+  });
 }
 
 export async function GET(
@@ -112,11 +173,17 @@ export async function GET(
   return proxy(request, "GET", context);
 }
 
-export async function POST(request: NextRequest, context: { params: Promise<{ segments?: string[] }> }) {
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ segments?: string[] }> },
+) {
   return proxy(request, "POST", context);
 }
 
-export async function PUT(request: NextRequest, context: { params: Promise<{ segments?: string[] }> }) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ segments?: string[] }> },
+) {
   return proxy(request, "PUT", context);
 }
 
