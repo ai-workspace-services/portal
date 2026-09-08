@@ -19,8 +19,10 @@ describe("Platform Operations extension", () => {
     expect(registry.getRoute("/panel/operations/releases")?.enabled).toBe(true);
     expect(registry.getRoute("/panel/operations/vault-access")?.guard).toEqual({
       requireLogin: true,
+      tenantScoped: true,
       roles: ["admin", "operator"],
       permissions: ["platform.ops.read"],
+      groups: ["platform-ops", "platform-operations"],
     });
   });
 

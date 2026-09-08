@@ -18,6 +18,10 @@ export type AccessRule = {
   allowGuests?: boolean;
   roles?: UserRole[];
   permissions?: string[];
+  /** Any matching group grants the rule, after tenant claims are resolved. */
+  groups?: string[];
+  /** Require an active tenant membership when the session carries tenant data. */
+  tenantScoped?: boolean;
 };
 
 const KNOWN_ROLES: UserRole[] = ["user", "operator", "admin"];
@@ -86,6 +90,30 @@ function normalizePermissions(permissions?: string[]): string[] | undefined {
   return known.size ? Array.from(known) : undefined;
 }
 
+function normalizeGroups(groups?: string[]): string[] | undefined {
+  if (!groups || groups.length === 0) {
+    return undefined;
+  }
+  const known = new Set<string>();
+  for (const group of groups) {
+    const trimmed = group.trim().toLowerCase();
+    if (trimmed.length > 0) {
+      known.add(trimmed);
+    }
+  }
+  return known.size ? Array.from(known) : undefined;
+}
+
+function hasMatchingGroup(userGroups: string[], allowedGroups?: string[]) {
+  if (!allowedGroups) {
+    return undefined;
+  }
+  const normalizedUserGroups = new Set(
+    userGroups.map((group) => group.trim().toLowerCase()),
+  );
+  return allowedGroups.some((group) => normalizedUserGroups.has(group));
+}
+
 export function resolveAccess(
   user: SessionUser,
   rule?: AccessRule,
@@ -95,6 +123,7 @@ export function resolveAccess(
   const normalizedPermissions = normalizePermissions(
     normalizedRule.permissions,
   );
+  const normalizedGroups = normalizeGroups(normalizedRule.groups);
 
   const allowGuests =
     normalizedRule.allowGuests ??
@@ -119,9 +148,32 @@ export function resolveAccess(
   // 组继承：加入 root/admin/operator 组的用户拿到对应角色的访问权，
   // 不需要改他们的 role 字段。
   const role: UserRole = resolveEffectiveRole(user.role, user.groups);
-  const userPermissions = new Set(user?.permissions ?? []);
+  const tenantContextPresent = Boolean(user.tenantId || user.tenants?.length);
+  const activeTenant = normalizedRule.tenantScoped && tenantContextPresent
+    ? user.tenantId
+      ? user.tenants?.find((tenant) => tenant.id === user.tenantId)
+      : undefined
+    : undefined;
+
+  if (normalizedRule.tenantScoped && tenantContextPresent && !activeTenant) {
+    return { allowed: false, reason: "forbidden", userRole: role };
+  }
+
+  const scopedGroups = [
+    ...(user.groups ?? []),
+    ...(activeTenant?.groups ?? []),
+  ];
+  const scopedPermissions = [
+    ...(user.permissions ?? []),
+    ...(activeTenant?.permissions ?? []),
+  ];
+  const scopedRole = activeTenant?.role
+    ? resolveEffectiveRole(activeTenant.role, scopedGroups)
+    : role;
+  const effectiveRole = ROLE_RANK[scopedRole] >= ROLE_RANK[role] ? scopedRole : role;
+  const userPermissions = new Set(scopedPermissions);
   const roleAllowed = normalizedRoles
-    ? normalizedRoles.includes(role)
+    ? normalizedRoles.includes(effectiveRole)
     : undefined;
   const permissionAllowed = normalizedPermissions
     ? normalizedPermissions.every(
@@ -129,50 +181,24 @@ export function resolveAccess(
           userPermissions.has(permission) || userPermissions.has("*"),
       )
     : undefined;
+  const groupAllowed = hasMatchingGroup(scopedGroups, normalizedGroups);
 
   if (
-    normalizedRoles &&
-    normalizedPermissions &&
-    normalizedRoles.length > 0 &&
-    normalizedPermissions.length > 0
+    (normalizedRoles || normalizedPermissions || normalizedGroups) &&
+    !roleAllowed &&
+    !permissionAllowed &&
+    !groupAllowed
   ) {
-    if (!roleAllowed && !permissionAllowed) {
-      return {
-        allowed: false,
-        reason: "forbidden",
-        userRole: role,
-      };
-    }
-  } else if (normalizedRoles && !roleAllowed) {
     return {
       allowed: false,
       reason: "forbidden",
-      userRole: role,
+      userRole: effectiveRole,
     };
-  }
-
-  if (
-    !normalizedRoles &&
-    normalizedPermissions &&
-    normalizedPermissions.length > 0
-  ) {
-    const userPermissions = new Set(user?.permissions ?? []);
-    const missing = normalizedPermissions.some(
-      (permission) =>
-        !userPermissions.has(permission) && !userPermissions.has("*"),
-    );
-    if (missing) {
-      return {
-        allowed: false,
-        reason: "forbidden",
-        userRole: role,
-      };
-    }
   }
 
   return {
     allowed: true,
-    userRole: role,
+    userRole: effectiveRole,
     userTenants: user?.tenants,
     tenantId: user?.tenantId,
   };

@@ -44,6 +44,14 @@ const OPS_RULE = {
   roles: ["admin", "operator"] as UserRole[],
 };
 
+const TENANT_OPS_RULE = {
+  requireLogin: true,
+  tenantScoped: true,
+  roles: ["admin", "operator"] as UserRole[],
+  permissions: ["platform.ops.read"],
+  groups: ["platform-ops"],
+};
+
 describe("accessControl", () => {
   it("blocks unauthenticated access when login is required", () => {
     expect(
@@ -163,6 +171,54 @@ describe("accessControl", () => {
         allowed: false,
         reason: "forbidden",
       });
+    });
+  });
+
+  describe("tenant-scoped group grants", () => {
+    it("admits a user through the active tenant's operations group", () => {
+      expect(
+        resolveAccess(
+          makeUser({
+            tenantId: "tenant-a",
+            tenants: [{ id: "tenant-a", groups: ["platform-ops"] }],
+          }),
+          TENANT_OPS_RULE,
+        ),
+      ).toMatchObject({ allowed: true, tenantId: "tenant-a" });
+    });
+
+    it("admits a tenant permission without requiring a global operator role", () => {
+      expect(
+        resolveAccess(
+          makeUser({
+            tenantId: "tenant-a",
+            tenants: [{ id: "tenant-a", permissions: ["platform.ops.read"] }],
+          }),
+          TENANT_OPS_RULE,
+        ),
+      ).toMatchObject({ allowed: true });
+    });
+
+    it("rejects a multi-tenant session without an active tenant", () => {
+      expect(
+        resolveAccess(
+          makeUser({ tenants: [{ id: "tenant-a", groups: ["platform-ops"] }] }),
+          TENANT_OPS_RULE,
+        ),
+      ).toMatchObject({ allowed: false, reason: "forbidden" });
+    });
+
+    it("rejects a tenant id that is not in the session membership set", () => {
+      expect(
+        resolveAccess(
+          makeUser({
+            role: "operator",
+            tenantId: "tenant-b",
+            tenants: [{ id: "tenant-a" }],
+          }),
+          TENANT_OPS_RULE,
+        ),
+      ).toMatchObject({ allowed: false, reason: "forbidden" });
     });
   });
 });

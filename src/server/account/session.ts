@@ -12,6 +12,8 @@ export type AccountTenantMembership = {
   id: string;
   name?: string;
   role?: AccountUserRole;
+  groups?: string[];
+  permissions?: string[];
 };
 
 export type AccountSessionUser = {
@@ -37,6 +39,8 @@ type RawAccountTenant = {
   id?: unknown;
   name?: unknown;
   role?: unknown;
+  groups?: unknown;
+  permissions?: unknown;
 };
 
 type RawAccountUser = {
@@ -127,6 +131,14 @@ function normalizeTenants(
     const role = normalizeRole(raw.role);
     if (role) {
       entry.role = role;
+    }
+    const groups = normalizeStringList(raw.groups);
+    if (groups.length > 0) {
+      entry.groups = groups;
+    }
+    const permissions = normalizeStringList(raw.permissions);
+    if (permissions.length > 0) {
+      entry.permissions = permissions;
     }
     normalized.push(entry);
   }
