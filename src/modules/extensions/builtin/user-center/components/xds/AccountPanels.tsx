@@ -29,7 +29,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toDataURL } from "qrcode";
-import useSWR from "swr";
 
 import { formatBytes } from "@lib/format";
 import {
@@ -41,13 +40,11 @@ import {
   XdsCardHead,
   XdsEmpty,
   XdsMeter,
-  XdsTag,
 } from "@/components/ui/xds";
 import {
   buildVlessUri,
   type VlessNode,
 } from "../../lib/vless";
-import { fetchAgentNodes } from "../../lib/fetchAgentNodes";
 import type {
   AccountPolicy,
   AccountUsageSummary,
@@ -675,129 +672,59 @@ export function UsageCard({
   );
 }
 
-/* ═══════════════════════════════════ 运行节点表 ═══════════════════════════════════ */
+/* ═══════════════════════════════ 区域入口与 pool ═══════════════════════════════ */
 
-function formatProtocols(protocols?: string | string[]): string {
-  if (Array.isArray(protocols)) return protocols.join(" / ");
-  return protocols || DASH;
-}
-
-/** 过滤掉共享 token / 通配地址这类不该出现在用户视图里的内部条目 */
-function visibleNode(node: VlessNode): boolean {
-  const name = (node.name || "").toLowerCase();
-  const address = (node.address || "").trim();
-  return Boolean(
-    address &&
-      address !== "*" &&
-      !(name.includes("internal agents") && name.includes("shared token")),
-  );
-}
+const XCONNECT_REGIONAL_POOLS = [
+  { region: "jpn-tky", zhName: "日本", enName: "Japan", fqdn: "JP-XConnect.svc.plus" },
+  { region: "us-ca", zhName: "美国", enName: "United States", fqdn: "US-XConnect.svc.plus" },
+  { region: "hk", zhName: "香港", enName: "Hong Kong", fqdn: "HK-XConnect.svc.plus" },
+  { region: "ph-mnl", zhName: "菲律宾", enName: "Philippines", fqdn: "PH-XConnect.svc.plus" },
+] as const;
 
 export function NodesTable({ zh }: { zh: boolean }) {
-  const { data, error, isLoading, mutate } = useSWR<VlessNode[]>(
-    "user-center-agent-nodes",
-    fetchAgentNodes,
-  );
-  const nodes = (data ?? []).filter(visibleNode);
-
   return (
     <XdsCard id="xds-nodes">
       <XdsCardHead
-        title={zh ? "运行节点" : "Runtime nodes"}
+        title={zh ? "区域入口" : "Regional entry points"}
         description={
           zh
-            ? "字段仅呈现 API 提供的值；服务端未返回的信息显示为 —，不做推断。"
-            : "Only fields the API returns are shown; anything absent renders as — rather than being inferred."
+            ? "仅展示区域入口域名与 pool 数量，不展示具体运行节点。"
+            : "Shows regional entry domains and pool counts only; individual runtime nodes are not displayed."
         }
         actions={
-          <>
-            <XdsBadge dot={false}>{nodes.length}</XdsBadge>
-            <XdsButton size="sm" onClick={() => void mutate()}>
-              <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {zh ? "刷新" : "Refresh"}
-            </XdsButton>
-          </>
+          <XdsBadge dot={false}>{XCONNECT_REGIONAL_POOLS.length}</XdsBadge>
         }
       />
-
-      {isLoading ? (
-        <XdsCardBody>
-          <p className="xds-t-caption">{zh ? "加载中…" : "Loading…"}</p>
-        </XdsCardBody>
-      ) : error ? (
-        <XdsCardBody>
-          <XdsEmpty
-            icon={<Server className="h-9 w-9" />}
-            title={zh ? "节点列表暂时取不到" : "Node list unavailable"}
-            description={error instanceof Error ? error.message : String(error)}
-            action={
-              <XdsButton size="sm" onClick={() => void mutate()}>
-                {zh ? "重试" : "Retry"}
-              </XdsButton>
-            }
-          />
-        </XdsCardBody>
-      ) : nodes.length === 0 ? (
-        <XdsCardBody>
-          <XdsEmpty
-            icon={<Server className="h-9 w-9" />}
-            title={zh ? "还没有可用节点" : "No nodes yet"}
-            description={
-              zh
-                ? "节点由服务端按策略组下发，完成账户设置后会自动出现。"
-                : "Nodes are delivered server-side by policy group once account setup is complete."
-            }
-            action={
-              <BoundaryLink href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
-                {zh ? "查看部署文档" : "Read the deployment guide"}
-              </BoundaryLink>
-            }
-          />
-        </XdsCardBody>
-      ) : (
-        <div className="xds-scroll-x">
-          <table className="xds-table">
-            <thead>
-              <tr>
-                <th>{zh ? "节点" : "Node"}</th>
-                <th>{zh ? "地址" : "Address"}</th>
-                <th>SNI</th>
-                <th>{zh ? "端口" : "Port"}</th>
-                <th>{zh ? "协议" : "Protocols"}</th>
-                <th style={{ textAlign: "right" }}>{zh ? "配置" : "Config"}</th>
+      <div className="xds-scroll-x">
+        <table className="xds-table">
+          <thead>
+            <tr>
+              <th>{zh ? "区域" : "Region"}</th>
+              <th>{zh ? "区域代码" : "Region code"}</th>
+              <th>{zh ? "区域入口" : "Regional entry point"}</th>
+              <th style={{ textAlign: "right" }}>{zh ? "Pool 数量" : "Pools"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {XCONNECT_REGIONAL_POOLS.map((pool) => (
+              <tr key={pool.region}>
+                <td style={{ fontWeight: 500 }}>{zh ? pool.zhName : pool.enName}</td>
+                <td className="xds-t-mono xds-subtle">{pool.region}</td>
+                <td className="xds-t-mono xds-subtle">{pool.fqdn}</td>
+                <td style={{ textAlign: "right" }}>1</td>
               </tr>
-            </thead>
-            <tbody>
-              {nodes.map((node) => (
-                <tr key={`${node.name}-${node.address}-${node.port}`}>
-                  <td style={{ fontWeight: 500 }}>{node.name || DASH}</td>
-                  <td className="xds-t-mono xds-subtle">{node.address || DASH}</td>
-                  <td className="xds-t-mono xds-subtle">{node.server_name || DASH}</td>
-                  <td className="xds-t-mono xds-subtle">
-                    {[node.port, node.xhttp_port, node.tcp_port]
-                      .filter((p): p is number => typeof p === "number" && p > 0)
-                      .join(" · ") || DASH}
-                  </td>
-                  <td>
-                    <XdsTag>{formatProtocols(node.protocols)}</XdsTag>
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    <XdsBadge tone="info">{zh ? "已下发" : "Delivered"}</XdsBadge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <XdsCardFoot>
         <div className="xds-row-between">
           <span className="xds-t-caption">
-            {zh ? `显示 ${nodes.length} 个节点` : `${nodes.length} node(s)`}
+            {zh ? `显示 ${XCONNECT_REGIONAL_POOLS.length} 个区域 pool` : `${XCONNECT_REGIONAL_POOLS.length} regional pools`}
           </span>
           <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
-            {zh ? "节点与协议说明" : "Nodes and protocols"}
+            {zh ? "区域入口说明" : "Regional entry point guide"}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </BoundaryLink>
         </div>
