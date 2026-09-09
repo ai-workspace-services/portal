@@ -33,9 +33,16 @@ function readString(value: unknown) {
  * the QR renderer does not silently lose the secret.
  */
 export function normalizeMfaProvisionResponse(value: unknown): MfaProvisionResponse | null {
-  const candidates: unknown[] = [value]
-  if (isRecord(value) && isRecord(value.data)) {
-    candidates.unshift(value.data)
+  const candidates: unknown[] = []
+  let candidate: unknown = value
+
+  // Provisioning can pass through the account API directly, the current BFF
+  // envelope, or an edge envelope. Walk the small, known `data` chain rather
+  // than assuming one shape so a valid secret is never discarded before QR
+  // rendering.
+  for (let depth = 0; depth < 4 && isRecord(candidate); depth += 1) {
+    candidates.push(candidate)
+    candidate = candidate.data
   }
 
   for (const candidate of candidates) {

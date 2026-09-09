@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import { resolveIncrementalCacheTarget } from "./incremental-cache-target.mjs";
 import { buildBoundaryRoutes, resolveBoundaryForPath, routeUrlPath } from "./ssr-boundary-routes.mjs";
+import { bffBoundaryForRoute } from "./ssr-bff-boundaries.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const appRoot = path.join(projectRoot, "src", "app");
@@ -33,8 +34,14 @@ if (boundaryRoutes.length === 0) {
 const boundaries = Object.fromEntries(
   Object.keys(cloudflareConfig.boundaries ?? {}).map((id) => [id, {
     workerName: cloudflareConfig.boundaries[id].worker_name,
-    owns: (relativePath) =>
-      !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id,
+    owns: (relativePath) => {
+      // These are same-origin BFF handlers: they read or update Portal cookies
+      // before calling Accounts. Bundle each in the auth/console Worker that
+      // frontend-router selects, never the generic API origin.
+      const bffBoundary = bffBoundaryForRoute(relativePath);
+      if (bffBoundary) return id === bffBoundary;
+      return !isApi(relativePath) && resolveBoundaryForPath(routeUrlPath(relativePath), boundaryRoutes) === id;
+    },
   }]),
 );
 
@@ -161,6 +168,7 @@ await writeFile(
 
 const entries = await findRouteEntries(appRoot);
 const selectedPages = entries.filter((entry) => entry.kind === "page" && definition.owns(entry.relativePath));
+const selectedRouteHandlers = entries.filter((entry) => entry.kind === "route" && definition.owns(entry.relativePath));
 if (selectedPages.length === 0) {
   throw new Error(`SSR boundary ${boundary} selected no pages`);
 }
@@ -174,6 +182,9 @@ for (const page of selectedPages) {
       if (entries.some((entry) => entry.relativePath === candidate)) selected.add(candidate);
     }
   }
+}
+for (const routeHandler of selectedRouteHandlers) {
+  selected.add(routeHandler.relativePath);
 }
 if (boundary === "public") {
   for (const entry of entries) {
@@ -191,6 +202,10 @@ for (const relativePath of selected) {
   }
   const target = path.join(boundaryRoot, "src", "app", relativePath);
   await mkdir(path.dirname(target), { recursive: true });
+  if (relativePath.endsWith("/route.ts") || relativePath === "route.ts") {
+    await cp(source, target);
+    continue;
+  }
   if (relativePath === "layout.tsx") {
     const appProvidersImport = relativeImport(target, path.join(appRoot, "AppProviders.tsx"));
     const layoutSource = (await readFile(source, "utf8"))
@@ -236,7 +251,7 @@ await run(
 );
 await namespaceStaticAssets(boundaryRoot, boundary);
 
-console.log(`Built SSR boundary ${boundary}: ${selectedPages.length} page entries`);
+console.log(`Built SSR boundary ${boundary}: ${selectedPages.length} page entries, ${selectedRouteHandlers.length} route handlers`);
 
 function readBoundary(args) {
   const index = args.indexOf("--boundary");
@@ -305,7 +320,7 @@ async function findRouteEntries(directory, prefix = "") {
       continue;
     }
     if (!directoryEntry.isFile()) continue;
-    const kind = directoryEntry.name === "page.tsx" ? "page" : "entry";
+    const kind = directoryEntry.name === "page.tsx" ? "page" : directoryEntry.name === "route.ts" ? "route" : "entry";
     entries.push({ relativePath, kind });
   }
   return entries;

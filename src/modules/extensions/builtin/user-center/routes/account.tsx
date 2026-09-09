@@ -19,12 +19,21 @@ import { useCallback, useMemo } from "react";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { BookOpen, Copy, RefreshCw } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  BookOpen,
+  Copy,
+  RefreshCw,
+  ShieldCheck,
+} from "lucide-react";
 
 import { useUserStore } from "@lib/userStore";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
 import { hasPublicUserEmail } from "@lib/publicUserIdentity";
+import { resolveAccess } from "@lib/accessControl";
+import { platformOperationsAccessRule } from "../../platform-operations";
 import {
   XdsBadge,
   XdsButton,
@@ -39,7 +48,6 @@ import AccountPolicySecurityPanel from "../components/AccountPolicySecurityPanel
 import ServiceReadinessCard from "../components/ServiceReadinessCard";
 import {
   IdentityStrip,
-  NodesTable,
   OnboardingProgress,
   QuotaCard,
   UsageCard,
@@ -86,6 +94,7 @@ export default function UserCenterAccountRoute() {
 
   const user = useUserStore((state) => state.user);
   const isReadOnlyRole = Boolean(user?.isReadOnly);
+  const canAccessOperations = resolveAccess(user, platformOperationsAccessRule).allowed;
   // VLESS 访问凭据用 proxyUuid，不是账户身份 uuid（见 #220）
   const proxyUuid = user?.proxyUuid || null;
 
@@ -123,7 +132,10 @@ export default function UserCenterAccountRoute() {
   // 没有连通性接口，所以不假装知道单个节点通不通。
   const connectionVerified = nodeList.length > 0 && hasTraffic;
 
-  const showEmail = hasPublicUserEmail({ email: user?.email, role: user?.role });
+  const showEmail = hasPublicUserEmail({
+    email: user?.email,
+    role: user?.role,
+  });
 
   const handleSetupMfa = useCallback(() => {
     router.push("/panel/account?setupMfa=1");
@@ -149,7 +161,9 @@ export default function UserCenterAccountRoute() {
         <header className="xds-page-head">
           <div className="xds-row-between">
             <div>
-              <h1 className="xds-page-title">{zh ? "开始使用" : "Get started"}</h1>
+              <h1 className="xds-page-title">
+                {zh ? "开始使用" : "Get started"}
+              </h1>
               <p className="xds-page-sub">
                 {zh
                   ? "按下面的步骤完成账户设置，即可安全使用 XConnect 服务。所有状态均以当前账号 API 返回为准。"
@@ -161,13 +175,65 @@ export default function UserCenterAccountRoute() {
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                 {zh ? "刷新状态" : "Refresh"}
               </XdsButton>
-              <BoundaryLink href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
+              <BoundaryLink
+                href="/docs"
+                className="xds-btn xds-btn-secondary xds-btn-sm"
+              >
                 <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
                 {zh ? "部署向导" : "Deployment guide"}
               </BoundaryLink>
             </div>
           </div>
         </header>
+
+        {canAccessOperations ? (
+          <section
+            className="rounded-[var(--radius-xl)] border border-[color:var(--color-primary-border)] bg-[linear-gradient(135deg,var(--color-primary-muted),var(--color-surface))] p-4 shadow-[var(--shadow-sm)] sm:p-5"
+            aria-labelledby="platform-operations-entry-title"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)]">
+                  <Activity className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="xds-t-eyebrow text-[var(--color-primary)]">
+                    Platform Operations
+                  </p>
+                  <h2
+                    id="platform-operations-entry-title"
+                    className="mt-1 text-lg font-semibold text-[var(--color-heading)]"
+                  >
+                    {zh ? "运营操作中心" : "Platform Operations"}
+                  </h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
+                    {zh
+                      ? "统一查看跨仓库发布、UAT / PROD 环境与 XConnect 运行状态。敏感操作进入后仍需 MFA 与审批。"
+                      : "Review cross-repository releases, UAT / PROD environments, and XConnect runtime health. Sensitive actions still require MFA and approval."}
+                  </p>
+                </div>
+              </div>
+              <XdsBadge tone="warning">
+                <ShieldCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                {zh ? "受保护操作" : "Protected operations"}
+              </XdsBadge>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 border-t border-[color:var(--color-primary-border)]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-[var(--color-text-subtle)]">
+                {zh
+                  ? "仅运营角色可见 · 凭据只在 Workflow 运行时注入"
+                  : "Visible to operations roles · credentials are injected only at workflow runtime"}
+              </p>
+              <BoundaryLink
+                href="/panel/operations"
+                className="xds-btn xds-btn-primary xds-btn-sm"
+              >
+                {zh ? "打开 Operations 首页" : "Open Operations"}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </BoundaryLink>
+            </div>
+          </section>
+        ) : null}
 
         {/* ── 三步引导 ── */}
         {!isReadOnlyRole ? (
@@ -199,22 +265,30 @@ export default function UserCenterAccountRoute() {
             {
               k: zh ? "账户类型" : "Account type",
               v: isReadOnlyRole
-                ? zh ? "只读体验" : "Read-only demo"
-                : zh ? "标准用户" : "Standard",
+                ? zh
+                  ? "只读体验"
+                  : "Read-only demo"
+                : zh
+                  ? "标准用户"
+                  : "Standard",
             },
             {
               k: zh ? "邮箱验证" : "Email",
               v: user?.email ? (
                 <XdsBadge tone="success">{zh ? "已验证" : "Verified"}</XdsBadge>
               ) : (
-                <XdsBadge tone="warning">{zh ? "待验证" : "Unverified"}</XdsBadge>
+                <XdsBadge tone="warning">
+                  {zh ? "待验证" : "Unverified"}
+                </XdsBadge>
               ),
             },
             {
               k: zh ? "安全强度" : "Security",
               v:
                 user?.mfaEnabled && !user?.mfaPending ? (
-                  <XdsBadge tone="success">{zh ? "MFA 已启用" : "MFA on"}</XdsBadge>
+                  <XdsBadge tone="success">
+                    {zh ? "MFA 已启用" : "MFA on"}
+                  </XdsBadge>
                 ) : (
                   <XdsBadge tone="warning">
                     {zh ? "建议启用 MFA" : "Enable MFA"}
@@ -224,14 +298,21 @@ export default function UserCenterAccountRoute() {
             {
               k: zh ? "账户权限" : "Permissions",
               v: isReadOnlyRole
-                ? zh ? "仅查看" : "View only"
-                : zh ? "使用服务与查看" : "Use and view",
+                ? zh
+                  ? "仅查看"
+                  : "View only"
+                : zh
+                  ? "使用服务与查看"
+                  : "Use and view",
             },
           ]}
         />
 
         {/* ── 连接凭据 ── */}
-        <section className="xds-grid" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
+        <section
+          className="xds-grid"
+          style={{ gridTemplateColumns: "minmax(0, 1fr)" }}
+        >
           <XdsCard className="xds-uuid-card">
             <XdsCardHead
               title={zh ? "代理 UUID" : "Proxy UUID"}
@@ -259,7 +340,9 @@ export default function UserCenterAccountRoute() {
               <div className="xds-divider" style={{ margin: "16px 0" }} />
 
               <div className="xds-sec-row">
-                <span className="xds-t-caption">{zh ? "用户名" : "Username"}</span>
+                <span className="xds-t-caption">
+                  {zh ? "用户名" : "Username"}
+                </span>
                 <span className="xds-t-body-sm" style={{ fontWeight: 500 }}>
                   {user?.username ?? DASH}
                 </span>
@@ -275,11 +358,17 @@ export default function UserCenterAccountRoute() {
                   {zh ? "多因素认证" : "Multi-factor auth"}
                 </span>
                 {user?.mfaEnabled && !user?.mfaPending ? (
-                  <XdsBadge tone="success">{zh ? "已启用" : "Enabled"}</XdsBadge>
+                  <XdsBadge tone="success">
+                    {zh ? "已启用" : "Enabled"}
+                  </XdsBadge>
                 ) : user?.mfaPending ? (
-                  <XdsBadge tone="warning">{zh ? "待确认" : "Pending"}</XdsBadge>
+                  <XdsBadge tone="warning">
+                    {zh ? "待确认" : "Pending"}
+                  </XdsBadge>
                 ) : (
-                  <XdsBadge tone="warning">{zh ? "未设置" : "Not set"}</XdsBadge>
+                  <XdsBadge tone="warning">
+                    {zh ? "未设置" : "Not set"}
+                  </XdsBadge>
                 )}
               </div>
             </XdsCardBody>
@@ -303,14 +392,13 @@ export default function UserCenterAccountRoute() {
           <QuotaCard zh={zh} usage={usageSummary} policy={accountPolicy} />
         </section>
 
-        {/* ── 运行节点 ── */}
-        <NodesTable zh={zh} />
-
         {/* ── 策略与安全 ── */}
         <section className="xds-stack">
           <div className="xds-sec-head" style={{ maxWidth: "none" }}>
             <span className="xds-t-eyebrow">Policy &amp; security</span>
-            <h2 className="xds-t-h2">{zh ? "策略与安全" : "Policy and security"}</h2>
+            <h2 className="xds-t-h2">
+              {zh ? "策略与安全" : "Policy and security"}
+            </h2>
           </div>
           <AccountPolicySecurityPanel
             mfaEnabled={Boolean(user?.mfaEnabled)}

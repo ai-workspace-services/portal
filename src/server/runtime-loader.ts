@@ -50,6 +50,7 @@ export type RuntimeConfig = {
   authUrl?: string
   dashboardUrl?: string
   docsServiceUrl?: string
+  xconnectZeroUrl?: string
   internalApiBaseUrl?: string
   logLevel?: string
   [key: string]: unknown

@@ -36,6 +36,8 @@ type AccountUser = {
     id?: string;
     name?: string;
     role?: string;
+    groups?: string[];
+    permissions?: string[];
   }>;
 };
 
@@ -180,7 +182,13 @@ export async function GET(request: NextRequest) {
             return null;
           }
 
-          const normalizedTenant: { id: string; name?: string; role?: string } =
+          const normalizedTenant: {
+            id: string;
+            name?: string;
+            role?: string;
+            groups?: string[];
+            permissions?: string[];
+          } =
             {
               id: identifier,
             };
@@ -199,10 +207,36 @@ export async function GET(request: NextRequest) {
             normalizedTenant.role = tenant.role.trim().toLowerCase();
           }
 
+          if (Array.isArray(tenant.groups)) {
+            normalizedTenant.groups = tenant.groups
+              .filter(
+                (value): value is string =>
+                  typeof value === "string" && value.trim().length > 0,
+              )
+              .map((value) => value.trim());
+          }
+
+          if (Array.isArray(tenant.permissions)) {
+            normalizedTenant.permissions = tenant.permissions
+              .filter(
+                (value): value is string =>
+                  typeof value === "string" && value.trim().length > 0,
+              )
+              .map((value) => value.trim());
+          }
+
           return normalizedTenant;
         })
         .filter(
-          (tenant): tenant is { id: string; name?: string; role?: string } =>
+          (
+            tenant,
+          ): tenant is {
+            id: string;
+            name?: string;
+            role?: string;
+            groups?: string[];
+            permissions?: string[];
+          } =>
             Boolean(tenant),
         )
     : undefined;

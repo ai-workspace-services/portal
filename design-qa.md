@@ -1,5 +1,15 @@
 # AI Workspace Web parity design QA
 
+## XConnect Zero three-page redesign — 2026-09-08
+
+Source visual truth: `/Users/shenlan/.codex/generated_images/01a07cc6-1750-7fe0-a8fd-2da03a43c8e4/exec-1bab0cd5-2a9e-45d0-9241-f6c26e20cdb4.png`, with the supplied XConnect overview, node, IP and certificate captures.
+
+Implementation capture: blocked pending a fresh local browser build. The code was reduced to the selected source's three primary destinations: Zero overview, node join, and configuration management. Type checking passed; the direct Vitest invocation is blocked by the repository's alias-resolution configuration (`@lib/xconnectZero`).
+
+Findings: P1 visual comparison and browser interaction checks remain pending. The public UAT still serves the previous deployment and must not be used as evidence for this uncommitted change.
+
+Final result: blocked
+
 Date: 2026-08-28
 
 Result: **BLOCKED for authenticated end-to-end sign-off; visual and responsive QA passed.**
@@ -147,3 +157,132 @@ Focused-region comparison was not possible: the local capture only includes the 
 - Validate the compact layout at 1440 × 1024 and a narrower desktop breakpoint after an authenticated local session is available.
 
 final result: blocked
+
+---
+
+# 用户组标签设计 QA（2026-09-04）
+
+- Source visual truth: `/Users/shenlan/.codex/generated_images/01a06af1-10b0-7c71-a542-08f4406fe03b/exec-464521dd-5b9d-4967-a7b5-96f46229c6bd.png`（选定图 3）与成员来源环形图方向（图 1）。
+- Implementation route: `/panel/management` → `用户组`。
+- Implementation capture: `.design-qa/user-group-tags-preview-blocked.png`。
+- Target viewport: 1440 × 1024 CSS px; local capture could not reach the target screen because the existing local dev server reports an HMR module-factory error before the route renders.
+- State: selected subscription subgroup, a member selected for editing.
+
+## Findings
+
+- [P1] 本地浏览器预览被既有 Turbopack HMR 错误阻断。
+  - Location: `src/app/panel/components/Header.tsx` importing `lucide-react`.
+  - Evidence: `.design-qa/user-group-tags-preview-blocked.png` shows the runtime overlay before `/panel/management` renders. The error predates this component route and names `ChevronLeft` in the header, not the changed user-group component.
+  - Impact: no browser-rendered implementation capture exists, so source and implementation cannot be placed in the same visual comparison input.
+  - Fix: restart the local development server in a clean HMR state, authenticate as an admin/operator, then capture the group page at 1440 × 1024.
+
+## Required fidelity surfaces
+
+- Fonts and typography: blocked; browser-rendered evidence unavailable.
+- Spacing and layout rhythm: blocked; browser-rendered evidence unavailable.
+- Colors and visual tokens: blocked; browser-rendered evidence unavailable.
+- Image quality and asset fidelity: no custom image assets were introduced; standard UI icons use the existing icon library. The source ring is implemented as a data visualization.
+- Copy and content: reviewed in source; grouping, override, valid-period, import/export, and benefit labels are present in implementation source but require browser verification.
+
+## Implementation checklist
+
+- [x] Add Free, subscription parent/subgroups, and internal-user segmentation.
+- [x] Persist manual group changes through the existing groups callback.
+- [x] Add member import/export entry points and source filtering.
+- [x] Add selected-member editor and automatic/manual composition ring.
+- [x] Add clear validity-period and benefit UI, marked as non-persistent until the billing API supplies a read/write contract.
+- [ ] Run an authenticated browser comparison after the local HMR blocker is cleared.
+
+final result: blocked
+---
+
+# XConnect Zero design QA
+
+- Source visual truth: `/Users/shenlan/.codex/generated_images/01a07cc6-1750-7fe0-a8fd-2da03a43c8e4/exec-d55ac019-cf63-42d6-bd51-c01495723f22.png`
+- Browser implementation screenshot: `/Users/shenlan/workspaces/ai-workspace-xstream/portal-xconnect-zero-panel/design-qa-implementation.png`
+- Side-by-side comparison: `/Users/shenlan/workspaces/ai-workspace-xstream/portal-xconnect-zero-panel/design-qa-comparison.png`
+- Target viewport: desktop, 1440 CSS px wide
+- State: Chinese locale, accounts control plane unavailable, Overview selected, accounts layer selected
+- Source pixels: 1487 × 1058
+- Implementation pixels: 1440 × 1136
+- Capture normalization: the implementation shell was captured at a fixed 1440 CSS px width with image density scale 1. The source is the generated 1440-wide design result returned at 1487 physical px; both are shown proportionally in the 1904 × 798 side-by-side comparison.
+
+## Full-view comparison evidence
+
+The comparison preserves the selected direction's hierarchy: existing XWorkmate shell, compact title and health action, horizontal XConnect navigation, five-layer control-plane topology, contextual inspector, recent diagnostics, and grouped operational actions. The implementation uses the existing system font, CSS color tokens, 6–8 px radii, subtle borders, and restrained shadows.
+
+The source mock contains illustrative node counts and event history. The implementation intentionally omits those values while the accounts API is unavailable, preserving the existing product contract that Portal must not fabricate networks, nodes, UUIDs, IP assignments, or policy state. When the live overview endpoint is available, the three supported counts are rendered from the response.
+
+## Focused-region evidence
+
+The original-resolution comparison keeps typography, topology cards, inspector labels, table rows, and action controls readable, so a separate crop was not needed. The GPG reset dialog was inspected live in Chrome: it has a named alert dialog, explicit destructive explanation, cancel controls, and a disabled write action that explains the missing accounts write adapter.
+
+## Required fidelity surfaces
+
+- Fonts and typography: passed. The implementation uses the project's Geist/system stack, compact 12–14 px operational text, a 24 px page heading, and consistent semibold hierarchy without clipping.
+- Spacing and layout rhythm: passed. The page matches the source's shell/content split, top controls, five-part topology, narrow inspector, and two-column lower operations area. Mobile fallbacks stack the header, topology, inspector, and management content.
+- Colors and visual tokens: passed. Existing primary, success, warning, danger, muted, border, focus, radius, and shadow tokens are used throughout; status meaning is reinforced by icons and labels.
+- Image quality and asset fidelity: passed. The selected design contains no new raster imagery. Existing shell branding remains owned by the app, while interface icons use the project's installed icon library rather than custom SVG or CSS drawings.
+- Copy and content: passed. Chinese and English copy is included. Unavailable-state text is honest about missing live data and the absent write adapter.
+- Interactions and accessibility: passed. Overview, Nodes, IP allocation, Policies, and Certificates tabs work; topology layers update the inspector; retry reruns the live overview request; endpoint copy has an accessible label; focus styles are visible; GPG reset opens a named confirmation dialog; unavailable write controls are disabled.
+
+## Comparison history
+
+1. Initial capture was 952 × 1136 because the local assistant panel constrained the preview surface. This made the topology appear artificially cramped and was not a valid target-width comparison.
+2. The preview-only capture was normalized to a fixed 1440 CSS px width and recaptured. The post-normalization comparison shows no actionable P0, P1, or P2 layout mismatch.
+
+## Follow-up polish
+
+- P3: add connector status glyphs between topology cards if the production shell later provides more horizontal room.
+- P3: replace diagnostic rows with authoritative event timestamps when the accounts event API becomes available.
+
+## Implementation checklist
+
+- [x] Preserve the existing XWorkmate shell and design tokens.
+- [x] Add multi-node topology and state-aware counts.
+- [x] Add Overview, Nodes, IP allocation, Policies, and Certificates navigation.
+- [x] Add UUID discovery/copy affordance without placeholder identifiers.
+- [x] Add a guarded GPG certificate reset confirmation state.
+- [x] Verify primary interactions in Chrome.
+- [x] Compare the rendered implementation against the selected design.
+
+final result: passed
+
+---
+
+# Platform Operations image-to-code QA
+
+## Comparison target
+
+- Source visual truth: `/Users/shenlan/.codex/generated_images/01a08150-7204-78c0-8398-95a54a27a3fa/exec-d926fe4d-af4e-42a7-8d50-eac2a55720cc.png`
+- Implementation URL: `http://127.0.0.1:3000/panel/operations`
+- Implementation screenshot path: not saved; the browser capture was redirected to the Portal login screen before the protected panel could render.
+- Source pixels: 1440 × 1024.
+- Implementation capture: 1280 × 720 browser viewport, device scale 1; not comparable because it shows `/login?redirect=%2Fpanel%2Foperations` rather than the authenticated Operations panel.
+- State: unauthenticated local preview; same authenticated state could not be established without user credentials.
+
+## Evidence and findings
+
+The source image was opened and inspected. The local implementation was opened in the in-app browser and visibly redirected to the existing Portal login gate. No same-state full-view or focused-region comparison is valid yet.
+
+The implementation includes the protected Overview, Releases, Environments, Audit, and Vault & Access routes, plus working local interactions for operation detail, release-plan creation, MFA dialog validation, cross-repo plan creation, and role-diff creation. The browser capture could not verify their rendered layout, responsive behavior, or interaction states.
+
+Required fidelity surfaces remain unverified: typography, spacing/layout, colors/tokens, image/icon fidelity, copy, viewport resilience, and authenticated interaction states.
+
+## Comparison history
+
+1. Initial capture: source image opened; local URL redirected to the existing login gate. No P0/P1/P2 visual finding was filed because the artifacts represented different auth states.
+
+## Implementation checklist
+
+- [x] Reuse Portal's existing panel shell, tokens, Lucide icon system, login gate, and extension registry.
+- [x] Add protected Operations routes without direct browser execution of shell scripts or exposure of Vault values.
+- [x] Add visible immutable-manifest, Workflow allowlist, runtime OIDC/Vault, MFA, approval, and topology-boundary states.
+- [ ] Re-capture authenticated `/panel/operations` at 1440 × 1024 and compare against the source image.
+- [ ] Re-check mobile/tablet responsive states after authenticated capture.
+
+## Final result
+
+final result: blocked
+
+Blocker: an authenticated local Portal session is required to capture the protected implementation at the same route/state as the selected source image.

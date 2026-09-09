@@ -6,14 +6,14 @@ import type { NextRequest } from "next/server";
 import { SESSION_COOKIE_NAME } from "@lib/authGateway";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
-
 export type AccountUserRole = "user" | "operator" | "admin";
 
 export type AccountTenantMembership = {
   id: string;
   name?: string;
   role?: AccountUserRole;
+  groups?: string[];
+  permissions?: string[];
 };
 
 export type AccountSessionUser = {
@@ -39,6 +39,8 @@ type RawAccountTenant = {
   id?: unknown;
   name?: unknown;
   role?: unknown;
+  groups?: unknown;
+  permissions?: unknown;
 };
 
 type RawAccountUser = {
@@ -129,6 +131,14 @@ function normalizeTenants(
     const role = normalizeRole(raw.role);
     if (role) {
       entry.role = role;
+    }
+    const groups = normalizeStringList(raw.groups);
+    if (groups.length > 0) {
+      entry.groups = groups;
+    }
+    const permissions = normalizeStringList(raw.permissions);
+    if (permissions.length > 0) {
+      entry.permissions = permissions;
     }
     normalized.push(entry);
   }
@@ -285,9 +295,13 @@ export async function getAccountSession(
     return { token: undefined, user: null };
   }
   const requestHost = resolveForwardedHost(request);
+  // Resolve the Accounts origin from the request host. A module-level value
+  // would pin all BFF requests to whichever environment was detected during
+  // worker startup, even when a Cloudflare UAT request is handled later.
+  const accountAPIBase = getAccountServiceApiBaseUrl(requestHost);
 
   try {
-    const response = await fetch(`${ACCOUNT_API_BASE}/session`, {
+    const response = await fetch(`${accountAPIBase}/session`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

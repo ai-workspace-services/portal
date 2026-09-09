@@ -613,7 +613,15 @@
   .xds-vless-embedded .xds-qr { width: 128px; height: 128px; }
 
   .xds-uuid-card .xds-value-box { font-size: var(--fs-body-sm); line-height: 1.5; }
-  .xds-vless-body { display: grid; grid-template-columns: 116px minmax(0,1fr); gap: var(--sp-4); }
+.xds-vless-body { display: grid; grid-template-columns: 116px minmax(0,1fr); gap: var(--sp-4); }
+.xds-vless-regions { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+.xds-vless-regions-label { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: var(--fs-caption); font-weight: 600; }
+.xds-vless-region-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.xds-vless-region { min-height: 32px; border: 1px solid var(--border-default); border-radius: 999px; background: var(--bg-surface); color: var(--text-secondary); padding: 4px 12px; font-size: var(--fs-caption); cursor: pointer; transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast); }
+.xds-vless-region:hover { border-color: var(--blue-500); color: var(--text-primary); }
+.xds-vless-region.xds-is-active { border-color: var(--blue-500); background: var(--blue-50); color: var(--blue-700); font-weight: 600; }
+.xds-vless-region-select { min-height: 36px; min-width: 156px; border: 1px solid var(--blue-500); border-radius: 10px; background: var(--bg-surface); color: var(--text-primary); padding: 5px 32px 5px 12px; font-size: var(--fs-caption); font-weight: 600; cursor: pointer; }
+.xds-vless-region-select:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; }
   .xds-node-flag { width: 20px; height: 15px; border-radius: 2px; border: 1px solid var(--border-default); background: var(--bg-sunken); display: grid; place-items: center; font-size: var(--fs-eyebrow); font-family: var(--font-mono); color: var(--text-tertiary); }
   .xds-lat { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: var(--fs-micro); }
   .xds-bars { display: flex; gap: 1.5px; align-items: flex-end; height: 11px; }

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getAccountServiceApiBaseUrl } from "@/server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
 const ALLOWED_PROVIDERS = new Set(["github", "google"]);
 
 export async function GET(
@@ -15,8 +14,11 @@ export async function GET(
     return NextResponse.json({ error: "provider_not_found" }, { status: 404 });
   }
 
+  // Resolve the account service from the current environment host so a UAT
+  // request cannot fall back to the production Accounts endpoint.
+  const accountApiBase = getAccountServiceApiBaseUrl(request.nextUrl.hostname);
   const target = new URL(
-    `${ACCOUNT_API_BASE}/oauth/login/${normalizedProvider}`,
+    `${accountApiBase}/oauth/login/${normalizedProvider}`,
   );
   target.searchParams.set("frontend_url", request.nextUrl.origin);
 

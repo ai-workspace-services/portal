@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toDataURL as generateQrCode } from 'qrcode'
+import { ShieldCheck, X } from 'lucide-react'
 
 import Card from '../components/Card'
 import { useLanguage } from '@i18n/LanguageProvider'
@@ -198,8 +199,11 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
         error?: string | null
         data?: unknown
       }
-      const data = normalizeMfaProvisionResponse(payload?.data)
-      if (!payload?.success || !data) {
+      // Accept both the BFF envelope and direct account-service responses.
+      // The latter has no `success` field, but a 2xx response with a secret is
+      // a successful provisioning result and must render its QR code.
+      const data = normalizeMfaProvisionResponse(payload)
+      if (!response.ok || payload?.success === false || !data) {
         setError(resolveErrorMessage(payload?.error))
         return
       }
@@ -322,8 +326,8 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       (setupRequested || isDialogOpen) &&
       !displayStatus?.totpEnabled &&
       !secret &&
-      !hasPendingMfa &&
-      !isProvisioning
+      !isProvisioning &&
+      !error
     ) {
       void handleProvision()
     }
@@ -333,6 +337,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
     hasPendingMfa,
     isDialogOpen,
     isProvisioning,
+    error,
     secret,
     setupRequested,
   ])
@@ -472,41 +477,67 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
           aria-modal="true"
         >
           <div
-            className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-md)]"
+            className="relative w-full max-w-5xl overflow-hidden rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-md)]"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={closeDialog}
               aria-label={copy.modal.close}
-              className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-xl text-[var(--color-text-subtle)] opacity-80 transition hover:border-[color:var(--color-surface-border)] hover:text-[var(--color-text-subtle)]"
+              className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-subtle)] transition hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)]"
             >
-              ×
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
-            <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
-              <h3 className="text-xl font-semibold text-[var(--color-text)]">
-                {isMandatorySetup ? copy.modal.setupTitle : copy.modal.title}
-              </h3>
-              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-                {isMandatorySetup
-                  ? copy.modal.setupDescription
-                  : displayStatus?.totpEnabled
-                    ? copy.enabledHint
-                    : copy.subtitle}
-              </p>
+            <div className="max-h-[85vh] overflow-y-auto lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
+              <aside className="border-b border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] px-6 py-7 lg:border-b-0 lg:border-r lg:px-8 lg:py-9">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+                  <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+                </div>
+                <h3 className="mt-5 text-xl font-semibold tracking-tight text-[var(--color-heading)]">
+                  {isMandatorySetup ? copy.modal.setupTitle : copy.modal.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--color-text-subtle)]">
+                  {isMandatorySetup
+                    ? copy.modal.setupDescription
+                    : displayStatus?.totpEnabled
+                      ? copy.enabledHint
+                      : copy.subtitle}
+                </p>
 
-              <div className="mt-6 space-y-6">
+                <ol className="mt-7 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                  {[
+                    { title: copy.guide.step1Title, description: copy.guide.step1Description },
+                    { title: copy.guide.step2Title, description: copy.guide.step2Description },
+                    { title: copy.guide.step3Title, description: copy.guide.step3Description },
+                  ].map((step, index) => (
+                    <li key={step.title} className="flex gap-3">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--color-heading)]">{step.title}</p>
+                        <p className="mt-0.5 text-xs leading-5 text-[var(--color-text-subtle)]">{step.description}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </aside>
+
+              <div className="p-6 sm:p-8 lg:p-9">
                 {isMandatorySetup ? (
                   <div
                     role="alert"
-                    className="rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-4 text-sm text-[var(--color-warning-foreground)]"
+                    className="mb-5 flex items-start gap-3 rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] px-4 py-3 text-sm text-[var(--color-warning-foreground)]"
                   >
-                    <p className="font-semibold">{copy.modal.setupTitle}</p>
-                    <p className="mt-1">{copy.lockedMessage}</p>
+                    <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[var(--color-warning-foreground)]" aria-hidden="true" />
+                    <div>
+                      <p className="font-semibold">{copy.modal.setupTitle}</p>
+                      <p className="mt-0.5">{copy.lockedMessage}</p>
+                    </div>
                   </div>
                 ) : null}
                 {displayStatus?.totpEnabled ? (
-                  <div className="space-y-5">
+                  <div className="space-y-5 pt-2">
                     <div className="rounded-lg border border-[color:var(--color-success-muted)] bg-[var(--color-success-muted)] p-4 text-sm text-[var(--color-success-foreground)]">
                       <p className="font-medium">{copy.successTitle}</p>
                       <p className="mt-1">{copy.successBody}</p>
@@ -541,10 +572,6 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    <p className="rounded-lg border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] p-3 text-sm text-[var(--color-warning-foreground)]">
-                      {hasPendingMfa ? copy.lockedMessage : copy.subtitle}
-                    </p>
-
                     {lockoutActive ? (
                       <p className="rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-3 text-sm text-[var(--color-danger-foreground)]">
                         {copy.errors.locked}
@@ -554,41 +581,42 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       </p>
                     ) : null}
 
-                    <ol className="space-y-4">
-                      <li className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
-                        <h4 className="text-sm font-semibold text-[var(--color-text)]">{copy.guide.step1Title}</h4>
-                        <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.guide.step1Description}</p>
-                        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[var(--color-text-subtle)]">
-                          <li>{copy.guide.step1Ios}</li>
-                          <li>{copy.guide.step1Android}</li>
-                        </ul>
-                      </li>
-
-                      <li className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
-                        <h4 className="text-sm font-semibold text-[var(--color-text)]">{copy.guide.step2Title}</h4>
-                        <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.guide.step2Description}</p>
-                        <div className="mt-4 flex flex-col gap-6 lg:flex-row lg:items-start">
+                    <section>
+                      <div className="flex flex-col gap-1 pr-10">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">{copy.guide.step2Title}</p>
+                        <h4 className="text-lg font-semibold text-[var(--color-heading)]">{copy.qrLabel}</h4>
+                      </div>
+                      <div className="mt-5 grid gap-6 sm:grid-cols-[196px_minmax(0,1fr)] sm:items-center">
                           {qrCodeDataUrl ? (
-                            <div className="flex justify-center lg:w-60 lg:justify-start">
-                              <div className="rounded-xl border border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-3">
-                                <div className="flex items-center justify-center rounded-lg border border-[color:var(--color-primary-border)] bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)]">
+                            <div className="flex justify-center">
+                              <div className="rounded-2xl border border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-3">
+                                <div className="flex items-center justify-center rounded-xl bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)]">
                                   <Image
                                     src={qrCodeDataUrl}
                                     alt={copy.qrLabel}
                                     width={176}
                                     height={176}
-                                    className="h-44 w-44"
+                                    className="h-40 w-40 sm:h-44 sm:w-44"
                                     unoptimized
                                   />
                                 </div>
                               </div>
                             </div>
-                          ) : null}
-                          <div className="flex-1 space-y-3">
-                            <div>
-                              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
-                              <code className="mt-1 block break-all rounded bg-[var(--color-primary-muted)] px-3 py-2 text-sm text-[var(--color-primary)]">{secret}</code>
+                          ) : (
+                            <div
+                              className="flex min-h-48 items-center justify-center rounded-2xl border border-dashed border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-5 text-center text-sm text-[var(--color-text-subtle)]"
+                              aria-live="polite"
+                            >
+                              {isProvisioning ? '正在生成认证二维码…' : error ? copy.errors.provisioningFailed : '认证二维码准备中…'}
                             </div>
+                          )}
+                          <div className="flex-1 space-y-3">
+                            {secret ? (
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
+                                <code className="mt-1 block break-all rounded-lg bg-[var(--color-surface-muted)] px-3 py-2 text-sm text-[var(--color-primary)]">{secret}</code>
+                              </div>
+                            ) : null}
                             {issuer ? (
                               <div>
                                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.issuerLabel}</p>
@@ -601,20 +629,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                                 <p className="mt-1 break-all text-sm text-[var(--color-text-subtle)]">{accountLabel}</p>
                               </div>
                             ) : null}
-                            {uri ? (
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.uriLabel}</p>
-                                <a
-                                  href={uri}
-                                  className="mt-1 block break-all text-sm text-[var(--color-primary)] underline"
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  {uri}
-                                </a>
-                              </div>
-                            ) : null}
-                            <p className="text-xs text-[var(--color-text-subtle)] opacity-80">{copy.manualHint}</p>
+                            <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.manualHint}</p>
                             <button
                               type="button"
                               onClick={handleProvision}
@@ -624,15 +639,15 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                               {isProvisioning ? `${copy.regenerate}…` : copy.regenerate}
                             </button>
                           </div>
-                        </div>
-                      </li>
+                      </div>
+                    </section>
 
-                      <li className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)]">
-                        <h4 className="text-sm font-semibold text-[var(--color-text)]">{copy.guide.step3Title}</h4>
-                        <p className="mt-2 text-sm text-[var(--color-text-subtle)]">{copy.guide.step3Description}</p>
+                    <section className="border-t border-[color:var(--color-surface-border)] pt-6">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">{copy.guide.step3Title}</p>
+                      <h4 className="mt-1 text-lg font-semibold text-[var(--color-heading)]">{copy.codeLabel}</h4>
                         <form
                           onSubmit={handleVerify}
-                          className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4"
+                          className="mt-4 flex flex-col gap-4"
                         >
                           <div className="flex-1">
                             <label className="block text-sm font-medium text-[var(--color-text-subtle)]" htmlFor="mfa-code-0">
@@ -742,7 +757,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                                       }, 0)
                                     }}
                                     onFocus={(event) => event.currentTarget.select()}
-                                    className="h-14 w-12 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-center text-2xl font-mono text-[var(--color-text)] shadow-[var(--shadow-sm)] focus:border-[color:var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)]"
+                                    className="h-12 w-10 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-center text-xl font-mono text-[var(--color-text)] shadow-[var(--shadow-sm)] focus:border-[color:var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)] sm:h-14 sm:w-12 sm:text-2xl"
                                   />
                                 )
                               })}
@@ -758,26 +773,25 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                           <button
                             type="submit"
                             disabled={isVerifying}
-                            className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-5 py-2.5 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
+                            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
                           >
                             {isVerifying ? copy.verifying : copy.verify}
                           </button>
                         </form>
-                      </li>
-                    </ol>
+                    </section>
 
                     {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
                   </div>
                 )}
 
-                <div className="rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] p-4 text-xs text-[var(--color-text-subtle)]">
+                <div className="mt-6 border-t border-[color:var(--color-surface-border)] pt-5 text-xs text-[var(--color-text-subtle)]">
                   <p className="font-semibold text-[var(--color-text-subtle)]">{copy.actions.help}</p>
                   <p className="mt-1 text-[var(--color-text-subtle)]">{copy.actions.description}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-3">
                     <button
                       type="button"
                       onClick={handleLogoutClick}
-                      className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-primary-border)] px-3 py-2 text-xs font-medium text-[var(--color-primary)] transition hover:border-[color:var(--color-primary)] hover:bg-[var(--color-primary-muted)]"
+                      className="inline-flex items-center justify-center rounded-md px-1 py-1 text-xs font-medium text-[var(--color-primary)] underline-offset-4 transition hover:underline"
                     >
                       {copy.actions.logout}
                     </button>
@@ -785,7 +799,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       href={copy.actions.docsUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-[var(--color-primary)] px-3 py-2 text-xs font-medium text-[var(--color-primary-foreground)] transition hover:bg-[var(--color-primary-hover)]"
+                      className="inline-flex items-center justify-center rounded-md px-1 py-1 text-xs font-medium text-[var(--color-primary)] underline-offset-4 transition hover:underline"
                     >
                       {copy.actions.docs}
                     </a>

@@ -2,7 +2,12 @@
 
 import type { VlessNode } from './vless'
 
-const PRIMARY_ENDPOINT = '/api/auth/sync/config?since_version=0'
+// Node discovery must use the canonical account endpoint through the Portal
+// BFF. The BFF resolves the browser's HttpOnly xc_session cookie once and
+// forwards the resulting account session explicitly to Accounts. Calling the
+// legacy auth sync endpoint directly through the generic API route can make a
+// valid Console session look invalid to the node handler.
+const PRIMARY_ENDPOINT = '/api/agent-server/v1/nodes'
 const FALLBACK_ENDPOINT = '/api/agent/nodes'
 
 type AgentNodePayload =

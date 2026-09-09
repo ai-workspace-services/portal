@@ -27,13 +27,23 @@ describe("runtime-loader", () => {
     expect(config.dashboardUrl).toBe("https://www.svc.plus");
   });
 
-  it("uses the GitOps serverless service entrances for UAT", async () => {
+  it("uses the GitOps Cloudflare service entrances for UAT OAuth", async () => {
     const { loadRuntimeConfig } = await import("./runtime-loader");
 
-    const config = loadRuntimeConfig({ hostname: "console-serverless-uat.onwalk.net" });
+    const config = loadRuntimeConfig({ hostname: "console-cloudflare-uat.onwalk.net" });
 
-    expect(config.apiBaseUrl).toBe("https://accounts-serverless-uat.onwalk.net/api");
-    expect(config.authUrl).toBe("https://accounts-serverless-uat.onwalk.net");
-    expect(config.dashboardUrl).toBe("https://console-serverless-uat.onwalk.net");
+    expect(config.apiBaseUrl).toBe("https://accounts-cloudflare-uat.onwalk.net/api");
+    expect(config.authUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
+    expect(config.xconnectZeroUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
+    expect(config.dashboardUrl).toBe("https://console-cloudflare-uat.onwalk.net");
+  });
+
+  it("keeps the Serverless production console on the production Accounts service", async () => {
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+
+    const config = loadRuntimeConfig({ hostname: "console-serverless-prod.svc.plus" });
+
+    expect(config.environment).toBe("prod");
+    expect(config.authUrl).toBe("https://accounts.svc.plus");
   });
 });
