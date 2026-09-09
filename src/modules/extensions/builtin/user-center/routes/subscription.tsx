@@ -123,6 +123,7 @@ export default function UserCenterSubscriptionRoute() {
   const { data: usageSummary } = useSWR(
     "account-usage-summary",
     fetchAccountUsageSummary,
+    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
   );
   const { data: billingSummary } = useSWR(
     "account-billing-summary",
@@ -341,11 +342,34 @@ export default function UserCenterSubscriptionRoute() {
               <XdsStat
                 label={zh ? "策略 / 同步" : "Policy / sync"}
                 value={
-                  <XdsBadge tone={usageSummary?.arrears ? "danger" : "success"}>
-                    {usageSummary?.arrears
-                      ? zh ? "欠费" : "Arrears"
-                      : zh ? "正常" : "Normal"}
-                    {usageSummary?.throttleState ? ` · ${usageSummary.throttleState}` : ""}
+                  <XdsBadge
+                    tone={
+                      (usageSummary?.networkAccessState === "paused" ||
+                        usageSummary?.networkAccessState === "blocked") ||
+                      usageSummary?.arrears
+                        ? "danger"
+                        : "success"
+                    }
+                  >
+                    {usageSummary?.networkAccessReason === "quota_exhausted"
+                      ? zh
+                        ? "额度已用尽 · 已暂停"
+                        : "Quota exhausted · Paused"
+                      : usageSummary?.networkAccessReason === "billing_suspended"
+                        ? zh
+                          ? "账务暂停"
+                          : "Billing suspended"
+                        : usageSummary?.networkAccessReason === "operator_paused"
+                          ? zh
+                            ? "管理员暂停"
+                            : "Operator paused"
+                          : usageSummary?.arrears
+                            ? zh
+                              ? "欠费"
+                              : "Arrears"
+                            : zh
+                              ? "正常"
+                              : "Normal"}
                   </XdsBadge>
                 }
                 meta={`${zh ? "统计延迟" : "Sync delay"} ~${usageSummary?.syncDelaySeconds ?? 0} s · ${zh ? "策略组" : "groups"} ${accountPolicy?.eligibleNodeGroups?.join(", ") || DASH}`}
