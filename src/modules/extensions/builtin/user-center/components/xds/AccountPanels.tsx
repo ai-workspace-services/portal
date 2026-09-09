@@ -45,6 +45,10 @@ import {
   buildVlessUri,
   type VlessNode,
 } from "../../lib/vless";
+import {
+  regionalNodeOptions,
+  XCONNECT_REGIONAL_POOLS,
+} from "../../lib/regionalPools";
 import type {
   AccountPolicy,
   AccountUsageSummary,
@@ -253,10 +257,10 @@ export function OnboardingProgress({
               ) : null}
               {i === 2 ? (
                 <a
-                  href="#xds-nodes"
+                  href="#xds-vless"
                   className={`xds-btn xds-btn-sm ${i === activeIndex ? "xds-btn-primary" : "xds-btn-ghost"}`}
                 >
-                  {zh ? "查看运行节点" : "View nodes"}
+                  {zh ? "查看连接凭据" : "View credentials"}
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
               ) : null}
@@ -289,18 +293,6 @@ export function IdentityStrip({
 
 /* ═══════════════════════════════════ VLESS 连接卡 ═══════════════════════════════════ */
 
-function nodeKey(candidate?: VlessNode): string {
-  return candidate ? `${candidate.address}:${candidate.port}` : "";
-}
-
-function nodeRegion(candidate: VlessNode): string {
-  const identity = `${candidate.name} ${candidate.address}`.toLowerCase();
-  if (identity.includes("jp") || identity.includes("tokyo") || identity.includes("japan")) return "JP";
-  if (identity.includes("us") || identity.includes("oregon") || identity.includes("america")) return "US";
-  if (identity.includes("hk") || identity.includes("hong kong")) return "HK";
-  return "Other";
-}
-
 export function VlessConnectionCard({
   proxyUuid,
   nodes,
@@ -313,35 +305,20 @@ export function VlessConnectionCard({
   zh: boolean;
   embedded?: boolean;
 }) {
-  const [selectedNodeKey, setSelectedNodeKey] = useState<string | null>(null);
-  const regionOptions = useMemo(() => {
-    const seen = new Set<string>();
-    return nodes.reduce<Array<{ key: string; label: string; node: VlessNode }>>((options, candidate) => {
-      const key = nodeRegion(candidate);
-      if (!seen.has(key)) {
-        seen.add(key);
-        options.push({
-          key,
-          label: key === "Other" ? (zh ? "其他地区" : "Other") : `${key} ${zh ? "区域" : "Region"}`,
-          node: candidate,
-        });
-      }
-      return options;
-    }, []);
-  }, [nodes, zh]);
+  const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
+  const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes]);
   const useCompactRegionSelect = regionOptions.length > 4;
   const node = useMemo(() => {
-    if (!nodes.length) return undefined;
-    return nodes.find((candidate) => nodeKey(candidate) === selectedNodeKey) ?? regionOptions[0]?.node ?? nodes[0];
-  }, [nodes, regionOptions, selectedNodeKey]);
+    return regionOptions.find(({ pool }) => pool.code === selectedRegionCode)?.node ?? regionOptions[0]?.node;
+  }, [regionOptions, selectedRegionCode]);
   useEffect(() => {
-    if (!node) {
-      setSelectedNodeKey(null);
+    const currentRegion = regionOptions.find(({ node: candidate }) => candidate === node)?.pool.code;
+    if (!currentRegion) {
+      setSelectedRegionCode(null);
       return;
     }
-    const currentKey = nodeKey(node);
-    if (selectedNodeKey !== currentKey) setSelectedNodeKey(currentKey);
-  }, [node, selectedNodeKey]);
+    if (selectedRegionCode !== currentRegion) setSelectedRegionCode(currentRegion);
+  }, [node, regionOptions, selectedRegionCode]);
   const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -403,28 +380,28 @@ export function VlessConnectionCard({
             <select
               className="xds-vless-region-select"
               aria-label={zh ? "选择节点区域" : "Choose node region"}
-              value={node ? nodeKey(node) : ""}
-              onChange={(event) => setSelectedNodeKey(event.target.value)}
+              value={selectedRegionCode ?? ""}
+              onChange={(event) => setSelectedRegionCode(event.target.value)}
             >
               {regionOptions.map((option) => (
-                <option key={option.key} value={nodeKey(option.node)}>
-                  {option.label}
+                <option key={option.pool.code} value={option.pool.code}>
+                  {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
                 </option>
               ))}
             </select>
           ) : (
             <div className="xds-vless-region-list" role="list">
               {regionOptions.map((option) => {
-                const active = nodeKey(node) === nodeKey(option.node);
+                const active = selectedRegionCode === option.pool.code;
                 return (
                   <button
-                    key={option.key}
+                    key={option.pool.code}
                     type="button"
                     aria-pressed={active}
                     className={`xds-vless-region${active ? " xds-is-active" : ""}`}
-                    onClick={() => setSelectedNodeKey(nodeKey(option.node))}
+                    onClick={() => setSelectedRegionCode(option.pool.code)}
                   >
-                    {option.label}
+                    {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
                   </button>
                 );
               })}
@@ -478,7 +455,7 @@ export function VlessConnectionCard({
     </XdsCardBody>
   );
 
-  if (embedded) return <div className="xds-vless-embedded">{cardBody}</div>;
+  if (embedded) return <div id="xds-vless" className="xds-vless-embedded">{cardBody}</div>;
 
   return (
     <XdsCard id="xds-vless">
@@ -660,8 +637,8 @@ export function UsageCard({
                   : "Once step 3 is verified, per-minute usage shows up here."
               }
               action={
-                <a href="#xds-nodes" className="xds-btn xds-btn-secondary xds-btn-sm">
-                  {zh ? "查看运行节点" : "View nodes"}
+                <a href="#xds-vless" className="xds-btn xds-btn-secondary xds-btn-sm">
+                  {zh ? "查看连接凭据" : "View credentials"}
                 </a>
               }
             />
@@ -673,13 +650,6 @@ export function UsageCard({
 }
 
 /* ═══════════════════════════════ 区域入口与 pool ═══════════════════════════════ */
-
-const XCONNECT_REGIONAL_POOLS = [
-  { region: "jpn-tky", zhName: "日本", enName: "Japan", fqdn: "JP-XConnect.svc.plus" },
-  { region: "us-ca", zhName: "美国", enName: "United States", fqdn: "US-XConnect.svc.plus" },
-  { region: "hk", zhName: "香港", enName: "Hong Kong", fqdn: "HK-XConnect.svc.plus" },
-  { region: "ph-mnl", zhName: "菲律宾", enName: "Philippines", fqdn: "PH-XConnect.svc.plus" },
-] as const;
 
 export function NodesTable({ zh }: { zh: boolean }) {
   return (
@@ -707,11 +677,11 @@ export function NodesTable({ zh }: { zh: boolean }) {
           </thead>
           <tbody>
             {XCONNECT_REGIONAL_POOLS.map((pool) => (
-              <tr key={pool.region}>
+              <tr key={pool.code}>
                 <td style={{ fontWeight: 500 }}>{zh ? pool.zhName : pool.enName}</td>
-                <td className="xds-t-mono xds-subtle">{pool.region}</td>
-                <td className="xds-t-mono xds-subtle">{pool.fqdn}</td>
-                <td style={{ textAlign: "right" }}>1</td>
+                <td className="xds-t-mono xds-subtle">{pool.code}</td>
+                <td className="xds-t-mono xds-subtle">{pool.entry}</td>
+                <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
               </tr>
             ))}
           </tbody>

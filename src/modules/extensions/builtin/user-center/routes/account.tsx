@@ -48,7 +48,6 @@ import AccountPolicySecurityPanel from "../components/AccountPolicySecurityPanel
 import ServiceReadinessCard from "../components/ServiceReadinessCard";
 import {
   IdentityStrip,
-  NodesTable,
   OnboardingProgress,
   QuotaCard,
   UsageCard,
@@ -391,9 +390,6 @@ export default function UserCenterAccountRoute() {
           />
           <QuotaCard zh={zh} usage={usageSummary} policy={accountPolicy} />
         </section>
-
-        {/* ── 运行节点 ── */}
-        <NodesTable zh={zh} />
 
         {/* ── 策略与安全 ── */}
         <section className="xds-stack">

@@ -173,7 +173,7 @@ export default function AccountGettingStarted({
             href="#connections"
             className="mt-5 inline-flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary-border)] hover:bg-[var(--color-primary-muted)]"
           >
-            查看运行节点 <ArrowRight className="h-4 w-4" />
+            查看连接配置 <ArrowRight className="h-4 w-4" />
           </a>
         </ReadinessStep>
       </section>

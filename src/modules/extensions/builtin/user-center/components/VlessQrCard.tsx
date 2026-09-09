@@ -15,6 +15,7 @@ import {
   VlessTransport,
 } from '../lib/vless'
 import { fetchAgentNodes } from '../lib/fetchAgentNodes'
+import { regionalNodeOptions } from '../lib/regionalPools'
 
 export type VlessQrCopy = {
   label: string
@@ -79,7 +80,8 @@ export default function VlessQrCard({
       return !(name.includes('internal agents') && name.includes('shared token'))
     })
   }, [allNodes])
-  const [selectedNode, setSelectedNode] = useState<VlessNode | null>(null)
+  const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes])
+  const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null)
   const [preferredTransport, setPreferredTransport] = useState<VlessTransport>(() =>
     resolveInitialTransport(defaultTransport, transportOptions),
   )
@@ -101,13 +103,9 @@ export default function VlessQrCard({
   }, [defaultTransport, transportOptions])
 
   const rawNode = useMemo(() => {
-    if (selectedNode) return selectedNode
-
-    // Default to the first visible (non-filtered) node.
-    if (nodes && nodes[0]) return nodes[0]
-
-    return undefined
-  }, [nodes, selectedNode])
+    return regionOptions.find(({ pool }) => pool.code === selectedRegionCode)?.node
+      ?? regionOptions[0]?.node
+  }, [regionOptions, selectedRegionCode])
 
   const effectiveNode = useMemo((): VlessNode | undefined => {
     if (!rawNode) return undefined
@@ -240,31 +238,31 @@ export default function VlessQrCard({
             <p className="mt-2 text-xs text-[var(--color-text-subtle)]">{copy.description}</p>
           </div>
 
-          {nodes && nodes.length > 1 && (
+          {regionOptions.length > 1 && (
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsSelectorOpen(!isSelectorOpen)}
                 className="inline-flex items-center gap-1 rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2 py-1 text-eyebrow font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
               >
-                切换节点
+                切换区域
                 <ChevronDown className={`h-3 w-3 transition-transform ${isSelectorOpen ? 'rotate-180' : ''}`} />
               </button>
               {isSelectorOpen && (
                 <div className="absolute right-0 top-full z-10 mt-1 w-48 overflow-hidden rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] shadow-lg ring-1 ring-black ring-opacity-5">
                   <div className="max-h-60 overflow-y-auto py-1">
-                    {nodes.map((node) => (
+                    {regionOptions.map(({ pool }) => (
                       <button
-                        key={node.address}
+                        key={pool.code}
                         type="button"
                         onClick={() => {
-                          setSelectedNode(node)
+                          setSelectedRegionCode(pool.code)
                           setIsSelectorOpen(false)
                         }}
                         className="flex w-full items-center justify-between px-3 py-2 text-left text-xs text-[var(--color-text)] hover:bg-[var(--color-primary-muted)]"
                       >
-                        <span>{node.name}</span>
-                        {(selectedNode?.address === node.address || (!selectedNode && node === nodes[0])) && (
+                        <span>{`${pool.shortCode} 区域`}</span>
+                        {(selectedRegionCode === pool.code || (!selectedRegionCode && pool === regionOptions[0]?.pool)) && (
                           <Check className="h-3 w-3 text-[var(--color-primary)]" />
                         )}
                       </button>
