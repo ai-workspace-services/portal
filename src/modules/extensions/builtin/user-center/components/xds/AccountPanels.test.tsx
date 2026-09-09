@@ -63,6 +63,30 @@ describe("QuotaCard", () => {
 
     expect(screen.getByText("正常")).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("shows the Free maximum for a legacy default package", () => {
+    render(
+      <QuotaCard
+        zh
+        usage={{
+          accountUuid: "account-default",
+          totalBytes: 0,
+          includedQuotaBytes: 0,
+          remainingIncludedQuota: 0,
+          usedBytes: 0,
+          usagePercent: 0,
+          billingProfile: { packageName: "default", includedQuotaBytes: 0 },
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText("套餐 default · 最大流量 5 GB / 月"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("0 B / 5 GB")).toBeInTheDocument();
+  });
+
   it("builds the subscription with the matching lowercase regional entry", async () => {
     render(
       <VlessConnectionCard

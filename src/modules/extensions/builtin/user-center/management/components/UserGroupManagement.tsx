@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Download,
   FileUp,
+  Gauge,
   Search,
   ShieldCheck,
   UsersRound,
@@ -66,6 +67,17 @@ type Segment = {
   parent?: SegmentId;
   description: string;
 };
+
+export const MONTHLY_FREE_QUOTA_LIMIT_GROUP = "segment:quota:free-5gb";
+export const MONTHLY_PLUS_QUOTA_LIMIT_GROUP = "segment:quota:plus-20gb";
+export const MONTHLY_UNLIMITED_BETA_GROUP = "segment:quota:unlimited-beta";
+const MONTHLY_QUOTA_GROUP_OPTIONS = [
+  { value: "", label: "不参与月度限流" },
+  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 5GB" },
+  { value: MONTHLY_PLUS_QUOTA_LIMIT_GROUP, label: "Plus 20GB" },
+  { value: MONTHLY_UNLIMITED_BETA_GROUP, label: "无限制（内测分组）" },
+] as const;
+type MonthlyQuotaGroup = (typeof MONTHLY_QUOTA_GROUP_OPTIONS)[number]["value"];
 
 const SEGMENTS: Segment[] = [
   {
@@ -131,6 +143,14 @@ const nameOf = (user: ManagedUser): string =>
 const hasSegment = (user: ManagedUser, segment: Segment): boolean =>
   (user.groups ?? []).includes(segment.value) ||
   LEGACY[segment.id].some((value) => (user.groups ?? []).includes(value));
+const monthlyQuotaGroupOf = (user: ManagedUser): MonthlyQuotaGroup =>
+  (
+    [
+      MONTHLY_UNLIMITED_BETA_GROUP,
+      MONTHLY_PLUS_QUOTA_LIMIT_GROUP,
+      MONTHLY_FREE_QUOTA_LIMIT_GROUP,
+    ] as const
+  ).find((value) => (user.groups ?? []).includes(value)) ?? "";
 const primarySegment = (user: ManagedUser): Segment =>
   SEGMENTS.find((segment) => segment.parent && hasSegment(user, segment)) ??
   SEGMENTS.find((segment) => hasSegment(user, segment)) ??
@@ -190,6 +210,7 @@ export function UserGroupManagement({
   const [segmentId, setSegmentId] = useState<SegmentId>("subscribed");
   const [selectedUserId, setSelectedUserId] = useState<string>();
   const [query, setQuery] = useState("");
+  const [quotaQuery, setQuotaQuery] = useState("");
   const [source, setSource] = useState<"all" | "manual" | "automatic">("all");
   const [override, setOverride] = useState(true);
   const [validFrom, setValidFrom] = useState("2026-09-04");
@@ -227,6 +248,17 @@ export function UserGroupManagement({
       }),
     [members, query, source],
   );
+  const quotaLimitUsers = useMemo(
+    () =>
+      data.filter((user) => {
+        if (!quotaQuery.trim()) return true;
+        const normalizedQuery = quotaQuery.trim().toLowerCase();
+        return [user.email, user.username, user.name, user.id]
+          .filter(Boolean)
+          .some((value) => value?.toLowerCase().includes(normalizedQuery));
+      }),
+    [data, quotaQuery],
+  );
   const selectedUser =
     data.find((user) => user.id === selectedUserId) ?? visibleUsers[0];
   const automatic = members.filter(
@@ -251,6 +283,18 @@ export function UserGroupManagement({
         ? [...base, parent.value, nextSegment.value]
         : [...base, nextSegment.value],
     );
+  };
+  const toggleMonthlyQuotaLimit = (
+    user: ManagedUser,
+    nextGroup: MonthlyQuotaGroup,
+  ) => {
+    if (!onGroupsChange || !canEditRoles) return;
+    const nextGroups = (user.groups ?? []).filter(
+      (group) =>
+        !MONTHLY_QUOTA_GROUP_OPTIONS.some((option) => option.value === group),
+    );
+    if (nextGroup) nextGroups.push(nextGroup);
+    onGroupsChange(user.id, nextGroups);
   };
   const createUser = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -384,6 +428,113 @@ export function UserGroupManagement({
             </button>
           </div>
         </header>
+        <section
+          aria-label="月度限流开关"
+          className="rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface-subtle)] p-4"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Gauge className="h-4 w-4 text-[var(--color-primary)]" />
+                <h3 className="text-sm font-semibold text-[var(--color-heading)]">
+                  月度限流开关
+                </h3>
+                {MONTHLY_QUOTA_GROUP_OPTIONS.slice(1).map((option) => (
+                  <span
+                    key={option.value}
+                    className="rounded-full bg-[var(--color-primary-muted)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)]"
+                  >
+                    {option.label}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-[var(--color-text-muted)]">
+                为用户选择月度额度档位；额度耗尽后暂停同步配置，不删除用户。
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs text-[var(--color-text-muted)]">
+              <span>
+                Free{" "}
+                {
+                  data.filter(
+                    (user) =>
+                      monthlyQuotaGroupOf(user) ===
+                      MONTHLY_FREE_QUOTA_LIMIT_GROUP,
+                  ).length
+                }
+              </span>
+              <span>
+                Plus{" "}
+                {
+                  data.filter(
+                    (user) =>
+                      monthlyQuotaGroupOf(user) ===
+                      MONTHLY_PLUS_QUOTA_LIMIT_GROUP,
+                  ).length
+                }
+              </span>
+              <span>
+                内测{" "}
+                {
+                  data.filter(
+                    (user) =>
+                      monthlyQuotaGroupOf(user) ===
+                      MONTHLY_UNLIMITED_BETA_GROUP,
+                  ).length
+                }
+              </span>
+            </div>
+          </div>
+          <label className="relative mt-3 block sm:max-w-[280px]">
+            <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              value={quotaQuery}
+              onChange={(event) => setQuotaQuery(event.target.value)}
+              placeholder="搜索月度额度用户"
+              className="w-full rounded-md border border-[color:var(--color-surface-border)] bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-[var(--color-primary)]"
+            />
+          </label>
+          <div className="mt-3 grid max-h-44 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+            {quotaLimitUsers.map((user) => {
+              const selectedGroup = monthlyQuotaGroupOf(user);
+              const disabled =
+                !canEditRoles || pending.has(user.id) || !onGroupsChange;
+              return (
+                <label
+                  key={user.id}
+                  className={`flex items-center justify-between gap-2 rounded-md border border-[color:var(--color-surface-border)] bg-white px-3 py-2 text-xs ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                >
+                  <span className="min-w-0 truncate text-[var(--color-text)]">
+                    {nameOf(user)}
+                  </span>
+                  <select
+                    value={selectedGroup}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      toggleMonthlyQuotaLimit(
+                        user,
+                        event.target.value as MonthlyQuotaGroup,
+                      )
+                    }
+                    aria-label={`月度限流分组 ${nameOf(user)}`}
+                    className="max-w-[150px] rounded border border-[color:var(--color-surface-border)] bg-white px-2 py-1 text-xs"
+                  >
+                    {MONTHLY_QUOTA_GROUP_OPTIONS.map((option) => (
+                      <option key={option.value || "none"} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              );
+            })}
+          </div>
+          {!isLoading && quotaLimitUsers.length === 0 ? (
+            <p className="mt-3 text-xs text-[var(--color-text-muted)]">
+              没有匹配的用户。
+            </p>
+          ) : null}
+        </section>
         <div className="grid min-h-[620px] grid-cols-1 divide-y divide-[color:var(--color-surface-border)] lg:grid-cols-[220px_minmax(0,1fr)_290px] lg:divide-x lg:divide-y-0">
           <aside className="py-3 lg:pr-4">
             <div className="mb-3 flex items-center justify-between px-2">

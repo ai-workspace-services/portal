@@ -55,6 +55,7 @@ import type {
 } from "../../lib/fetchAccountUsage";
 
 const DASH = "—";
+const DEFAULT_MONTHLY_QUOTA_BYTES = 5 * 1024 * 1024 * 1024;
 
 function pct(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -66,6 +67,21 @@ function bytesOrDash(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value) && value >= 0
     ? formatBytes(value)
     : DASH;
+}
+
+function currentPlanMaxQuota(usage?: AccountUsageSummary): number | undefined {
+  const reported = [
+    usage?.includedQuotaBytes,
+    usage?.billingProfile?.includedQuotaBytes,
+  ].find(
+    (value) => typeof value === "number" && Number.isFinite(value) && value > 0,
+  );
+  if (reported !== undefined) return reported;
+
+  const packageName = usage?.billingProfile?.packageName?.trim().toLowerCase();
+  return packageName === "default" || packageName === "free"
+    ? DEFAULT_MONTHLY_QUOTA_BYTES
+    : usage?.includedQuotaBytes;
 }
 
 function dateOrDash(value?: string | null): string {
@@ -498,6 +514,8 @@ export function QuotaCard({
   zh: boolean;
 }) {
   const percent = usage?.usagePercent;
+  const planName = usage?.billingProfile?.packageName || "default";
+  const planMaxQuota = currentPlanMaxQuota(usage);
   const quotaExhausted = usage?.quotaExhausted === true;
   const accessPaused =
     usage?.networkAccessState === "paused" ||
@@ -526,8 +544,9 @@ export function QuotaCard({
         title={zh ? "月度配额" : "Monthly quota"}
         actions={
           <XdsBadge dot={false}>
-            {zh ? "套餐" : "Plan"}{" "}
-            {usage?.billingProfile?.packageName || "default"}
+            {zh ? "套餐" : "Plan"} {planName} · {zh ? "最大流量" : "Max"}{" "}
+            {bytesOrDash(planMaxQuota)}
+            {zh ? " / 月" : " / month"}
           </XdsBadge>
         }
       />
@@ -538,8 +557,7 @@ export function QuotaCard({
             <span className="xds-unit">%</span>
           </div>
           <span className="xds-t-caption xds-t-mono">
-            {bytesOrDash(usage?.usedBytes)} /{" "}
-            {bytesOrDash(usage?.includedQuotaBytes)}
+            {bytesOrDash(usage?.usedBytes)} / {bytesOrDash(planMaxQuota)}
           </span>
         </div>
         <XdsMeter
