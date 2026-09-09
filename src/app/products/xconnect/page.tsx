@@ -156,7 +156,7 @@ const COPY = {
       {
         icon: Layers,
         t: "策略组与配额",
-        d: "按团队成员分配策略组与月度配额，超额自动降级而非直接断连。",
+        d: "按团队成员分配策略组与月度配额，额度耗尽后暂停用户配置同步，续期或调整后自动恢复。",
       },
     ],
     dlEyebrow: "Download",
@@ -185,7 +185,7 @@ const COPY = {
         sub: "评估与个人试用",
         amt: "¥0",
         per: " /月",
-        feats: ["每月 5 GB 高速流量", "用完自动降级 VPS 流量，不断线", "不承诺 SLA，社区支持"],
+        feats: ["每月 5 GB 高速流量", "额度用尽后暂停，续期自动恢复", "不承诺 SLA，社区支持"],
         cta: "继续使用",
         href: "/register",
         primary: false,
@@ -284,7 +284,7 @@ const COPY = {
       { icon: Lock, t: "Standard VLESS", d: "No proprietary client lock-in. Credentials rotate independently of account identity." },
       { icon: Activity, t: "Authoritative metering", d: "Usage is aggregated server-side by accounts, not by the local client — bills reconcile." },
       { icon: ShieldCheck, t: "MFA-gated billing", d: "Browsing stays open; payment, subscription and billing actions require a second factor." },
-      { icon: Layers, t: "Policy groups and quota", d: "Assign policy groups and monthly quota per member; overage degrades instead of cutting off." },
+      { icon: Layers, t: "Policy groups and quota", d: "Assign policy groups and monthly quota per member; user configuration sync pauses when quota is exhausted and resumes after renewal." },
     ],
     dlEyebrow: "Download",
     dlTitle: "Pick your platform",
@@ -305,7 +305,7 @@ const COPY = {
     priceLead:
       "Every plan maps to the same price configuration; purchases sync to your subscription record and are managed in the customer portal.",
     plans: [
-      { name: "Free", tag: "Current", tone: "neutral" as const, sub: "Evaluation and personal use", amt: "¥0", per: " /mo", feats: ["5 GB of accelerated traffic per month", "Seamless fallback to VPS traffic once spent", "No SLA, community support"], cta: "Stay on Free", href: "/register", primary: false },
+      { name: "Free", tag: "Current", tone: "neutral" as const, sub: "Evaluation and personal use", amt: "¥0", per: " /mo", feats: ["5 GB of accelerated traffic per month", "Pauses when quota is spent; restores on renewal", "No SLA, community support"], cta: "Stay on Free", href: "/register", primary: false },
       { name: "Pro", tag: "Recommended", tone: "info" as const, sub: "Individual devs and small teams", planId: "PRO-MONTHLY", yearlyPlanId: "PRO-YEARLY", per: " /mo", cta: "Upgrade to Pro", href: "/prices", primary: true },
       { name: "Team", tag: "Custom", tone: "neutral" as const, sub: "Teams needing policy groups and reconciliation", amt: "Custom", per: "", feats: ["Policy groups and per-member quota", "Usage export and invoice details", "Contractual SLA and dedicated delivery"], cta: "Talk to us", href: "/support", primary: false },
     ] as ProductPlan[],

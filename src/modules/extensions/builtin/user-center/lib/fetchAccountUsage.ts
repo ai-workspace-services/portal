@@ -20,6 +20,13 @@ export type AccountUsageSummary = {
   syncDelaySeconds?: number;
   suspendState?: string;
   throttleState?: string;
+  quotaExhausted?: boolean;
+  networkAccessState?: "active" | "paused" | "blocked";
+  networkAccessReason?:
+    | "quota_exhausted"
+    | "billing_suspended"
+    | "operator_paused"
+    | "";
   arrears?: boolean;
   billingProfile?: AccountBillingProfile;
 };

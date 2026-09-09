@@ -498,13 +498,36 @@ export function QuotaCard({
   zh: boolean;
 }) {
   const percent = usage?.usagePercent;
+  const quotaExhausted = usage?.quotaExhausted === true;
+  const accessPaused =
+    usage?.networkAccessState === "paused" ||
+    usage?.networkAccessState === "blocked";
+  const accessLabel = (() => {
+    switch (usage?.networkAccessReason) {
+      case "quota_exhausted":
+        return zh ? "额度已用尽 · 已暂停" : "Quota exhausted · Paused";
+      case "billing_suspended":
+        return zh ? "账务暂停" : "Billing suspended";
+      case "operator_paused":
+        return zh ? "管理员暂停" : "Operator paused";
+      default:
+        return usage?.arrears
+          ? zh
+            ? "欠费"
+            : "Arrears"
+          : zh
+            ? "正常"
+            : "Normal";
+    }
+  })();
   return (
     <XdsCard>
       <XdsCardHead
         title={zh ? "月度配额" : "Monthly quota"}
         actions={
           <XdsBadge dot={false}>
-            {zh ? "套餐" : "Plan"} {usage?.billingProfile?.packageName || "default"}
+            {zh ? "套餐" : "Plan"}{" "}
+            {usage?.billingProfile?.packageName || "default"}
           </XdsBadge>
         }
       />
@@ -515,7 +538,8 @@ export function QuotaCard({
             <span className="xds-unit">%</span>
           </div>
           <span className="xds-t-caption xds-t-mono">
-            {bytesOrDash(usage?.usedBytes)} / {bytesOrDash(usage?.includedQuotaBytes)}
+            {bytesOrDash(usage?.usedBytes)} /{" "}
+            {bytesOrDash(usage?.includedQuotaBytes)}
           </span>
         </div>
         <XdsMeter
@@ -525,12 +549,32 @@ export function QuotaCard({
         />
         <div className="xds-row-between" style={{ marginTop: 8 }}>
           <span className="xds-t-caption">
-            {zh ? "剩余" : "Remaining"} {bytesOrDash(usage?.remainingIncludedQuota)}
+            {zh ? "剩余" : "Remaining"}{" "}
+            {bytesOrDash(usage?.remainingIncludedQuota)}
           </span>
           <span className="xds-t-caption">
             {zh ? "本期重置" : "Resets"} {dateOrDash(usage?.periodEnd)}
           </span>
         </div>
+
+        {quotaExhausted ? (
+          <div
+            role="status"
+            className="xds-t-caption"
+            style={{
+              marginTop: 12,
+              padding: "10px 12px",
+              border: "1px solid var(--danger-border)",
+              borderRadius: "var(--r-md)",
+              background: "var(--danger-bg)",
+              color: "var(--danger)",
+            }}
+          >
+            {zh
+              ? "本月配额已用尽，用户配置同步已暂停。配额续期或调整后会自动恢复。"
+              : "This month’s quota is exhausted. User configuration sync is paused and restores automatically after renewal or adjustment."}
+          </div>
+        ) : null}
 
         <div className="xds-divider" style={{ margin: "20px 0" }} />
 
@@ -543,24 +587,31 @@ export function QuotaCard({
           </span>
         </div>
         <div className="xds-sec-row">
-          <span className="xds-t-caption">{zh ? "策略组" : "Policy groups"}</span>
+          <span className="xds-t-caption">
+            {zh ? "策略组" : "Policy groups"}
+          </span>
           <span className="xds-t-caption xds-subtle">
             {policy?.eligibleNodeGroups?.join(", ") || DASH}
           </span>
         </div>
         <div className="xds-sec-row">
-          <span className="xds-t-caption">{zh ? "同步状态" : "Sync state"}</span>
+          <span className="xds-t-caption">
+            {zh ? "同步状态" : "Sync state"}
+          </span>
           {usage ? (
-            <XdsBadge tone={usage.arrears ? "danger" : "success"}>
-              {usage.arrears ? (zh ? "欠费" : "Arrears") : zh ? "正常" : "Normal"}
-              {usage.throttleState ? ` · ${usage.throttleState}` : ""}
+            <XdsBadge
+              tone={accessPaused || usage.arrears ? "danger" : "success"}
+            >
+              {accessLabel}
             </XdsBadge>
           ) : (
             <span className="xds-t-caption xds-subtle">{DASH}</span>
           )}
         </div>
         <div className="xds-sec-row">
-          <span className="xds-t-caption">{zh ? "统计延迟" : "Sync delay"}</span>
+          <span className="xds-t-caption">
+            {zh ? "统计延迟" : "Sync delay"}
+          </span>
           <span className="xds-t-mono xds-t-caption">
             {typeof usage?.syncDelaySeconds === "number"
               ? `~${usage.syncDelaySeconds} s`
