@@ -173,6 +173,42 @@ function removeEmptyXhttpPadding(uri: string): string {
   return `${base}${params.length > 0 ? `?${params.join('&')}` : ''}${fragment}`
 }
 
+/**
+ * The API may return either a URI template or an already-rendered URI. The
+ * latter still contains the runtime node hostname, so changing only
+ * `node.address` is not enough when the public regional entrypoint differs
+ * from the concrete node id. Parse the URI and replace every endpoint field
+ * that clients use for the connection.
+ */
+function normalizeRenderedVlessUri(
+  uri: string,
+  uuid: string,
+  node: VlessNode,
+  transport: VlessTransport,
+): string {
+  try {
+    const parsed = new URL(uri)
+    const host = node.address.trim()
+    const serverName = (node.server_name ?? host).trim() || host
+
+    parsed.username = uuid
+    parsed.hostname = host
+    parsed.port = String(
+      resolveTransportPort(node, transport, transport === 'xhttp' ? 443 : 1443),
+    )
+    parsed.searchParams.set('sni', serverName)
+    if (transport === 'xhttp') {
+      parsed.searchParams.set('host', host)
+    }
+
+    return parsed.toString()
+  } catch {
+    // Keep the server-provided URI if an upstream payload is malformed. The
+    // caller will still have the structured node fields for diagnostics.
+    return uri
+  }
+}
+
 export function buildVlessUri(rawUuid: string | null | undefined, node?: VlessNode): string | null {
   const uuid = (rawUuid ?? '').trim()
   if (!uuid) {
@@ -206,7 +242,7 @@ export function buildVlessUri(rawUuid: string | null | undefined, node?: VlessNo
   const label = node.name || node.address
   const flow = node.flow ?? (transport === 'tcp' ? VLESS_DEFAULTS.tcpFlow : '')
 
-  return renderVlessUriFromScheme(schemeTemplate, {
+  const rendered = renderVlessUriFromScheme(schemeTemplate, {
     UUID: uuid,
     DOMAIN: host,
     NODE: host,
@@ -217,6 +253,10 @@ export function buildVlessUri(rawUuid: string | null | undefined, node?: VlessNo
     FLOW: flow || VLESS_DEFAULTS.tcpFlow,
     TAG: encodeURIComponent(label),
   })
+
+  return rendered
+    ? normalizeRenderedVlessUri(rendered, uuid, node, transport)
+    : null
 }
 
 export function buildVlessConfig(rawUuid: string | null | undefined, node?: VlessNode): XrayConfig | null {
@@ -270,4 +310,3 @@ export function buildVlessConfig(rawUuid: string | null | undefined, node?: Vles
 export function serializeConfigForDownload(config: XrayConfig): string {
   return `${JSON.stringify(config, null, 2)}\n`
 }
-
