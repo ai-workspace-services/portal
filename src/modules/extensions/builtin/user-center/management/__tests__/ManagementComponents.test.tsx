@@ -5,7 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 import OverviewCards from "../components/OverviewCards";
 import TrendChart from "../components/TrendChart";
 import PermissionMatrixEditor from "../components/PermissionMatrixEditor";
-import UserGroupManagement from "../components/UserGroupManagement";
+import UserGroupManagement, {
+  MONTHLY_FREE_QUOTA_LIMIT_GROUP,
+  MONTHLY_PLUS_QUOTA_LIMIT_GROUP,
+  MONTHLY_UNLIMITED_BETA_GROUP,
+} from "../components/UserGroupManagement";
 
 describe("Management dashboard components", () => {
   it("renders loading state for overview cards", () => {
@@ -188,5 +192,50 @@ describe("Management dashboard components", () => {
 
     expect(screen.getAllByText("fallback@example.com")).toHaveLength(2);
     expect(screen.getByText("活跃")).toBeInTheDocument();
+  });
+
+  it("changes the monthly quota group without dropping unrelated groups", () => {
+    const handleGroupsChange = vi.fn();
+
+    render(
+      <UserGroupManagement
+        users={[
+          {
+            id: "1",
+            email: "free@example.com",
+            groups: ["Admin"],
+          },
+        ]}
+        canEditRoles
+        onGroupsChange={handleGroupsChange}
+      />,
+    );
+
+    const quotaGroup = screen.getByRole("combobox", {
+      name: "月度限流分组 free@example.com",
+    });
+    fireEvent.change(quotaGroup, {
+      target: { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP },
+    });
+    expect(handleGroupsChange).toHaveBeenLastCalledWith("1", [
+      "Admin",
+      MONTHLY_FREE_QUOTA_LIMIT_GROUP,
+    ]);
+
+    fireEvent.change(quotaGroup, {
+      target: { value: MONTHLY_PLUS_QUOTA_LIMIT_GROUP },
+    });
+    expect(handleGroupsChange).toHaveBeenLastCalledWith("1", [
+      "Admin",
+      MONTHLY_PLUS_QUOTA_LIMIT_GROUP,
+    ]);
+
+    fireEvent.change(quotaGroup, {
+      target: { value: MONTHLY_UNLIMITED_BETA_GROUP },
+    });
+    expect(handleGroupsChange).toHaveBeenLastCalledWith("1", [
+      "Admin",
+      MONTHLY_UNLIMITED_BETA_GROUP,
+    ]);
   });
 });
