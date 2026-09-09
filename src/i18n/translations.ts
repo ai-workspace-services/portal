@@ -1088,7 +1088,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
       },
       items: {
         dashboard: 'Overview',
-        agents: 'Agents',
+        agents: 'Regional entry pools',
         apis: 'APIs',
         accounts: 'Accounts',
         subscription: 'Subscription',
@@ -1967,7 +1967,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
       },
       items: {
         dashboard: '总览',
-        agents: '运行节点',
+        agents: '区域入口池',
         apis: '接口集成',
         accounts: '账户中心',
         subscription: '订阅计划',
