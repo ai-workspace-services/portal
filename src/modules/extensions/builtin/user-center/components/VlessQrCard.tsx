@@ -15,7 +15,7 @@ import {
   VlessTransport,
 } from '../lib/vless'
 import { fetchAgentNodes } from '../lib/fetchAgentNodes'
-import { regionalNodeOptions } from '../lib/regionalPools'
+import { regionForNode, regionalNodeOptions } from '../lib/regionalPools'
 
 export type VlessQrCopy = {
   label: string
@@ -82,6 +82,12 @@ export default function VlessQrCard({
   }, [allNodes])
   const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes])
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null)
+  const preferredRegionCode = useMemo(
+    () => nodes.map(regionForNode).find(Boolean)?.code
+      ?? regionOptions[0]?.pool.code
+      ?? null,
+    [nodes, regionOptions],
+  )
   const [preferredTransport, setPreferredTransport] = useState<VlessTransport>(() =>
     resolveInitialTransport(defaultTransport, transportOptions),
   )
@@ -102,10 +108,20 @@ export default function VlessQrCard({
     })
   }, [defaultTransport, transportOptions])
 
+  useEffect(() => {
+    if (selectedRegionCode && regionOptions.some(({ pool }) => pool.code === selectedRegionCode)) {
+      return
+    }
+    if (selectedRegionCode !== preferredRegionCode) {
+      setSelectedRegionCode(preferredRegionCode)
+    }
+  }, [preferredRegionCode, regionOptions, selectedRegionCode])
+
   const rawNode = useMemo(() => {
-    return regionOptions.find(({ pool }) => pool.code === selectedRegionCode)?.node
+    const activeRegionCode = selectedRegionCode ?? preferredRegionCode
+    return regionOptions.find(({ pool }) => pool.code === activeRegionCode)?.node
       ?? regionOptions[0]?.node
-  }, [regionOptions, selectedRegionCode])
+  }, [preferredRegionCode, regionOptions, selectedRegionCode])
 
   const effectiveNode = useMemo((): VlessNode | undefined => {
     if (!rawNode) return undefined

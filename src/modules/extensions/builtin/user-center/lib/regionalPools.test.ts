@@ -41,4 +41,23 @@ describe("regional pools", () => {
       ),
     ).toBe(true);
   });
+
+  it("keeps every regional entry selectable when only one runtime node is reported", () => {
+    const options = regionalNodeOptions([
+      node("US-XHTTP", "runtime-us.internal"),
+    ]);
+
+    expect(options.map(({ pool }) => pool.code)).toEqual([
+      "jpn-tky",
+      "us-ca",
+      "hk",
+      "ph-mnl",
+    ]);
+    expect(options.map(({ node: option }) => option.address)).toEqual([
+      "jp-xconnect.svc.plus",
+      "us-xconnect.svc.plus",
+      "hk-xconnect.svc.plus",
+      "ph-xconnect.svc.plus",
+    ]);
+  });
 });

@@ -106,6 +106,8 @@ describe("QuotaCard", () => {
     );
 
     expect(screen.getByText("VLESS 连接")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "JP 区域" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "HK 区域" })).toBeInTheDocument();
     await waitFor(() => {
       expect(toDataURLMock).toHaveBeenCalledWith(
         expect.stringContaining("@us-xconnect.svc.plus"),

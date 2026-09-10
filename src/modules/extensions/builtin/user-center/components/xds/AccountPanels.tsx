@@ -46,6 +46,7 @@ import {
   type VlessNode,
 } from "../../lib/vless";
 import {
+  regionForNode,
   regionalNodeOptions,
   XCONNECT_REGIONAL_POOLS,
 } from "../../lib/regionalPools";
@@ -323,18 +324,30 @@ export function VlessConnectionCard({
 }) {
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
   const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes]);
+  const preferredRegionCode = useMemo(
+    () =>
+      nodes.map(regionForNode).find(Boolean)?.code ??
+      regionOptions[0]?.pool.code ??
+      null,
+    [nodes, regionOptions],
+  );
   const useCompactRegionSelect = regionOptions.length > 4;
+  const activeRegionCode = selectedRegionCode ?? preferredRegionCode;
   const node = useMemo(() => {
-    return regionOptions.find(({ pool }) => pool.code === selectedRegionCode)?.node ?? regionOptions[0]?.node;
-  }, [regionOptions, selectedRegionCode]);
+    return regionOptions.find(({ pool }) => pool.code === activeRegionCode)?.node ?? regionOptions[0]?.node;
+  }, [activeRegionCode, regionOptions]);
   useEffect(() => {
-    const currentRegion = regionOptions.find(({ node: candidate }) => candidate === node)?.pool.code;
-    if (!currentRegion) {
+    if (selectedRegionCode && regionOptions.some(({ pool }) => pool.code === selectedRegionCode)) {
+      return;
+    }
+    if (!preferredRegionCode) {
       setSelectedRegionCode(null);
       return;
     }
-    if (selectedRegionCode !== currentRegion) setSelectedRegionCode(currentRegion);
-  }, [node, regionOptions, selectedRegionCode]);
+    if (selectedRegionCode !== preferredRegionCode) {
+      setSelectedRegionCode(preferredRegionCode);
+    }
+  }, [preferredRegionCode, regionOptions, selectedRegionCode]);
   const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);

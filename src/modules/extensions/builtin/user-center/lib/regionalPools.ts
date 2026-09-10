@@ -71,6 +71,8 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
   pool: RegionalPool;
   node: VlessNode;
 }> {
+  if (nodes.length === 0) return [];
+
   const usedRegions = new Set<string>();
   const pendingNodes: VlessNode[] = [];
   const options: Array<{ pool: RegionalPool; node: VlessNode }> = [];
@@ -93,6 +95,16 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
     if (!pool) break;
     usedRegions.add(pool.code);
     options.push({ pool, node: withRegionalEntry(node, pool) });
+  }
+
+  // Regional entries are fixed public endpoints. A restarted accounts service
+  // can temporarily report only one live agent, but that agent still carries
+  // the transport template needed to build every regional URI.
+  const template = nodes[0];
+  for (const pool of XCONNECT_REGIONAL_POOLS) {
+    if (usedRegions.has(pool.code)) continue;
+    usedRegions.add(pool.code);
+    options.push({ pool, node: withRegionalEntry(template, pool) });
   }
 
   return XCONNECT_REGIONAL_POOLS.flatMap((pool) => {
