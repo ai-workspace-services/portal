@@ -43,19 +43,35 @@ const REGION_ALIASES: ReadonlyArray<{
 }> = [
   {
     pool: XCONNECT_REGIONAL_POOLS[0],
-    aliases: ["jpn-tky", "jp-x", "jp_", "tokyo", "japan"],
+    aliases: ["jpn-tky", "jp-x", "jp_", "prod-jp", "tokyo", "japan"],
   },
   {
     pool: XCONNECT_REGIONAL_POOLS[1],
-    aliases: ["us-ca", "us-x", "us_", "california", "united states", "america"],
+    aliases: [
+      "us-ca",
+      "us-x",
+      "us_",
+      "prod-us",
+      "california",
+      "united states",
+      "america",
+    ],
   },
   {
     pool: XCONNECT_REGIONAL_POOLS[2],
-    aliases: ["hk-x", "hk_", "hong kong", "hongkong"],
+    aliases: ["hk-x", "hk_", "prod-hk", "hong kong", "hongkong"],
   },
   {
     pool: XCONNECT_REGIONAL_POOLS[3],
-    aliases: ["ph-mnl", "ph-x", "ph_", "manila", "philippines"],
+    aliases: [
+      "ph-mnl",
+      "ph-x",
+      "ph_",
+      "prod-ph",
+      "ph-surfercloud",
+      "manila",
+      "philippines",
+    ],
   },
 ];
 
@@ -72,25 +88,14 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
   node: VlessNode;
 }> {
   const usedRegions = new Set<string>();
-  const pendingNodes: VlessNode[] = [];
   const options: Array<{ pool: RegionalPool; node: VlessNode }> = [];
 
   for (const node of nodes) {
     const pool = regionForNode(node);
     if (!pool) {
-      pendingNodes.push(node);
       continue;
     }
     if (usedRegions.has(pool.code)) continue;
-    usedRegions.add(pool.code);
-    options.push({ pool, node: withRegionalEntry(node, pool) });
-  }
-
-  for (const node of pendingNodes) {
-    const pool = XCONNECT_REGIONAL_POOLS.find(
-      (candidate) => !usedRegions.has(candidate.code),
-    );
-    if (!pool) break;
     usedRegions.add(pool.code);
     options.push({ pool, node: withRegionalEntry(node, pool) });
   }
@@ -106,7 +111,7 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
 function withRegionalEntry(node: VlessNode, pool: RegionalPool): VlessNode {
   return {
     ...node,
-    name: pool.shortCode,
+    name: `${pool.shortCode}-Connect`,
     address: pool.entry,
     server_name: pool.entry,
   };

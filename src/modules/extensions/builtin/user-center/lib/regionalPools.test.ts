@@ -40,5 +40,23 @@ describe("regional pools", () => {
         ({ node: option }) => option.server_name === option.address,
       ),
     ).toBe(true);
+    expect(options.map(({ node: option }) => option.name)).toEqual([
+      "JP-Connect",
+      "US-Connect",
+      "HK-Connect",
+      "PH-Connect",
+    ]);
+  });
+
+  it("does not assign an unknown runtime node to an arbitrary region", () => {
+    expect(
+      regionalNodeOptions([node("unclassified-edge", "edge.internal")]),
+    ).toEqual([]);
+  });
+
+  it("recognizes the PH manually provisioned node", () => {
+    expect(
+      regionForNode(node("ph-surfercloud-01", "165.154.233.239"))?.code,
+    ).toBe("ph-mnl");
   });
 });
