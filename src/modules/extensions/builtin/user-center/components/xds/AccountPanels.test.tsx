@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { QuotaCard } from "./AccountPanels";
 import { VlessConnectionCard } from "./AccountPanels";
+import type { VlessNode } from "../../lib/vless";
 
 const { toDataURLMock } = vi.hoisted(() => ({
   toDataURLMock: vi.fn(() => Promise.resolve("data:image/png;base64,test")),
@@ -112,5 +113,44 @@ describe("QuotaCard", () => {
         expect.any(Object),
       );
     });
+  });
+});
+
+describe("VlessConnectionCard region selector", () => {
+  const regionalNode = (shortCode: string): VlessNode => ({
+    name: `${shortCode}-XHTTP`,
+    address: `runtime-${shortCode.toLowerCase()}.internal`,
+    port: 443,
+    transport: "xhttp",
+    uri_scheme_xhttp:
+      "vless://${UUID}@${DOMAIN}:443?type=xhttp&sni=${SNI}#${TAG}",
+  });
+
+  const renderWithRegions = (shortCodes: string[]) =>
+    render(
+      <VlessConnectionCard
+        proxyUuid="11111111-1111-4111-8111-111111111111"
+        nodes={shortCodes.map(regionalNode)}
+        zh
+      />,
+    );
+
+  it("uses a dropdown once a fourth region would wrap the pill row", () => {
+    renderWithRegions(["JP", "US", "HK", "PH"]);
+
+    const select = screen.getByRole("combobox", { name: "选择节点区域" });
+    expect(select).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent),
+    ).toEqual(["JP 区域", "US 区域", "HK 区域", "PH 区域"]);
+    // The pills and the select are alternatives, never both at once.
+    expect(screen.queryByRole("button", { name: "HK 区域" })).toBeNull();
+  });
+
+  it("keeps pills while the regions still fit on one row", () => {
+    renderWithRegions(["JP", "US", "HK"]);
+
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.getByRole("button", { name: "HK 区域" })).toBeInTheDocument();
   });
 });

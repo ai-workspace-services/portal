@@ -56,6 +56,8 @@ import type {
 
 const DASH = "—";
 const DEFAULT_MONTHLY_QUOTA_BYTES = 5 * 1024 * 1024 * 1024;
+// Region pills stay on one row up to this many; beyond it the panel uses a select.
+const REGION_PILL_LIMIT = 3;
 
 function pct(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -323,7 +325,10 @@ export function VlessConnectionCard({
 }) {
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
   const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes]);
-  const useCompactRegionSelect = regionOptions.length > 4;
+  // The pill row fits three regions on one line at the panel's width. A fourth
+  // wraps onto a line of its own and reads as a stray control rather than part
+  // of the group, so hand the choice to the select from four regions up.
+  const useCompactRegionSelect = regionOptions.length > REGION_PILL_LIMIT;
   const node = useMemo(() => {
     return regionOptions.find(({ pool }) => pool.code === selectedRegionCode)?.node ?? regionOptions[0]?.node;
   }, [regionOptions, selectedRegionCode]);
