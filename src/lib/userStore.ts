@@ -49,6 +49,14 @@ export type SessionUser = User | null
 type UserStore = {
   user: User | null
   isLoading: boolean
+  /**
+   * Why the session resolved to no user, when the BFF gave a reason.
+   *
+   * A null user on its own cannot tell "signed out" apart from "signed in,
+   * but this account is blocked" -- and the route guards treat the two the
+   * same, which turned a suspended account into a silent bounce to /login.
+   */
+  sessionError: string | null
   setUser: (user: User | null) => void
   clearUser: () => void
   hydrateFromAPI: () => Promise<User | null>
@@ -83,7 +91,12 @@ function normalizeRole(input?: string | null): UserRole {
   return KNOWN_ROLE_MAP[normalized] ?? 'user'
 }
 
-async function fetchSessionUser(): Promise<User | null> {
+type SessionResolution = {
+  user: User | null
+  error: string | null
+}
+
+async function fetchSessionUser(): Promise<SessionResolution> {
   try {
     const response = await fetch('/api/auth/session', {
       credentials: 'include',
@@ -94,10 +107,11 @@ async function fetchSessionUser(): Promise<User | null> {
     })
 
     if (!response.ok) {
-      return null
+      return { user: null, error: 'session_unavailable' }
     }
 
     const payload = (await response.json()) as {
+      error?: string | null
       user?: {
         id?: string
         uuid?: string
@@ -126,9 +140,14 @@ async function fetchSessionUser(): Promise<User | null> {
       } | null
     }
 
+    const resolutionError =
+      typeof payload?.error === 'string' && payload.error.trim().length > 0
+        ? payload.error.trim()
+        : null
+
     const sessionUser = payload?.user
     if (!sessionUser) {
-      return null
+      return { user: null, error: resolutionError }
     }
 
     const { id, uuid, proxyUuid, email, name, username, mfaEnabled, mfa, mfaPending, role, groups, permissions } = sessionUser
@@ -140,7 +159,7 @@ async function fetchSessionUser(): Promise<User | null> {
           : ''
 
     if (!identifier) {
-      return null
+      return { user: null, error: resolutionError ?? 'session_user_unidentified' }
     }
     const normalizedName = typeof name === 'string' && name.trim().length > 0 ? name.trim() : undefined
     const normalizedUsername =
@@ -227,44 +246,48 @@ async function fetchSessionUser(): Promise<User | null> {
       : undefined
 
     return {
-      id: identifier,
-      uuid: identifier,
-      proxyUuid: typeof proxyUuid === 'string' ? proxyUuid.trim() : '',
-      email: publicEmail,
-      name: normalizedName,
-      username: normalizedUsername ?? publicEmail,
-      mfaEnabled: Boolean(mfaEnabled ?? mfa?.totpEnabled),
-      mfaPending: Boolean(mfaPending ?? mfa?.totpPending) && !Boolean(mfaEnabled ?? mfa?.totpEnabled),
-      emailVerified: Boolean(sessionUser.emailVerified),
-      passwordSet: Boolean(sessionUser.passwordSet),
-      serviceReadiness: normalizeServiceReadiness(sessionUser.serviceReadiness) ?? undefined,
-      mfa: normalizedMfa,
-      role: normalizedRole,
-      groups: normalizedGroups,
-      permissions: normalizedPermissions,
-      isUser: normalizedRole === 'user',
-      isOperator: normalizedRole === 'operator',
-      isAdmin: normalizedRole === 'admin',
-      isReadOnly: normalizedReadOnly,
-      tenantId: normalizedTenantId,
-      tenants: normalizedTenants,
+      error: null,
+      user: {
+        id: identifier,
+        uuid: identifier,
+        proxyUuid: typeof proxyUuid === 'string' ? proxyUuid.trim() : '',
+        email: publicEmail,
+        name: normalizedName,
+        username: normalizedUsername ?? publicEmail,
+        mfaEnabled: Boolean(mfaEnabled ?? mfa?.totpEnabled),
+        mfaPending: Boolean(mfaPending ?? mfa?.totpPending) && !Boolean(mfaEnabled ?? mfa?.totpEnabled),
+        emailVerified: Boolean(sessionUser.emailVerified),
+        passwordSet: Boolean(sessionUser.passwordSet),
+        serviceReadiness: normalizeServiceReadiness(sessionUser.serviceReadiness) ?? undefined,
+        mfa: normalizedMfa,
+        role: normalizedRole,
+        groups: normalizedGroups,
+        permissions: normalizedPermissions,
+        isUser: normalizedRole === 'user',
+        isOperator: normalizedRole === 'operator',
+        isAdmin: normalizedRole === 'admin',
+        isReadOnly: normalizedReadOnly,
+        tenantId: normalizedTenantId,
+        tenants: normalizedTenants,
+      },
     }
   } catch (error) {
     console.warn('Failed to resolve user session', error)
-    return null
+    return { user: null, error: 'session_unavailable' }
   }
 }
 
 export const useUserStore = create<UserStore>((set, get) => ({
   user: null,
   isLoading: true,
-  setUser: (user) => set({ user }),
-  clearUser: () => set({ user: null }),
+  sessionError: null,
+  setUser: (user) => set({ user, sessionError: null }),
+  clearUser: () => set({ user: null, sessionError: null }),
   hydrateFromAPI: async () => {
     set({ isLoading: true })
-    const sessionUser = await fetchSessionUser()
-    set({ user: sessionUser, isLoading: false })
-    return sessionUser
+    const { user, error } = await fetchSessionUser()
+    set({ user, sessionError: error, isLoading: false })
+    return user
   },
   refresh: async () => get().hydrateFromAPI(),
   login: async () => {
@@ -279,7 +302,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     } catch (error) {
       console.warn('Failed to clear user session', error)
     }
-    set({ user: null, isLoading: false })
+    set({ user: null, sessionError: null, isLoading: false })
   },
 }))
 

@@ -35,6 +35,7 @@ export default function LoginContent({
 }: LoginContentProps) {
   const { language } = useLanguage();
   const t = translations[language].auth.login;
+  const pageCopy = translations[language].login;
   const alerts = t.alerts;
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -211,10 +212,24 @@ export default function LoginContent({
       user_not_found: alerts.userNotFound ?? alerts.genericError,
       credentials_in_query: alerts.genericError,
       invalid_request: alerts.genericError,
+      // Codes a route guard forwards after the session resolved to no user.
+      // These arrive with working credentials, so the invalid-credentials
+      // copy would send the user to reset a password that is fine.
+      account_suspended: pageCopy.accountSuspended,
+      session_unavailable: pageCopy.serviceUnavailable ?? alerts.genericError,
+      session_user_unidentified:
+        pageCopy.serviceUnavailable ?? alerts.genericError,
     };
     const message = errorMap[normalizedError] ?? alerts.genericError;
     return { type: "error", message } as const;
-  }, [alerts, errorParam, normalize, registeredParam, setupMfaParam]);
+  }, [
+    alerts,
+    errorParam,
+    normalize,
+    pageCopy,
+    registeredParam,
+    setupMfaParam,
+  ]);
 
   const [alert, setAlert] = useState(initialAlert);
   const [isSubmitting, setIsSubmitting] = useState(false);
