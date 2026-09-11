@@ -64,9 +64,15 @@ function normalizeRole(role: unknown): AuthenticatedRole | null {
   }
   if (
     normalized === "user" ||
+    normalized === "member" ||
     normalized === "operator" ||
-    normalized === "admin"
+    normalized === "ops" ||
+    normalized === "admin" ||
+    normalized === "administrator"
   ) {
+    if (normalized === "member") return "user";
+    if (normalized === "ops") return "operator";
+    if (normalized === "administrator") return "admin";
     return normalized;
   }
   return null;
