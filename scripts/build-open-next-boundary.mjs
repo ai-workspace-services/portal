@@ -21,6 +21,17 @@ const boundaryConfig = cloudflareConfig.boundaries?.[boundary];
 if (!environmentConfig || !boundaryConfig) {
   throw new Error(`Cloudflare boundary config is missing environment=${deploymentEnvironment} boundary=${boundary}`);
 }
+// console_host was previously resolved and validated here, then discarded:
+// nothing read it after this point, so every environment's build fell
+// through to consoleNavigation.ts's hardcoded prod origin. A UAT build
+// linked its own login/register/panel hrefs at https://console.svc.plus --
+// the real PROD console -- so a UAT visitor following one left UAT
+// entirely. Failing loudly here (rather than letting undefined flow into
+// NEXT_PUBLIC_CONSOLE_HOST) keeps that class of bug from recurring under a
+// different name.
+if (!environmentConfig.console_host) {
+  throw new Error(`Cloudflare boundary config is missing console_host for environment=${deploymentEnvironment}`);
+}
 
 // 页面归属只有一份真相：GitOps EdgeRoutingConfig 里的 route_suffixes，
 // 也就是 frontend-router 实际分发用的那张表。以前这里另抄了一份目录前缀清单，
@@ -97,10 +108,17 @@ await writeFile(
     `  generateBuildId: async () => "${boundary}-${releaseId()}",`,
     // 客户端要知道「我是哪个 boundary」和「哪个前缀归谁」，BoundaryLink 才能在
     // 跨界时退回原生 <a>。单体构建不写这两个变量，于是全站继续走 next/link。
+    //
+    // NEXT_PUBLIC_CONSOLE_HOST is this same per-environment fact for the
+    // *target* of an <a> that crosses to the console boundary: which
+    // console_host it should land on. Same reasoning applies -- a monolith
+    // build gets none of these three and consoleNavigation.ts leaves such
+    // hrefs untouched (same-origin, no cross-domain concept applies there).
     "  env: {",
     "    ...(baseConfig.env ?? {}),",
     `    NEXT_PUBLIC_SSR_BOUNDARY: ${JSON.stringify(boundary)},`,
     `    NEXT_PUBLIC_SSR_BOUNDARY_ROUTES: ${JSON.stringify(JSON.stringify(boundaryRoutes))},`,
+    `    NEXT_PUBLIC_CONSOLE_HOST: ${JSON.stringify(environmentConfig.console_host)},`,
     "  },",
     "};",
     "",
