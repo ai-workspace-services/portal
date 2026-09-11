@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { regionalNodeOptions, regionForNode } from "./regionalPools";
+import {
+  regionalNodeOptions,
+  regionForNode,
+  XCONNECT_REGIONAL_POOLS,
+} from "./regionalPools";
 import type { VlessNode } from "./vless";
 
 const node = (name: string, address: string): VlessNode => ({
@@ -58,5 +62,28 @@ describe("regional pools", () => {
     expect(
       regionForNode(node("ph-surfercloud-01", "165.154.233.239"))?.code,
     ).toBe("ph-mnl");
+  });
+
+  it("declares an explicit open-to-users state for every region", () => {
+    for (const pool of XCONNECT_REGIONAL_POOLS) {
+      expect(typeof pool.openToUsers).toBe("boolean");
+    }
+  });
+
+  // Derived from the declaration rather than hard-coded, so closing a region
+  // in regionalPools.ts keeps this test meaningful instead of breaking it.
+  it("offers exactly the regions marked open to users", () => {
+    const options = regionalNodeOptions(
+      XCONNECT_REGIONAL_POOLS.map((pool) =>
+        node(pool.shortCode, `runtime-${pool.shortCode.toLowerCase()}-x.internal`),
+      ),
+    );
+
+    expect(options.map(({ pool }) => pool.code)).toEqual(
+      XCONNECT_REGIONAL_POOLS.filter((pool) => pool.openToUsers).map(
+        (pool) => pool.code,
+      ),
+    );
+    expect(options.every(({ pool }) => pool.openToUsers)).toBe(true);
   });
 });

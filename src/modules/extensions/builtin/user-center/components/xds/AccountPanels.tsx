@@ -732,8 +732,8 @@ export function NodesTable({ zh }: { zh: boolean }) {
         title={zh ? "区域入口" : "Regional entry points"}
         description={
           zh
-            ? "仅展示区域入口域名与 pool 数量，不展示具体运行节点。"
-            : "Shows regional entry domains and pool counts only; individual runtime nodes are not displayed."
+            ? "仅展示区域入口域名、开放状态与 pool 数量，不展示具体运行节点。未开放的区域不会出现在用户的连接选择器中。"
+            : "Shows regional entry domains, whether each is open to users, and pool counts only; individual runtime nodes are not displayed. A closed region is not offered in the user connection selector."
         }
         actions={
           <XdsBadge dot={false}>{XCONNECT_REGIONAL_POOLS.length}</XdsBadge>
@@ -746,6 +746,7 @@ export function NodesTable({ zh }: { zh: boolean }) {
               <th>{zh ? "区域" : "Region"}</th>
               <th>{zh ? "区域代码" : "Region code"}</th>
               <th>{zh ? "区域入口" : "Regional entry point"}</th>
+              <th>{zh ? "是否向用户开放" : "Open to users"}</th>
               <th style={{ textAlign: "right" }}>{zh ? "Pool 数量" : "Pools"}</th>
             </tr>
           </thead>
@@ -755,6 +756,17 @@ export function NodesTable({ zh }: { zh: boolean }) {
                 <td style={{ fontWeight: 500 }}>{zh ? pool.zhName : pool.enName}</td>
                 <td className="xds-t-mono xds-subtle">{pool.code}</td>
                 <td className="xds-t-mono xds-subtle">{pool.entry}</td>
+                <td>
+                  <XdsBadge tone={pool.openToUsers ? "success" : "neutral"}>
+                    {pool.openToUsers
+                      ? zh
+                        ? "已开放"
+                        : "Open"
+                      : zh
+                        ? "未开放"
+                        : "Closed"}
+                  </XdsBadge>
+                </td>
                 <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
               </tr>
             ))}
