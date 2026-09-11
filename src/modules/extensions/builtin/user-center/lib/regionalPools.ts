@@ -1,5 +1,10 @@
 import type { VlessNode } from "./vless";
 
+// openToUsers decides whether a region is offered in the end-user VLESS
+// selector. The admin page at /panel/agent renders it as a column so the
+// operator view and what users can actually pick never drift apart. Closing a
+// region is a deliberate edit here followed by a release; there is no runtime
+// switch behind this table.
 export const XCONNECT_REGIONAL_POOLS = [
   {
     code: "jpn-tky",
@@ -8,6 +13,7 @@ export const XCONNECT_REGIONAL_POOLS = [
     enName: "Japan",
     entry: "jp-xconnect.svc.plus",
     poolCount: 1,
+    openToUsers: true,
   },
   {
     code: "us-ca",
@@ -16,6 +22,7 @@ export const XCONNECT_REGIONAL_POOLS = [
     enName: "United States",
     entry: "us-xconnect.svc.plus",
     poolCount: 1,
+    openToUsers: true,
   },
   {
     code: "hk",
@@ -24,6 +31,7 @@ export const XCONNECT_REGIONAL_POOLS = [
     enName: "Hong Kong",
     entry: "hk-xconnect.svc.plus",
     poolCount: 1,
+    openToUsers: true,
   },
   {
     code: "ph-mnl",
@@ -32,6 +40,7 @@ export const XCONNECT_REGIONAL_POOLS = [
     enName: "Philippines",
     entry: "ph-xconnect.svc.plus",
     poolCount: 1,
+    openToUsers: true,
   },
 ] as const;
 
@@ -95,6 +104,10 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
     if (!pool) {
       continue;
     }
+    // A closed region still has a live node and still resolves; it just must
+    // not be offered. Filtering here keeps every caller of this function --
+    // the selector, the URI builder and the QR code -- on the same list.
+    if (!pool.openToUsers) continue;
     if (usedRegions.has(pool.code)) continue;
     usedRegions.add(pool.code);
     options.push({ pool, node: withRegionalEntry(node, pool) });
