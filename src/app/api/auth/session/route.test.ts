@@ -189,4 +189,32 @@ describe("/api/auth/session", () => {
     });
     expect(clearsSessionCookie(response)).toBe(true);
   });
+
+  it("accepts the default member role used by newly created accounts", async () => {
+    withSessionCookie();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            user: {
+              id: "new-user-1",
+              email: "new-user@example.com",
+              role: "member",
+              username: "new-user",
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    const { GET } = await import("./route");
+    const response = await GET(sessionRequest());
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      user: { id: "new-user-1", role: "user" },
+    });
+  });
 });
