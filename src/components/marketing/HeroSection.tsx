@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { ArrowRight } from "lucide-react";
 
 import { homeMarketingContent } from "@/components/marketing/content";
@@ -35,19 +35,19 @@ export default function HeroSection() {
           <p className="hero-tagline">{hero.tagline}</p>
           <p className="hero-description">{hero.line}</p>
           <div className="hero-actions">
-            <Link
+            <BoundaryLink
               href={hero.primaryCta.href}
               className="hero-button hero-button-primary"
             >
               {hero.primaryCta.label}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link
+            </BoundaryLink>
+            <BoundaryLink
               href={hero.secondaryCta.href}
               className="hero-button hero-button-secondary"
             >
               {hero.secondaryCta.label}
-            </Link>
+            </BoundaryLink>
           </div>
         </div>
         <HeroWorkspacePreview />

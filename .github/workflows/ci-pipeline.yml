@@ -43,14 +43,14 @@ concurrency:
 
 env:
   VAULT_ADDR: https://vault.svc.plus
-  CANONICAL_DOMAIN: console.xworkmate.com
-  SERVED_DOMAINS: console.xworkmate.com console.svc.plus
-  ALIAS_DOMAIN: www.xworkmate.com
-  APP_BASE_URL: https://console.xworkmate.com
-  NEXT_PUBLIC_APP_BASE_URL: https://console.xworkmate.com
-  NEXT_PUBLIC_SITE_URL: https://console.xworkmate.com
-  RUNTIME_HOSTNAME: console.xworkmate.com
-  NEXT_RUNTIME_HOSTNAME: console.xworkmate.com
+  CANONICAL_DOMAIN: console.svc.plus
+  SERVED_DOMAINS: console.svc.plus
+  ALIAS_DOMAIN: ""
+  APP_BASE_URL: https://console.svc.plus
+  NEXT_PUBLIC_APP_BASE_URL: https://console.svc.plus
+  NEXT_PUBLIC_SITE_URL: https://console.svc.plus
+  RUNTIME_HOSTNAME: console.svc.plus
+  NEXT_RUNTIME_HOSTNAME: console.svc.plus
   NEXT_PUBLIC_RUNTIME_ENVIRONMENT: prod
   NEXT_PUBLIC_RUNTIME_REGION: cn
   ACCOUNT_SERVICE_URL: https://accounts.svc.plus

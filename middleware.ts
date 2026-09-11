@@ -2,6 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { SESSION_COOKIE_NAME } from "./src/lib/authGateway";
+import { CONSOLE_ORIGIN, isConsolePath } from "./src/lib/consoleNavigation";
+
+const MARKETING_HOSTS = new Set(["xworktech.com", "www.xworktech.com"]);
 
 function isProtectedPath(pathname: string): boolean {
   return pathname === "/panel" || pathname.startsWith("/panel/");
@@ -14,6 +17,12 @@ function buildRedirectTarget(request: NextRequest): string {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (MARKETING_HOSTS.has(request.nextUrl.hostname) && isConsolePath(pathname)) {
+    const target = new URL(`${CONSOLE_ORIGIN}${pathname}`);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target);
+  }
 
   if (!isProtectedPath(pathname)) {
     return undefined;

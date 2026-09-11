@@ -20,6 +20,7 @@ import type {
   HTMLAttributes,
   ReactNode,
 } from "react";
+import { toConsoleHref } from "@/lib/consoleNavigation";
 
 export type XdsTone = "neutral" | "success" | "warning" | "danger" | "info";
 export type XdsButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -118,8 +119,12 @@ export function XdsLinkButton({
   className,
   ...rest
 }: LinkButtonProps) {
+  const resolvedRest =
+    typeof rest.href === "string"
+      ? { ...rest, href: toConsoleHref(rest.href) }
+      : rest;
   return (
-    <a className={buttonClass(variant, size, block, pill, className)} {...rest} />
+    <a className={buttonClass(variant, size, block, pill, className)} {...resolvedRest} />
   );
 }
 
