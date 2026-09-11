@@ -66,4 +66,127 @@ describe("/api/auth/session", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ user: null });
   });
+
+  function sessionRequest() {
+    return new NextRequest("https://console.svc.plus/api/auth/session", {
+      headers: {
+        host: "console.svc.plus",
+      },
+    });
+  }
+
+  function withSessionCookie() {
+    cookiesMock.mockResolvedValue({
+      get(name: string) {
+        if (name === "xc_session") {
+          return { value: "a-valid-session-token" };
+        }
+        return undefined;
+      },
+    });
+  }
+
+  function clearsSessionCookie(response: Response): boolean {
+    return response.headers
+      .getSetCookie()
+      .some(
+        (cookie) =>
+          cookie.startsWith("xc_session=;") ||
+          /xc_session=;/.test(cookie) ||
+          /xc_session=[^;]*;[^]*Max-Age=0/.test(cookie),
+      );
+  }
+
+  it("keeps the session cookie when the account service refuses the account", async () => {
+    withSessionCookie();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: "account_suspended",
+            message: "your account has been suspended",
+          }),
+          { status: 403, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    const { GET } = await import("./route");
+    const response = await GET(sessionRequest());
+
+    // A 403 says the account is blocked, not that the token stopped being a
+    // session. Dropping the cookie here is what turned a suspended account
+    // into a silent bounce back to /login.
+    await expect(response.json()).resolves.toEqual({
+      user: null,
+      error: "account_suspended",
+    });
+    expect(clearsSessionCookie(response)).toBe(false);
+  });
+
+  it("keeps the session cookie when the account service is unreachable", async () => {
+    withSessionCookie();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("connect ECONNREFUSED")),
+    );
+
+    const { GET } = await import("./route");
+    const response = await GET(sessionRequest());
+
+    await expect(response.json()).resolves.toEqual({
+      user: null,
+      error: "session_unavailable",
+    });
+    expect(clearsSessionCookie(response)).toBe(false);
+  });
+
+  it("keeps the session cookie when the account service fails", async () => {
+    withSessionCookie();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "internal_error" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const { GET } = await import("./route");
+    const response = await GET(sessionRequest());
+
+    await expect(response.json()).resolves.toEqual({
+      user: null,
+      error: "internal_error",
+    });
+    expect(clearsSessionCookie(response)).toBe(false);
+  });
+
+  it("clears the session cookie when the token is no longer a session", async () => {
+    withSessionCookie();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "session not found" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const { GET } = await import("./route");
+    const response = await GET(sessionRequest());
+
+    await expect(response.json()).resolves.toEqual({
+      user: null,
+      error: "session_expired",
+    });
+    expect(clearsSessionCookie(response)).toBe(true);
+  });
 });

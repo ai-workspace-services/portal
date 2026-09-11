@@ -36,6 +36,7 @@ export default function PanelLayout({
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
+  const sessionError = useUserStore((state) => state.sessionError);
 
   const routeGuards = useMemo<RouteGuard[]>(() => {
     return registry.routes
@@ -71,10 +72,18 @@ export default function PanelLayout({
           ? (redirect.unauthenticated ?? "/login")
           : (redirect.forbidden ?? redirect.unauthenticated ?? "/login");
       if (destination && destination !== pathname) {
-        router.replace(destination);
+        // Carry the reason when the session resolved to no user for a reason
+        // the service gave us -- a blocked account reads as "unauthenticated"
+        // here, and sending it to a bare /login asks the user to retry the
+        // credentials that just worked.
+        const target =
+          sessionError && destination.startsWith("/login")
+            ? `${destination}${destination.includes("?") ? "&" : "?"}error=${encodeURIComponent(sessionError)}`
+            : destination;
+        router.replace(target);
       }
     }
-  }, [isLoading, pathname, routeGuards, router, user]);
+  }, [isLoading, pathname, routeGuards, router, sessionError, user]);
 
   return (
     <div className="relative flex min-h-screen bg-gradient-to-br from-[var(--gradient-app-from)] via-[var(--gradient-app-via)] to-[var(--gradient-app-to)] text-[var(--color-text)]">

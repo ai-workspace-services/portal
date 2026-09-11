@@ -102,8 +102,37 @@ export async function GET(request: NextRequest) {
 
   const requestHost = request.headers.get("host");
   const { response, data } = await fetchSession(token, requestHost);
-  if (!response || !response.ok || !data?.user) {
-    const res = NextResponse.json({ user: null });
+
+  // Only a 401 means the token itself is no longer a session. Everything else
+  // -- a blocked account, a bad gateway, the service being unreachable -- says
+  // nothing about the token, so dropping the cookie there logs the user out
+  // over someone else's problem and destroys the evidence on the way.
+  //
+  // A 403 is the account being refused while the session is perfectly valid;
+  // the reason travels back so the UI can say which account is blocked instead
+  // of showing an empty sign-in form.
+  if (!response) {
+    return NextResponse.json({ user: null, error: "session_unavailable" });
+  }
+
+  if (response.status === 401) {
+    const res = NextResponse.json({ user: null, error: "session_expired" });
+    clearSessionCookie(res, requestHost ?? undefined);
+    return res;
+  }
+
+  if (!response.ok) {
+    const upstreamError =
+      typeof data?.error === "string" && data.error.trim().length > 0
+        ? data.error.trim()
+        : response.status === 403
+          ? "account_suspended"
+          : "session_unavailable";
+    return NextResponse.json({ user: null, error: upstreamError });
+  }
+
+  if (!data?.user) {
+    const res = NextResponse.json({ user: null, error: "session_expired" });
     clearSessionCookie(res, requestHost ?? undefined);
     return res;
   }
