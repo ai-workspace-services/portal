@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import BoundaryLink from '@/components/common/BoundaryLink'
 
 import type { ProductConfig } from '@src/products/registry'
 
@@ -57,7 +57,7 @@ export default function ProductEditions({ config, lang }: ProductEditionsProps) 
               <ul className="mt-4 space-y-2 text-sm text-slate-600">
                 {config.editions[key].map((link) => (
                   <li key={link.href}>
-                    <Link
+                    <BoundaryLink
                       href={link.href}
                       target={link.external ? '_blank' : undefined}
                       rel={link.external ? 'noreferrer' : undefined}
@@ -65,7 +65,7 @@ export default function ProductEditions({ config, lang }: ProductEditionsProps) 
                     >
                       {link.label}
                       <span aria-hidden="true">→</span>
-                    </Link>
+                    </BoundaryLink>
                   </li>
                 ))}
               </ul>

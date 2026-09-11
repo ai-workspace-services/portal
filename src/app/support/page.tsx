@@ -30,7 +30,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Github } from "@/components/icons/brand";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { getContentLanguage } from "@server/contentLanguage";
@@ -361,10 +361,10 @@ export default async function SupportPage() {
           <div className="xds-search-wrap">
             <DocsSearch />
             <div className="xds-row" style={{ justifyContent: "center", gap: 12, marginTop: 16 }}>
-              <Link href={firstCollectionHref} className="xds-btn xds-btn-primary">
+              <BoundaryLink href={firstCollectionHref} className="xds-btn xds-btn-primary">
                 {isChinese ? "开始阅读" : "Start reading"}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-              </Link>
+              </BoundaryLink>
               <a href="#contact" className="xds-link-arrow">
                 {isChinese ? "联系支持" : "Contact support"}
                 <ChevronRight className="h-3.5 w-3.5" aria-hidden />
@@ -372,9 +372,9 @@ export default async function SupportPage() {
             </div>
             <div className="xds-hot">
               {hotLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
+                <BoundaryLink key={link.href} href={link.href}>
                   {link.label}
-                </Link>
+                </BoundaryLink>
               ))}
             </div>
           </div>
@@ -401,10 +401,10 @@ export default async function SupportPage() {
                 </div>
                 <h4>{task.title}</h4>
                 <p className="xds-t-caption">{task.desc}</p>
-                <Link href={task.href} className="xds-link-arrow">
+                <BoundaryLink href={task.href} className="xds-link-arrow">
                   {task.cta}
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                </Link>
+                </BoundaryLink>
               </article>
             ))}
           </div>
@@ -508,10 +508,10 @@ export default async function SupportPage() {
                   <div className="xds-t-caption">{isChinese ? "这篇文档有帮助吗？" : "Was this page helpful?"}</div>
                   <HelpfulButtons isChinese={isChinese} />
                 </div>
-                <Link href={firstCollectionHref} className="xds-link-arrow">
+                <BoundaryLink href={firstCollectionHref} className="xds-link-arrow">
                   {isChinese ? "浏览更多文档" : "Browse more docs"}
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                </Link>
+                </BoundaryLink>
               </div>
             </article>
 
@@ -553,7 +553,7 @@ export default async function SupportPage() {
               {collections.map((collection: any) => {
                 const Icon = collectionIcons[collection.slug] || BookCopy;
                 return (
-                  <Link
+                  <BoundaryLink
                     key={collection.slug}
                     href={collection.entryHref || "/docs/" + collection.slug + "/" + collection.defaultVersionSlug}
                     className="xds-card xds-card-hover xds-task"
@@ -575,7 +575,7 @@ export default async function SupportPage() {
                       </span>
                       <span className="xds-t-caption xds-brand">{isChinese ? "进入集合" : "Open"}</span>
                     </div>
-                  </Link>
+                  </BoundaryLink>
                 );
               })}
             </div>
@@ -641,14 +641,14 @@ export default async function SupportPage() {
                 </div>
                 <h4 style={{ margin: "16px 0 6px" }}>{c.t}</h4>
                 <p className="xds-t-caption">{c.d}</p>
-                <Link
+                <BoundaryLink
                   href={c.href}
                   className="xds-link-arrow xds-t-caption xds-mt-16"
                   style={{ display: "inline-flex" }}
                 >
                   {c.cta}
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-                </Link>
+                </BoundaryLink>
               </div>
             ))}
           </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
 import { isCrossBoundaryHref, isExternalHref } from "@/lib/ssrBoundaries";
+import { toConsoleHref } from "@/lib/consoleNavigation";
 
 type LinkProps = ComponentProps<typeof Link>;
 
@@ -25,7 +26,9 @@ export default function BoundaryLink({
   children,
   ...rest
 }: BoundaryLinkProps) {
-  if (isExternalHref(href) || isCrossBoundaryHref(href)) {
+  const resolvedHref = toConsoleHref(href);
+
+  if (isExternalHref(resolvedHref) || isCrossBoundaryHref(href)) {
     const {
       prefetch: _prefetch,
       replace: _replace,
@@ -36,14 +39,14 @@ export default function BoundaryLink({
     } = rest as Record<string, unknown>;
 
     return (
-      <a href={href} {...(anchorProps as ComponentProps<"a">)}>
+      <a href={resolvedHref} {...(anchorProps as ComponentProps<"a">)}>
         {children}
       </a>
     );
   }
 
   return (
-    <Link href={href} {...rest}>
+    <Link href={resolvedHref} {...rest}>
       {children}
     </Link>
   );

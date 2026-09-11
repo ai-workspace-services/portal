@@ -8,8 +8,7 @@ import { SiteAnalyticsBody, SiteAnalyticsScripts } from '@/components/analytics/
 import { resolveWebReleaseMetadata } from '@/lib/webReleaseMetadata'
 import { getConsoleIntegrationDefaults } from '@/server/consoleIntegrations'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://console.xworktech.com'
-const SITE_HOST = new URL(SITE_URL).host
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://xworktech.com'
 const DEFAULT_TITLE = 'XWorkmate · XConnect · AI Workspace | XWork Technologies'
 const DEFAULT_DESCRIPTION =
   'XWork Technologies 打造开放的 AI 工作空间平台:XWorkmate 让 AI 真正参与你的工作,XConnect 提供稳定安全的连接能力,Open Platform 提供开源、可控、可扩展的基础设施支撑。支持托管使用,也支持自建部署。'
@@ -127,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }).replace(/</g, '\\u003c'),
           }}
         />
-        <SiteAnalyticsScripts siteHost={SITE_HOST} />
+        <SiteAnalyticsScripts />
       </head>
       <body className={bodyClassName}>
         <AppProviders assistantDefaults={assistantDefaults}>{children}</AppProviders>

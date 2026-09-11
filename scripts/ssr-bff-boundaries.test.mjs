@@ -30,6 +30,12 @@ test("Zero catch-all is bundled in Console, not auth/public or excluded", async 
 
 test("existing auth and Console BFF boundaries are preserved", () => {
   for (const path of [
+    "api/auth/login/route.ts",
+    "api/auth/register/route.ts",
+    "api/auth/register/send/route.ts",
+    "api/auth/register/verify/route.ts",
+    "api/auth/verify-email/route.ts",
+    "api/auth/verify-email/send/route.ts",
     "api/auth/session/route.ts",
     "api/auth/token/exchange/route.ts",
     "api/auth/mfa/verify/route.ts",
@@ -48,7 +54,6 @@ test("no generic API or similar prefix gains a BFF handler", () => {
   for (const path of [
     "api/xconnect-zero-evil/[...segments]/route.ts",
     "api/overlay/v1/route.ts",
-    "api/auth/login/route.ts",
     "panel/xconnect-zero/page.tsx",
   ]) {
     assert.equal(bffBoundaryForRoute(path), undefined);
