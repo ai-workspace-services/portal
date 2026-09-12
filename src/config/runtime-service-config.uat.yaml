@@ -10,6 +10,6 @@ authUrl: https://accounts-cloudflare-uat.onwalk.net
 # the session lookup. This preserves the shared UAT session boundary while the
 # edge routes the request to the GitOps-declared Accounts runtime.
 xconnectZeroUrl: https://accounts-cloudflare-uat.onwalk.net
-dashboardUrl: https://console-cloudflare-uat.onwalk.net
+dashboardUrl: https://console.onwalk.net
 docsServiceUrl: https://docs.svc.plus
 logLevel: info
