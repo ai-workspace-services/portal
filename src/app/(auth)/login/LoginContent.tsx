@@ -127,7 +127,7 @@ export default function LoginContent({
     };
 
     exchangeToken();
-  }, [searchParams, router, alerts.submit, alerts.genericError]);
+  }, [searchParams, router, redirectParam, alerts.submit, alerts.genericError]);
 
   const loginUrlRef = useRef(loginUrl);
 
@@ -222,21 +222,73 @@ export default function LoginContent({
     };
     const message = errorMap[normalizedError] ?? alerts.genericError;
     return { type: "error", message } as const;
-  }, [
-    alerts,
-    errorParam,
-    normalize,
-    pageCopy,
-    registeredParam,
-    setupMfaParam,
-  ]);
+  }, [alerts, errorParam, normalize, pageCopy, registeredParam, setupMfaParam]);
 
   const [alert, setAlert] = useState(initialAlert);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reactivationRequired, setReactivationRequired] = useState(false);
+  const [reactivationEmail, setReactivationEmail] = useState("");
+  const [reactivationCode, setReactivationCode] = useState("");
+  const [isReactivating, setIsReactivating] = useState(false);
 
   useEffect(() => {
     setAlert(initialAlert);
+    setReactivationRequired(false);
   }, [initialAlert]);
+
+  const handleReactivate = useCallback(async () => {
+    const email = reactivationEmail.trim().toLowerCase();
+    const code = reactivationCode.trim();
+    if (!email || code.length !== 6) {
+      setAlert({
+        type: "error",
+        message:
+          language === "zh"
+            ? "请输入邮箱和 6 位激活验证码"
+            : "Enter your email and 6-digit activation code",
+      });
+      return;
+    }
+    setIsReactivating(true);
+    try {
+      const response = await fetch("/api/auth/account/reactivate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ email, code }),
+      });
+      if (!response.ok) {
+        setAlert({
+          type: "error",
+          message:
+            language === "zh"
+              ? "激活验证码无效或已过期"
+              : "The activation code is invalid or expired",
+        });
+        return;
+      }
+      window.location.assign(
+        redirectParam &&
+          redirectParam.startsWith("/") &&
+          !redirectParam.startsWith("//")
+          ? redirectParam
+          : "/panel",
+      );
+    } catch (error) {
+      console.error("Failed to reactivate account", error);
+      setAlert({ type: "error", message: alerts.genericError });
+    } finally {
+      setIsReactivating(false);
+    }
+  }, [
+    alerts.genericError,
+    language,
+    reactivationCode,
+    reactivationEmail,
+    redirectParam,
+  ]);
 
   const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -332,6 +384,19 @@ export default function LoginContent({
             credentials_in_query: alerts.genericError,
           };
 
+          if (errorCode === "account_archived") {
+            setReactivationEmail(username);
+            setReactivationRequired(true);
+            setAlert({
+              type: "error",
+              message:
+                language === "zh"
+                  ? "账号因长期不活跃已归档。激活邮件已发送，请输入验证码恢复账号。"
+                  : "Your account was archived after prolonged inactivity. Check your email for an activation code.",
+            });
+            return;
+          }
+
           setAlert({
             type: "error",
             message: errorMap[normalize(errorCode)] ?? alerts.genericError,
@@ -363,7 +428,7 @@ export default function LoginContent({
       isSubmitting,
       normalize,
       redirectParam,
-      router,
+      language,
     ],
   );
 
@@ -390,70 +455,130 @@ export default function LoginContent({
     }
 
     return (
-      <form
-        className="space-y-5"
-        method="post"
-        onSubmit={handleSubmit}
-        noValidate
-      >
-        <div className="space-y-2">
-          <label
-            htmlFor="login-username"
-            className="text-sm font-medium text-slate-600"
-          >
-            {t.form.email}
-          </label>
-          <input
-            id="login-username"
-            name="username"
-            type="text"
-            autoComplete="username"
-            placeholder={t.form.emailPlaceholder}
-            className={AUTH_INPUT_CLASS}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <label
-              htmlFor="login-password"
-              className="font-medium text-slate-600"
-            >
-              {t.form.password}
-            </label>
-            <Link href="#" className={AUTH_TEXT_LINK_CLASS}>
-              {t.forgotPassword}
-            </Link>
-          </div>
-          <input
-            id="login-password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            placeholder={t.form.passwordPlaceholder}
-            className={AUTH_INPUT_CLASS}
-            required
-          />
-        </div>
-        <label className="flex items-center gap-3 text-sm text-slate-600">
-          <input
-            type="checkbox"
-            name="remember"
-            className={AUTH_CHECKBOX_CLASS}
-          />
-          {t.form.remember}
-        </label>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          aria-busy={isSubmitting}
-          className={`w-full ${AUTH_PRIMARY_BUTTON_CLASS}`}
+      <div className="space-y-5">
+        <form
+          className="space-y-5"
+          method="post"
+          onSubmit={handleSubmit}
+          noValidate
         >
-          {isSubmitting ? (t.form.submitting ?? t.form.submit) : t.form.submit}
-        </button>
-      </form>
+          <div className="space-y-2">
+            <label
+              htmlFor="login-username"
+              className="text-sm font-medium text-slate-600"
+            >
+              {t.form.email}
+            </label>
+            <input
+              id="login-username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              placeholder={t.form.emailPlaceholder}
+              className={AUTH_INPUT_CLASS}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <label
+                htmlFor="login-password"
+                className="font-medium text-slate-600"
+              >
+                {t.form.password}
+              </label>
+              <Link href="#" className={AUTH_TEXT_LINK_CLASS}>
+                {t.forgotPassword}
+              </Link>
+            </div>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder={t.form.passwordPlaceholder}
+              className={AUTH_INPUT_CLASS}
+              required
+            />
+          </div>
+          <label className="flex items-center gap-3 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              name="remember"
+              className={AUTH_CHECKBOX_CLASS}
+            />
+            {t.form.remember}
+          </label>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+            className={`w-full ${AUTH_PRIMARY_BUTTON_CLASS}`}
+          >
+            {isSubmitting
+              ? (t.form.submitting ?? t.form.submit)
+              : t.form.submit}
+          </button>
+        </form>
+        {reactivationRequired ? (
+          <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm text-amber-900">
+              {language === "zh"
+                ? "请输入激活邮件中的验证码以恢复账号。"
+                : "Enter the code from the activation email to restore your account."}
+            </p>
+            <input
+              value={reactivationEmail}
+              onChange={(event) => setReactivationEmail(event.target.value)}
+              type="email"
+              autoComplete="email"
+              placeholder={language === "zh" ? "邮箱" : "Email"}
+              className={AUTH_INPUT_CLASS}
+            />
+            <input
+              value={reactivationCode}
+              onChange={(event) =>
+                setReactivationCode(
+                  event.target.value.replace(/\D/g, "").slice(0, 6),
+                )
+              }
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder={
+                language === "zh" ? "6 位激活验证码" : "6-digit activation code"
+              }
+              className={AUTH_INPUT_CLASS}
+            />
+            <button
+              type="button"
+              disabled={isReactivating}
+              onClick={handleReactivate}
+              className={`w-full ${AUTH_PRIMARY_BUTTON_CLASS}`}
+            >
+              {isReactivating
+                ? language === "zh"
+                  ? "激活中…"
+                  : "Activating…"
+                : language === "zh"
+                  ? "邮件激活并恢复账号"
+                  : "Activate and restore account"}
+            </button>
+          </div>
+        ) : null}
+      </div>
     );
-  }, [children, handleSubmit, isSubmitting, t]);
+  }, [
+    children,
+    handleReactivate,
+    handleSubmit,
+    isReactivating,
+    language,
+    reactivationCode,
+    reactivationEmail,
+    reactivationRequired,
+    isSubmitting,
+    t,
+  ]);
   return (
     <AuthLayout
       mode="login"

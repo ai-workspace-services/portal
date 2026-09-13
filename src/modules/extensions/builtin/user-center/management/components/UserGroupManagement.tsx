@@ -30,6 +30,8 @@ export type ManagedUser = {
   groups?: string[];
   active?: boolean;
   created_at?: string;
+  subscriptionValidFrom?: string | null;
+  subscriptionValidUntil?: string | null;
 };
 export type CreateManagedUserInput = {
   email: string;
@@ -51,7 +53,15 @@ type Props = {
   onManageBlacklist?: () => void;
   onCreateCustomUser?: (input: CreateManagedUserInput) => Promise<void> | void;
   onGroupsChange?: (userId: string, groups: string[]) => void;
+  onGroupsBatchChange?: (
+    updates: Array<{ userId: string; groups: string[] }>,
+  ) => Promise<void> | void;
+  onSubscriptionValidityChange?: (
+    userId: string,
+    validity: { validFrom: string | null; validUntil: string | null },
+  ) => Promise<void> | void;
   pendingGroupUserIds?: Set<string>;
+  pendingSubscriptionUserIds?: Set<string>;
 };
 type SegmentId =
   | "free"
@@ -155,7 +165,7 @@ const primarySegment = (user: ManagedUser): Segment =>
   SEGMENTS.find((segment) => segment.parent && hasSegment(user, segment)) ??
   SEGMENTS.find((segment) => hasSegment(user, segment)) ??
   SEGMENTS[0];
-const formatDate = (value?: string): string =>
+const formatDate = (value?: string | null): string =>
   value ? new Date(value).toLocaleDateString("zh-CN") : "—";
 
 function Donut({ automatic, manual }: { automatic: number; manual: number }) {
@@ -202,10 +212,14 @@ export function UserGroupManagement({
   onManageBlacklist,
   onCreateCustomUser,
   onGroupsChange,
+  onGroupsBatchChange,
+  onSubscriptionValidityChange,
   pendingGroupUserIds,
+  pendingSubscriptionUserIds,
 }: Props) {
   const data = useMemo(() => users ?? [], [users]);
   const pending = pendingGroupUserIds ?? new Set<string>();
+  const pendingSubscription = pendingSubscriptionUserIds ?? new Set<string>();
   const importInputRef = useRef<HTMLInputElement>(null);
   const [segmentId, setSegmentId] = useState<SegmentId>("subscribed");
   const [selectedUserId, setSelectedUserId] = useState<string>();
@@ -213,8 +227,12 @@ export function UserGroupManagement({
   const [quotaQuery, setQuotaQuery] = useState("");
   const [source, setSource] = useState<"all" | "manual" | "automatic">("all");
   const [override, setOverride] = useState(true);
-  const [validFrom, setValidFrom] = useState("2026-09-04");
-  const [validUntil, setValidUntil] = useState("2026-10-04");
+  const [validFrom, setValidFrom] = useState("");
+  const [validUntil, setValidUntil] = useState("");
+  const [selectedQuotaUserIds, setSelectedQuotaUserIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [batchQuotaGroup, setBatchQuotaGroup] = useState<MonthlyQuotaGroup>("");
   const [benefit, setBenefit] = useState("高级版套餐");
   const [email, setEmail] = useState("");
   const [uuid, setUuid] = useState("");
@@ -270,6 +288,11 @@ export function UserGroupManagement({
     if (!selectedUserId && visibleUsers[0])
       setSelectedUserId(visibleUsers[0].id);
   }, [selectedUserId, visibleUsers]);
+  useEffect(() => {
+    setValidFrom(selectedUser?.subscriptionValidFrom?.slice(0, 10) ?? "");
+    setValidUntil(selectedUser?.subscriptionValidUntil?.slice(0, 10) ?? "");
+    setOverride(true);
+  }, [selectedUser]);
 
   const changeGroup = (nextSegment: Segment) => {
     if (!selectedUser || !onGroupsChange || !canEditRoles) return;
@@ -295,6 +318,50 @@ export function UserGroupManagement({
     );
     if (nextGroup) nextGroups.push(nextGroup);
     onGroupsChange(user.id, nextGroups);
+  };
+  const toggleQuotaUserSelection = (userId: string, checked: boolean) => {
+    setSelectedQuotaUserIds((current) => {
+      const next = new Set(current);
+      if (checked) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+  };
+  const allQuotaUsersSelected =
+    quotaLimitUsers.length > 0 &&
+    quotaLimitUsers.every((user) => selectedQuotaUserIds.has(user.id));
+  const toggleAllQuotaUsers = (checked: boolean) => {
+    setSelectedQuotaUserIds((current) => {
+      const next = new Set(current);
+      quotaLimitUsers.forEach((user) => {
+        if (checked) next.add(user.id);
+        else next.delete(user.id);
+      });
+      return next;
+    });
+  };
+  const applyBatchQuotaGroup = async () => {
+    if (
+      !onGroupsBatchChange ||
+      !canEditRoles ||
+      selectedQuotaUserIds.size === 0
+    )
+      return;
+    const updates = quotaLimitUsers
+      .filter((user) => selectedQuotaUserIds.has(user.id))
+      .map((user) => {
+        const groups = (user.groups ?? []).filter(
+          (group) =>
+            !MONTHLY_QUOTA_GROUP_OPTIONS.some(
+              (option) => option.value === group,
+            ),
+        );
+        if (batchQuotaGroup) groups.push(batchQuotaGroup);
+        return { userId: user.id, groups };
+      });
+    if (updates.length === 0) return;
+    await onGroupsBatchChange(updates);
+    setSelectedQuotaUserIds(new Set());
   };
   const createUser = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -494,19 +561,74 @@ export function UserGroupManagement({
               className="w-full rounded-md border border-[color:var(--color-surface-border)] bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </label>
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-dashed border-[color:var(--color-surface-border)] bg-white px-3 py-2 text-xs">
+            <label className="inline-flex items-center gap-2 text-[var(--color-text-muted)]">
+              <input
+                type="checkbox"
+                checked={allQuotaUsersSelected}
+                onChange={(event) => toggleAllQuotaUsers(event.target.checked)}
+                disabled={!canEditRoles || quotaLimitUsers.length === 0}
+                aria-label="全选月度限流用户"
+                className="h-4 w-4 accent-[var(--color-primary)]"
+              />
+              全选当前列表
+            </label>
+            <span className="text-[var(--color-text-muted)]">
+              已选 {selectedQuotaUserIds.size} 人
+            </span>
+            <select
+              value={batchQuotaGroup}
+              onChange={(event) =>
+                setBatchQuotaGroup(event.target.value as MonthlyQuotaGroup)
+              }
+              disabled={!canEditRoles || selectedQuotaUserIds.size === 0}
+              aria-label="批量修改月度限流分组"
+              className="ml-auto rounded border border-[color:var(--color-surface-border)] bg-white px-2 py-1.5 text-xs disabled:opacity-50"
+            >
+              {MONTHLY_QUOTA_GROUP_OPTIONS.map((option) => (
+                <option key={option.value || "none"} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => void applyBatchQuotaGroup()}
+              disabled={
+                !canEditRoles ||
+                !onGroupsBatchChange ||
+                selectedQuotaUserIds.size === 0
+              }
+              className="rounded-md bg-[var(--color-primary)] px-3 py-1.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              批量修改分组
+            </button>
+          </div>
           <div className="mt-3 grid max-h-44 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
             {quotaLimitUsers.map((user) => {
               const selectedGroup = monthlyQuotaGroupOf(user);
               const disabled =
                 !canEditRoles || pending.has(user.id) || !onGroupsChange;
               return (
-                <label
+                <div
                   key={user.id}
                   className={`flex items-center justify-between gap-2 rounded-md border border-[color:var(--color-surface-border)] bg-white px-3 py-2 text-xs ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                 >
-                  <span className="min-w-0 truncate text-[var(--color-text)]">
-                    {nameOf(user)}
-                  </span>
+                  <label className="flex min-w-0 items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedQuotaUserIds.has(user.id)}
+                      onChange={(event) =>
+                        toggleQuotaUserSelection(user.id, event.target.checked)
+                      }
+                      disabled={!canEditRoles || pending.has(user.id)}
+                      aria-label={`选择月度限流用户 ${nameOf(user)}`}
+                      className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
+                    />
+                    <span className="min-w-0 truncate text-[var(--color-text)]">
+                      {nameOf(user)}
+                    </span>
+                  </label>
                   <select
                     value={selectedGroup}
                     disabled={disabled}
@@ -525,7 +647,7 @@ export function UserGroupManagement({
                       </option>
                     ))}
                   </select>
-                </label>
+                </div>
               );
             })}
           </div>
@@ -658,7 +780,22 @@ export function UserGroupManagement({
                               </span>
                             </td>
                             <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
-                              {formatDate(user.created_at)} —
+                              {user.subscriptionValidFrom ||
+                              user.subscriptionValidUntil ? (
+                                <>
+                                  {formatDate(user.subscriptionValidFrom)} —{" "}
+                                  {formatDate(user.subscriptionValidUntil)}
+                                  {user.subscriptionValidUntil &&
+                                  user.subscriptionValidUntil.slice(0, 10) <
+                                    new Date().toISOString().slice(0, 10) ? (
+                                    <span className="ml-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-amber-700">
+                                      已降级 Free
+                                    </span>
+                                  ) : null}
+                                </>
+                              ) : (
+                                "未配置"
+                              )}
                             </td>
                             <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
                               {isManual ? "高级版套餐" : "标准版套餐"}
@@ -763,8 +900,30 @@ export function UserGroupManagement({
                       />
                     </label>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void onSubscriptionValidityChange?.(selectedUser.id, {
+                        validFrom: validFrom || null,
+                        validUntil: validUntil || null,
+                      })
+                    }
+                    disabled={
+                      !override ||
+                      !canEditRoles ||
+                      !onSubscriptionValidityChange ||
+                      pendingSubscription.has(selectedUser.id) ||
+                      Boolean(validFrom && validUntil && validUntil < validFrom)
+                    }
+                    className="mt-3 rounded-md bg-[var(--color-primary)] px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {pendingSubscription.has(selectedUser.id)
+                      ? "保存中…"
+                      : "保存有效期"}
+                  </button>
                   <p className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
-                    有效期字段待计费服务提供读写接口后持久化；当前保存只更新手动分组。
+                    结束日期按当天有效；次日自动降级到 Free
+                    5GB，并暂停后续配置同步。
                   </p>
                 </section>
                 <section>
