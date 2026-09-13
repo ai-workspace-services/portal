@@ -571,6 +571,10 @@ type UserCenterTranslation = {
     apiKeys: string
     logs: string
     settings: string
+    globalMesh?: string
+    productsGlobalMesh?: string
+    "global-mesh"?: string
+    "products-global-mesh"?: string
   }
   overview: UserCenterOverviewTranslation
   mfa: UserCenterMfaTranslation
@@ -1099,6 +1103,10 @@ export const translations: Record<'en' | 'zh', Translation> = {
         apiKeys: 'API Keys',
         logs: 'Observability',
         settings: 'Settings',
+        globalMesh: 'Global Mesh',
+        productsGlobalMesh: 'Global Mesh Showcase',
+        'global-mesh': 'Global Mesh',
+        'products-global-mesh': 'Global Mesh Showcase',
       },
       overview: {
         heading: 'User Center',
@@ -1978,6 +1986,10 @@ export const translations: Record<'en' | 'zh', Translation> = {
         apiKeys: '接口密钥',
         logs: '可观测性',
         settings: '系统设置',
+        globalMesh: 'Global Mesh 拓扑',
+        productsGlobalMesh: 'Global Mesh 产品页',
+        'global-mesh': 'Global Mesh 拓扑',
+        'products-global-mesh': 'Global Mesh 产品页',
       },
       overview: {
         heading: '用户中心',
