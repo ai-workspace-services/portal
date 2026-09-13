@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/xds";
 
 import MfaSetupPanel from "../account/MfaSetupPanel";
+import SelfServiceSecurityPanel from "../account/SelfServiceSecurityPanel";
 import AccountPolicySecurityPanel from "../components/AccountPolicySecurityPanel";
 import ServiceReadinessCard from "../components/ServiceReadinessCard";
 import {
@@ -94,7 +95,10 @@ export default function UserCenterAccountRoute() {
 
   const user = useUserStore((state) => state.user);
   const isReadOnlyRole = Boolean(user?.isReadOnly);
-  const canAccessOperations = resolveAccess(user, platformOperationsAccessRule).allowed;
+  const canAccessOperations = resolveAccess(
+    user,
+    platformOperationsAccessRule,
+  ).allowed;
   // VLESS 访问凭据用 proxyUuid，不是账户身份 uuid（见 #220）
   const proxyUuid = user?.proxyUuid || null;
 
@@ -406,6 +410,7 @@ export default function UserCenterAccountRoute() {
             canManageMfa={!isReadOnlyRole}
           />
           {!isReadOnlyRole ? <ServiceReadinessCard /> : null}
+          {!isReadOnlyRole ? <SelfServiceSecurityPanel /> : null}
           {!isReadOnlyRole ? <MfaSetupPanel showSummary={false} /> : null}
         </section>
       </div>
