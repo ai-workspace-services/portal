@@ -137,7 +137,9 @@ interface VpsProviderItem {
   color: string;
   badgeBg: string;
   cpu: string;
+  cpuShort: string;
   gpu: string;
+  gpuShort: string;
   role: string;
   regions: string;
   targetCountry: string;
@@ -153,9 +155,11 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
     color: "#3b82f6",
     badgeBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
     cpu: "AMD EPYC 9004 / High-Freq NVMe (3.8GHz+)",
+    cpuShort: "EPYC 9004 (3.8GHz+)",
     gpu: "NVIDIA H100 (80GB SXM5) · A100 · L40S · A16",
-    role: "AI 异构推理加速 · 全球边缘 Ingress",
-    regions: "硅谷 · 东京 · 首尔 · 阿姆斯特丹 · 圣保罗",
+    gpuShort: "H100 / A100 / L40S",
+    role: "AI 异构推理加速",
+    regions: "硅谷 · 东京 · 首尔 · 阿姆斯特丹",
     targetCountry: "United States",
   },
   {
@@ -167,9 +171,11 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
     color: "#10b981",
     badgeBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     cpu: "Dedicated AMD EPYC (100% 独立计算核心)",
+    cpuShort: "Dedicated 独享核心",
     gpu: "NVIDIA RTX 6000 Ada (48GB GDDR6 ECC)",
-    role: "40Gbps+ Akamai 全球骨干 Relay 汇聚",
-    regions: "东京 · 新加坡 · 悉尼 · 伦敦 · 法兰克福 · 纽瓦克",
+    gpuShort: "RTX 6000 Ada 48GB",
+    role: "40Gbps+ 骨干 Relay 汇聚",
+    regions: "东京 · 新加坡 · 悉尼 · 伦敦 · 纽瓦克",
     targetCountry: "Australia",
   },
   {
@@ -181,9 +187,11 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
     color: "#f43f5e",
     badgeBg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
     cpu: "AMD EPYC Dedicated / ARM64 Ampere (80核)",
+    cpuShort: "EPYC / ARM64 (80核)",
     gpu: "裸金属高性能计算集群 (CPU 高并发)",
-    role: "Telemetry Hub (Loki/Prom) · 欧洲控制面",
-    regions: "法尔肯施泰因 · 纽伦堡 · 赫尔辛基 · 亚什本",
+    gpuShort: "CPU 高吞吐裸金属",
+    role: "Telemetry Hub 遥测中继",
+    regions: "法尔肯施泰因 · 纽伦堡 · 赫尔辛基",
     targetCountry: "Germany",
   },
   {
@@ -195,9 +203,11 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
     color: "#6366f1",
     badgeBg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
     cpu: "高密度 vCPU (4~16 Cores, 8~64GB ECC NVMe)",
+    cpuShort: "高密 4~16C ECC NVMe",
     gpu: "海量高并发数据清洗与构建实例",
-    role: "CI/CD Runner · 海量备份与镜像归档底座",
-    regions: "慕尼黑 · 纽伦堡 · 圣路易斯 · 西雅图 · 悉尼",
+    gpuShort: "海量存储与构建集群",
+    role: "CI/CD Runner · 备份归档",
+    regions: "慕尼黑 · 纽伦堡 · 圣路易斯 · 悉尼",
     targetCountry: "Australia",
   },
   {
@@ -209,9 +219,11 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
     color: "#0ea5e9",
     badgeBg: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
     cpu: "弹性计算旗舰型云主机, 高主频 Intel Xeon",
+    cpuShort: "高主频 Intel Xeon",
     gpu: "亚太出海合规 GPU 推理实例",
-    role: "亚太极速堡垒机 (<30ms) · PathX 专线网关",
-    regions: "香港 · 台北 · 东京 · 新加坡 · 曼谷 · 洛杉矶",
+    gpuShort: "亚太合规 GPU 推理",
+    role: "亚太极速堡垒机 (<30ms)",
+    regions: "香港 · 台北 · 东京 · 新加坡 · 曼谷",
     targetCountry: "Japan",
   },
 ];
@@ -271,9 +283,9 @@ export default function GlobalMeshMap() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 md:p-6 shadow-xs space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 md:p-5 shadow-xs space-y-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 gap-2">
         <div>
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span>VPS 算力 PoP 点分布 / CPU &amp; GPU 与五大 VPS 映射关系</span>
@@ -290,16 +302,16 @@ export default function GlobalMeshMap() {
         </div>
       </div>
 
-      {/* Grid: Left 7 cols (Map & Compute Tooltip), Right 5 cols (5 大 VPS 运营商) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Left Column: Map */}
-        <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
+      {/* Grid: Left 8 cols (Map fills left, zero whitespace), Right 4 cols (5 大 VPS 运营商 压缩精简) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        {/* Left Column: Map occupies full left side */}
+        <div className="lg:col-span-8 flex flex-col h-full min-h-[350px]">
           <div
             ref={containerRef}
-            className="relative bg-slate-50/70 dark:bg-slate-950/40 rounded-2xl p-2 sm:p-4 border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden select-none min-h-[350px]"
+            className="relative bg-slate-50/70 dark:bg-slate-950/40 rounded-xl p-1 sm:p-1.5 border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden select-none flex-1 h-full"
           >
-            <div className="w-full flex items-center justify-center" onMouseLeave={handleMouseLeave}>
-<svg id="worldMapSvg" onMouseMove={handleMouseMove} viewBox="0 0 1000 500" className="w-full h-auto select-none" style={{ maxHeight: "380px" }}>
+            <div className="w-full h-full flex items-center justify-center" onMouseLeave={handleMouseLeave}>
+<svg id="worldMapSvg" onMouseMove={handleMouseMove} viewBox="0 0 1000 500" className="w-full h-auto max-h-[440px] select-none block">
               <defs>
                 <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="3" result="blur" />
@@ -526,138 +538,130 @@ export default function GlobalMeshMap() {
 
           {/* Compute Details Floating Tooltip */}
           {tooltip.visible && (
-              <div
-                className="absolute z-20 pointer-events-none p-3.5 rounded-xl bg-slate-900/95 dark:bg-slate-800/95 text-white font-mono text-xs shadow-2xl border border-slate-700/70 leading-snug transition-all duration-150"
-                style={{
-                  left: tooltip.x,
-                  top: tooltip.y,
-                  transform: "translate(-50%, -50%)",
-                  minWidth: "220px",
-                  maxWidth: "300px",
-                }}
-              >
-                <div className="flex items-center justify-between border-b border-slate-700/80 pb-1.5 mb-1.5">
-                  <span className="font-bold text-sm text-white">{tooltip.name}</span>
-                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                    {tooltip.popsCount}
-                  </span>
+            <div
+              className="absolute z-20 pointer-events-none p-3 rounded-xl bg-slate-900/95 dark:bg-slate-800/95 text-white font-mono text-xs shadow-2xl border border-slate-700/70 leading-snug transition-all duration-150"
+              style={{
+                left: tooltip.x,
+                top: tooltip.y,
+                transform: "translate(-50%, -50%)",
+                minWidth: "210px",
+                maxWidth: "280px",
+              }}
+            >
+              <div className="flex items-center justify-between border-b border-slate-700/80 pb-1 mb-1.5">
+                <span className="font-bold text-xs text-white">{tooltip.name}</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                  {tooltip.popsCount}
+                </span>
+              </div>
+              <div className="space-y-1 text-[11px]">
+                <div>
+                  <span className="text-slate-400">映射运营商:</span>{" "}
+                  <span className="text-blue-300 font-semibold">{tooltip.providers}</span>
                 </div>
-                <div className="space-y-1 text-[11px]">
-                  <div>
-                    <span className="text-slate-400">映射运营商:</span>{" "}
-                    <span className="text-blue-300 font-semibold">{tooltip.providers}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400">CPU 算力:</span>{" "}
-                    <span className="text-emerald-300 font-medium">{tooltip.cpu}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400">GPU 加速:</span>{" "}
-                    <span className="text-amber-300 font-medium">{tooltip.gpu}</span>
-                  </div>
-                  <div className="text-slate-400 pt-1.5 border-t border-slate-700/50 flex justify-between">
-                    <span>实测 RTT: <strong className="text-slate-200">{tooltip.rtt}</strong></span>
-                    <span>流量: <strong className="text-slate-200">{tooltip.req}</strong></span>
-                  </div>
+                <div>
+                  <span className="text-slate-400">CPU 算力:</span>{" "}
+                  <span className="text-emerald-300 font-medium">{tooltip.cpu}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">GPU 加速:</span>{" "}
+                  <span className="text-amber-300 font-medium">{tooltip.gpu}</span>
+                </div>
+                <div className="text-slate-400 pt-1 border-t border-slate-700/50 flex justify-between text-[10px]">
+                  <span>实测 RTT: <strong className="text-slate-200">{tooltip.rtt}</strong></span>
+                  <span>流量: <strong className="text-slate-200">{tooltip.req}</strong></span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Compute metrics strip beneath map */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5">
-            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
-              <div className="text-[10px] text-slate-500 font-medium">覆盖核心 PoP</div>
-              <div className="text-base font-bold font-mono text-slate-800 dark:text-slate-200">48+ 节点</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
-              <div className="text-[10px] text-slate-500 font-medium">CPU 核心池</div>
-              <div className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">512+ vCPU</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
-              <div className="text-[10px] text-slate-500 font-medium">GPU 算力集群</div>
-              <div className="text-base font-bold font-mono text-blue-600 dark:text-blue-400">H100/Ada/A100</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
-              <div className="text-[10px] text-slate-500 font-medium">暴露公网端口</div>
-              <div className="text-base font-bold font-mono text-purple-600 dark:text-purple-400">0 端口 (mTLS)</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: 5 大核心 VPS 运营商 */}
-        <div className="lg:col-span-5 flex flex-col justify-between space-y-2.5">
-          <div className="flex items-center justify-between pb-1">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              5 大核心 VPS 运营商
+          {/* Floating Bottom Metrics Pill Inside Map */}
+          <div className="absolute bottom-2 left-2 z-10 hidden sm:flex items-center gap-1.5 pointer-events-none opacity-90">
+            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-white font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+              48+ 核心 PoP
             </span>
-            <span className="text-[11px] font-mono text-slate-400">悬浮联动 PoP 地图</span>
-          </div>
-
-          <div className="space-y-2">
-            {TOP_VPS_PROVIDERS.map((vps) => {
-              const isSelected = activeProvider === vps.id;
-              return (
-                <div
-                  key={vps.id}
-                  onMouseEnter={() => handleProviderHover(vps)}
-                  onMouseLeave={handleMouseLeave}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-blue-50/80 dark:bg-blue-950/40 border-blue-500/60 shadow-xs"
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white shadow-2xs"
-                        style={{ backgroundColor: vps.color }}
-                      >
-                        {vps.name[0]}
-                      </span>
-                      <div>
-                        <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                          {vps.name}
-                          <span className="text-[10px] font-normal text-slate-400">({vps.subName})</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${vps.badgeBg}`}>
-                        {vps.tag}
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-400 font-semibold">{vps.sharePct}</span>
-                    </div>
-                  </div>
-
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-2 overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: vps.sharePct, backgroundColor: vps.color }} />
-                  </div>
-
-                  <div className="space-y-1 text-[11px] font-mono text-slate-600 dark:text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-1 py-0.2 rounded text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold shrink-0">
-                        CPU
-                      </span>
-                      <span className="truncate">{vps.cpu}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-1 py-0.2 rounded text-[9px] bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-semibold shrink-0">
-                        GPU
-                      </span>
-                      <span className="truncate">{vps.gpu}</span>
-                    </div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate pt-0.5">
-                      {vps.role} · <span className="text-slate-500">{vps.regions}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+              512+ vCPU
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+              H100/Ada/A100 GPU
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+              0 端口暴露 (mTLS)
+            </span>
           </div>
         </div>
       </div>
+
+      {/* Right Column: 5 大核心 VPS 运营商 (4 cols 压缩简化) */}
+      <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
+        <div className="flex items-center justify-between pb-0.5">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            5 大核心 VPS 运营商
+          </span>
+          <span className="text-[10px] font-mono text-slate-400">悬浮联动地图</span>
+        </div>
+
+        <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+          {TOP_VPS_PROVIDERS.map((vps) => {
+            const isSelected = activeProvider === vps.id;
+            return (
+              <div
+                key={vps.id}
+                onMouseEnter={() => handleProviderHover(vps)}
+                onMouseLeave={handleMouseLeave}
+                className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500/70 shadow-xs"
+                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1.5 mb-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className="w-4.5 h-4.5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs"
+                      style={{ backgroundColor: vps.color }}
+                    >
+                      {vps.name[0]}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                      {vps.name}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                      {vps.tag}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                    {vps.sharePct}
+                  </span>
+                </div>
+
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-1.5 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{ width: vps.sharePct, backgroundColor: vps.color }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                  <span className="truncate">
+                    <strong className="text-slate-700 dark:text-slate-300">CPU:</strong> {vps.cpuShort}
+                  </span>
+                  <span className="text-slate-300 dark:text-slate-700">|</span>
+                  <span className="truncate">
+                    <strong className="text-blue-600 dark:text-blue-400">GPU:</strong> {vps.gpuShort}
+                  </span>
+                </div>
+
+                <div className="text-[9.5px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  {vps.role} · {vps.regions}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
-  );
+  </div>
+);
 }
