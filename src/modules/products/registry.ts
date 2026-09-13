@@ -1,6 +1,7 @@
 import xcloudflow from "./xcloudflow";
 import xconnect from "./xconnect";
 import xscopehub from "./xscopehub";
+import globalMesh from "./global-mesh";
 
 export type EditionLink = {
   label: string;
@@ -37,7 +38,7 @@ export type StripeBillingMode = "payment" | "subscription";
 
 
 
-export const PRODUCT_LIST: ProductConfig[] = [xconnect, xscopehub, xcloudflow];
+export const PRODUCT_LIST: ProductConfig[] = [xconnect, xscopehub, xcloudflow, globalMesh];
 
 export const PRODUCT_MAP = new Map<string, ProductConfig>(
   PRODUCT_LIST.map((product) => [product.slug, product]),
