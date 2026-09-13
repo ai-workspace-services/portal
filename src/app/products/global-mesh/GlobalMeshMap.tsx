@@ -2,25 +2,224 @@
 
 import React, { useState, useRef } from "react";
 
-interface TooltipData {
+interface ComputeTooltip {
   visible: boolean;
   name: string;
+  popsCount: string;
+  providers: string;
+  cpu: string;
+  gpu: string;
+  rtt: string;
   req: string;
-  pops: string;
   x: number | string;
   y: number | string;
 }
 
+interface NodeComputeInfo {
+  providers: string;
+  cpu: string;
+  gpu: string;
+  rtt: string;
+  popsCount: string;
+  req: string;
+}
+
+const COUNTRY_COMPUTE_MAP: Record<string, NodeComputeInfo> = {
+  Australia: {
+    providers: "Linode · Vultr · Contabo",
+    cpu: "AMD EPYC 32C/64T (独占核心)",
+    gpu: "NVIDIA RTX 6000 Ada (48GB)",
+    rtt: "142ms",
+    popsCount: "3 PoPs (悉尼)",
+    req: "3.60k",
+  },
+  Japan: {
+    providers: "Linode · Vultr · UCloud",
+    cpu: "AMD EPYC 9004 3.7GHz",
+    gpu: "NVIDIA H100 (80GB) · A100",
+    rtt: "31ms",
+    popsCount: "12 PoPs (东京/大阪)",
+    req: "142.9k",
+  },
+  "United States": {
+    providers: "Hetzner · Linode · Vultr · Contabo",
+    cpu: "Intel Xeon 3.8GHz / AMD EPYC",
+    gpu: "NVIDIA H100 · L40S · A100",
+    rtt: "118ms",
+    popsCount: "14 PoPs (硅谷/亚什本)",
+    req: "59.91k",
+  },
+  Germany: {
+    providers: "Hetzner · Linode · Contabo · Vultr",
+    cpu: "Dedicated AMD EPYC / ARM64 Ampere",
+    gpu: "裸金属高性能计算集群 (CPU 并发)",
+    rtt: "125ms",
+    popsCount: "8 PoPs (法兰克福/纽伦堡)",
+    req: "8.24k",
+  },
+  Singapore: {
+    providers: "五大 VPS 运营商共同枢纽",
+    cpu: "AMD EPYC + Intel Xeon 旗舰",
+    gpu: "NVIDIA A100 / RTX 6000",
+    rtt: "40ms",
+    popsCount: "5 PoPs (新加坡)",
+    req: "4.76k",
+  },
+  "Hong Kong": {
+    providers: "UCloud · Linode · Vultr",
+    cpu: "高主频 Intel Xeon 3.8GHz",
+    gpu: "亚太出海合规 GPU 推理",
+    rtt: "22ms",
+    popsCount: "3 PoPs (香港/台北)",
+    req: "8.44k",
+  },
+  Netherlands: {
+    providers: "Vultr · Contabo",
+    cpu: "AMD EPYC 9004",
+    gpu: "NVIDIA L40S · A100",
+    rtt: "135ms",
+    popsCount: "4 PoPs (阿姆斯特丹)",
+    req: "13.43k",
+  },
+  "United Kingdom": {
+    providers: "Linode · Vultr",
+    cpu: "Dedicated AMD EPYC",
+    gpu: "NVIDIA RTX 6000 Ada",
+    rtt: "130ms",
+    popsCount: "3 PoPs (伦敦)",
+    req: "4.12k",
+  },
+  Finland: {
+    providers: "Hetzner",
+    cpu: "ARM CAX11 / Dedicated EPYC",
+    gpu: "低温绿色冷备计算集群",
+    rtt: "145ms",
+    popsCount: "2 PoPs (赫尔辛基)",
+    req: "2.51k",
+  },
+  Chile: {
+    providers: "Vultr",
+    cpu: "High Frequency NVMe",
+    gpu: "边缘推理实例",
+    rtt: "210ms",
+    popsCount: "1 PoP (圣地亚哥)",
+    req: "1.84k",
+  },
+  "South Africa": {
+    providers: "Vultr",
+    cpu: "High Frequency NVMe",
+    gpu: "边缘推理实例",
+    rtt: "240ms",
+    popsCount: "1 PoP (约翰内斯堡)",
+    req: "1.90k",
+  },
+};
+
+const DEFAULT_TOOLTIP: ComputeTooltip = {
+  visible: true,
+  name: "Australia (悉尼)",
+  popsCount: "3 PoPs",
+  providers: "Linode · Vultr · Contabo",
+  cpu: "AMD EPYC 32C/64T (独占核心)",
+  gpu: "NVIDIA RTX 6000 Ada (48GB)",
+  rtt: "142ms",
+  req: "3.60k",
+  x: "76%",
+  y: "44%",
+};
+
+interface VpsProviderItem {
+  id: string;
+  name: string;
+  subName: string;
+  tag: string;
+  sharePct: string;
+  color: string;
+  badgeBg: string;
+  cpu: string;
+  gpu: string;
+  role: string;
+  regions: string;
+  targetCountry: string;
+}
+
+const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
+  {
+    id: "vultr",
+    name: "Vultr",
+    subName: "高频算力 & AI 全球集群",
+    tag: "32+ PoPs",
+    sharePct: "35%",
+    color: "#3b82f6",
+    badgeBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    cpu: "AMD EPYC 9004 / High-Freq NVMe (3.8GHz+)",
+    gpu: "NVIDIA H100 (80GB SXM5) · A100 · L40S · A16",
+    role: "AI 异构推理加速 · 全球边缘 Ingress",
+    regions: "硅谷 · 东京 · 首尔 · 阿姆斯特丹 · 圣保罗",
+    targetCountry: "United States",
+  },
+  {
+    id: "linode",
+    name: "Linode (Akamai)",
+    subName: "骨干直连 & Dedicated 核心",
+    tag: "14+ PoPs",
+    sharePct: "28%",
+    color: "#10b981",
+    badgeBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    cpu: "Dedicated AMD EPYC (100% 独立计算核心)",
+    gpu: "NVIDIA RTX 6000 Ada (48GB GDDR6 ECC)",
+    role: "40Gbps+ Akamai 全球骨干 Relay 汇聚",
+    regions: "东京 · 新加坡 · 悉尼 · 伦敦 · 法兰克福 · 纽瓦克",
+    targetCountry: "Australia",
+  },
+  {
+    id: "hetzner",
+    name: "Hetzner Online",
+    subName: "欧洲核心 & 裸金属大算力",
+    tag: "6+ PoPs",
+    sharePct: "18%",
+    color: "#f43f5e",
+    badgeBg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    cpu: "AMD EPYC Dedicated / ARM64 Ampere (80核)",
+    gpu: "裸金属高性能计算集群 (CPU 高并发)",
+    role: "Telemetry Hub (Loki/Prom) · 欧洲控制面",
+    regions: "法尔肯施泰因 · 纽伦堡 · 赫尔辛基 · 亚什本",
+    targetCountry: "Germany",
+  },
+  {
+    id: "contabo",
+    name: "Contabo",
+    subName: "海量存储 & 高密构建算力",
+    tag: "8+ PoPs",
+    sharePct: "11%",
+    color: "#6366f1",
+    badgeBg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
+    cpu: "高密度 vCPU (4~16 Cores, 8~64GB ECC NVMe)",
+    gpu: "海量高并发数据清洗与构建实例",
+    role: "CI/CD Runner · 海量备份与镜像归档底座",
+    regions: "慕尼黑 · 纽伦堡 · 圣路易斯 · 西雅图 · 悉尼",
+    targetCountry: "Australia",
+  },
+  {
+    id: "ucloud",
+    name: "UCloud (优刻得全球)",
+    subName: "CN2 GIA & 亚太出海专线",
+    tag: "6+ PoPs",
+    sharePct: "8%",
+    color: "#0ea5e9",
+    badgeBg: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
+    cpu: "弹性计算旗舰型云主机, 高主频 Intel Xeon",
+    gpu: "亚太出海合规 GPU 推理实例",
+    role: "亚太极速堡垒机 (<30ms) · PathX 专线网关",
+    regions: "香港 · 台北 · 东京 · 新加坡 · 曼谷 · 洛杉矶",
+    targetCountry: "Japan",
+  },
+];
+
 export default function GlobalMeshMap() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [tooltip, setTooltip] = useState<TooltipData>({
-    visible: true,
-    name: "Australia",
-    req: "3.60k",
-    pops: "3 PoPs (Linode, Vultr, Contabo 悉尼)",
-    x: "76%",
-    y: "44%",
-  });
+  const [tooltip, setTooltip] = useState<ComputeTooltip>(DEFAULT_TOOLTIP);
+  const [activeProvider, setActiveProvider] = useState<string | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const target = e.target as SVGElement;
@@ -32,50 +231,75 @@ export default function GlobalMeshMap() {
         const containerRect = containerRef.current.getBoundingClientRect();
         const x = e.clientX - containerRect.left;
         const y = e.clientY - containerRect.top;
+        const matched = COUNTRY_COMPUTE_MAP[name];
         setTooltip({
           visible: true,
           name,
-          req,
-          pops,
-          x: Math.max(80, Math.min(x, containerRect.width - 120)),
-          y: Math.max(60, y - 40),
+          popsCount: matched?.popsCount || pops.split(" (")[0] || "1 PoP",
+          providers: matched?.providers || (pops.includes("(") ? pops.split(" (")[1].replace(")", "") : "多云互联"),
+          cpu: matched?.cpu || "弹性计算 vCPU 实例",
+          gpu: matched?.gpu || "CPU 密集型 / 动态算力调度",
+          rtt: matched?.rtt || "< 160ms",
+          req: matched?.req || req,
+          x: Math.max(90, Math.min(x, containerRect.width - 130)),
+          y: Math.max(60, y - 45),
         });
       }
     }
   };
 
   const handleMouseLeave = () => {
-    // Reset to Australia highlight matching design snapshot
+    setActiveProvider(null);
+    setTooltip(DEFAULT_TOOLTIP);
+  };
+
+  const handleProviderHover = (vps: VpsProviderItem) => {
+    setActiveProvider(vps.id);
+    const target = COUNTRY_COMPUTE_MAP[vps.targetCountry];
     setTooltip({
       visible: true,
-      name: "Australia",
-      req: "3.60k",
-      pops: "3 PoPs (Linode, Vultr, Contabo 悉尼)",
-      x: "76%",
-      y: "44%",
+      name: `${vps.name} · ${vps.targetCountry}`,
+      popsCount: vps.tag,
+      providers: `${vps.name} (${vps.subName})`,
+      cpu: vps.cpu,
+      gpu: vps.gpu,
+      rtt: target?.rtt || "< 80ms",
+      req: target?.req || "核心节点",
+      x: vps.id === "linode" || vps.id === "contabo" ? "76%" : vps.id === "vultr" ? "24%" : vps.id === "hetzner" ? "52%" : "82%",
+      y: vps.id === "linode" || vps.id === "contabo" ? "44%" : vps.id === "vultr" ? "32%" : vps.id === "hetzner" ? "25%" : "34%",
     });
   };
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 md:p-6 shadow-xs space-y-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
-        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-          Requests by country / 节点与流量地理分布
-        </h3>
-        <div className="flex items-center gap-2.5">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span>VPS 算力 PoP 点分布 / CPU &amp; GPU 与五大 VPS 映射关系</span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            异构算力规格 · 177 国拓扑分布 · 48+ 核心 PoPs 节点互联
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
           <span className="px-3 py-0.5 rounded-full text-xs font-mono font-medium bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
-            Live Geo-IP Map
+            VPS Compute PoPs
           </span>
-          <span className="text-xs font-mono text-slate-500">Top 15 Countries</span>
+          <span className="text-xs font-mono text-slate-500">5 大核心 VPS 运营商</span>
         </div>
       </div>
 
-      <div
-        ref={containerRef}
-        className="relative bg-slate-50/70 dark:bg-slate-950/40 rounded-2xl p-3 sm:p-5 border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden select-none min-h-[340px] md:min-h-[400px]"
-      >
-        <div className="w-full flex items-center justify-center" onMouseLeave={handleMouseLeave}>
-<svg id="worldMapSvg" onMouseMove={handleMouseMove} viewBox="0 0 1000 500" className="w-full h-auto select-none" style={{ maxHeight: "420px" }}>
+      {/* Grid: Left 7 cols (Map & Compute Tooltip), Right 5 cols (5 大 VPS 运营商) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        {/* Left Column: Map */}
+        <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
+          <div
+            ref={containerRef}
+            className="relative bg-slate-50/70 dark:bg-slate-950/40 rounded-2xl p-2 sm:p-4 border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden select-none min-h-[350px]"
+          >
+            <div className="w-full flex items-center justify-center" onMouseLeave={handleMouseLeave}>
+<svg id="worldMapSvg" onMouseMove={handleMouseMove} viewBox="0 0 1000 500" className="w-full h-auto select-none" style={{ maxHeight: "380px" }}>
               <defs>
                 <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="3" result="blur" />
@@ -298,30 +522,141 @@ export default function GlobalMeshMap() {
                 <circle cx="855" cy="385" r="3" fill="#ffffff"></circle>
               </g>
             </svg>
-        </div>
+          </div>
 
-        {tooltip.visible && (
-          <div
-            className="absolute z-20 pointer-events-none p-3 rounded-xl bg-slate-900/95 dark:bg-slate-800/95 text-white font-mono text-xs shadow-2xl border border-slate-700/70 leading-snug transition-all duration-150"
-            style={{
-              left: tooltip.x,
-              top: tooltip.y,
-              transform: "translate(-50%, -50%)",
-              minWidth: "160px",
-              maxWidth: "240px",
-            }}
-          >
-            <div className="font-bold text-sm text-white mb-1">{tooltip.name}:</div>
-            <div className="text-slate-200 font-medium">
-              {tooltip.req} · {tooltip.pops.split(" (")[0]}
-            </div>
-            {tooltip.pops.includes("(") && (
-              <div className="text-slate-400 text-[11px] mt-1">
-                ({tooltip.pops.split(" (")[1]}
+          {/* Compute Details Floating Tooltip */}
+          {tooltip.visible && (
+              <div
+                className="absolute z-20 pointer-events-none p-3.5 rounded-xl bg-slate-900/95 dark:bg-slate-800/95 text-white font-mono text-xs shadow-2xl border border-slate-700/70 leading-snug transition-all duration-150"
+                style={{
+                  left: tooltip.x,
+                  top: tooltip.y,
+                  transform: "translate(-50%, -50%)",
+                  minWidth: "220px",
+                  maxWidth: "300px",
+                }}
+              >
+                <div className="flex items-center justify-between border-b border-slate-700/80 pb-1.5 mb-1.5">
+                  <span className="font-bold text-sm text-white">{tooltip.name}</span>
+                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                    {tooltip.popsCount}
+                  </span>
+                </div>
+                <div className="space-y-1 text-[11px]">
+                  <div>
+                    <span className="text-slate-400">映射运营商:</span>{" "}
+                    <span className="text-blue-300 font-semibold">{tooltip.providers}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">CPU 算力:</span>{" "}
+                    <span className="text-emerald-300 font-medium">{tooltip.cpu}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">GPU 加速:</span>{" "}
+                    <span className="text-amber-300 font-medium">{tooltip.gpu}</span>
+                  </div>
+                  <div className="text-slate-400 pt-1.5 border-t border-slate-700/50 flex justify-between">
+                    <span>实测 RTT: <strong className="text-slate-200">{tooltip.rtt}</strong></span>
+                    <span>流量: <strong className="text-slate-200">{tooltip.req}</strong></span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        )}
+
+          {/* Compute metrics strip beneath map */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5">
+            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
+              <div className="text-[10px] text-slate-500 font-medium">覆盖核心 PoP</div>
+              <div className="text-base font-bold font-mono text-slate-800 dark:text-slate-200">48+ 节点</div>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
+              <div className="text-[10px] text-slate-500 font-medium">CPU 核心池</div>
+              <div className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">512+ vCPU</div>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
+              <div className="text-[10px] text-slate-500 font-medium">GPU 算力集群</div>
+              <div className="text-base font-bold font-mono text-blue-600 dark:text-blue-400">H100/Ada/A100</div>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-center">
+              <div className="text-[10px] text-slate-500 font-medium">暴露公网端口</div>
+              <div className="text-base font-bold font-mono text-purple-600 dark:text-purple-400">0 端口 (mTLS)</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: 5 大核心 VPS 运营商 */}
+        <div className="lg:col-span-5 flex flex-col justify-between space-y-2.5">
+          <div className="flex items-center justify-between pb-1">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              5 大核心 VPS 运营商
+            </span>
+            <span className="text-[11px] font-mono text-slate-400">悬浮联动 PoP 地图</span>
+          </div>
+
+          <div className="space-y-2">
+            {TOP_VPS_PROVIDERS.map((vps) => {
+              const isSelected = activeProvider === vps.id;
+              return (
+                <div
+                  key={vps.id}
+                  onMouseEnter={() => handleProviderHover(vps)}
+                  onMouseLeave={handleMouseLeave}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-blue-50/80 dark:bg-blue-950/40 border-blue-500/60 shadow-xs"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white shadow-2xs"
+                        style={{ backgroundColor: vps.color }}
+                      >
+                        {vps.name[0]}
+                      </span>
+                      <div>
+                        <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                          {vps.name}
+                          <span className="text-[10px] font-normal text-slate-400">({vps.subName})</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono border ${vps.badgeBg}`}>
+                        {vps.tag}
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-400 font-semibold">{vps.sharePct}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-2 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: vps.sharePct, backgroundColor: vps.color }} />
+                  </div>
+
+                  <div className="space-y-1 text-[11px] font-mono text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1 py-0.2 rounded text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold shrink-0">
+                        CPU
+                      </span>
+                      <span className="truncate">{vps.cpu}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1 py-0.2 rounded text-[9px] bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-semibold shrink-0">
+                        GPU
+                      </span>
+                      <span className="truncate">{vps.gpu}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate pt-0.5">
+                      {vps.role} · <span className="text-slate-500">{vps.regions}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
