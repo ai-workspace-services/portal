@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Terminal,
 } from "lucide-react";
+import GlobalMeshMap from "./GlobalMeshMap";
 
 interface Dimension {
   id: string;
@@ -187,27 +188,7 @@ export default function GlobalMeshPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-20 space-y-7">
         {/* ================================================================= */}
-        {/* 1. 顶部身份卡片 (橙色圆头像 HP + 居中姓名 + 灰色胶囊标签) */}
-        {/* ================================================================= */}
-        <div className="flex flex-col items-center justify-center pt-2 pb-1 text-center select-none">
-          <div
-            className="w-[84px] h-[84px] rounded-full flex items-center justify-center text-white text-3xl font-bold tracking-tight shadow-md mb-3"
-            style={{ backgroundColor: "#d95300" }}
-          >
-            HP
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">Haitao Pan</h1>
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-1.5 text-xs text-slate-500">
-            <span className="font-mono">@da93628bc13d47af9a</span>
-            <span>·</span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-xs">
-              Plus · Next.js SSR + Cloud Run Go + Supabase PG
-            </span>
-          </div>
-        </div>
-
-        {/* ================================================================= */}
-        {/* 2. 五列指标卡片 (5大核心运营商, 48个活跃 PoP, <32ms延时, 0入站端口, 100%容灾) */}
+        {/* 1. 五列指标卡片 (5大核心运营商, 48个活跃 PoP, <32ms延时, 0入站端口, 100%容灾) */}
         {/* ================================================================= */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800 py-4 px-2 sm:px-4 text-center">
@@ -509,52 +490,9 @@ export default function GlobalMeshPage() {
         </div>
 
         {/* ================================================================= */}
-        {/* 6. 节点与流量地理分布 (177国高精度矢量地图 + 右侧排位条) */}
+        {/* 5. 节点与流量地理分布 (矢量地图直接内联渲染，无 iframe 嵌套) */}
         {/* ================================================================= */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 md:p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800 gap-1">
-            <h3 className="text-base font-semibold">Requests by country / 节点与流量地理分布</h3>
-            <span className="text-xs font-mono text-slate-500">Live Geo-IP Map · 177 Countries</span>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-7 bg-slate-50/70 dark:bg-slate-950/40 rounded-xl p-2 sm:p-3 border border-slate-200 dark:border-slate-800 overflow-hidden">
-              <iframe
-                src="/map-embed.html"
-                className="w-full h-[360px] border-0 rounded-lg"
-                title="Global Mesh Vector Map"
-              />
-            </div>
-
-            <div className="lg:col-span-5 space-y-2 text-xs select-none pr-1">
-              {[
-                { name: "Japan", req: "142.9k", pct: "82%", pops: "12 PoPs" },
-                { name: "United States", req: "59.91k", pct: "48%", pops: "14 PoPs" },
-                { name: "Philippines", req: "21.08k", pct: "22%", pops: "1 PoP" },
-                { name: "Netherlands", req: "13.43k", pct: "14%", pops: "4 PoPs" },
-                { name: "Hong Kong", req: "8.44k", pct: "10%", pops: "3 PoPs" },
-                { name: "Germany", req: "8.24k", pct: "9.8%", pops: "8 PoPs" },
-                { name: "India", req: "6.99k", pct: "8.5%", pops: "3 PoPs" },
-                { name: "China", req: "6.07k", pct: "7.6%", pops: "2 PoPs" },
-                { name: "Singapore", req: "4.76k", pct: "6.2%", pops: "5 PoPs" },
-                { name: "Israel", req: "4.47k", pct: "5.8%", pops: "1 PoP" },
-                { name: "Italy", req: "3.14k", pct: "4.2%", pops: "2 PoPs" },
-                { name: "Canada", req: "2.86k", pct: "3.9%", pops: "2 PoPs" },
-              ].map((c) => (
-                <div
-                  key={c.name}
-                  className="flex items-center justify-between gap-3 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                >
-                  <span className="w-24 truncate font-medium">{c.name}</span>
-                  <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-600 rounded-full" style={{ width: c.pct }} />
-                  </div>
-                  <span className="w-14 text-right font-mono text-slate-500 font-medium">{c.req}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <GlobalMeshMap />
 
         {/* ================================================================= */}
         {/* 7. 安全性指标 (加密请求数、加密请求率、加密带宽、加密带宽率) */}
