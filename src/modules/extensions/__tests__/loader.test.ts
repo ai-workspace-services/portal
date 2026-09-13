@@ -42,4 +42,18 @@ describe('extension loader', () => {
     const AgentComponent = await resolveExtensionRouteComponent('/panel/agent')
     expect(typeof AgentComponent).toBe('function')
   })
+
+  it('registers and resolves global-mesh routes in user center', async () => {
+    const registry = getExtensionRegistry()
+    const globalMeshRoute = registry.getRoute('/panel/global-mesh')
+    expect(globalMeshRoute?.enabled).toBe(true)
+    expect(globalMeshRoute?.sidebar?.section).toBe('workspace')
+
+    const productsRoute = registry.getRoute('/products/global-mesh')
+    expect(productsRoute?.enabled).toBe(true)
+    expect(productsRoute?.sidebar?.section).toBe('workspace')
+
+    const GlobalMeshComponent = await resolveExtensionRouteComponent('/panel/global-mesh')
+    expect(typeof GlobalMeshComponent).toBe('function')
+  })
 })
