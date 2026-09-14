@@ -20,6 +20,14 @@ import {
   Layers,
   Terminal,
   GitBranch,
+  RefreshCw,
+  Tag,
+  GitCommit,
+  Activity,
+  AlertCircle,
+  ExternalLink,
+  Cpu,
+  Boxes,
 } from "lucide-react";
 import {
   TOPOLOGY_LAYERS,
@@ -27,7 +35,12 @@ import {
   LIFECYCLE_STAGES,
   ZERO_TRUST_DEFENSE_ITEMS,
   FINOPS_TABLE_ROWS,
+  APP_TOPOLOGY_TIER_SUMMARIES,
+  LIFECYCLE_CLOSED_LOOP_STAGES,
+  LIFECYCLE_FLOW_NODES,
+  SAAS_MESH_NODES,
 } from "./globalMeshArchitectureData";
+
 interface ComputeTooltip {
   visible: boolean;
   name: string;
@@ -457,12 +470,16 @@ const TOP_SAAS_PROVIDERS: SaasProviderItem[] = [
   },
 ];
 
+
 export default function GlobalMeshMap() {
   const containerRef = useRef<HTMLDivElement>(null);
   type ArchitectureTab = "vps" | "saas" | "app-topology" | "lifecycle";
   const [activeLayer, setActiveLayer] = useState<ArchitectureTab>("vps");
   const [topologyFilter, setTopologyFilter] = useState<"all" | "cs" | "bs">("all");
   const [activeLifecycleStage, setActiveLifecycleStage] = useState<"code" | "plan" | "build" | "deploy" | "security" | "run" | "observability">("code");
+  const [selectedTopologyTier, setSelectedTopologyTier] = useState<string | null>(null);
+  const [selectedLifecycleNode, setSelectedLifecycleNode] = useState<string | null>("issue");
+  const [activeSaasNode, setActiveSaasNode] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<ComputeTooltip>(DEFAULT_VPS_TOOLTIP);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
 
@@ -560,9 +577,12 @@ export default function GlobalMeshMap() {
   const switchLayer = (layer: ArchitectureTab) => {
     setActiveLayer(layer);
     setActiveProvider(null);
+    setActiveSaasNode(null);
+    setSelectedTopologyTier(null);
     if (layer === "vps") setTooltip(DEFAULT_VPS_TOOLTIP);
     else if (layer === "saas") setTooltip(DEFAULT_SAAS_TOOLTIP);
   };
+
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 md:p-5 shadow-xs space-y-3">
@@ -635,13 +655,12 @@ export default function GlobalMeshMap() {
         </div>
       </div>
 
-      {/* 1. VPS / SaaS View Wrapper */}
-      {(activeLayer === "vps" || activeLayer === "saas") && (
+      
+      {/* 1. VPS View (8:4 Layout) */}
+      {activeLayer === "vps" && (
         <div className="space-y-4">
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-        {/* Left Column: Map occupies full left side */}
-        <div className="lg:col-span-8 flex flex-col h-full min-h-[350px]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            <div className="lg:col-span-8 flex flex-col h-full min-h-[350px]">
           <div
             ref={containerRef}
             className="relative bg-slate-50/70 dark:bg-slate-950/40 rounded-xl p-1 sm:p-1.5 border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden select-none flex-1 h-full"
@@ -949,137 +968,370 @@ export default function GlobalMeshMap() {
       </div>
 
       {/* Right Column: 5 大核心 VPS 运营商 / 5 大云原生 SaaS 服务 (4 cols 压缩简化) */}
-      <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
-        <div className="flex items-center justify-between pb-0.5">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            {activeLayer === "vps" ? "5 大核心 VPS 运营商" : "5 大云原生 SaaS 基础设施"}
-          </span>
-          <span className="text-[10px] font-mono text-slate-400">悬浮联动地图</span>
-        </div>
+            {/* Right Column: 5 大核心 VPS 运营商 (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between pb-0.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              5 大核心 VPS 运营商
+            </span>
+            <span className="text-[10px] font-mono text-slate-400">悬浮联动地图</span>
+          </div>
 
-        <div className="space-y-1.5 flex-1 flex flex-col justify-between">
-          {activeLayer === "vps"
-            ? TOP_VPS_PROVIDERS.map((vps) => {
-                const isSelected = activeProvider === vps.id;
-                return (
-                  <div
-                    key={vps.id}
-                    onMouseEnter={() => handleProviderHover(vps)}
-                    onMouseLeave={handleMouseLeave}
-                    className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500/70 shadow-xs"
-                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-1.5 mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span
-                          className="w-4.5 h-4.5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs"
-                          style={{ backgroundColor: vps.color }}
-                        >
-                          {vps.name[0]}
-                        </span>
-                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                          {vps.name}
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400 shrink-0">
-                          {vps.tag}
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 shrink-0">
-                        {vps.sharePct}
-                      </span>
-                    </div>
-
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-1.5 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{ width: vps.sharePct, backgroundColor: vps.color }}
+          <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+            {TOP_VPS_PROVIDERS.map((vps) => {
+              const isSelected = activeProvider === vps.id;
+              return (
+                <div
+                  key={vps.id}
+                  onMouseEnter={() => handleProviderHover(vps)}
+                  onMouseLeave={handleMouseLeave}
+                  className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500 ring-1 ring-blue-500/50"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: vps.color }}
                       />
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
-                      <span className="truncate">
-                        <strong className="text-slate-700 dark:text-slate-300">CPU:</strong> {vps.cpuShort}
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {vps.name}
                       </span>
-                      <span className="text-slate-300 dark:text-slate-700">|</span>
-                      <span className="truncate">
-                        <strong className="text-blue-600 dark:text-blue-400">GPU:</strong> {vps.gpuShort}
+                      <span className="text-[10px] text-slate-400 hidden sm:inline">
+                        {vps.subName}
                       </span>
                     </div>
-
-                    <div className="text-[9.5px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                      {vps.role} · {vps.regions}
-                    </div>
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full border ${vps.badgeBg}`}
+                    >
+                      {vps.tag}
+                    </span>
                   </div>
-                );
-              })
-            : TOP_SAAS_PROVIDERS.map((saas) => {
-                const isSelected = activeProvider === saas.id;
-                return (
-                  <div
-                    key={saas.id}
-                    onMouseEnter={() => handleSaasHover(saas)}
-                    onMouseLeave={handleMouseLeave}
-                    className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-purple-50/90 dark:bg-purple-950/50 border-purple-500/70 shadow-xs"
-                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-1.5 mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span
-                          className="w-4.5 h-4.5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs"
-                          style={{ backgroundColor: saas.color }}
-                        >
-                          {saas.name[0]}
-                        </span>
-                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                          {saas.name}
-                        </span>
-                        <span className="text-[10px] font-mono text-slate-400 shrink-0">
-                          {saas.tag}
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 shrink-0">
-                        {saas.sharePct}
-                      </span>
-                    </div>
-
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-1.5 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{ width: saas.sharePct, backgroundColor: saas.color }}
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
-                      <span className="truncate">
-                        <strong className="text-slate-700 dark:text-slate-300">架构:</strong> {saas.techStackShort}
-                      </span>
-                      <span className="text-slate-300 dark:text-slate-700">|</span>
-                      <span className="truncate">
-                        <strong className="text-emerald-600 dark:text-emerald-400">优势:</strong> {saas.quotaShort}
-                      </span>
-                    </div>
-
-                    <div className="text-[9.5px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                      {saas.role} · {saas.regions}
-                    </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                    <strong>CPU:</strong> {vps.cpu}
                   </div>
-                );
-              })}
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                    <strong>GPU:</strong> {vps.gpu}
+                  </div>
+                  <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium mt-0.5 line-clamp-1">
+                    {vps.role} · {vps.regions}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </div>
+          </div>
+        </div>
+      )}
 
+      {/* 2. SaaS View (8:4 Layout) */}
+      {activeLayer === "saas" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            {/* Left Column: 8 cols dedicated SaaS Zero-Trust Mesh SVG */}
+            <div className="lg:col-span-8 flex flex-col h-full min-h-[420px]">
+              <div className="relative bg-slate-950/80 dark:bg-slate-950 rounded-xl p-3 border border-slate-800 overflow-hidden shadow-inner flex-1 flex flex-col justify-between">
+            <svg viewBox="0 0 960 380" className="w-full h-auto max-h-[440px] select-none block">
+              <defs>
+                <linearGradient id="saasEdgeBffGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#f97316" />
+                  <stop offset="100%" stopColor="#3b82f6" />
+                </linearGradient>
+                <linearGradient id="saasBffMeshGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#8b5cf6" />
+                </linearGradient>
+                <linearGradient id="saasMeshSupabaseGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#8b5cf6" />
+                  <stop offset="100%" stopColor="#10b981" />
+                </linearGradient>
+                <linearGradient id="saasBffSupabaseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#10b981" />
+                </linearGradient>
+                <linearGradient id="saasTelemetryGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8b5cf6" />
+                  <stop offset="100%" stopColor="#06b6d4" />
+                </linearGradient>
+                <filter id="saasNodeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+                <marker id="saasArrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f97316" />
+                </marker>
+                <marker id="saasArrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#3b82f6" />
+                </marker>
+                <marker id="saasArrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#8b5cf6" />
+                </marker>
+                <marker id="saasArrowEmerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981" />
+                </marker>
+                <marker id="saasArrowCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#06b6d4" />
+                </marker>
+              </defs>
 
-          {/* If SaaS View, render Zero-Trust Defense Baseline & FinOps Table */}
-          {activeLayer === "saas" && (
-            <div className="space-y-4 pt-2">
-              {/* 零信任安全防御基线 */}
+              {/* Background Grid Pattern Lines */}
+              <g opacity="0.15">
+                <line x1="40" y1="95" x2="920" y2="95" stroke="#475569" strokeDasharray="3 3" />
+                <line x1="40" y1="285" x2="920" y2="285" stroke="#475569" strokeDasharray="3 3" />
+              </g>
+
+              {/* Flow Path 1: Cloudflare Ingress -> Cloud Run BFF */}
+              <path d="M 285 95 L 355 95" fill="none" stroke="url(#saasEdgeBffGrad)" strokeWidth="2.5" strokeDasharray="5 3" markerEnd="url(#saasArrowBlue)" />
+              <text x="320" y="85" fill="#93c5fd" fontSize="9.5" textAnchor="middle" fontFamily="monospace">HTTPS / BGP</text>
+
+              {/* Flow Path 2: Cloud Run BFF -> WireGuard Mesh */}
+              <path d="M 605 95 L 675 95" fill="none" stroke="url(#saasBffMeshGrad)" strokeWidth="2.5" strokeDasharray="5 3" markerEnd="url(#saasArrowPurple)" />
+              <text x="640" y="85" fill="#c084fc" fontSize="9.5" textAnchor="middle" fontFamily="monospace">0端口 WG 隧道</text>
+
+              {/* Flow Path 3: Cloud Run BFF -> Supabase DB */}
+              <path d="M 460 155 C 460 190, 310 185, 310 220" fill="none" stroke="url(#saasBffSupabaseGrad)" strokeWidth="2" strokeDasharray="4 2" markerEnd="url(#saasArrowEmerald)" />
+
+              {/* Flow Path 4: WireGuard Mesh -> Supabase / VPS DB */}
+              <path d="M 730 155 C 730 195, 390 190, 390 220" fill="none" stroke="url(#saasMeshSupabaseGrad)" strokeWidth="2" strokeDasharray="4 2" markerEnd="url(#saasArrowEmerald)" />
+
+              {/* Flow Path 5: WireGuard Mesh -> VictoriaMetrics APM */}
+              <path d="M 820 155 C 820 190, 710 190, 710 220" fill="none" stroke="url(#saasTelemetryGrad)" strokeWidth="2" strokeDasharray="4 2" markerEnd="url(#saasArrowCyan)" />
+
+              {/* Flow Path 6: Cloud Run BFF -> VictoriaMetrics Telemetry */}
+              <path d="M 525 155 C 525 190, 610 190, 610 220" fill="none" stroke="#38bdf8" strokeWidth="1.8" strokeDasharray="4 2" opacity="0.8" markerEnd="url(#saasArrowCyan)" />
+
+              {/* Node 1: Cloudflare Anycast Edge */}
+              <g
+                className="cursor-pointer transition-all duration-200"
+                onClick={() => { setActiveProvider("cloudflare"); setActiveSaasNode("cloudflare"); }}
+                onMouseEnter={() => { setActiveProvider("cloudflare"); setActiveSaasNode("cloudflare"); }}
+                onMouseLeave={() => { setActiveProvider(null); setActiveSaasNode(null); }}
+              >
+                <rect
+                  x="45"
+                  y="40"
+                  width="240"
+                  height="115"
+                  rx="12"
+                  fill="#1e293b"
+                  stroke={activeSaasNode === "cloudflare" || activeProvider === "cloudflare" ? "#f97316" : "#475569"}
+                  strokeWidth={activeSaasNode === "cloudflare" || activeProvider === "cloudflare" ? 2.5 : 1.2}
+                  filter={activeSaasNode === "cloudflare" || activeProvider === "cloudflare" ? "url(#saasNodeGlow)" : undefined}
+                />
+                <rect x="57" y="52" width="36" height="36" rx="8" fill="#ea580c" fillOpacity="0.2" stroke="#ea580c" strokeWidth="1.2" />
+                <text x="75" y="75" fill="#f97316" fontSize="13" fontWeight="bold" textAnchor="middle">CF</text>
+                <text x="102" y="66" fill="#ffffff" fontSize="12.5" fontWeight="bold">Cloudflare Ingress</text>
+                <text x="102" y="82" fill="#fdba74" fontSize="10" fontFamily="monospace">300+ PoPs · Anycast BGP</text>
+                
+                <rect x="200" y="52" width="72" height="18" rx="4" fill="#f97316" fillOpacity="0.15" stroke="#f97316" strokeWidth="0.8" />
+                <text x="236" y="65" fill="#f97316" fontSize="9" textAnchor="middle" fontWeight="bold">0元出网分发</text>
+                
+                <text x="58" y="112" fill="#94a3b8" fontSize="10">• R2 0元出网 · 免费全局边缘缓存</text>
+                <text x="58" y="130" fill="#94a3b8" fontSize="10">• Terabit Anycast DDoS 清洗 & WAF</text>
+              </g>
+
+              {/* Node 2: GCP Cloud Run BFF */}
+              <g
+                className="cursor-pointer transition-all duration-200"
+                onClick={() => { setActiveProvider("cloudrun"); setActiveSaasNode("cloudrun"); }}
+                onMouseEnter={() => { setActiveProvider("cloudrun"); setActiveSaasNode("cloudrun"); }}
+                onMouseLeave={() => { setActiveProvider(null); setActiveSaasNode(null); }}
+              >
+                <rect
+                  x="355"
+                  y="40"
+                  width="250"
+                  height="115"
+                  rx="12"
+                  fill="#1e293b"
+                  stroke={activeSaasNode === "cloudrun" || activeProvider === "cloudrun" ? "#3b82f6" : "#475569"}
+                  strokeWidth={activeSaasNode === "cloudrun" || activeProvider === "cloudrun" ? 2.5 : 1.2}
+                  filter={activeSaasNode === "cloudrun" || activeProvider === "cloudrun" ? "url(#saasNodeGlow)" : undefined}
+                />
+                <rect x="367" y="52" width="36" height="36" rx="8" fill="#2563eb" fillOpacity="0.2" stroke="#2563eb" strokeWidth="1.2" />
+                <text x="385" y="75" fill="#60a5fa" fontSize="13" fontWeight="bold" textAnchor="middle">CR</text>
+                <text x="412" y="66" fill="#ffffff" fontSize="12.5" fontWeight="bold">GCP Cloud Run BFF</text>
+                <text x="412" y="82" fill="#93c5fd" fontSize="10" fontFamily="monospace">Scale-to-Zero · OIDC</text>
+
+                <rect x="525" y="52" width="70" height="18" rx="4" fill="#3b82f6" fillOpacity="0.15" stroke="#3b82f6" strokeWidth="0.8" />
+                <text x="560" y="65" fill="#60a5fa" fontSize="9" textAnchor="middle" fontWeight="bold">0闲置开销</text>
+
+                <text x="368" y="112" fill="#94a3b8" fontSize="10">• 0 流量 0 闲置开销 · 毫秒级冷启动</text>
+                <text x="368" y="130" fill="#94a3b8" fontSize="10">• Supabase Auth JWT · Scoped Token</text>
+              </g>
+
+              {/* Node 3: WireGuard 0-Port Mesh Network */}
+              <g
+                className="cursor-pointer transition-all duration-200"
+                onClick={() => { setActiveProvider("contabo"); setActiveSaasNode("wireguard"); }}
+                onMouseEnter={() => { setActiveProvider("contabo"); setActiveSaasNode("wireguard"); }}
+                onMouseLeave={() => { setActiveProvider(null); setActiveSaasNode(null); }}
+              >
+                <rect
+                  x="675"
+                  y="40"
+                  width="240"
+                  height="115"
+                  rx="12"
+                  fill="#1e293b"
+                  stroke={activeSaasNode === "wireguard" ? "#8b5cf6" : "#475569"}
+                  strokeWidth={activeSaasNode === "wireguard" ? 2.5 : 1.2}
+                  filter={activeSaasNode === "wireguard" ? "url(#saasNodeGlow)" : undefined}
+                />
+                <rect x="687" y="52" width="36" height="36" rx="8" fill="#7c3aed" fillOpacity="0.2" stroke="#7c3aed" strokeWidth="1.2" />
+                <text x="705" y="75" fill="#a78bfa" fontSize="13" fontWeight="bold" textAnchor="middle">WG</text>
+                <text x="732" y="66" fill="#ffffff" fontSize="12.5" fontWeight="bold">WireGuard 零信任网格</text>
+                <text x="732" y="82" fill="#c084fc" fontSize="10" fontFamily="monospace">10.240.0.0/16 · 5 VPS</text>
+
+                <rect x="835" y="52" width="70" height="18" rx="4" fill="#8b5cf6" fillOpacity="0.15" stroke="#8b5cf6" strokeWidth="0.8" />
+                <text x="870" y="65" fill="#c084fc" fontSize="9" textAnchor="middle" fontWeight="bold">0端口暴露</text>
+
+                <text x="688" y="112" fill="#94a3b8" fontSize="10">• 全网 0 入站端口暴露 · 免疫扫描</text>
+                <text x="688" y="130" fill="#94a3b8" fontSize="10">• ChaCha20-Poly1305 内核极速互联</text>
+              </g>
+
+              {/* Node 4: Supabase Dual-Track Data Hub */}
+              <g
+                className="cursor-pointer transition-all duration-200"
+                onClick={() => { setActiveProvider("supabase"); setActiveSaasNode("supabase"); }}
+                onMouseEnter={() => { setActiveProvider("supabase"); setActiveSaasNode("supabase"); }}
+                onMouseLeave={() => { setActiveProvider(null); setActiveSaasNode(null); }}
+              >
+                <rect
+                  x="150"
+                  y="225"
+                  width="300"
+                  height="125"
+                  rx="12"
+                  fill="#1e293b"
+                  stroke={activeSaasNode === "supabase" || activeProvider === "supabase" ? "#10b981" : "#475569"}
+                  strokeWidth={activeSaasNode === "supabase" || activeProvider === "supabase" ? 2.5 : 1.2}
+                  filter={activeSaasNode === "supabase" || activeProvider === "supabase" ? "url(#saasNodeGlow)" : undefined}
+                />
+                <rect x="162" y="237" width="36" height="36" rx="8" fill="#059669" fillOpacity="0.2" stroke="#059669" strokeWidth="1.2" />
+                <text x="180" y="260" fill="#34d399" fontSize="13" fontWeight="bold" textAnchor="middle">DB</text>
+                <text x="207" y="251" fill="#ffffff" fontSize="12.5" fontWeight="bold">双轨数据中枢 (PG + OLAP)</text>
+                <text x="207" y="267" fill="#6ee7b7" fontSize="10" fontFamily="monospace">Supabase RLS · ClickHouse</text>
+
+                <rect x="365" y="237" width="74" height="18" rx="4" fill="#10b981" fillOpacity="0.15" stroke="#10b981" strokeWidth="0.8" />
+                <text x="402" y="250" fill="#34d399" fontSize="9" textAnchor="middle" fontWeight="bold">行级安全隔离</text>
+
+                <text x="163" y="297" fill="#94a3b8" fontSize="10">• PostgreSQL 16 · pgvector 向量检索</text>
+                <text x="163" y="315" fill="#94a3b8" fontSize="10">• ClickHouse 挂载 R2 存储 · 0 跨云流量费</text>
+                <text x="163" y="333" fill="#94a3b8" fontSize="10">• 敏感数据租约化动态凭据 (Vault OIDC)</text>
+              </g>
+
+              {/* Node 5: VictoriaMetrics Telemetry & Sentinel */}
+              <g
+                className="cursor-pointer transition-all duration-200"
+                onClick={() => { setActiveProvider("observability"); setActiveSaasNode("observability"); }}
+                onMouseEnter={() => { setActiveProvider("observability"); setActiveSaasNode("observability"); }}
+                onMouseLeave={() => { setActiveProvider(null); setActiveSaasNode(null); }}
+              >
+                <rect
+                  x="510"
+                  y="225"
+                  width="310"
+                  height="125"
+                  rx="12"
+                  fill="#1e293b"
+                  stroke={activeSaasNode === "observability" || activeProvider === "observability" ? "#06b6d4" : "#475569"}
+                  strokeWidth={activeSaasNode === "observability" || activeProvider === "observability" ? 2.5 : 1.2}
+                  filter={activeSaasNode === "observability" || activeProvider === "observability" ? "url(#saasNodeGlow)" : undefined}
+                />
+                <rect x="522" y="237" width="36" height="36" rx="8" fill="#0891b2" fillOpacity="0.2" stroke="#0891b2" strokeWidth="1.2" />
+                <text x="540" y="260" fill="#22d3ee" fontSize="13" fontWeight="bold" textAnchor="middle">APM</text>
+                <text x="567" y="251" fill="#ffffff" fontSize="12.5" fontWeight="bold">全栈遥测与外部哨兵中枢</text>
+                <text x="567" y="267" fill="#a5f3fc" fontSize="10" fontFamily="monospace">Victoria全家桶 · Watchdog</text>
+
+                <rect x="735" y="237" width="74" height="18" rx="4" fill="#06b6d4" fillOpacity="0.15" stroke="#06b6d4" strokeWidth="0.8" />
+                <text x="772" y="250" fill="#22d3ee" fontSize="9" textAnchor="middle" fontWeight="bold">防自盲哨兵</text>
+
+                <text x="523" y="297" fill="#94a3b8" fontSize="10">• 7x 内存压缩 · OTLP 原生协议链路</text>
+                <text x="523" y="315" fill="#94a3b8" fontSize="10">• 外部跨云独立哨兵节点 · 防止监控自盲</text>
+                <text x="523" y="333" fill="#94a3b8" fontSize="10">• 毫秒级流日志检索 · SLO 告警闭环</text>
+              </g>
+            </svg>
+                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 px-2 pt-2 border-t border-slate-800/80 mt-1">
+                  <span>SaaS 零信任服务网格拓扑 · 全网 0 端口入站暴露</span>
+                  <span className="text-purple-400">Cloudflare R2 0元出网 · WireGuard 虚拟专网</span>
+                </div>
+              </div>
+            </div>
+
+        {/* Right Column: 5 大云原生 SaaS 基础设施 (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between pb-0.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              5 大云原生 SaaS 基础设施
+            </span>
+            <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+              0元出网 · 悬浮联动
+            </span>
+          </div>
+
+          <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+            {TOP_SAAS_PROVIDERS.map((saas) => {
+              const isSelected = activeProvider === saas.id || activeSaasNode === saas.id;
+              return (
+                <div
+                  key={saas.id}
+                  onMouseEnter={() => {
+                    handleSaasHover(saas);
+                    setActiveSaasNode(saas.id);
+                  }}
+                  onMouseLeave={() => {
+                    handleMouseLeave();
+                    setActiveSaasNode(null);
+                  }}
+                  className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-purple-50/90 dark:bg-purple-950/50 border-purple-500 ring-1 ring-purple-500/50"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: saas.color }}
+                      />
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {saas.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400 hidden sm:inline">
+                        {saas.subName}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full border ${saas.badgeBg}`}
+                    >
+                      {saas.tag}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                    <strong>技术体系:</strong> {saas.techStack}
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-purple-600 dark:text-purple-400 font-medium line-clamp-1">
+                    <strong>价值配额:</strong> {saas.quota}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                    {saas.role} · {saas.regions}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+          </div>
+
+          {/* SaaS 零信任安全防御基线与 FinOps 多云混合对账表 */}
+          <div className="space-y-4 pt-2">
+            {/* 零信任安全防御基线 */}
               <div className="bg-slate-50/60 dark:bg-slate-950/40 rounded-xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-2">
@@ -1173,12 +1425,11 @@ export default function GlobalMeshMap() {
                   </table>
                 </div>
               </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
 
-      {/* 2. App Topology View */}
+      {/* 3. App Topology View (8:4 Layout) */}
       {activeLayer === "app-topology" && (
         <div className="space-y-4">
           {/* Filter Bar */}
@@ -1229,9 +1480,11 @@ export default function GlobalMeshMap() {
             </div>
           </div>
 
-          {/* Inline SVG Topology Diagram */}
-          <div className="relative bg-slate-950/80 dark:bg-slate-950 rounded-xl p-3 border border-slate-800 overflow-hidden shadow-inner">
-            <svg viewBox="0 0 1000 500" className="w-full h-auto max-h-[500px] select-none block">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            {/* Left Column: 8 cols SVG */}
+            <div className="lg:col-span-8 flex flex-col h-full min-h-[420px]">
+              <div className="relative bg-slate-950/80 dark:bg-slate-950 rounded-xl p-3 border border-slate-800 overflow-hidden shadow-inner flex-1 flex items-center justify-center">
+                <svg viewBox="0 0 1000 500" className="w-full h-auto max-h-[500px] select-none block">
               <defs>
                 <marker id="topoArrowBlue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#60a5fa" />
@@ -1334,6 +1587,64 @@ export default function GlobalMeshMap() {
                 <text x="755" y="448" fill="#22d3ee" fontSize="9" textAnchor="middle" fontWeight="bold">行级隔离 + 0 溢价</text>
               </g>
             </svg>
+              </div>
+            </div>
+
+        {/* Right Column: 5 层架构能力与端到端权限管控 (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between pb-0.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              5 层架构能力与端到端权限管控
+            </span>
+            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              0 端口暴露 · 动态验签
+            </span>
+          </div>
+
+          <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+            {APP_TOPOLOGY_TIER_SUMMARIES.map((tier) => {
+              const isSelected = selectedTopologyTier === tier.id;
+              return (
+                <div
+                  key={tier.id}
+                  onClick={() => setSelectedTopologyTier(isSelected ? null : tier.id)}
+                  onMouseEnter={() => setSelectedTopologyTier(tier.id)}
+                  onMouseLeave={() => setSelectedTopologyTier(null)}
+                  className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-500 ring-1 ring-emerald-500/50"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: tier.color }}
+                      />
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        {tier.level}
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {tier.name}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
+                      {tier.badge}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-mono line-clamp-1">
+                    {tier.keyTech}
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                    <Lock className="h-3 w-3 text-emerald-500 shrink-0" />
+                    <span className="line-clamp-1 font-medium">{tier.authMechanism}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
           </div>
 
           {/* 5 Layer Detailed Cards */}
@@ -1504,89 +1815,156 @@ export default function GlobalMeshMap() {
         </div>
       )}
 
-      {/* 3. Lifecycle View */}
+      {/* 4. Lifecycle View (8:4 Layout) */}
       {activeLayer === "lifecycle" && (
         <div className="space-y-4">
-          {/* Inline SVG Pipeline Diagram */}
-          <div className="relative bg-slate-950/80 dark:bg-slate-950 rounded-xl p-3 border border-slate-800 overflow-hidden shadow-inner">
-            <svg viewBox="0 0 1000 130" className="w-full h-auto max-h-[140px] select-none block">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            {/* Left Column: 8 cols Stateful Closed-Loop Branch & Release Tag SVG */}
+            <div className="lg:col-span-8 flex flex-col h-full min-h-[420px] justify-between space-y-2">
+              <div className="relative bg-slate-950/90 dark:bg-slate-950 rounded-xl p-3 border border-slate-800 overflow-hidden shadow-inner flex-1 flex flex-col justify-between">
+            <svg viewBox="0 0 1000 370" className="w-full h-auto max-h-[440px] select-none block">
               <defs>
-                <linearGradient id="pipeLineGrad" x1="0" y1="0" x2="1" y2="0">
+                <linearGradient id="lifeUpperGrad" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#3b82f6" />
-                  <stop offset="50%" stopColor="#8b5cf6" />
+                  <stop offset="50%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#f59e0b" />
+                </linearGradient>
+                <linearGradient id="lifeLowerGrad" x1="1" y1="0" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="50%" stopColor="#06b6d4" />
                   <stop offset="100%" stopColor="#10b981" />
                 </linearGradient>
-                <filter id="nodeGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                <filter id="lifeNodeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
+                <marker id="lifeArrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#60a5fa" />
+                </marker>
+                <marker id="lifeArrowEmerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#34d399" />
+                </marker>
+                <marker id="lifeArrowAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#fbbf24" />
+                </marker>
+                <marker id="lifeArrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#c084fc" />
+                </marker>
+                <marker id="lifeArrowCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#22d3ee" />
+                </marker>
               </defs>
 
-              {/* Background pipeline track */}
-              <line x1="70" y1="55" x2="930" y2="55" stroke="#334155" strokeWidth="6" strokeLinecap="round" />
-              <line x1="70" y1="55" x2="930" y2="55" stroke="url(#pipeLineGrad)" strokeWidth="3" strokeDasharray="6 4" strokeLinecap="round" />
+              {/* Upper Background Track (GitOps SIT/UAT) */}
+              <line x1="90" y1="80" x2="890" y2="80" stroke="#334155" strokeWidth="4" strokeLinecap="round" opacity="0.6" />
+              <line x1="90" y1="80" x2="890" y2="80" stroke="url(#lifeUpperGrad)" strokeWidth="2" strokeDasharray="6 3" strokeLinecap="round" />
 
-              {/* 7 Stage Nodes */}
-              {[
-                { id: "code", no: 1, name: "CODE", sub: "Gitea / Vault", cx: 70 },
-                { id: "plan", no: 2, name: "PLAN", sub: "Linear / Docs", cx: 213 },
-                { id: "build", no: 3, name: "BUILD", sub: "Actions / Runner", cx: 356 },
-                { id: "deploy", no: 4, name: "DEPLOY", sub: "GitOps / Run", cx: 500 },
-                { id: "security", no: 5, name: "SECURITY", sub: "Vault / ZTNA", cx: 643 },
-                { id: "run", no: 6, name: "RUN", sub: "5 VPS Mesh", cx: 786 },
-                { id: "observability", no: 7, name: "OBSERVE", sub: "Victoria / CKH", cx: 930 },
-              ].map((node) => {
-                const isSelected = activeLifecycleStage === node.id;
+              {/* Upper Flow Connectors */}
+              <path d="M 150 80 L 190 80" fill="none" stroke="#60a5fa" strokeWidth="2.5" markerEnd="url(#lifeArrowBlue)" />
+              <path d="M 310 80 L 350 80" fill="none" stroke="#34d399" strokeWidth="2.5" markerEnd="url(#lifeArrowEmerald)" />
+              <path d="M 470 80 L 510 80" fill="none" stroke="#60a5fa" strokeWidth="2.5" markerEnd="url(#lifeArrowBlue)" />
+              <path d="M 630 80 L 670 80" fill="none" stroke="#fbbf24" strokeWidth="2.5" markerEnd="url(#lifeArrowAmber)" />
+              <path d="M 790 80 L 830 80" fill="none" stroke="#fbbf24" strokeWidth="2.5" markerEnd="url(#lifeArrowAmber)" />
+
+              {/* Release Branch Path: main (570, 120) -> release/vX.Y -> PROD Tag (890, 220) */}
+              <path d="M 570 120 C 570 175, 890 170, 890 220" fill="none" stroke="#c084fc" strokeWidth="2.2" strokeDasharray="5 3" markerEnd="url(#lifeArrowPurple)" />
+              <rect x="660" y="150" width="130" height="20" rx="4" fill="#1e1b4b" stroke="#7c3aed" strokeWidth="1" />
+              <text x="725" y="164" fill="#c084fc" fontSize="9.5" textAnchor="middle" fontFamily="monospace" fontWeight="bold">release/vX.Y 维护分支</text>
+
+              {/* Hotfix Loop: main -> hotfix/* -> release/vX.Y & main */}
+              <path d="M 570 120 C 570 145, 595 145, 615 145" fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="3 2" />
+              <rect x="615" y="133" width="48" height="22" rx="4" fill="#881337" stroke="#f43f5e" strokeWidth="0.8" />
+              <text x="639" y="147" fill="#fda4af" fontSize="8.5" textAnchor="middle" fontFamily="monospace">hotfix/*</text>
+              <path d="M 663 145 C 685 145, 700 148, 700 150" fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeDasharray="3 2" />
+
+              {/* Lower Background Track (PROD Runtime & Feedback Loop) */}
+              <line x1="890" y1="260" x2="260" y2="260" stroke="#334155" strokeWidth="4" strokeLinecap="round" opacity="0.6" />
+              <line x1="890" y1="260" x2="260" y2="260" stroke="url(#lifeLowerGrad)" strokeWidth="2" strokeDasharray="6 3" strokeLinecap="round" />
+
+              {/* Lower Flow Connectors */}
+              <path d="M 830 260 L 745 260" fill="none" stroke="#c084fc" strokeWidth="2.5" markerEnd="url(#lifeArrowPurple)" />
+              <path d="M 615 260 L 535 260" fill="none" stroke="#22d3ee" strokeWidth="2.5" markerEnd="url(#lifeArrowCyan)" />
+              <path d="M 405 260 L 325 260" fill="none" stroke="#34d399" strokeWidth="2.5" markerEnd="url(#lifeArrowEmerald)" />
+
+              {/* 360° Closed Loop Return: Closed-Loop Node (195, 260) -> Issue Node (90, 120) */}
+              <path d="M 195 260 C 80 280, 20 190, 90 120" fill="none" stroke="#10b981" strokeWidth="2.8" strokeDasharray="6 3" markerEnd="url(#lifeArrowEmerald)" />
+              <rect x="18" y="180" width="88" height="22" rx="5" fill="#064e3b" stroke="#10b981" strokeWidth="1.2" />
+              <text x="62" y="195" fill="#6ee7b7" fontSize="9.5" textAnchor="middle" fontWeight="bold">360° 闭环回写</text>
+
+              {/* Render Nodes from LIFECYCLE_FLOW_NODES */}
+              {LIFECYCLE_FLOW_NODES.map((node) => {
+                const isSelected = selectedLifecycleNode === node.id;
+                const isToneBlue = node.tone === "blue";
+                const isToneEmerald = node.tone === "emerald";
+                const isTonePurple = node.tone === "purple";
+                const isToneAmber = node.tone === "amber";
+                const isToneCyan = node.tone === "cyan";
+
+                const strokeColor = isToneEmerald ? "#10b981" : isTonePurple ? "#a855f7" : isToneAmber ? "#f59e0b" : isToneCyan ? "#06b6d4" : "#3b82f6";
+                const glowStroke = isToneEmerald ? "#34d399" : isTonePurple ? "#c084fc" : isToneAmber ? "#fbbf24" : isToneCyan ? "#22d3ee" : "#60a5fa";
+                const badgeBg = isToneEmerald ? "#064e3b" : isTonePurple ? "#4c1d95" : isToneAmber ? "#78350f" : isToneCyan ? "#164e63" : "#1e3a8a";
+
                 return (
                   <g
                     key={node.id}
                     className="cursor-pointer transition-all duration-200"
-                    onClick={() => setActiveLifecycleStage(node.id as any)}
+                    onClick={() => {
+                      setSelectedLifecycleNode(node.id);
+                      setActiveLifecycleStage(node.stageId as any);
+                    }}
                   >
-                    {isSelected && (
-                      <circle
-                        cx={node.cx}
-                        cy="55"
-                        r="30"
-                        fill="none"
-                        stroke="#60a5fa"
-                        strokeWidth="2.5"
-                        strokeDasharray="4 2"
-                        filter="url(#nodeGlow)"
-                      />
-                    )}
-                    <circle
-                      cx={node.cx}
-                      cy="55"
-                      r={isSelected ? "22" : "18"}
-                      fill={isSelected ? "#2563eb" : "#1e293b"}
-                      stroke={isSelected ? "#93c5fd" : "#475569"}
-                      strokeWidth={isSelected ? "2.5" : "1.5"}
+                    <rect
+                      x={node.x - 60}
+                      y={node.y - 40}
+                      width="120"
+                      height="80"
+                      rx="10"
+                      fill="#0f172a"
+                      stroke={isSelected ? glowStroke : strokeColor}
+                      strokeWidth={isSelected ? 2.5 : 1.2}
+                      filter={isSelected ? "url(#lifeNodeGlow)" : undefined}
+                    />
+                    
+                    {/* Node Badge */}
+                    <rect
+                      x={node.x - 52}
+                      y={node.y - 32}
+                      width="45"
+                      height="16"
+                      rx="4"
+                      fill={badgeBg}
+                      stroke={strokeColor}
+                      strokeWidth="0.8"
                     />
                     <text
-                      x={node.cx}
-                      y="60"
-                      fill={isSelected ? "#ffffff" : "#94a3b8"}
-                      fontSize="12"
+                      x={node.x - 29}
+                      y={node.y - 21}
+                      fill={glowStroke}
+                      fontSize="8.5"
+                      textAnchor="middle"
+                      fontFamily="monospace"
+                      fontWeight="bold"
+                    >
+                      {node.tag}
+                    </text>
+
+                    {/* Node Label */}
+                    <text
+                      x={node.x}
+                      y={node.y + 4}
+                      fill={isSelected ? "#ffffff" : "#f1f5f9"}
+                      fontSize="11.5"
                       fontWeight="bold"
                       textAnchor="middle"
                     >
-                      {node.no}
+                      {node.label}
                     </text>
+
+                    {/* Node Subtitle */}
                     <text
-                      x={node.cx}
-                      y={isSelected ? "98" : "96"}
-                      fill={isSelected ? "#60a5fa" : "#e2e8f0"}
-                      fontSize="11"
-                      fontWeight={isSelected ? "bold" : "600"}
-                      textAnchor="middle"
-                    >
-                      {node.name}
-                    </text>
-                    <text
-                      x={node.cx}
-                      y={isSelected ? "112" : "110"}
-                      fill="#64748b"
+                      x={node.x}
+                      y={node.y + 22}
+                      fill={isSelected ? glowStroke : "#94a3b8"}
                       fontSize="9.5"
                       textAnchor="middle"
                       fontFamily="monospace"
@@ -1597,6 +1975,87 @@ export default function GlobalMeshMap() {
                 );
               })}
             </svg>
+              </div>
+
+              {/* Selected Node Inspector Bar */}
+              {(() => {
+                const activeNode = LIFECYCLE_FLOW_NODES.find((n) => n.id === selectedLifecycleNode) || LIFECYCLE_FLOW_NODES[0];
+                return (
+                  <div className="p-2.5 rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <GitBranch className="h-4 w-4 text-indigo-500 shrink-0" />
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100 mr-2">
+                          {activeNode.label} ({activeNode.sub})
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                          {activeNode.tag}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug flex-1 sm:text-right">
+                      {activeNode.description}
+                    </p>
+                  </div>
+                );
+              })()}
+            </div>
+
+        {/* Right Column: 7 维 IT 演进与发布门禁规范 (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
+          <div className="flex items-center justify-between pb-0.5">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              7 维 IT 演进与发布门禁规范
+            </span>
+            <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+              Trunk-Based · 0 生产兜底
+            </span>
+          </div>
+
+          <div className="space-y-1.5 flex-1 flex flex-col justify-between">
+            {LIFECYCLE_CLOSED_LOOP_STAGES.map((stg) => {
+              const isSelected = activeLifecycleStage === stg.id;
+              return (
+                <div
+                  key={stg.id}
+                  onClick={() => {
+                    setActiveLifecycleStage(stg.id as any);
+                    const matching = LIFECYCLE_FLOW_NODES.find((n) => n.stageId === stg.id);
+                    if (matching) setSelectedLifecycleNode(matching.id);
+                  }}
+                  className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-indigo-50/90 dark:bg-indigo-950/50 border-indigo-500 ring-1 ring-indigo-500/50"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-indigo-600/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">
+                        {stg.no}
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {stg.name}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500/5">
+                      {stg.badge}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                    <strong>规范:</strong> {stg.standard}
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                    <span className="font-mono text-indigo-600 dark:text-indigo-400 truncate mr-2">
+                      {stg.branchRule}
+                    </span>
+                    <span className="shrink-0 text-slate-400">{stg.deliverable}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
           </div>
 
           {/* 7-Stage Selector Pills */}
