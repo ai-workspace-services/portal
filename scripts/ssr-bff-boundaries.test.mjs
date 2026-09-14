@@ -48,6 +48,10 @@ test("existing auth and Console BFF boundaries are preserved", () => {
       "console",
     );
   }
+  assert.equal(
+    bffBoundaryForRoute("api/global-mesh/nodes/route.ts"),
+    "public",
+  );
 });
 
 test("no generic API or similar prefix gains a BFF handler", () => {
