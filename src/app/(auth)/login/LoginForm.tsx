@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -377,9 +377,9 @@ export function LoginForm() {
               >
                 {authCopy.form.password}
               </label>
-              <Link href="#" className={AUTH_TEXT_LINK_CLASS}>
+              <BoundaryLink href="/account-recovery" className={AUTH_TEXT_LINK_CLASS}>
                 {authCopy.forgotPassword}
-              </Link>
+              </BoundaryLink>
             </div>
             <div className="relative">
               <input

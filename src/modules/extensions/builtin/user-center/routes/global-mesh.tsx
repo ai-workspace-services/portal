@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import {
   Activity,
   ArrowUpRight,
@@ -111,13 +111,13 @@ export default function UserCenterGlobalMeshRoute() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
+            <BoundaryLink
               href="/products/global-mesh"
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               <span>{zh ? "访问产品展示页" : "View Product Showcase"}</span>
-            </Link>
+            </BoundaryLink>
           </div>
         </div>
       </header>
@@ -147,13 +147,13 @@ export default function UserCenterGlobalMeshRoute() {
               {zh ? "五大 VPS 运营商算力节点状态" : "Top 5 VPS Providers Status"}
             </h2>
           </div>
-          <Link
+          <BoundaryLink
             href="/products/global-mesh"
             className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
           >
             <span>{zh ? "查看完整多云基准评测" : "View Multi-cloud Benchmarks"}</span>
             <ArrowUpRight className="h-3.5 w-3.5" />
-          </Link>
+          </BoundaryLink>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
