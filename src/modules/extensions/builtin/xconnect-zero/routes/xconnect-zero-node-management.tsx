@@ -42,7 +42,7 @@ import {
 
 type Page = "overview" | "join" | "configuration";
 type NodeRole = "gateway" | "one";
-type Platform = "linux" | "darwin" | "windows";
+type Platform = "linux" | "darwin" | "windows" | "ios" | "android";
 type InvitationTtl = 15 | 30 | 60;
 type ConnectionModeId = "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 type ResourceState = "loading" | "ready" | "error" | "unavailable";
@@ -74,18 +74,18 @@ const modes: Array<{
     name: { zh: "高性能直连", en: "High-performance direct" },
     technology: "WireGuard UDP / L3",
     description: {
-      zh: "纯三层 VPN，直接使用 WireGuard UDP；延迟最低、吞吐最高，需要网络允许 UDP 51820。",
-      en: "A pure L3 VPN using WireGuard UDP directly for the lowest latency and highest throughput; requires UDP 51820 access.",
+      zh: "规划中的直连模式；本轮 UAT 不启用，公网不开放 WireGuard UDP 51820。",
+      en: "A planned direct mode; disabled for this UAT baseline because public WireGuard UDP 51820 is not exposed.",
     },
   },
   {
     id: "wg_vless_l3",
     icon: ShieldCheck,
     name: { zh: "抗干扰连接", en: "Resilient connection" },
-    technology: "WireGuard over VLESS / L3",
+    technology: "WireGuard over VLESS / XHTTP / L3",
     description: {
-      zh: "通过 VLESS/TLS/XUDP 封装 WireGuard；适合 UDP 受限或容易受到干扰的网络。",
-      en: "Wraps WireGuard with VLESS/TLS/XUDP for networks where UDP is restricted or easily disrupted.",
+      zh: "通过 VLESS/XHTTP TLS TCP 443 封装 WireGuard；这是当前 Gateway/One 的 UAT 默认模式。",
+      en: "Wraps WireGuard with VLESS/XHTTP TLS TCP 443; this is the current Gateway/One UAT default.",
     },
     recommended: true,
   },
@@ -95,8 +95,8 @@ const modes: Array<{
     name: { zh: "二层互联", en: "Layer 2 interconnect" },
     technology: "WireGuard over VLESS / L2-MAC",
     description: {
-      zh: "在安全隧道上扩展二层网络；支持 MAC、ARP 和广播，仅限 Linux Gateway。",
-      en: "Extends Layer 2 networking over the secure tunnel with MAC, ARP and broadcast support; Linux Gateways only.",
+      zh: "规划中的二层模式；当前 UAT 不下发，仅保留卡片用于后续 Linux Gateway 扩展。",
+      en: "A planned Layer 2 mode; not dispatched in the current UAT and retained for a future Linux Gateway extension.",
     },
     linuxGatewayOnly: true,
   },
@@ -1071,8 +1071,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                 title={zh ? "加入 One 节点" : "Join a One node"}
                 detail={
                   zh
-                    ? "One 可选择 Linux、macOS 或 Windows"
-                    : "One supports Linux, macOS or Windows"
+                    ? "One 可选择 Linux、macOS、Windows、iOS 或 Android"
+                    : "One supports Linux, macOS, Windows, iOS or Android"
                 }
                 value={role === "one" ? (zh ? "当前角色" : "Selected") : ""}
                 onClick={() => chooseRole("one")}
@@ -1172,7 +1172,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   <div className="mt-2 flex flex-wrap gap-2">
                     {(role === "gateway"
                       ? ["linux"]
-                      : ["linux", "darwin", "windows"]
+                      : ["linux", "darwin", "windows", "ios", "android"]
                     ).map((item) => (
                       <label
                         key={item}
@@ -1190,7 +1190,11 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                           ? "macOS"
                           : item === "windows"
                             ? "Windows"
-                            : "Linux"}
+                            : item === "ios"
+                              ? "iOS"
+                              : item === "android"
+                                ? "Android"
+                                : "Linux"}
                       </label>
                     ))}
                   </div>
@@ -1543,6 +1547,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   <option value="linux">Linux</option>
                   <option value="darwin">macOS</option>
                   <option value="windows">Windows</option>
+                  <option value="ios">iOS</option>
+                  <option value="android">Android</option>
                 </select>
               </label>
             </div>
