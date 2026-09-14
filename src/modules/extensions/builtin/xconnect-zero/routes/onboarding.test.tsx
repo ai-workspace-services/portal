@@ -108,7 +108,7 @@ function installApi(options?: {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("XConnect Zero onboarding and management", () => {
-  it("binds Gateway to Linux and One to all three platforms, with explicit network and short TTL", async () => {
+  it("binds Gateway to Linux and One to all supported platforms, with explicit network and short TTL", async () => {
     const fetchMock = installApi();
     const user = userEvent.setup();
     render(<XConnectZeroOverviewRoute />);
@@ -118,6 +118,8 @@ describe("XConnect Zero onboarding and management", () => {
     expect(screen.getByRole("radio", { name: "One" })).toBeChecked();
     expect(screen.getByRole("radio", { name: "macOS" })).toBeEnabled();
     expect(screen.getByRole("radio", { name: "Windows" })).toBeEnabled();
+    expect(screen.getByRole("radio", { name: "iOS" })).toBeEnabled();
+    expect(screen.getByRole("radio", { name: "Android" })).toBeEnabled();
     await user.selectOptions(screen.getByLabelText("已授权网络"), "net-b");
     await user.type(screen.getByLabelText("设备 ID"), "one-win-01");
     await user.click(screen.getByRole("radio", { name: "Windows" }));
