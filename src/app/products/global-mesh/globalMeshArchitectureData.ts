@@ -561,3 +561,365 @@ export const FINOPS_TABLE_ROWS = [
     advantage: "天然防御全网端口嗅探与 0-day 扫描",
   },
 ];
+
+export interface AppTopologyTierSummary {
+  id: string;
+  level: string;
+  name: string;
+  enName: string;
+  color: string;
+  badge: string;
+  keyTech: string;
+  authMechanism: string;
+}
+
+export const APP_TOPOLOGY_TIER_SUMMARIES: AppTopologyTierSummary[] = [
+  {
+    id: "tier-1",
+    level: "第 1 层",
+    name: "终端接入层",
+    enName: "Client Tier",
+    color: "#3b82f6",
+    badge: "双轨原生/浏览器",
+    keyTech: "Flutter · Tauri · Rust · Next.js React · WASM",
+    authMechanism: "Secure Enclave 硬件私钥 / HttpOnly Token + PKCE",
+  },
+  {
+    id: "tier-2",
+    level: "第 2 层",
+    name: "边缘调度与分发",
+    enName: "Edge Ingress Tier",
+    color: "#f97316",
+    badge: "0元出网分发",
+    keyTech: "Cloudflare 300+ Anycast PoPs · R2 · WAF · Workers",
+    authMechanism: "Anycast BGP 防御 · WAF 规则清洗 · 双向 mTLS 证书",
+  },
+  {
+    id: "tier-3",
+    level: "第 3 层",
+    name: "弹性业务控制面",
+    enName: "Control Plane Tier",
+    color: "#10b981",
+    badge: "Scale-to-Zero",
+    keyTech: "GCP Cloud Run Serverless BFF · 容器微服务",
+    authMechanism: "Supabase Auth 统一鉴权 · 动态 Scoped Token 签发",
+  },
+  {
+    id: "tier-4",
+    level: "第 4 层",
+    name: "常驻算力网格",
+    enName: "Bare-Metal Compute",
+    color: "#8b5cf6",
+    badge: "0 端口暴露专网",
+    keyTech: "5 大 VPS 运营商 48+ PoPs · WireGuard (10.240.0.0/16)",
+    authMechanism: "0 端口入站暴露 · 主动握手互联 · 覆盖网粒度 ACL",
+  },
+  {
+    id: "tier-5",
+    level: "第 5 层",
+    name: "双轨数据与遥测",
+    enName: "Data & Telemetry Tier",
+    color: "#06b6d4",
+    badge: "双轨存储架构",
+    keyTech: "Supabase PG · ClickHouse · VictoriaMetrics · R2",
+    authMechanism: "PostgreSQL 行级安全隔离 (RLS) · Vault 动态租约凭据",
+  },
+];
+
+export interface LifecycleClosedLoopStage {
+  id: string;
+  no: number;
+  name: string;
+  enName: string;
+  badge: string;
+  standard: string;
+  branchRule: string;
+  authRule: string;
+  deliverable: string;
+}
+
+export const LIFECYCLE_CLOSED_LOOP_STAGES: LifecycleClosedLoopStage[] = [
+  {
+    id: "code",
+    no: 1,
+    name: "CODE 编码与分支",
+    enName: "Branch & Worktree",
+    badge: "Trunk-Based",
+    standard: "独立 Worktree 隔离纪律 · 严禁直接向 main 或 release/* 推送",
+    branchRule: "从 main 派生 feature/* 或 bugfix/* 分支",
+    authRule: "本地机密隔离：OS Keychain / 租约制 Vault OIDC",
+    deliverable: "单一职责原子 Commit (引用 Issue 编号)",
+  },
+  {
+    id: "plan",
+    no: 2,
+    name: "PLAN 需求与溯源",
+    enName: "Issue as Source of Truth",
+    badge: "Source of Truth",
+    standard: "Issue 是唯一权威需求事实来源 · 无 Issue 严禁开工",
+    branchRule: "分支名强制绑定 Issue 编号 (如 feature/123-mesh)",
+    authRule: "双向可导航证据链：Issue ➔ PR ➔ CI ➔ Deploy ➔ Tag",
+    deliverable: "具备可机器判定验收标准的结构化 Issue 任务单",
+  },
+  {
+    id: "build",
+    no: 3,
+    name: "BUILD 构建与门禁",
+    enName: "CI Gate & Immunity",
+    badge: "CI Gate (SIT)",
+    standard: "构建产物环境无关性 · pull_request 自动路由 SIT 环境验证",
+    branchRule: "PR 门禁自动化拦截：Lint / 单元测试 / 敏感词 / 假绿检测",
+    authRule: "退出码 0 必须附带可断言证据 · 阻断假绿逃逸",
+    deliverable: "不可变容器镜像 (Immutable Image Digest) 与打包产物",
+  },
+  {
+    id: "deploy",
+    no: 4,
+    name: "DEPLOY 部署与不可变 Tag",
+    enName: "Release Tags & Gating",
+    badge: "Immutable Tags",
+    standard: "不可变发版语义：UAT 日常快照 vs PROD 严格语义化版本",
+    branchRule: "UAT: uat-daily-build-*-rN · PROD: vMAJOR.MINOR.PATCH",
+    authRule: "后端优先门禁 (Backend-First)：后端全绿前严禁发布前端",
+    deliverable: "已签名的不可变 GitHub Release 资产与部署审计凭证",
+  },
+  {
+    id: "security",
+    no: 5,
+    name: "SECURITY 零信任与凭据",
+    enName: "Zero-Production-Fallback",
+    badge: "Zero-Production-Fallback",
+    standard: "零生产兜底原则：任何非生产环境严禁将生产端点/密钥作为兜底值",
+    branchRule: "缺省配置必须遵循 Safe Local Loopback 或 Fail-Fast 断言失败",
+    authRule: "GitHub OIDC ➔ Vault JWT 动态短效 Token (严格三元组绑定)",
+    deliverable: "Vault 租约制临时凭证与静态配置零泄漏审计日志",
+  },
+  {
+    id: "run",
+    no: 6,
+    name: "RUN 生产运行与调度",
+    enName: "Multi-Cloud Bare-Metal Mesh",
+    badge: "0 Ingress Ports",
+    standard: "多云中立 5 VPS 裸金属网格 + Serverless 弹性控制面协同",
+    branchRule: "全网 0 入站端口暴露 · WireGuard 覆盖网 (10.240.0.0/16) 专网互联",
+    authRule: "mTLS 双向身份鉴权通道 · Scale-to-Zero 闲置零开销",
+    deliverable: "秒级故障自愈的多云双活高韧性分布式生产环境",
+  },
+  {
+    id: "observability",
+    no: 7,
+    name: "OBSERVE 全栈遥测与闭环",
+    enName: "Closed-Loop Feedback",
+    badge: "360° Closed Loop",
+    standard: "360° 运维闭环：APM 告警/缺陷自动回写需求源头 Issue 证据链",
+    branchRule: "Victoria 全家桶 (指标) + ClickHouse (日志) + 外部独立哨兵探针",
+    authRule: "SLO 告警与异常堆栈直达中枢 ➔ 触发工单 ➔ 启动下轮循环",
+    deliverable: "全链路分布式链路 Trace 与实时 SLO 对账报告",
+  },
+];
+
+export interface LifecycleFlowNode {
+  id: string;
+  x: number;
+  y: number;
+  label: string;
+  sub: string;
+  tag: string;
+  tone: "blue" | "emerald" | "purple" | "amber" | "cyan";
+  type: "start" | "branch" | "gate" | "trunk" | "snapshot" | "release" | "deploy" | "run" | "observe" | "loop";
+  stageId: string;
+  description: string;
+}
+
+export const LIFECYCLE_FLOW_NODES: LifecycleFlowNode[] = [
+  {
+    id: "issue",
+    x: 90,
+    y: 80,
+    label: "1. 需求事实源",
+    sub: "Issue / Linear",
+    tag: "Truth",
+    tone: "blue",
+    type: "start",
+    stageId: "plan",
+    description: "需求唯一事实来源：必须明确目标、机器可判定验收标准与影响范围，无 Issue 不开工。",
+  },
+  {
+    id: "branch",
+    x: 250,
+    y: 80,
+    label: "2. 独立 Worktree 分支",
+    sub: "feature/* / bugfix/*",
+    tag: "Branch",
+    tone: "blue",
+    type: "branch",
+    stageId: "code",
+    description: "严格执行 Worktree 隔离纪律，本地 main 仅作集成镜像，分支名携带 Issue 编号。",
+  },
+  {
+    id: "pr_gate",
+    x: 410,
+    y: 80,
+    label: "3. PR 门禁 (SIT)",
+    sub: "pull_request 自动化",
+    tag: "CI Gate",
+    tone: "emerald",
+    type: "gate",
+    stageId: "build",
+    description: "pull_request 自动路由 SIT 环境，并行执行代码静态分析、单元测试、敏感词与假绿拦截。",
+  },
+  {
+    id: "trunk",
+    x: 570,
+    y: 80,
+    label: "4. 主干集成 (main)",
+    sub: "Squash Merge",
+    tag: "Trunk",
+    tone: "blue",
+    type: "trunk",
+    stageId: "code",
+    description: "PR 审查通过后 Squash-Merge 入 main 主干，保证主干每一提交均具备独立可构建性。",
+  },
+  {
+    id: "uat_tag",
+    x: 730,
+    y: 80,
+    label: "5. UAT 不可变快照",
+    sub: "uat-daily-build-*-rN",
+    tag: "Snapshot",
+    tone: "amber",
+    type: "snapshot",
+    stageId: "deploy",
+    description: "发布前生成跨仓库对齐的不可变日常快照 Tag，严禁删除、覆盖或使用 mutable ref。",
+  },
+  {
+    id: "uat_deploy",
+    x: 890,
+    y: 80,
+    label: "6. UAT 自动对账部署",
+    sub: "Serverless + CDN",
+    tag: "Deploy",
+    tone: "amber",
+    type: "deploy",
+    stageId: "deploy",
+    description: "自动路由至 UAT 验证环境，完成跨仓不可变快照对账与功能回归验证。",
+  },
+  {
+    id: "prod_tag",
+    x: 890,
+    y: 260,
+    label: "7. PROD 正式发布 Tag",
+    sub: "vMAJOR.MINOR.PATCH",
+    tag: "Release",
+    tone: "purple",
+    type: "release",
+    stageId: "deploy",
+    description: "从 release/vX.Y 检出 SemVer 严格不可变版本，后端优先门禁就绪后触发全网发布。",
+  },
+  {
+    id: "prod_run",
+    x: 680,
+    y: 260,
+    label: "8. 多云网格生产运行",
+    sub: "5 VPS Mesh (0 端口)",
+    tag: "Runtime",
+    tone: "purple",
+    type: "run",
+    stageId: "run",
+    description: "全网 0 入站端口暴露，WireGuard 虚拟覆盖网 (10.240.0.0/16) 与 Serverless BFF 弹性协同。",
+  },
+  {
+    id: "observe",
+    x: 470,
+    y: 260,
+    label: "9. 全栈可观测哨兵",
+    sub: "Victoria + ClickHouse",
+    tag: "APM/SLO",
+    tone: "cyan",
+    type: "observe",
+    stageId: "observability",
+    description: "时序指标、分布式 Tracing 与海量日志无死角遥测，外部独立哨兵探针防止监控自盲。",
+  },
+  {
+    id: "closed_loop",
+    x: 260,
+    y: 260,
+    label: "10. 闭环证据回写",
+    sub: "告警 ➔ Issue 自动回写",
+    tag: "Closed-Loop",
+    tone: "emerald",
+    type: "loop",
+    stageId: "observability",
+    description: "生产告警与巡检缺陷自动回写需求源头 Issue 证据链，形成 360° 全生命周期闭环演进！",
+  },
+];
+
+export interface SaasMeshNode {
+  id: string;
+  name: string;
+  provider: string;
+  role: string;
+  color: string;
+  x: number;
+  y: number;
+  tech: string;
+  advantage: string;
+}
+
+export const SAAS_MESH_NODES: SaasMeshNode[] = [
+  {
+    id: "cloudflare",
+    name: "Cloudflare Anycast 边缘",
+    provider: "Cloudflare",
+    role: "L3-L7 WAF & 0元出网分发",
+    color: "#f97316",
+    x: 140,
+    y: 120,
+    tech: "300+ Edge PoPs · BGP DNS · R2",
+    advantage: "R2 0元出网 · 毫秒级边缘加速",
+  },
+  {
+    id: "cloudrun",
+    name: "GCP Cloud Run 无服务器",
+    provider: "Google Cloud",
+    role: "Serverless 业务接入控制面",
+    color: "#3b82f6",
+    x: 480,
+    y: 120,
+    tech: "Scale-to-Zero · OIDC 租约",
+    advantage: "0 流量 0 闲置开销 · 毫秒级冷启",
+  },
+  {
+    id: "wireguard",
+    name: "WireGuard 零信任网格",
+    provider: "5 VPS Mesh",
+    role: "0 端口入站暴露虚拟覆盖网",
+    color: "#8b5cf6",
+    x: 820,
+    y: 120,
+    tech: "10.240.0.0/16 · ChaCha20",
+    advantage: "全网 0 入站暴露 · 免疫扫描",
+  },
+  {
+    id: "supabase",
+    name: "Supabase PG 双轨存储",
+    provider: "Supabase & VPS",
+    role: "业务强一致数据 & 向量检索",
+    color: "#10b981",
+    x: 320,
+    y: 310,
+    tech: "PostgreSQL · pgvector · RLS",
+    advantage: "行级安全隔离 · 独占 NVMe",
+  },
+  {
+    id: "observability",
+    name: "Victoria 全栈遥测哨兵",
+    provider: "VictoriaMetrics",
+    role: "时序指标、链路与日志中枢",
+    color: "#06b6d4",
+    x: 660,
+    y: 310,
+    tech: "VictoriaMetrics · ClickHouse",
+    advantage: "7x 内存压缩 · 告警防自盲",
+  },
+];
