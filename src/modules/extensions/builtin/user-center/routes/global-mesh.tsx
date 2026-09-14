@@ -85,7 +85,7 @@ const VPS_PROVIDERS: VpsProviderSummary[] = [
     name: "UCloud",
     tagline: "优质 CN2 GIA / BGP 回国专线运维跳板",
     pops: "8+ 东亚东南亚 PoP",
-    specs: "CN2 GIA · 香港/台北/东京/首尔 · $2.5/mo 轻量",
+    specs: "CN2 GIA · 香港/台北/东京/首尔 · 2.5 USD/mo 轻量",
     rtt: "22ms (香港/台北)",
     status: "运行正常",
     color: "bg-indigo-500",

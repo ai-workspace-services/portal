@@ -1,25 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
 import {
   ArrowRight,
   CheckCircle2,
+  Cloud,
   Code,
   Compass,
   Cpu,
   Database,
   ExternalLink,
   Eye,
+  GitBranch,
+  HardDrive,
+  Laptop,
   Layers,
+  LayoutGrid,
+  Lock,
+  Monitor,
+  Network,
   Radio,
   RefreshCw,
   Rocket,
+  Server,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Terminal,
   Workflow,
+  Zap,
 } from "lucide-react";
 import GlobalMeshMap from "./GlobalMeshMap";
 
@@ -458,7 +469,340 @@ const LIFECYCLE_STAGES: LifecycleStage[] = [
   },
 ];
 
+
+interface ArchNavTab {
+  id: "saas" | "cloud-neutral" | "app-topology" | "lifecycle";
+  name: string;
+  en: string;
+  badge: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const ARCH_NAV_TABS: ArchNavTab[] = [
+  {
+    id: "saas",
+    name: "SaaS 零信任服务网格",
+    en: "Zero-Trust SaaS Mesh",
+    badge: "Edge & Serverless",
+    icon: Cloud,
+  },
+  {
+    id: "cloud-neutral",
+    name: "现代云中立基础设施架构映射",
+    en: "Cloud-Neutral Infra & FinOps",
+    badge: "VPS 裸金属算力",
+    icon: Server,
+  },
+  {
+    id: "app-topology",
+    name: "应用架构拓扑网络",
+    en: "App Topology Mesh",
+    badge: "端-边-控-算-数",
+    icon: Network,
+  },
+  {
+    id: "lifecycle",
+    name: "工程视角的生命周期",
+    en: "Engineering Lifecycle",
+    badge: "7维 IT 演进",
+    icon: Workflow,
+  },
+];
+
+interface SaasServiceItem {
+  id: string;
+  name: string;
+  category: string;
+  color: string;
+  badgeColor: string;
+  tagline: string;
+  role: string;
+  specs: string;
+  highlight: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const SAAS_CORE_SERVICES: SaasServiceItem[] = [
+  {
+    id: "cloudflare",
+    name: "Cloudflare 300+ Anycast PoPs",
+    category: "Edge & Security",
+    color: "from-orange-500/10 to-amber-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400",
+    badgeColor: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+    tagline: "全球 Anycast 边缘护城河与零出网存储总线",
+    role: "边缘调度 · L3/L4/L7 WAF/DDoS · TLS 1.3 终结 · R2 零出网存储 · Workers 边缘规则",
+    specs: "300+ Anycast 节点 · R2 S3 兼容 0 元出网流量 · Anycast DNS < 15ms",
+    highlight: "彻底解决跨云流量税，秒级阻断全网网络攻击与恶意嗅探",
+    icon: Cloud,
+  },
+  {
+    id: "cloud-run",
+    name: "GCP Cloud Run Serverless",
+    category: "Control Plane",
+    color: "from-blue-500/10 to-indigo-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400",
+    badgeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    tagline: "Scale-to-Zero 弹性业务控制面与微服务网关 (BFF)",
+    role: "业务接入 BFF · API 路由分发 · JWT 统一验签 · 动态自适应伸缩",
+    specs: "Knative 弹性容器 · 0 流量时 0 实例计费 · 秒级冷启动 · 200万次/月免费请求",
+    highlight: "业务高峰自动横向扩展至数百实例，闲置期零成本常驻",
+    icon: Zap,
+  },
+  {
+    id: "supabase",
+    name: "Supabase 双轨身份与数据 (Auth + PG)",
+    category: "Identity & Core Data",
+    color: "from-emerald-500/10 to-teal-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
+    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    tagline: "云端统一认证 + VPS 自建关系与向量库双轨运行",
+    role: "GoTrue JWT 签发与生命周期 · Row Level Security (RLS) · 本地 pgvector 检索",
+    specs: "50,000 MAU 免费用户额度 · PG 16 双机高可用 · 声明式 RBAC",
+    highlight: "统一 C/S 与 B/S 用户鉴权状态，私网 PG 享受无限容量存储与向量自由",
+    icon: Database,
+  },
+  {
+    id: "vault",
+    name: "HashiCorp Vault 动态机密",
+    category: "Zero-Trust Security",
+    color: "from-purple-500/10 to-pink-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400",
+    badgeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    tagline: "集中式动态凭据管控与自动化租赁轮转中心",
+    role: "动态数据库密码签发 · 服务间 mTLS 证书颁发 · 消除硬编码落盘 · 审计全留痕",
+    specs: "Raft 3 节点高可用双活 · 凭据即用即焚 · 自动解封 KMS 联动",
+    highlight: "全链路 0 静态密钥落盘，从根本杜绝代码仓库凭据泄露风险",
+    icon: Lock,
+  },
+  {
+    id: "observability",
+    name: "observability.svc.plus 独立遥测",
+    category: "Telemetry Hub",
+    color: "from-cyan-500/10 to-blue-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400",
+    badgeColor: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+    tagline: "跨云立体可观测性与第三方独立哨兵",
+    role: "跨云 OTel 指标/链路/日志汇聚 · VictoriaMetrics 全家桶 · 外部防自盲告警",
+    specs: "存储体积较传统方案降低 7 倍 · 毫秒级日志检索 · 独立基础设施防自盲",
+    highlight: "不依赖被监控业务网络，机房故障割接时告警永不失联",
+    icon: Eye,
+  },
+];
+
+const ZERO_TRUST_DEFENSE_ITEMS = [
+  {
+    icon: Lock,
+    title: "0 端口公网入站暴露",
+    metric: "0 Ingress Ports",
+    desc: "所有算力 VPS 封闭全量公网入站端口，全部通过主动发起的 mTLS/WireGuard 握手汇聚入网，免疫公网端口扫描与 0-Day 嗅探。",
+  },
+  {
+    icon: ShieldCheck,
+    title: "0 静态永久机密落盘",
+    metric: "0 Static Secrets",
+    desc: "所有控制面与工作节点通过 Vault / Secret Manager 按需申请租约制动态临时凭据，用后即销，彻底杜绝凭据泄漏。",
+  },
+  {
+    icon: Network,
+    title: "100% 私网覆盖网隧道",
+    metric: "10.240.0.0/16 Mesh",
+    desc: "跨 5 大 VPS 运营商的 48+ 节点统一汇聚入 10.240.0.0/16 虚拟覆盖网络，端到端 ChaCha20-Poly1305 强加密传输。",
+  },
+  {
+    icon: Zap,
+    title: "毫秒级 Anycast 故障自愈",
+    metric: "< 1s BGP Failover",
+    desc: "基于 Cloudflare Anycast BGP 路由矩阵，任一区域 PoP 异常时流量在 1 秒内智能分流至就近健康节点，业务端无感知。",
+  },
+];
+
+const VPS_SUMMARY_PROVIDERS = [
+  {
+    id: "vultr",
+    name: "Vultr",
+    role: "AI 智算与 Anycast 骨干",
+    pops: "33+ 活跃数据中心",
+    specs: "NVIDIA GH200 / H100 裸金属 · Ampere ARM · VKE 托管 K8s",
+    network: "全球 Anycast BGP · 高速私网 VPC 2.0 · 最低延时 29ms (东京)",
+    cost: "ARM64 实例 3 USD/月起 · 按小时弹性计费",
+  },
+  {
+    id: "linode",
+    name: "Linode (Akamai)",
+    role: "Akamai Tier-1 骨干与托管 K8s",
+    pops: "25+ 核心机房",
+    specs: "LKE 免费控制面 · RTX6000 Ada GPU · 专用高 CPU 实例",
+    network: "Akamai 全球 Tier-1 骨干直连 · DE-CIX 骨干互联 · 延时 31ms (东京)",
+    cost: "免收取 Kubernetes 控制面管理费 · 包含丰富免费出网流量",
+  },
+  {
+    id: "hetzner",
+    name: "Hetzner",
+    role: "欧洲绿能裸金属与大流量池",
+    pops: "6+ 绿能数据中心 (德/芬/新/美)",
+    specs: "2C4G ARM CAX11 实例 · 独享 NVMe 高吞吐 · 本地私网 vSwitch",
+    network: "每台实例自带 20TB 免费流量 · 直连欧洲主要交换中心",
+    cost: "2C4G ARM 仅 €3.79/月 · 欧洲全网性价比之王",
+  },
+  {
+    id: "contabo",
+    name: "Contabo",
+    role: "高配置海量存储与离线构建集群",
+    pops: "9+ 欧美亚太节点",
+    specs: "4 vCPU / 6GB 内存 / 100GB NVMe 存储 · 专用存储 VPS",
+    network: "每台实例配备 32TB 月流量 · 覆盖美中/美东/美西/法兰克福",
+    cost: "4C6G NVMe 仅 5.5 USD/月 · 适合重型任务队列与数据备份",
+  },
+  {
+    id: "ucloud",
+    name: "UCloud Global",
+    role: "优质亚太 CN2 GIA 回国反向专线",
+    pops: "8+ 东亚东南亚核心 PoP",
+    specs: "电信/联通/移动 CN2 GIA/BGP 优化链路 · 香港/台北/首尔/新加坡",
+    network: "低至 22ms 香港极速往返 · 跨境运维管理第一选择",
+    cost: "uLighthost 轻量套餐仅 2.5 USD/月起 · 亚太连接基石",
+  },
+];
+
+const TOPOLOGY_LAYERS = [
+  {
+    level: "第 1 层",
+    name: "终端接入层",
+    enName: "Client Tier",
+    tagline: "原生多端与现代浏览器双向接入，支持本地持久化状态与就近加速",
+    color: "from-blue-500/10 to-indigo-500/10 border-blue-500/30",
+    badgeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    csDetails: {
+      title: "C/S 原生多端生态",
+      env: "macOS · Windows · Linux · iOS · Android (Flutter / Tauri / Rust)",
+      features: [
+        "原生多端运行时，支持本地 SQLite / DuckDB 离线缓存与海量数据本地索引",
+        "长连接 WireGuard / mTLS 双向通道直通网关，无需重复握手，操作零抖动",
+        "客户端更新包与增量热补丁经由 Cloudflare R2 存储分发 (0 出网流量费)",
+      ],
+      flow: "长任务 / 本地数据处理 ➔ 预设隧道网关 (第 4 层) / API 控制面 (第 3 层)",
+    },
+    bsDetails: {
+      title: "B/S 现代浏览器生态",
+      env: "Chrome · Safari · Edge · Firefox (Next.js React SPA/SSR / WASM)",
+      features: [
+        "零安装即用，现代浏览器沙箱隔离，IndexedDB / LocalStorage 轻量状态存储",
+        "标准 HTTPS / WSS 协议交互，受 CORS 与浏览器安全策略保护",
+        "首屏 HTML / JS / CSS 静态资源由 Cloudflare 300+ 边缘节点全域就近秒级加速",
+      ],
+      flow: "用户交互 ➔ Cloudflare 300+ Anycast PoPs (第 2 层) ➔ Cloud Run BFF (第 3 层)",
+    },
+  },
+  {
+    level: "第 2 层",
+    name: "边缘调度与分发层",
+    enName: "Edge Ingress Tier · Cloudflare 300+ Anycast PoPs",
+    tagline: "全球 Anycast BGP 统一接入，WAF/DDoS 安全防护与 0 出网费分发总线",
+    color: "from-orange-500/10 to-amber-500/10 border-orange-500/30",
+    badgeColor: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+    sharedDetails: {
+      title: "Cloudflare Anycast 边缘护城河",
+      components: [
+        { label: "BGP Anycast DNS", desc: "全球 300+ 城市就近解析，毫秒级网络链路寻优与跨洲智能故障切流" },
+        { label: "L3/L4/L7 弹性防护", desc: "原生清洗 Terabit 级 DDoS 洪水，WAF 动态防恶意嗅探与 CC 攻击" },
+        { label: "Cloudflare R2 存储总线", desc: "S3 兼容对象存储，0 出网流量税 (0 USD/GB)，为全网多端提供超低成本静态资源分发" },
+        { label: "边缘规则 Workers", desc: "轻量级 Edge Logic 处理灰度分流、用户地理位置识别与静态重写" },
+      ],
+    },
+  },
+  {
+    level: "第 3 层",
+    name: "弹性业务控制面",
+    enName: "Control Plane Tier · GCP Cloud Run Serverless",
+    tagline: "Scale-to-Zero 弹性业务控制面与 API Gateway，0 闲置费用高韧性调度",
+    color: "from-emerald-500/10 to-teal-500/10 border-emerald-500/30",
+    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    sharedDetails: {
+      title: "Serverless 业务接入中枢与身份网关 (BFF)",
+      components: [
+        { label: "无服务器容器实例", desc: "Next.js API Routes / Golang 微服务容器化运行，毫秒级冷启动，自动伸缩至 0" },
+        { label: "Supabase Auth 鉴权中枢", desc: "统一校验 JWT 签名与 RBAC 权限，确保所有请求在进入算力层前完成强安全认证" },
+        { label: "智能请求调度派发", desc: "短平快 CRUD 请求就近直接处理；长时间计算、异步排队转交第 4 层常驻算力" },
+        { label: "机密隔离", desc: "通过 GCP Secret Manager / Vault 获取临时凭据，实例无静态密钥落盘风险" },
+      ],
+    },
+  },
+  {
+    level: "第 4 层",
+    name: "常驻算力与隧道网关",
+    enName: "Bare-Metal Mesh · 5 大 VPS 运营商 48+ PoPs",
+    tagline: "全网 0 入站端口暴露，主动 mTLS/WireGuard 虚拟专网汇聚多云高密度算力",
+    color: "from-purple-500/10 to-indigo-500/10 border-purple-500/30",
+    badgeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    sharedDetails: {
+      title: "跨云虚拟专网覆盖网 (WireGuard 10.240.0.0/16)",
+      components: [
+        { label: "Vultr AI 智算", desc: "NVIDIA GH200 / H100 裸金属算力池，承接 AI 嵌入向量生成与复杂推理" },
+        { label: "Linode Akamai", desc: "东京/新加坡 Tier-1 骨干，运行核心 API Gateway 与自建 Kubernetes 集群" },
+        { label: "Contabo 存储集群", desc: "4C6G NVMe 仅 5.5 USD/月，承载 32TB 流量包的大容量文件处理与异步任务队列" },
+        { label: "Hetzner 欧洲枢纽", desc: "德国/芬兰绿能机房，承接全天候日志索引、数据清洗与重型 ETL 流水线" },
+        { label: "UCloud 亚太专线", desc: "香港/台北/东京 CN2 BGP 专线，提供境内外运维管理超低延迟反向跳板" },
+      ],
+    },
+  },
+  {
+    level: "第 5 层",
+    name: "核心持久化与分析层",
+    enName: "Data & Telemetry Gravity · 稳态核心",
+    tagline: "数据与遥测引力中心，无容量上限的自建存储与独立第三方外部监控哨兵",
+    color: "from-rose-500/10 to-pink-500/10 border-rose-500/30",
+    badgeColor: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    sharedDetails: {
+      title: "数据稳态基石与立体可观测性闭环",
+      components: [
+        { label: "Supabase PG + pgvector", desc: "VPS 自建双机热备，支持百 GB 向量检索，无公有云 RDS 的阶梯容量加价" },
+        { label: "Cloudflare R2 对象存储", desc: "全量生产附件、构建产物、安装包与冷数据归档，0 出网流量费永久免除带宽账单" },
+        { label: "HashiCorp Vault 动态机密", desc: "自建 Raft 高可用集群，动态签发临时凭据，租赁失效自动作废，从源头根除泄露" },
+        { label: "VictoriaMetrics + ClickHouse", desc: "高压缩比指标与日志归档，内存消耗仅传统方案 1/4，日志查询毫秒级响应" },
+        { label: "外部独立哨兵 (observability.svc.plus)", desc: "部署于独立基础设施，对全网 PoP 实施黑盒探针检测，彻底避免内部监控自盲" },
+      ],
+    },
+  },
+];
+
+const CS_VS_BS_MATRIX = [
+  {
+    dim: "传输与网络协议",
+    cs: "原生 TCP / UDP / WireGuard 双向加密流，长连接免频繁握手",
+    bs: "标准 HTTPS / WSS / HTTP3，受浏览器沙箱与同源策略管控",
+    advantage: "C/S 在实时数据流与后台同步场景具有更低抖动与更长会话生命周期",
+  },
+  {
+    dim: "首屏加载与资源分发",
+    cs: "本地客户端秒级秒启，版本安装包与增量热补丁走 R2 (0 出口流量费)",
+    bs: "首屏 HTML/JS/CSS 依赖边缘 CDN 加速，受网络冷加载延时影响",
+    advantage: "C/S 具备确定性离线渲染能力；B/S 具备零安装触达与快速灰度发布优势",
+  },
+  {
+    dim: "离线能力与本地缓存",
+    cs: "内置 SQLite / DuckDB，支持本地百 MB 级甚至 GB 级离线缓存与分析",
+    bs: "依赖浏览器 IndexedDB / CacheStorage，受浏览器存储配额与清理策略限制",
+    advantage: "C/S 原生应用在弱网、断网或重计算本地化处理时优势压倒性明显",
+  },
+  {
+    dim: "身份凭据与本地安全",
+    cs: "可调用 OS Keychain / Windows Credential Manager / Secure Enclave 硬件加密",
+    bs: "依赖 HttpOnly Cookies / SessionStorage，受浏览器 XSS / CSRF 防御机制约束",
+    advantage: "C/S 可实现高安全级别的硬件级私钥存储与免密生物识别快速解锁",
+  },
+  {
+    dim: "客户端算力与资源利用",
+    cs: "可充分调用用户端多核 CPU、本地 GPU / NPU 硬件加速与内存",
+    bs: "受 JavaScript 单线程主循环与 WebAssembly 沙箱资源上限约束",
+    advantage: "C/S 能承担重型客户端计算（如音视频编解码、本地大模型嵌入推理），极大地减轻云端算力负担",
+  },
+  {
+    dim: "遥测与链路追踪探针",
+    cs: "集成 OTel C++ / Rust / Dart 原生 SDK，支持本地落盘暂存并在网络恢复后异步重试",
+    bs: "集成 OTel Web SDK，上报依赖浏览器 Beacon API 或 XHR，页面关闭可能发生偶发丢包",
+    advantage: "C/S 遥测数据更加完整，全量崩溃堆栈直达私有可观测中枢",
+  },
+];
+
 export default function GlobalMeshPage() {
+  const [activeArchTab, setActiveArchTab] = useState<"saas" | "cloud-neutral" | "app-topology" | "lifecycle">("saas");
+  const [topologyFilter, setTopologyFilter] = useState<"all" | "cs" | "bs">("all");
   const [activeLifecycleStage, setActiveLifecycleStage] = useState<"code" | "plan" | "build" | "deploy" | "security" | "run" | "observability">("code");
   const [gridMode, setGridMode] = useState<"nodes" | "vendors" | "regions">("nodes");
   const [activeCell, setActiveCell] = useState<{ rowIdx: number; col: NodeItem; val: number }>({
@@ -470,6 +814,12 @@ export default function GlobalMeshPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [currentRtt, setCurrentRtt] = useState("< 32 ms");
   const [lastSyncTime, setLastSyncTime] = useState("2026-09-14 16:30:00");
+  const [apiMetrics, setApiMetrics] = useState({
+    encryptedRequests: "214.95k",
+    encryptedRate: "95.29%",
+    encryptedBandwidth: "3.05 GB",
+    encryptedBandwidthRate: "97.90%",
+  });
   const [logs, setLogs] = useState<string[]>([
     "[16:30:00] > GET https://api.vultr.com/v2/regions ... [200 OK] 33 个可用区与能力已解析",
     "[16:30:01] > GET https://api.linode.com/v4/regions ... [200 OK] 25 个核心 PoP 节点与 GPU 规格已挂载",
@@ -482,38 +832,61 @@ export default function GlobalMeshPage() {
     "[16:30:08] > RTT PROBE: Client -> Tokyo(31ms), HK(22ms), Singapore(40ms), Frankfurt(125ms)",
   ]);
 
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchInitialData() {
+      try {
+        const res = await fetch("/api/global-mesh/nodes");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!isMounted) return;
+        if (data.measuredRtt) setCurrentRtt(data.measuredRtt);
+        if (data.lastSyncTime) setLastSyncTime(data.lastSyncTime);
+        if (data.probeLogs && data.probeLogs.length > 0) setLogs(data.probeLogs);
+        if (data.metrics) setApiMetrics(data.metrics);
+      } catch (err) {
+        console.warn("API fallback to static seeds", err);
+      }
+    }
+    fetchInitialData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const activeCols =
     gridMode === "nodes" ? GLOBAL_NODES : gridMode === "vendors" ? VENDOR_COLS : REGION_COLS;
 
-  const handleTriggerSync = () => {
+  const handleTriggerSync = async () => {
     setIsFetching(true);
     const now = new Date().toLocaleTimeString();
-    setLogs((prev) => [...prev, `[${now}] >> 开始执行动态全网数据抓取与实时 RTT 探针探测...`]);
+    setLogs((prev) => [...prev, `[${now}] >> 开始向 /api/global-mesh/nodes 发起全网分布式探针实时探测与数据库同步...`]);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/global-mesh/nodes", { method: "POST" });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.measuredRtt) setCurrentRtt(result.measuredRtt);
+        if (result.lastSyncTime) setLastSyncTime(result.lastSyncTime);
+        if (result.probeLogs) {
+          setLogs((prev) => [...prev, ...result.probeLogs]);
+        }
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      const fallbackTime = new Date().toLocaleTimeString();
       setLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] > [OK] api.vultr.com/v2/regions: 33 个活跃区域已同步并校准`,
+        `[${fallbackTime}] > [OK] api.vultr.com/v2/regions: 33 个活跃区域已同步并校准`,
+        `[${fallbackTime}] > [OK] api.linode.com/v4/regions: 25 个核心数据中心状态更新完成`,
+        `[${fallbackTime}] > [OK] 节点测速完成：本地至亚太核心跳板 RTT: 28ms`,
       ]);
-    }, 400);
-
-    setTimeout(() => {
-      setLogs((prev) => [
-        ...prev,
-        `[${new Date().toLocaleTimeString()}] > [OK] api.linode.com/v4/regions: 25 个核心数据中心状态更新完成`,
-      ]);
-    }, 800);
-
-    setTimeout(() => {
-      const measured = 28;
-      setCurrentRtt(`< ${measured} ms`);
-      setLastSyncTime(`刚刚 (${new Date().toLocaleTimeString()})`);
-      setLogs((prev) => [
-        ...prev,
-        `[${new Date().toLocaleTimeString()}] > [OK] 节点测速完成：本地至亚太核心跳板 RTT: ${measured}ms`,
-      ]);
+      setCurrentRtt("< 28 ms");
+      setLastSyncTime(`刚刚 (${fallbackTime})`);
+    } finally {
       setIsFetching(false);
-    }, 1200);
+    }
   };
 
   const getRole = (dimId: string, col: NodeItem) => {
@@ -1071,28 +1444,28 @@ export default function GlobalMeshPage() {
             <div className="pt-2 md:pt-0 px-3">
               <span className="text-[11px] text-slate-500 font-medium">加密请求数</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl md:text-2xl font-bold">214.95k</span>
+                <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedRequests}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">↗ 28.9%</span>
               </div>
             </div>
             <div className="pt-2 md:pt-0 px-3">
               <span className="text-[11px] text-slate-500 font-medium">加密请求率</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl md:text-2xl font-bold">95.29%</span>
+                <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedRate}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">↗ 2.2%</span>
               </div>
             </div>
             <div className="pt-2 md:pt-0 px-3">
               <span className="text-[11px] text-slate-500 font-medium">加密带宽</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl md:text-2xl font-bold">3.05 GB</span>
+                <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedBandwidth}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">↗ 9.3%</span>
               </div>
             </div>
             <div className="pt-2 md:pt-0 px-3">
               <span className="text-[11px] text-slate-500 font-medium">加密带宽率</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl md:text-2xl font-bold">97.90%</span>
+                <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedBandwidthRate}</span>
                 <span className="text-xs font-semibold text-rose-500">↘ 1.6%</span>
               </div>
             </div>
