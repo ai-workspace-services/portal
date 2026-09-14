@@ -22,5 +22,10 @@ export function bffBoundaryForRoute(relativePath) {
     ].includes(relativePath)
   )
     return "console";
+  if (
+    relativePath === "api/global-mesh/nodes/route.ts" ||
+    relativePath.startsWith("api/global-mesh/")
+  )
+    return "public";
   return undefined;
 }
