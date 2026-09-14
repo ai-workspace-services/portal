@@ -19,7 +19,6 @@ import { useCallback, useMemo } from "react";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import Link from "next/link";
 import {
   Activity,
   ArrowRight,
@@ -396,20 +395,20 @@ export default function UserCenterAccountRoute() {
               }
               actions={
                 <div className="flex items-center gap-2">
-                  <Link
+                  <BoundaryLink
                     href="/panel/global-mesh"
                     className="xds-btn xds-btn-primary xds-btn-sm inline-flex items-center gap-1.5"
                   >
                     <Network className="h-3.5 w-3.5" />
                     <span>{zh ? "控制台拓扑" : "Console Topology"}</span>
-                  </Link>
-                  <Link
+                  </BoundaryLink>
+                  <BoundaryLink
                     href="/products/global-mesh"
                     className="xds-btn xds-btn-secondary xds-btn-sm inline-flex items-center gap-1.5"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     <span>{zh ? "产品全景页" : "Product Showcase"}</span>
-                  </Link>
+                  </BoundaryLink>
                 </div>
               }
             />

@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Github } from "@/components/icons/brand";
 
@@ -487,9 +487,9 @@ export default function LoginContent({
               >
                 {t.form.password}
               </label>
-              <Link href="#" className={AUTH_TEXT_LINK_CLASS}>
+              <BoundaryLink href="/account-recovery" className={AUTH_TEXT_LINK_CLASS}>
                 {t.forgotPassword}
-              </Link>
+              </BoundaryLink>
             </div>
             <input
               id="login-password"
