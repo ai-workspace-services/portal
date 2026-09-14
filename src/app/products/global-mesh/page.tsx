@@ -4,9 +4,22 @@ import React, { useState } from "react";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
 import {
+  ArrowRight,
+  CheckCircle2,
+  Code,
+  Compass,
+  Cpu,
+  Database,
   ExternalLink,
+  Eye,
+  Layers,
+  Radio,
   RefreshCw,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
   Terminal,
+  Workflow,
 } from "lucide-react";
 import GlobalMeshMap from "./GlobalMeshMap";
 
@@ -59,7 +72,7 @@ const GLOBAL_NODES: NodeItem[] = [
   // UCloud Nodes (17-24)
   { id: "uc-hkg", vendor: "UCloud", city: "中国香港", region: "APAC", rtt: 22, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "针对国内电信/联通/移动 CN2 GIA/BGP 深度优化，运维跳板第一选择。" },
   { id: "uc-tpe", vendor: "UCloud", city: "中国台北", region: "APAC", rtt: 28, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "大中华区低延时第二通道，直通东亚环形骨干。" },
-  { id: "uc-tyo", vendor: "UCloud", city: "日本东京", region: "APAC", rtt: 35, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "直连 NTT 骨干，uLighthost 轻量套餐仅 $2.5/mo 起。" },
+  { id: "uc-tyo", vendor: "UCloud", city: "日本东京", region: "APAC", rtt: 35, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "直连 NTT 骨干，uLighthost 轻量套餐仅 2.5 USD/mo 起。" },
   { id: "uc-sel", vendor: "UCloud", city: "韩国首尔", region: "APAC", rtt: 32, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "东亚极速互联节点，提供丰富峰值带宽。" },
   { id: "uc-sin", vendor: "UCloud", city: "新加坡", region: "APAC", rtt: 45, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "东南亚枢纽，支持 UGC 跨国全球专线。" },
   { id: "uc-bkk", vendor: "UCloud", city: "泰国曼谷", region: "APAC", rtt: 58, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "稀缺东南亚本地节点，近场管理覆盖。" },
@@ -67,7 +80,7 @@ const GLOBAL_NODES: NodeItem[] = [
   { id: "uc-fra", vendor: "UCloud", city: "法兰克福", region: "EMEA", rtt: 138, vals: [1, 0, 1, 0.5, 1, 1, 1], desc: "欧洲业务反向运维跳板。" },
 
   // Contabo Nodes (25-33)
-  { id: "cb-nbg", vendor: "Contabo", city: "纽伦堡", region: "EMEA", rtt: 136, vals: [1, 0, 0, 0, 0.5, 1, 1], desc: "4 vCPU / 6GB 内存 / 100G NVMe / 32TB 流量，月付仅 $5.50。" },
+  { id: "cb-nbg", vendor: "Contabo", city: "纽伦堡", region: "EMEA", rtt: 136, vals: [1, 0, 0, 0, 0.5, 1, 1], desc: "4 vCPU / 6GB 内存 / 100G NVMe / 32TB 流量，月付仅 5.50 USD。" },
   { id: "cb-fra", vendor: "Contabo", city: "法兰克福", region: "EMEA", rtt: 134, vals: [1, 0, 0, 0, 0.5, 1, 1], desc: "大容量备份与归档集群，免流量费用担忧。" },
   { id: "cb-lon", vendor: "Contabo", city: "英国伦敦", region: "EMEA", rtt: 142, vals: [1, 0, 0, 0, 0.5, 1, 1], desc: "英国机房，适合私有 Docker 镜像加速。" },
   { id: "cb-nyc", vendor: "Contabo", city: "纽约", region: "US-E", rtt: 168, vals: [1, 0, 0, 0, 0.5, 1, 1], desc: "北美东部高配置大存储节点。" },
@@ -81,7 +94,7 @@ const GLOBAL_NODES: NodeItem[] = [
   { id: "vu-nrt", vendor: "Vultr", city: "东京 (NRT)", region: "APAC", rtt: 29, vals: [1, 1, 1, 1, 1, 1, 1], desc: "Vultr 亚太主力机房，支持 Ampere ARM 与 VKE 托管 K8s。" },
   { id: "vu-icn", vendor: "Vultr", city: "首尔 (ICN)", region: "APAC", rtt: 30, vals: [1, 1, 1, 1, 1, 1, 1], desc: "韩国核心 PoP，支持 BGP Anycast 与自定义 ISO。" },
   { id: "vu-sgp", vendor: "Vultr", city: "新加坡 (SGP)", region: "APAC", rtt: 38, vals: [1, 1, 1, 1, 1, 1, 1], desc: "亚太旗舰级数据中心，全系 GPU 与高速私网 VPC 2.0。" },
-  { id: "vu-syd", vendor: "Vultr", city: "悉尼 (SYD)", region: "APAC", rtt: 88, vals: [1, 1, 1, 1, 1, 1, 1], desc: "澳洲双中心（悉尼/墨尔本），原生 ARM64 $3/mo 起。" },
+  { id: "vu-syd", vendor: "Vultr", city: "悉尼 (SYD)", region: "APAC", rtt: 88, vals: [1, 1, 1, 1, 1, 1, 1], desc: "澳洲双中心（悉尼/墨尔本），原生 ARM64 3 USD/mo 起。" },
   { id: "vu-fra", vendor: "Vultr", city: "法兰克福 (FRA)", region: "EMEA", rtt: 126, vals: [1, 1, 1, 1, 1, 1, 1], desc: "欧洲核心枢纽，抗 DDoS 防护与负载均衡。" },
   { id: "vu-ams", vendor: "Vultr", city: "阿姆斯特丹 (AMS)", region: "EMEA", rtt: 130, vals: [1, 1, 1, 1, 1, 1, 1], desc: "直连 AMS-IX，极佳欧洲交换网络。" },
   { id: "vu-sjc", vendor: "Vultr", city: "硅谷 (SJC)", region: "US-W", rtt: 118, vals: [1, 1, 1, 1, 1, 1, 1], desc: "美西科技中枢，NVIDIA GH200 / H100 智算集群。" },
@@ -100,8 +113,8 @@ const GLOBAL_NODES: NodeItem[] = [
 const VENDOR_COLS: NodeItem[] = [
   { id: "v-li", vendor: "Linode", city: "全部节点 (25+)", region: "GLOBAL", vals: [1, 1, 1, 0.5, 1, 1, 1], rtt: 35, desc: "Akamai 400G+ Tier-1 骨干，LKE 免费控制面，99.99% SLA。" },
   { id: "v-hz", vendor: "Hetzner", city: "欧洲/美西/新 (6)", region: "GLOBAL", vals: [1, 0, 0.5, 1, 1, 1, 1], rtt: 48, desc: "极致算力性价比 (€3.79 2C4G ARM)，20TB 高速流量。" },
-  { id: "v-uc", vendor: "UCloud", city: "亚太优质 (13+)", region: "APAC", vals: [1, 0, 1, 0.5, 1, 1, 1], rtt: 22, desc: "大中华区 CN2/BGP 香港/东京低延时直通，uLighthost $2.5起。" },
-  { id: "v-cb", vendor: "Contabo", city: "大容量池 (9)", region: "GLOBAL", vals: [1, 0, 0, 0, 0.5, 1, 1], rtt: 55, desc: "4C6G/32TB 巨无霸配置，月付 $5.50，适合冷备与镜像同步。" },
+  { id: "v-uc", vendor: "UCloud", city: "亚太优质 (13+)", region: "APAC", vals: [1, 0, 1, 0.5, 1, 1, 1], rtt: 22, desc: "大中华区 CN2/BGP 香港/东京低延时直通，uLighthost 2.5 USD 起。" },
+  { id: "v-cb", vendor: "Contabo", city: "大容量池 (9)", region: "GLOBAL", vals: [1, 0, 0, 0, 0.5, 1, 1], rtt: 55, desc: "4C6G/32TB 巨无霸配置，月付 5.50 USD，适合冷备与镜像同步。" },
   { id: "v-vu", vendor: "Vultr", city: "全球节点王 (33)", region: "GLOBAL", vals: [1, 1, 1, 1, 1, 1, 1], rtt: 29, desc: "GPU 最全、ARM64 标配、VKE 托管 K8s、BGP Anycast 全自助。" },
   { id: "v-xc", vendor: "Xconec", city: "五云网状融合", region: "MESH", vals: [1, 1, 1, 1, 1, 1, 1], rtt: 18, desc: "0 端口入站暴露，端到端 WireGuard/mTLS，秒级跨云自动重路由。" },
 ];
@@ -117,7 +130,336 @@ const REGION_COLS: NodeItem[] = [
   { id: "r-eme", vendor: "EMERGING", city: "新兴市场 (拉美/中东/非)", region: "GLOBAL", vals: [1, 1, 1, 1, 1, 1, 1], rtt: 220, desc: "Vultr (圣保罗/南非) + Contabo (迪拜)。" },
 ];
 
+interface LifecycleOption {
+  title: string;
+  type: "SaaS 托管" | "VPS 开源自建" | "混合推荐";
+  typeTone: "blue" | "emerald" | "purple";
+  description: string;
+  pros: string;
+  cost: string;
+}
+
+interface LifecycleStage {
+  id: "code" | "plan" | "build" | "deploy" | "security" | "run" | "observability";
+  name: string;
+  enName: string;
+  tagline: string;
+  badge: string;
+  options: LifecycleOption[];
+  meshValue: {
+    title: string;
+    desc: string;
+    recommendation: string;
+  };
+  metrics: { label: string; value: string }[];
+}
+
+const LIFECYCLE_STAGES: LifecycleStage[] = [
+  {
+    id: "code",
+    name: "Code 代码托管",
+    enName: "Code & Versioning",
+    tagline: "单一公有云与多云私网双轨代码资产管理",
+    badge: "代码与版本控制",
+    options: [
+      {
+        title: "GitHub.com (云端主库)",
+        type: "SaaS 托管",
+        typeTone: "blue",
+        description: "全球开发生态事实标准，天然集成 GitHub Actions，支持 OIDC 免秘钥云端鉴权，作为团队唯一的真相源 (Single Source of Truth)。",
+        pros: "生态极佳 · 免基础设施维护 · OIDC 云原生凭据打通",
+        cost: "公开仓库免费 · 私有团队 4 USD/用户/月起",
+      },
+      {
+        title: "Gitea Self-hosted (VPS 自建私服)",
+        type: "VPS 开源自建",
+        typeTone: "emerald",
+        description: "部署在 Hetzner / Contabo VPS 上的轻量自建 Git。作为内网高速镜像库与离线容灾备份，突破 GitHub API 速率与外网依赖。",
+        pros: "内存仅需数十 MB · 零 API 频率限制 · 内网极速代码拉取 · 100% 离线容灾",
+        cost: "开源免费 · 复用已有 VPS 节点 (0 元边际成本)",
+      },
+      {
+        title: "GitLab Self-hosted / Cloud (全功能 DevOps)",
+        type: "VPS 开源自建",
+        typeTone: "purple",
+        description: "面向大型团队的全功能 DevOps 平台。支持多组织权限精细化审计、自建 K8s 深度集成与全套合规审查。",
+        pros: "企业级多群组审计 · 原生内置安全合规扫描",
+        cost: "开源社区版免费 · 推荐 4C8G+ VPS 配置 (€10~€15/月)",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "采用『GitHub 为主源，VPS Gitea 为私网镜像』双轨模式。开发者向 GitHub 提交触发 GitOps，VPS 节点通过 WireGuard 私网自动同步，保障 GitHub 故障或跨国出口抖动时，生产部署与内网拉取毫秒级容灾。",
+      recommendation: "推荐：GitHub 主代码仓 + Hetzner VPS Gitea 私有镜像双轨方案",
+    },
+    metrics: [
+      { label: "镜像同步延时", value: "< 2.5s" },
+      { label: "内网拉取速率", value: "内网千兆跑满" },
+      { label: "可用性保障", value: "99.99% 双活" },
+    ],
+  },
+  {
+    id: "plan",
+    name: "Plan 架构规划",
+    enName: "Architecture & Sizing",
+    tagline: "动静解耦、轻重分离与极简多云预算精算",
+    badge: "需求与容量精算",
+    options: [
+      {
+        title: "动静分离 & 边缘先发",
+        type: "混合推荐",
+        typeTone: "purple",
+        description: "将静态前端资产交由 Cloudflare Pages 全球 CDN (<15ms) 分发，动态 API 经由 Workers 路由，重载计算下沉至 VPS 算力池。",
+        pros: "首屏加载 <300ms · 边缘直接承载 85%+ 流量 · 0 流量出网费",
+        cost: "Cloudflare Pages 免费无限带宽 · Workers 10万次/天免费",
+      },
+      {
+        title: "数据与计算轻重分区分离",
+        type: "混合推荐",
+        typeTone: "blue",
+        description: "无状态 BFF 跑在 Serverless (Cloud Run) 实现无流量缩容至 0；关系数据库、向量库与检索常驻 VPS 大内存 NVMe 节点。",
+        pros: "避免 Serverless 数据库连接池耗尽 · 彻底免去大厂天价闲置费",
+        cost: "Cloud Run 每月 200万次免费请求 · VPS 节点固定月付",
+      },
+      {
+        title: "零信任入站架构规划",
+        type: "混合推荐",
+        typeTone: "emerald",
+        description: "规划 10.240.0.0/16 虚拟带外管理专网，全网 VPS 0 公网入站端口暴露，所有访问依赖 WireGuard / mTLS / Tunnel 双向握手。",
+        pros: "杜绝公网扫描与 0-day 端口漏洞利用 · SRE 专属加密通道",
+        cost: "开源 WireGuard 内核模块 · 0 额外网关许可费",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "利用 VPS 算力地图获得全球五大机房的真实硬件性价比底线，配合 SaaS 免费层规划，将传统大厂上云每月 300~800 USD 的基础架构开销直降至 25 USD/月以内。",
+      recommendation: "推荐：轻量弹性归 Serverless + 重态存储与向量归 VPS 裸金属",
+    },
+    metrics: [
+      { label: "单月基础预算", value: "20~25 USD /月" },
+      { label: "成本节省比例", value: "85%~92%" },
+      { label: "架构扩展弹性", value: "无限横向拓展" },
+    ],
+  },
+  {
+    id: "build",
+    name: "Build 产物构建",
+    enName: "CI Pipelines & Runners",
+    tagline: "云端 Actions 与本地 VPS 专属 Runner 协同提速",
+    badge: "构建与持续集成",
+    options: [
+      {
+        title: "GitHub Actions (托管 Runner)",
+        type: "SaaS 托管",
+        typeTone: "blue",
+        description: "免运维开箱即用，官方维护的 Ubuntu/macOS 环境，无缝集成 Marketplace 数千款 Actions 插件与 OIDC 秘钥。",
+        pros: "免去构建机运维 · 生态最丰富 · OIDC 云凭据开箱即用",
+        cost: "公共仓库免费 · 私有仓库每月 2,000 分钟免费额度",
+      },
+      {
+        title: "Gitea Runner / act_runner (VPS 专属构建机)",
+        type: "VPS 开源自建",
+        typeTone: "emerald",
+        description: "在 Contabo 4C6G/16G 或 Hetzner 大内存 VPS 上挂载自建 Runner，语法 100% 兼容 GitHub Actions，承载长时间 Docker 镜像重编译与大包构建。",
+        pros: "独占多核 CPU · 无分钟数上限 · 共享本地 Docker 缓存极速复用",
+        cost: "0 额外构建费 · 复用空闲 VPS 算力",
+      },
+      {
+        title: "GitLab Pipeline / Distributed CI",
+        type: "VPS 开源自建",
+        typeTone: "purple",
+        description: "利用多台便宜 VPS（如 Hetzner 芬兰冷备节点）组建分布式 Runner 集群，支持自动伸缩与高并发测试用例矩阵并行跑通。",
+        pros: "海量测试矩阵并发 · 支持大型 monorepo 分布式编译",
+        cost: "依据挂载 VPS 节点数量计费",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "日常 PR 静态检查走 GitHub Actions 快速验证；重量级全量测试与 Docker 镜像交叉编译自动分流至内网 Contabo/Hetzner act_runner，构建时长缩短 60%，且永不耗尽每月 CI 配额。",
+      recommendation: "推荐：轻型 Lint 走云端 Actions + 镜像构建走 VPS 自建 Runner",
+    },
+    metrics: [
+      { label: "Docker 缓存命中率", value: "> 95%" },
+      { label: "CI 分钟数消耗", value: "0 额度枯竭" },
+      { label: "多核并发性能", value: "独占 4~16 Cores" },
+    ],
+  },
+  {
+    id: "deploy",
+    name: "Deploy 交付部署",
+    enName: "GitOps & Zero-Downtime",
+    tagline: "声明式 GitOps 流水线、机密隔离与毫秒级流量切流",
+    badge: "部署与发布编排",
+    options: [
+      {
+        title: "GitOps 声明式对账 (GitOps + Ansible)",
+        type: "混合推荐",
+        typeTone: "purple",
+        description: "在 Git 仓库中声明基础设施拓扑与应用状态，通过 Ansible Playbooks 自动对账推送到各大 VPS 节点，杜绝配置漂移。",
+        pros: "100% 留痕可审计 · 回滚仅需一次 git revert · 自动化幂等执行",
+        cost: "开源体系零授权费 · 生产级交付留痕",
+      },
+      {
+        title: "Cloudflare Workers / Pages 边缘原子发布",
+        type: "SaaS 托管",
+        typeTone: "blue",
+        description: "前端静态产物与 Worker 边缘网关代码通过 Wrangler CLI 秒级全球发布，自带多环境（UAT/PROD）版本隔离与即时回滚。",
+        pros: "全球 300+ 节点秒级同步 · 自动分配部署预览域名 · 0 停机发布",
+        cost: "免费版全功能支持",
+      },
+      {
+        title: "Cloud Run 蓝绿金丝雀分流",
+        type: "SaaS 托管",
+        typeTone: "emerald",
+        description: "后端 BFF 容器镜像推送到 GCP Artifact Registry，Cloud Run 支持基于流量比例（如 10%/90%）无感渐进式金丝雀发布。",
+        pros: "版本原子切换 · 异常毫秒级秒切原版本 · 自动按需弹性",
+        cost: "每月前 200 万次调用完全免费",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "GitOps 仓库作为唯一决策平面，通过 GitHub Actions OIDC + Vault KV 自动签发临时凭据，跨云发布到 Cloudflare Pages、Cloud Run 与全球五大 VPS 节点，全流程无需人工敲键盘登录服务器。",
+      recommendation: "推荐：GitOps 自动化声明 + Cloudflare/Cloud Run 无感原子切换",
+    },
+    metrics: [
+      { label: "发布停机时间", value: "0 秒 (零停机)" },
+      { label: "全球扩散耗时", value: "< 15 秒" },
+      { label: "凭据暴露风险", value: "0 静态秘钥硬编码" },
+    ],
+  },
+  {
+    id: "security",
+    name: "Security 机密安全",
+    enName: "Vault & Zero-Trust",
+    tagline: "HashiCorp Vault 云端托管与 VPS 自建 Raft 机密管理中心",
+    badge: "机密与安全基线",
+    options: [
+      {
+        title: "HCP Vault Cloud (HashiCorp 托管云)",
+        type: "SaaS 托管",
+        typeTone: "blue",
+        description: "由 HashiCorp 官方运维的高可用 Vault 集群，开箱即用 99.9% SLA，支持自动快照、HSM 硬件根信任及与 AWS/GCP/Azure 原生 OIDC 联邦对接。",
+        pros: "免运维 Raft 节点 · 官方热修复秒级应用 · 企业级安全审计",
+        cost: "基础集群约 0.03 USD/小时起 · 免费试用额度",
+      },
+      {
+        title: "Vault Server Self-hosted (VPS 自建 / OpenBao)",
+        type: "VPS 开源自建",
+        typeTone: "emerald",
+        description: "在 Hetzner / Contabo 等 VPS 节点上部署自建 Vault Raft 集群（或开源 OpenBao），配合 KMS 自动解封 (Auto-unseal)，数据主权 100% 掌握在自己手中。",
+        pros: "零客户端调用与 Secret 数量收费 · 私网 WireGuard 直连 · 彻底摆脱商业 License 限制",
+        cost: "开源免费 · 复用已有 VPS 算力与 NVMe",
+      },
+      {
+        title: "轻量云原生秘钥集成 (Cloud KMS / Secret Manager)",
+        type: "混合推荐",
+        typeTone: "purple",
+        description: "利用 Google Secret Manager 或 Cloudflare Secrets 作为边缘与 Serverless 运行时凭据载体，通过 GitHub Actions OIDC 进行短效动态注入。",
+        pros: "Serverless 极速冷启动 · 零静态永久 Key 泄露风险 · 细粒度 RBAC",
+        cost: "GCP 前 6 个 Secret 版本免费 · Cloudflare 免费环境变量",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "采用『Vault 自建为主库，云端 KMS / Secret Manager 边缘中继』架构。跨云 API Key、数据库连接串与 TLS 证书存放在 VPS 自建 Vault 内，通过私网 mTLS 分发短效 Token，确保全网 0 明文秘钥提交 Git 仓库。",
+      recommendation: "推荐：VPS 自建 Vault Raft 集群 + GitHub OIDC 临时动态凭据换取",
+    },
+    metrics: [
+      { label: "静态秘钥泄露", value: "0 静态泄露" },
+      { label: "凭据生命周期", value: "动态签发短效" },
+      { label: "私网直连延迟", value: "< 35ms (WireGuard)" },
+    ],
+  },
+  {
+    id: "run",
+    name: "Run 混合运行时",
+    enName: "Runtime Mesh",
+    tagline: "CDN 边缘 + Serverless 弹性 + VPS 裸金属高效三合一",
+    badge: "混合网格运行时",
+    options: [
+      {
+        title: "CDN & Edge 网关 (Cloudflare Anycast)",
+        type: "SaaS 托管",
+        typeTone: "blue",
+        description: "全球 300+ 城市 Anycast 边缘，提供极致低延迟 DNS 解析、Pages 静态加速、Workers 动态分流与 R2 零出口费通用存储总线。",
+        pros: "Anycast 解析 <15ms · 免费 DDoS 防护 · R2 彻底终结出口流量费",
+        cost: "核心功能完全免费",
+      },
+      {
+        title: "Serverless 弹性容器 (GCP Cloud Run)",
+        type: "SaaS 托管",
+        typeTone: "emerald",
+        description: "承载对外公开的业务 BFF、Webhook 消息接收与突发高并发 API，无请求自动 Scale-to-Zero，有流量秒级弹性应对突发。",
+        pros: "零流量 0 成本 · 强隔离沙箱 · Google Andromeda 骨干网",
+        cost: "200万次调用/月免费",
+      },
+      {
+        title: "VPS 裸金属常驻算力池 (5 大 VPS 运营商)",
+        type: "VPS 开源自建",
+        typeTone: "purple",
+        description: "Vultr (AI 智算)、Linode (独立核心)、Hetzner (欧洲裸金属)、Contabo (海量存储)、UCloud (亚太 CN2)。承载数据库、向量库、本地缓存与常驻计算。",
+        pros: "硬件性价比极致 · 独占高性能 NVMe · 动辄 20TB+ 免费月流量",
+        cost: "固定月付仅 2.5 ~ 6 USD / 节点",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "将边缘分发、弹性微服务与低成本硬件裸金属融为一体：用户流量由 Cloudflare 接住，突发请求由 Cloud Run 消化，核心数据存储在 VPS 内部集群，完美平衡超低延迟、无限弹性与极限成本。",
+      recommendation: "推荐：CDN 迎客 + Serverless 削峰 + VPS 驻守核心",
+    },
+    metrics: [
+      { label: "亚太平均 RTT", value: "< 32ms" },
+      { label: "公网入站暴露", value: "0 端口" },
+      { label: "冷启动成本", value: "0 元起步" },
+    ],
+  },
+  {
+    id: "observability",
+    name: "Observability 全栈可观测",
+    enName: "Full-Stack Telemetry",
+    tagline: "VictoriaMetrics 全家桶 + ClickHouse + 外部独立哨兵",
+    badge: "全栈全链路可观测",
+    options: [
+      {
+        title: "observability.svc.plus (Victoria 全家桶自建)",
+        type: "VPS 开源自建",
+        typeTone: "emerald",
+        description: "基于 Caddy 反代，集约部署 VictoriaMetrics (指标)、VictoriaLogs (日志)、VictoriaTraces (链路) 与 Grafana (:3030)。原生支持 OTLP 协议，内存占用比传统 Prometheus 节省 7x。",
+        pros: "极致时序压缩率 · 单机承载数百万指标 · OpenTelemetry 原生打通",
+        cost: "部署在已有 VPS 节点，无商业许可费",
+      },
+      {
+        title: "ClickHouse OLAP 列式分析 (流日志检索)",
+        type: "VPS 开源自建",
+        typeTone: "purple",
+        description: "自建 ClickHouse 存储全球 VPC Flow Logs、边缘访问流水与安全审计，底层冷数据直接挂载 Cloudflare R2（S3 表引擎），实现近乎无限扩容与 0 元出网分析。",
+        pros: "亿级日志秒级聚合 · 实时 SQL 分析 · 结合 R2 存储成本接近为零",
+        cost: "极低存储费用 (R2 10GB 免费，超出仅 0.015 USD/GB)",
+      },
+      {
+        title: "Grafana Cloud / 观测云 / Datadog (外部哨兵与 SaaS)",
+        type: "SaaS 托管",
+        typeTone: "blue",
+        description: "独立于私有网络之外的第三方外部看门狗。利用 Grafana Cloud 免费 Synthetics 黑盒探针从全球监测公共端点，防止内部监控“自盲”。企业场景可平滑集成观测云或 Datadog。",
+        pros: "绝对客观的外部视角 · 全球网络探针探测 · 告警渠道高度解耦",
+        cost: "Grafana Cloud 免费 10k 指标与 50GB 日志 · 商业版按需",
+      },
+    ],
+    meshValue: {
+      title: "Global Mesh 聚合价值",
+      desc: "内网全量遥测走 Victoria 全家桶与 ClickHouse（零带宽与数据存储溢价）；外网探测走 Grafana Cloud 外部探针（防止本地机房割接导致告警失灵）。全链路 APM 与日志可查，告警从不漏发。",
+      recommendation: "推荐：内部 Victoria+ClickHouse 主力 + 外部 Grafana Cloud 独立哨兵",
+    },
+    metrics: [
+      { label: "指标内存压缩率", value: "7x 优于传统" },
+      { label: "日志查询延时", value: "毫秒级响应" },
+      { label: "监控防自盲能力", value: "100% 独立哨兵" },
+    ],
+  },
+];
+
 export default function GlobalMeshPage() {
+  const [activeLifecycleStage, setActiveLifecycleStage] = useState<"code" | "plan" | "build" | "deploy" | "security" | "run" | "observability">("code");
   const [gridMode, setGridMode] = useState<"nodes" | "vendors" | "regions">("nodes");
   const [activeCell, setActiveCell] = useState<{ rowIdx: number; col: NodeItem; val: number }>({
     rowIdx: 3,
@@ -127,14 +469,17 @@ export default function GlobalMeshPage() {
   const [showLogs, setShowLogs] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [currentRtt, setCurrentRtt] = useState("< 32 ms");
-  const [lastSyncTime, setLastSyncTime] = useState("2026-09-13 22:10:00");
+  const [lastSyncTime, setLastSyncTime] = useState("2026-09-14 16:30:00");
   const [logs, setLogs] = useState<string[]>([
-    "[22:10:00] > GET https://api.vultr.com/v2/regions ... [200 OK] 33 个可用区与能力已解析",
-    "[22:10:01] > GET https://api.linode.com/v4/regions ... [200 OK] 25 个核心 PoP 节点与 GPU 规格已挂载",
-    "[22:10:02] > PROBE console.hetzner.com/cloud ... 欧洲 DE/HEL 及新加坡 ARM CAX11 实例状态正常",
-    "[22:10:03] > PROBE ucloud-global.com/zh/promotion/ulighthost ... 亚太 CN2/BGP 香港/台北/东京实例就绪",
-    "[22:10:04] > PROBE new.contabo.com/servers/vps ... 32TB 大带宽及 4C6G NVMe 配置池在线",
-    "[22:10:05] > RTT PROBE: Client -> Tokyo(31ms), HK(22ms), Singapore(42ms), Frankfurt(128ms)",
+    "[16:30:00] > GET https://api.vultr.com/v2/regions ... [200 OK] 33 个可用区与能力已解析",
+    "[16:30:01] > GET https://api.linode.com/v4/regions ... [200 OK] 25 个核心 PoP 节点与 GPU 规格已挂载",
+    "[16:30:02] > PROBE console.hetzner.com/cloud ... 欧洲 DE/HEL 及新加坡 ARM CAX11 实例状态正常",
+    "[16:30:03] > PROBE ucloud-global.com/zh/promotion/ulighthost ... 亚太 CN2/BGP 香港/台北/东京实例就绪",
+    "[16:30:04] > PROBE new.contabo.com/servers/vps ... 32TB 大带宽及 4C6G NVMe 配置池在线",
+    "[16:30:05] > PROBE https://api.cloudflare.com/client/v4/zones ... [200 OK] 全球 300+ Anycast 边缘与 R2 就绪",
+    "[16:30:06] > PROBE https://run.googleapis.com/v2/projects/... ... [200 OK] us-central1 / tokyo BFF 缩容就绪",
+    "[16:30:07] > PROBE https://observability.svc.plus/otlp/v1/traces ... [200 OK] Victoria 全家桶 APM 探针正常",
+    "[16:30:08] > RTT PROBE: Client -> Tokyo(31ms), HK(22ms), Singapore(40ms), Frankfurt(125ms)",
   ]);
 
   const activeCols =
@@ -493,6 +838,225 @@ export default function GlobalMeshPage() {
         {/* 5. 节点与流量地理分布 (矢量地图直接内联渲染，无 iframe 嵌套) */}
         {/* ================================================================= */}
         <GlobalMeshMap />
+
+        {/* ================================================================= */}
+        {/* 6. 在线服务工程全生命周期架构实践 (Code · Plan · Build · Deploy · Run · Observability) */}
+        {/* ================================================================= */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs p-5 md:p-6 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <Workflow className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">
+                  在线服务工程全生命周期架构实践 (Lifecycle of Online Services)
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  SaaS + VPS 双轮驱动
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                从构思、计划、实现到上线，详解 Code · Plan · Build · Deploy · Run · Observability 各阶段在 VPS 算力与 SaaS Mesh 间的选型决策与成本对账
+              </p>
+            </div>
+            <div className="text-xs font-mono text-slate-400 shrink-0">
+              7 大工程演进阶段
+            </div>
+          </div>
+
+          {/* 7-Stage Interactive Navigation Tabs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            {LIFECYCLE_STAGES.map((stg) => {
+              const isSelected = activeLifecycleStage === stg.id;
+              return (
+                <button
+                  key={stg.id}
+                  onClick={() => setActiveLifecycleStage(stg.id)}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? "bg-blue-50/80 dark:bg-blue-950/40 border-blue-500/80 shadow-xs ring-1 ring-blue-500/50"
+                      : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                      {stg.id}
+                    </span>
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                      isSelected
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                    }`}>
+                      {stg.badge}
+                    </span>
+                  </div>
+                  <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">
+                    {stg.name}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Stage Detailed Breakdown */}
+          {(() => {
+            const current = LIFECYCLE_STAGES.find((s) => s.id === activeLifecycleStage) || LIFECYCLE_STAGES[0];
+            return (
+              <div className="space-y-4 pt-1">
+                {/* Stage Header Banner */}
+                <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50/50 to-slate-50 dark:from-slate-800/80 dark:via-slate-800/50 dark:to-slate-900/60 border border-blue-200/60 dark:border-blue-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100">
+                        阶段解析：{current.name} ({current.enName})
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {current.tagline}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {current.metrics.map((m, idx) => (
+                      <div key={idx} className="bg-white dark:bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs text-center">
+                        <div className="text-[10px] text-slate-400">{m.label}</div>
+                        <div className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">{m.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3 Real-World Solution Options Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                  {current.options.map((opt, oIdx) => (
+                    <div
+                      key={oIdx}
+                      className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs flex flex-col justify-between space-y-3 hover:border-slate-300 dark:hover:border-slate-700 transition"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-xs md:text-sm text-slate-900 dark:text-slate-100">
+                            {opt.title}
+                          </span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold shrink-0 ${
+                              opt.typeTone === "blue"
+                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60"
+                                : opt.typeTone === "emerald"
+                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
+                                : "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60"
+                            }`}
+                          >
+                            {opt.type}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                          {opt.description}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                        <div>
+                          <span className="text-slate-400 font-medium">核心优势:</span>{" "}
+                          <span className="text-slate-700 dark:text-slate-300">{opt.pros}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 font-medium">成本参考:</span>{" "}
+                          <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">{opt.cost}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Global Mesh Collective Value Box */}
+                <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wider">
+                        {current.meshValue.title}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
+                      {current.meshValue.desc}
+                    </p>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-xs font-semibold text-blue-700 dark:text-blue-300 shrink-0 shadow-2xs">
+                    {current.meshValue.recommendation}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* FinOps & Architecture Comparison Table */}
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <span>传统单一大厂云 (AWS/GCP) vs Global Mesh (VPS+SaaS) 全生命周期对账</span>
+              </span>
+              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                预算节约高达 90%+
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse min-w-[640px]">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
+                    <th className="py-2 px-3 font-semibold">评估维度 / 阶段</th>
+                    <th className="py-2 px-3 font-semibold">传统单一大厂全托管 (AWS/GCP)</th>
+                    <th className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">Global Mesh (VPS 算力 + SaaS 网格)</th>
+                    <th className="py-2 px-3 font-semibold text-emerald-600 dark:text-emerald-400">架构与成本优势</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                  <tr>
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">出网带宽 (Egress)</td>
+                    <td className="py-2 px-3 font-mono text-rose-500">高昂带宽税 (0.09 USD/GB)</td>
+                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloudflare R2 0元出网 + VPS 20~32TB 流量包</td>
+                    <td className="py-2 px-3">彻底根治跨云流量刺客</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">计算算力 (Compute)</td>
+                    <td className="py-2 px-3 font-mono">闲置虚拟机每月 80~160 USD/台</td>
+                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloud Run 缩容至0 + Hetzner €3.79 / Contabo 5.5 USD</td>
+                    <td className="py-2 px-3">无流量 0 开销，有长任务独占多核</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">数据库与向量存储</td>
+                    <td className="py-2 px-3 font-mono">托管 RDS/Aurora/Pinecone 150+ USD/月</td>
+                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">VPS 自建 Supabase PG + pgvector (无容量限制)</td>
+                    <td className="py-2 px-3">独占 NVMe 高吞吐，百 GB AI 向量自由</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">可观测性 (Telemetry)</td>
+                    <td className="py-2 px-3 font-mono">Datadog/NewRelic 每月 200~500 USD</td>
+                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Victoria 全家桶自建 + ClickHouse + 外部独立哨兵</td>
+                    <td className="py-2 px-3">内存仅占 1/4，日志链路全闭环且防自盲</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">机密管理 (Secrets &amp; Vault)</td>
+                    <td className="py-2 px-3 font-mono text-rose-500">AWS Secrets Manager (0.40 USD/secret/月 + API 调用计费)</td>
+                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Vault Server Self-hosted (Raft 集群) + HCP Cloud 按需联动</td>
+                    <td className="py-2 px-3">无 Secret 数量上限，动态凭据即用即毁</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">网络安全 (Security)</td>
+                    <td className="py-2 px-3 font-mono">公网 IP 暴露容易配置疏漏</td>
+                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">全网 0 公网入站端口暴露，主动 mTLS/WireGuard</td>
+                    <td className="py-2 px-3">天然防御全网端口嗅探与 0-day 扫描</td>
+                  </tr>
+                  <tr className="bg-slate-50/80 dark:bg-slate-800/40 font-semibold">
+                    <td className="py-2.5 px-3 text-slate-900 dark:text-slate-100">单月综合预算评估</td>
+                    <td className="py-2.5 px-3 font-mono text-rose-500">350 ~ 800+ USD /月</td>
+                    <td className="py-2.5 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-bold">20 ~ 35 USD /月 全包</td>
+                    <td className="py-2.5 px-3 text-emerald-600 dark:text-emerald-400 font-bold">节约 90%+ 成本且多云双活无锁定</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
         {/* ================================================================= */}
         {/* 7. 安全性指标 (加密请求数、加密请求率、加密带宽、加密带宽率) */}
