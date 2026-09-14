@@ -1213,223 +1213,716 @@ export default function GlobalMeshPage() {
         <GlobalMeshMap />
 
         {/* ================================================================= */}
-        {/* 6. 在线服务工程全生命周期架构实践 (Code · Plan · Build · Deploy · Run · Observability) */}
+        {/* 6. 企业级四大核心架构中枢 (四大标签页) */}
         {/* ================================================================= */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs p-5 md:p-6 space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs p-5 md:p-6 space-y-6">
+          {/* 顶栏与标签导航 */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-3">
             <div>
               <div className="flex items-center gap-2">
                 <Workflow className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">
-                  在线服务工程全生命周期架构实践 (Lifecycle of Online Services)
+                  企业级四大核心架构中枢 (Architecture &amp; Engineering Hub)
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  SaaS + VPS 双轮驱动
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                  Dual-Mesh 全域贯通
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                从构思、计划、实现到上线，详解 Code · Plan · Build · Deploy · Run · Observability 各阶段在 VPS 算力与 SaaS Mesh 间的选型决策与成本对账
+                零信任服务网格 · 现代云中立基础设施映射 · 五层流动应用拓扑 · 工程全生命周期演进
               </p>
             </div>
             <div className="text-xs font-mono text-slate-400 shrink-0">
-              7 大工程演进阶段
+              4 大深度架构视角
             </div>
           </div>
 
-          {/* 7-Stage Interactive Navigation Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-            {LIFECYCLE_STAGES.map((stg) => {
-              const isSelected = activeLifecycleStage === stg.id;
+          {/* 4 大核心标签切换器 (Tab Nav Bar) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            {ARCH_NAV_TABS.map((tab) => {
+              const TabIcon = tab.icon;
+              const isSelected = activeArchTab === tab.id;
               return (
                 <button
-                  key={stg.id}
-                  onClick={() => setActiveLifecycleStage(stg.id)}
+                  key={tab.id}
+                  onClick={() => setActiveArchTab(tab.id)}
                   className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? "bg-blue-50/80 dark:bg-blue-950/40 border-blue-500/80 shadow-xs ring-1 ring-blue-500/50"
+                      ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500/90 shadow-xs ring-1 ring-blue-500/50"
                       : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
-                      {stg.id}
-                    </span>
-                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
-                      isSelected
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
-                    }`}>
-                      {stg.badge}
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <TabIcon
+                      className={`h-4 w-4 ${
+                        isSelected ? "text-blue-600 dark:text-blue-400" : "text-slate-400"
+                      }`}
+                    />
+                    <span
+                      className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                        isSelected
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                      }`}
+                    >
+                      {tab.badge}
                     </span>
                   </div>
-                  <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">
-                    {stg.name}
+                  <div>
+                    <div
+                      className={`text-xs font-bold truncate ${
+                        isSelected
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-slate-800 dark:text-slate-200"
+                      }`}
+                    >
+                      {tab.name}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono truncate">{tab.en}</div>
                   </div>
                 </button>
               );
             })}
           </div>
 
-          {/* Active Stage Detailed Breakdown */}
-          {(() => {
-            const current = LIFECYCLE_STAGES.find((s) => s.id === activeLifecycleStage) || LIFECYCLE_STAGES[0];
-            return (
-              <div className="space-y-4 pt-1">
-                {/* Stage Header Banner */}
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50/50 to-slate-50 dark:from-slate-800/80 dark:via-slate-800/50 dark:to-slate-900/60 border border-blue-200/60 dark:border-blue-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100">
-                        阶段解析：{current.name} ({current.enName})
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                      {current.tagline}
-                    </p>
+          {/* Tab 1: SaaS 零信任服务网格 (saas) */}
+          {activeArchTab === "saas" && (
+            <div className="space-y-6 pt-1">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-slate-50 dark:from-slate-800/80 dark:via-slate-800/50 dark:to-slate-900/60 border border-blue-200/60 dark:border-blue-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Cloud className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <span className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100">
+                      SaaS 零信任服务网格矩阵 (Zero-Trust SaaS Mesh)
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {current.metrics.map((m, idx) => (
-                      <div key={idx} className="bg-white dark:bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs text-center">
-                        <div className="text-[10px] text-slate-400">{m.label}</div>
-                        <div className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">{m.value}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    以全球 300+ Anycast 边缘防御为入口，无服务器弹性容器为业务中枢，双轨身份认证与动态机密为护城河。
+                  </p>
                 </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-emerald-600 dark:text-emerald-400 font-semibold shadow-2xs">
+                    0 公网暴露 · 动态短效凭据
+                  </span>
+                </div>
+              </div>
 
-                {/* 3 Real-World Solution Options Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                  {current.options.map((opt, oIdx) => (
+              {/* 5 大 SaaS 核心服务卡片 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {SAAS_CORE_SERVICES.map((srv) => {
+                  const SrvIcon = srv.icon;
+                  return (
                     <div
-                      key={oIdx}
-                      className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs flex flex-col justify-between space-y-3 hover:border-slate-300 dark:hover:border-slate-700 transition"
+                      key={srv.id}
+                      className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs flex flex-col justify-between space-y-3 hover:border-blue-400/50 dark:hover:border-blue-500/40 transition"
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-xs md:text-sm text-slate-900 dark:text-slate-100">
-                            {opt.title}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                              <SrvIcon className="h-4 w-4" />
+                            </div>
+                            <span className="font-bold text-xs md:text-sm text-slate-900 dark:text-slate-100">
+                              {srv.name}
+                            </span>
+                          </div>
                           <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold shrink-0 ${
-                              opt.typeTone === "blue"
-                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60"
-                                : opt.typeTone === "emerald"
-                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
-                                : "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60"
-                            }`}
+                            className={`text-[10px] px-2 py-0.5 rounded font-mono font-semibold shrink-0 border ${srv.badgeColor}`}
                           >
-                            {opt.type}
+                            {srv.category}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                          {opt.description}
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                          {srv.tagline}
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                          {srv.role}
                         </p>
                       </div>
 
                       <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
                         <div>
-                          <span className="text-slate-400 font-medium">核心优势:</span>{" "}
-                          <span className="text-slate-700 dark:text-slate-300">{opt.pros}</span>
+                          <span className="text-slate-400 font-medium">规格特性:</span>{" "}
+                          <span className="text-slate-700 dark:text-slate-300 font-mono">
+                            {srv.specs}
+                          </span>
                         </div>
-                        <div>
-                          <span className="text-slate-400 font-medium">成本参考:</span>{" "}
-                          <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">{opt.cost}</span>
+                        <div className="text-blue-600 dark:text-blue-400 font-medium">
+                          ★ {srv.highlight}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
 
-                {/* Global Mesh Collective Value Box */}
-                <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-xs font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wider">
-                        {current.meshValue.title}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
-                      {current.meshValue.desc}
-                    </p>
-                  </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-xs font-semibold text-blue-700 dark:text-blue-300 shrink-0 shadow-2xs">
-                    {current.meshValue.recommendation}
-                  </div>
+              {/* 零信任防御四维指标 */}
+              <div className="pt-2">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">
+                  零信任防御核心基线 (Zero-Trust Security Telemetry)
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {ZERO_TRUST_DEFENSE_ITEMS.map((item, idx) => {
+                    const ItemIcon = item.icon;
+                    return (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-850/50 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <ItemIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            {item.metric}
+                          </span>
+                        </div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                          {item.title}
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">{item.desc}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            );
-          })()}
-
-          {/* FinOps & Architecture Comparison Table */}
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                <span>传统单一大厂云 (AWS/GCP) vs Global Mesh (VPS+SaaS) 全生命周期对账</span>
-              </span>
-              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                预算节约高达 90%+
-              </span>
             </div>
+          )}
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[640px]">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
-                    <th className="py-2 px-3 font-semibold">评估维度 / 阶段</th>
-                    <th className="py-2 px-3 font-semibold">传统单一大厂全托管 (AWS/GCP)</th>
-                    <th className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">Global Mesh (VPS 算力 + SaaS 网格)</th>
-                    <th className="py-2 px-3 font-semibold text-emerald-600 dark:text-emerald-400">架构与成本优势</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
-                  <tr>
-                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">出网带宽 (Egress)</td>
-                    <td className="py-2 px-3 font-mono text-rose-500">高昂带宽税 (0.09 USD/GB)</td>
-                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloudflare R2 0元出网 + VPS 20~32TB 流量包</td>
-                    <td className="py-2 px-3">彻底根治跨云流量刺客</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">计算算力 (Compute)</td>
-                    <td className="py-2 px-3 font-mono">闲置虚拟机每月 80~160 USD/台</td>
-                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloud Run 缩容至0 + Hetzner €3.79 / Contabo 5.5 USD</td>
-                    <td className="py-2 px-3">无流量 0 开销，有长任务独占多核</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">数据库与向量存储</td>
-                    <td className="py-2 px-3 font-mono">托管 RDS/Aurora/Pinecone 150+ USD/月</td>
-                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">VPS 自建 Supabase PG + pgvector (无容量限制)</td>
-                    <td className="py-2 px-3">独占 NVMe 高吞吐，百 GB AI 向量自由</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">可观测性 (Telemetry)</td>
-                    <td className="py-2 px-3 font-mono">Datadog/NewRelic 每月 200~500 USD</td>
-                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Victoria 全家桶自建 + ClickHouse + 外部独立哨兵</td>
-                    <td className="py-2 px-3">内存仅占 1/4，日志链路全闭环且防自盲</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">机密管理 (Secrets &amp; Vault)</td>
-                    <td className="py-2 px-3 font-mono text-rose-500">AWS Secrets Manager (0.40 USD/secret/月 + API 调用计费)</td>
-                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Vault Server Self-hosted (Raft 集群) + HCP Cloud 按需联动</td>
-                    <td className="py-2 px-3">无 Secret 数量上限，动态凭据即用即毁</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">网络安全 (Security)</td>
-                    <td className="py-2 px-3 font-mono">公网 IP 暴露容易配置疏漏</td>
-                    <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">全网 0 公网入站端口暴露，主动 mTLS/WireGuard</td>
-                    <td className="py-2 px-3">天然防御全网端口嗅探与 0-day 扫描</td>
-                  </tr>
-                  <tr className="bg-slate-50/80 dark:bg-slate-800/40 font-semibold">
-                    <td className="py-2.5 px-3 text-slate-900 dark:text-slate-100">单月综合预算评估</td>
-                    <td className="py-2.5 px-3 font-mono text-rose-500">350 ~ 800+ USD /月</td>
-                    <td className="py-2.5 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-bold">20 ~ 35 USD /月 全包</td>
-                    <td className="py-2.5 px-3 text-emerald-600 dark:text-emerald-400 font-bold">节约 90%+ 成本且多云双活无锁定</td>
-                  </tr>
-                </tbody>
-              </table>
+          {/* Tab 2: 现代云中立基础设施架构映射 (cloud-neutral) */}
+          {activeArchTab === "cloud-neutral" && (
+            <div className="space-y-6 pt-1">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50/90 via-teal-50/50 to-slate-50 dark:from-slate-800/80 dark:via-slate-800/50 dark:to-slate-900/60 border border-emerald-200/60 dark:border-emerald-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Server className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100">
+                      5 大核心 VPS 裸金属算力底座矩阵 (Cloud-Neutral Infra Base)
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    摆脱传统单一大厂云供应商锁定，聚合 Vultr、Linode、Hetzner、Contabo、UCloud 全球 48+ 活跃 PoP。
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-emerald-600 dark:text-emerald-400 font-semibold shadow-2xs">
+                    多云 100% 交叉容灾
+                  </span>
+                </div>
+              </div>
+
+              {/* 5 大 VPS 核心能力对比卡片 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {VPS_SUMMARY_PROVIDERS.map((prov) => (
+                  <div
+                    key={prov.id}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs flex flex-col justify-between space-y-3 hover:border-emerald-400/50 dark:hover:border-emerald-500/40 transition"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {prov.name}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                          {prov.pops}
+                        </span>
+                      </div>
+                      <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                        {prov.role}
+                      </div>
+                      <div className="text-xs text-slate-500 space-y-1">
+                        <div><strong className="text-slate-700 dark:text-slate-300">核心算力:</strong> {prov.specs}</div>
+                        <div><strong className="text-slate-700 dark:text-slate-300">网络骨干:</strong> {prov.network}</div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                      <span className="text-slate-400 font-medium">FinOps 定价参考:</span>{" "}
+                      <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                        {prov.cost}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 成本与架构全生命周期对账表 */}
+              <div className="pt-2 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    传统单一大厂云 (AWS/GCP) vs Global Mesh (VPS 算力 + SaaS 网格) 对账
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                    预算节约高达 90%+
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
+                        <th className="py-2 px-3 font-semibold">评估维度 / 阶段</th>
+                        <th className="py-2 px-3 font-semibold">传统单一大厂全托管 (AWS/GCP)</th>
+                        <th className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">Global Mesh (VPS 算力 + SaaS 网格)</th>
+                        <th className="py-2 px-3 font-semibold text-emerald-600 dark:text-emerald-400">架构与成本优势</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">出网带宽 (Egress)</td>
+                        <td className="py-2 px-3 font-mono text-rose-500">高昂带宽税 (0.09 USD/GB)</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloudflare R2 0元出网 + VPS 20~32TB 流量包</td>
+                        <td className="py-2 px-3">彻底根治跨云流量刺客</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">计算算力 (Compute)</td>
+                        <td className="py-2 px-3 font-mono">闲置虚拟机每月 80~160 USD/台</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloud Run 缩容至0 + Hetzner €3.79 / Contabo 5.5 USD</td>
+                        <td className="py-2 px-3">无流量 0 开销，有长任务独占多核</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">数据库与向量存储</td>
+                        <td className="py-2 px-3 font-mono">托管 RDS/Aurora/Pinecone 150+ USD/月</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">VPS 自建 Supabase PG + pgvector (无容量限制)</td>
+                        <td className="py-2 px-3">独占 NVMe 高吞吐，百 GB AI 向量自由</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">可观测性 (Telemetry)</td>
+                        <td className="py-2 px-3 font-mono">Datadog/NewRelic 每月 200~500 USD</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Victoria 全家桶自建 + ClickHouse + 外部独立哨兵</td>
+                        <td className="py-2 px-3">内存仅占 1/4，日志链路全闭环且防自盲</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">机密管理 (Secrets &amp; Vault)</td>
+                        <td className="py-2 px-3 font-mono text-rose-500">AWS Secrets Manager (0.40 USD/secret/月 + API 调用计费)</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Vault Server Self-hosted (Raft 集群) + HCP Cloud 按需联动</td>
+                        <td className="py-2 px-3">无 Secret 数量上限，动态凭据即用即毁</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">网络安全 (Security)</td>
+                        <td className="py-2 px-3 font-mono">公网 IP 暴露容易配置疏漏</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">全网 0 公网入站端口暴露，主动 mTLS/WireGuard</td>
+                        <td className="py-2 px-3">天然防御全网端口嗅探与 0-day 扫描</td>
+                      </tr>
+                      <tr className="bg-slate-50/80 dark:bg-slate-800/40 font-semibold">
+                        <td className="py-2.5 px-3 text-slate-900 dark:text-slate-100">单月综合预算评估</td>
+                        <td className="py-2.5 px-3 font-mono text-rose-500">350 ~ 800+ USD /月</td>
+                        <td className="py-2.5 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-bold">20 ~ 35 USD /月 全包</td>
+                        <td className="py-2.5 px-3 text-emerald-600 dark:text-emerald-400 font-bold">节约 90%+ 成本且多云双活无锁定</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Tab 3: 应用架构拓扑网络 (app-topology) */}
+          {activeArchTab === "app-topology" && (
+            <div className="space-y-6 pt-1">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50/90 via-indigo-50/50 to-slate-50 dark:from-slate-800/80 dark:via-slate-800/50 dark:to-slate-900/60 border border-purple-200/60 dark:border-purple-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Network className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <span className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100">
+                      端到端应用架构拓扑：五层流动模型（端 - 边 - 控 - 算 - 数）
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    全面支持 C/S 原生多端（macOS/Win/Linux/iOS/Android）与 B/S 现代浏览器，构建清晰的数据与控制流。
+                  </p>
+                </div>
+                {/* C/S 与 B/S 过滤器开关 */}
+                <div className="flex items-center gap-1.5 p-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shrink-0 shadow-2xs">
+                  <button
+                    onClick={() => setTopologyFilter("all")}
+                    className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+                      topologyFilter === "all"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                    }`}
+                  >
+                    全部拓扑
+                  </button>
+                  <button
+                    onClick={() => setTopologyFilter("cs")}
+                    className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+                      topologyFilter === "cs"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                    }`}
+                  >
+                    C/S 原生生态
+                  </button>
+                  <button
+                    onClick={() => setTopologyFilter("bs")}
+                    className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+                      topologyFilter === "bs"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                    }`}
+                  >
+                    B/S 现代浏览器
+                  </button>
+                </div>
+              </div>
+
+              {/* 五层架构流动模型卡片 */}
+              <div className="space-y-4">
+                {TOPOLOGY_LAYERS.map((layer, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                          {layer.level}
+                        </span>
+                        <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                          {layer.name}
+                        </span>
+                        <span className="text-xs text-slate-400 font-mono">
+                          {layer.enName}
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500">{layer.tagline}</span>
+                    </div>
+
+                    {/* Layer 1: Client Tier specific breakdown */}
+                    {layer.csDetails && layer.bsDetails ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                        {(topologyFilter === "all" || topologyFilter === "cs") && (
+                          <div className="p-3.5 rounded-lg border border-blue-200/70 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Laptop className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                                  {layer.csDetails.title}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400">
+                                原生多端引擎
+                              </span>
+                            </div>
+                            <div className="text-[11px] font-mono text-slate-500">
+                              {layer.csDetails.env}
+                            </div>
+                            <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1 list-disc list-inside">
+                              {layer.csDetails.features.map((f, fIdx) => (
+                                <li key={fIdx}>{f}</li>
+                              ))}
+                            </ul>
+                            <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono pt-1">
+                              流向: {layer.csDetails.flow}
+                            </div>
+                          </div>
+                        )}
+
+                        {(topologyFilter === "all" || topologyFilter === "bs") && (
+                          <div className="p-3.5 rounded-lg border border-indigo-200/70 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Monitor className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                                  {layer.bsDetails.title}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400">
+                                现代浏览器生态
+                              </span>
+                            </div>
+                            <div className="text-[11px] font-mono text-slate-500">
+                              {layer.bsDetails.env}
+                            </div>
+                            <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1 list-disc list-inside">
+                              {layer.bsDetails.features.map((f, fIdx) => (
+                                <li key={fIdx}>{f}</li>
+                              ))}
+                            </ul>
+                            <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono pt-1">
+                              流向: {layer.bsDetails.flow}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Layers 2, 3, 4, 5: Shared Tier breakdown */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
+                        {layer.sharedDetails?.components.map((comp, cIdx) => (
+                          <div
+                            key={cIdx}
+                            className="p-3 rounded-lg border border-slate-100 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-800/40 space-y-1"
+                          >
+                            <div className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                              {comp.label}
+                            </div>
+                            <div className="text-[11px] text-slate-500 leading-relaxed">
+                              {comp.desc}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* C/S 原生 vs B/S 现代浏览器全方位对比矩阵 */}
+              <div className="pt-2 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    C/S 原生多端 vs B/S 现代浏览器架构能力对比矩阵
+                  </span>
+                  <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-semibold">
+                    全栈工程协同
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
+                        <th className="py-2 px-3 font-semibold w-1/5">架构维度</th>
+                        <th className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400 w-2/5">
+                          C/S 原生客户端 (Flutter / Tauri / Rust)
+                        </th>
+                        <th className="py-2 px-3 font-semibold text-indigo-600 dark:text-indigo-400 w-2/5">
+                          B/S 现代浏览器 (Next.js SPA/SSR / WASM)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                      {CS_VS_BS_MATRIX.map((item, idx) => (
+                        <tr key={idx}>
+                          <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-slate-100">
+                            {item.dim}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div>{item.cs}</div>
+                            <div className="text-[10px] text-blue-600 dark:text-blue-400 mt-0.5">
+                              ★ {item.advantage}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3">{item.bs}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 4: 工程视角的生命周期 (lifecycle) */}
+          {activeArchTab === "lifecycle" && (
+            <div className="space-y-5 pt-1">
+              {/* 7-Stage Interactive Navigation Tabs */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {LIFECYCLE_STAGES.map((stg) => {
+                  const isSelected = activeLifecycleStage === stg.id;
+                  return (
+                    <button
+                      key={stg.id}
+                      onClick={() => setActiveLifecycleStage(stg.id)}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? "bg-blue-50/80 dark:bg-blue-950/40 border-blue-500/80 shadow-xs ring-1 ring-blue-500/50"
+                          : "bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                          {stg.id}
+                        </span>
+                        <span
+                          className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
+                            isSelected
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          }`}
+                        >
+                          {stg.badge}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">
+                        {stg.name}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active Stage Detailed Breakdown */}
+              {(() => {
+                const current =
+                  LIFECYCLE_STAGES.find((s) => s.id === activeLifecycleStage) ||
+                  LIFECYCLE_STAGES[0];
+                return (
+                  <div className="space-y-4 pt-1">
+                    {/* Stage Header Banner */}
+                    <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50 via-indigo-50/50 to-slate-50 dark:from-slate-800/80 dark:via-slate-800/50 dark:to-slate-900/60 border border-blue-200/60 dark:border-blue-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm md:text-base font-bold text-slate-900 dark:text-slate-100">
+                            阶段解析：{current.name} ({current.enName})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                          {current.tagline}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {current.metrics.map((m, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white dark:bg-slate-850 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs text-center"
+                          >
+                            <div className="text-[10px] text-slate-400">{m.label}</div>
+                            <div className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                              {m.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 3 Real-World Solution Options Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                      {current.options.map((opt, oIdx) => (
+                        <div
+                          key={oIdx}
+                          className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-xs flex flex-col justify-between space-y-3 hover:border-slate-300 dark:hover:border-slate-700 transition"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-bold text-xs md:text-sm text-slate-900 dark:text-slate-100">
+                                {opt.title}
+                              </span>
+                              <span
+                                className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold shrink-0 ${
+                                  opt.typeTone === "blue"
+                                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60"
+                                    : opt.typeTone === "emerald"
+                                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60"
+                                    : "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60"
+                                }`}
+                              >
+                                {opt.type}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                              {opt.description}
+                            </p>
+                          </div>
+
+                          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                            <div>
+                              <span className="text-slate-400 font-medium">核心优势:</span>{" "}
+                              <span className="text-slate-700 dark:text-slate-300">{opt.pros}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 font-medium">成本参考:</span>{" "}
+                              <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
+                                {opt.cost}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Global Mesh Collective Value Box */}
+                    <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-xs font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wider">
+                            {current.meshValue.title}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
+                          {current.meshValue.desc}
+                        </p>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-xs font-semibold text-blue-700 dark:text-blue-300 shrink-0 shadow-2xs">
+                        {current.meshValue.recommendation}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* FinOps & Architecture Comparison Table */}
+              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>传统单一大厂云 (AWS/GCP) vs Global Mesh (VPS+SaaS) 全生命周期对账</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                    预算节约高达 90%+
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
+                        <th className="py-2 px-3 font-semibold">评估维度 / 阶段</th>
+                        <th className="py-2 px-3 font-semibold">传统单一大厂全托管 (AWS/GCP)</th>
+                        <th className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">Global Mesh (VPS 算力 + SaaS 网格)</th>
+                        <th className="py-2 px-3 font-semibold text-emerald-600 dark:text-emerald-400">架构与成本优势</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">出网带宽 (Egress)</td>
+                        <td className="py-2 px-3 font-mono text-rose-500">高昂带宽税 (0.09 USD/GB)</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloudflare R2 0元出网 + VPS 20~32TB 流量包</td>
+                        <td className="py-2 px-3">彻底根治跨云流量刺客</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">计算算力 (Compute)</td>
+                        <td className="py-2 px-3 font-mono">闲置虚拟机每月 80~160 USD/台</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Cloud Run 缩容至0 + Hetzner €3.79 / Contabo 5.5 USD</td>
+                        <td className="py-2 px-3">无流量 0 开销，有长任务独占多核</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">数据库与向量存储</td>
+                        <td className="py-2 px-3 font-mono">托管 RDS/Aurora/Pinecone 150+ USD/月</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">VPS 自建 Supabase PG + pgvector (无容量限制)</td>
+                        <td className="py-2 px-3">独占 NVMe 高吞吐，百 GB AI 向量自由</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">可观测性 (Telemetry)</td>
+                        <td className="py-2 px-3 font-mono">Datadog/NewRelic 每月 200~500 USD</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Victoria 全家桶自建 + ClickHouse + 外部独立哨兵</td>
+                        <td className="py-2 px-3">内存仅占 1/4，日志链路全闭环且防自盲</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">机密管理 (Secrets &amp; Vault)</td>
+                        <td className="py-2 px-3 font-mono text-rose-500">AWS Secrets Manager (0.40 USD/secret/月 + API 调用计费)</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Vault Server Self-hosted (Raft 集群) + HCP Cloud 按需联动</td>
+                        <td className="py-2 px-3">无 Secret 数量上限，动态凭据即用即毁</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-medium text-slate-900 dark:text-slate-100">网络安全 (Security)</td>
+                        <td className="py-2 px-3 font-mono">公网 IP 暴露容易配置疏漏</td>
+                        <td className="py-2 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">全网 0 公网入站端口暴露，主动 mTLS/WireGuard</td>
+                        <td className="py-2 px-3">天然防御全网端口嗅探与 0-day 扫描</td>
+                      </tr>
+                      <tr className="bg-slate-50/80 dark:bg-slate-800/40 font-semibold">
+                        <td className="py-2.5 px-3 text-slate-900 dark:text-slate-100">单月综合预算评估</td>
+                        <td className="py-2.5 px-3 font-mono text-rose-500">350 ~ 800+ USD /月</td>
+                        <td className="py-2.5 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-bold">20 ~ 35 USD /月 全包</td>
+                        <td className="py-2.5 px-3 text-emerald-600 dark:text-emerald-400 font-bold">节约 90%+ 成本且多云双活无锁定</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
 
         {/* ================================================================= */}
         {/* 7. 安全性指标 (加密请求数、加密请求率、加密带宽、加密带宽率) */}
