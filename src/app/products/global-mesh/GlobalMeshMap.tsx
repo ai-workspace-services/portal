@@ -7,8 +7,10 @@ interface ComputeTooltip {
   name: string;
   popsCount: string;
   providers: string;
-  cpu: string;
-  gpu: string;
+  field1Label: string;
+  field1Value: string;
+  field2Label: string;
+  field2Value: string;
   rtt: string;
   req: string;
   x: number | string;
@@ -19,6 +21,15 @@ interface NodeComputeInfo {
   providers: string;
   cpu: string;
   gpu: string;
+  rtt: string;
+  popsCount: string;
+  req: string;
+}
+
+interface NodeSaasInfo {
+  providers: string;
+  techStack: string;
+  role: string;
   rtt: string;
   popsCount: string;
   req: string;
@@ -115,17 +126,109 @@ const COUNTRY_COMPUTE_MAP: Record<string, NodeComputeInfo> = {
   },
 };
 
-const DEFAULT_TOOLTIP: ComputeTooltip = {
+const COUNTRY_SAAS_MAP: Record<string, NodeSaasInfo> = {
+  "United States": {
+    providers: "Cloudflare · GCP Cloud Run · GitHub",
+    techStack: "Cloud Run (us-central1) · R2 存储 · Anycast DNS",
+    role: "全球 Serverless 弹性 BFF & 零出口费存储中枢",
+    rtt: "< 15ms (Edge) / 118ms",
+    popsCount: "50+ Edge PoPs",
+    req: "128.4k",
+  },
+  Germany: {
+    providers: "observability.svc.plus · Supabase 自建 · ClickHouse",
+    techStack: "Victoria 全家桶 · ClickHouse OLAP · PG 16 + pgvector",
+    role: "全栈遥测 APM 监控中心 & 自建高性能数据湖",
+    rtt: "35ms (泛欧) / 125ms",
+    popsCount: "欧洲双活枢纽",
+    req: "42.1k",
+  },
+  Japan: {
+    providers: "Cloudflare Edge · Cloud Run (Tokyo) · Gitea Mirror",
+    techStack: "Cloud Run (asia-northeast1) · 边缘路由 · act_runner",
+    role: "亚太低延时接入网关 & 本地 CI 离线容灾节点",
+    rtt: "< 12ms (Edge) / 31ms",
+    popsCount: "东亚双活中心",
+    req: "98.5k",
+  },
+  Singapore: {
+    providers: "Cloudflare Edge · Supabase Global Edge · R2 APAC",
+    techStack: "Cloudflare Workers · R2 APAC 存储池 · GoTrue 边缘验签",
+    role: "东南亚跨国流量汇聚 & 零出网费用存储中继",
+    rtt: "< 18ms (Edge) / 40ms",
+    popsCount: "亚太存储总线",
+    req: "56.2k",
+  },
+  "Hong Kong": {
+    providers: "Cloudflare Edge · 亚太专线跳板",
+    techStack: "Edge Workers · DNSSEC · CN2 回国专线接入",
+    role: "大中华出海边缘缓存与 DNS 智能解析",
+    rtt: "< 10ms (Edge) / 22ms",
+    popsCount: "大中华极速 PoP",
+    req: "34.8k",
+  },
+  Australia: {
+    providers: "Cloudflare Edge · Vultr/Linode 算力节点",
+    techStack: "Edge Caching · WireGuard Peer · R2 异地副本",
+    role: "大洋洲边缘网关与远程数据镜像",
+    rtt: "< 15ms (Edge) / 142ms",
+    popsCount: "大洋洲枢纽",
+    req: "18.3k",
+  },
+  Netherlands: {
+    providers: "Cloudflare Edge · European Peering IX",
+    techStack: "Cloudflare Workers · 遥测冷备同步",
+    role: "西欧直连交换中心 · AMS-IX 流量分发",
+    rtt: "< 14ms (Edge) / 135ms",
+    popsCount: "西欧核心 PoP",
+    req: "28.6k",
+  },
+  "United Kingdom": {
+    providers: "Cloudflare Edge · Cloud Run (London)",
+    techStack: "Cloud Run europe-west2 · Edge Workers",
+    role: "欧洲第二应用计算与身份令牌边缘验签",
+    rtt: "< 12ms (Edge) / 130ms",
+    popsCount: "伦敦核心 PoP",
+    req: "22.4k",
+  },
+  Finland: {
+    providers: "Supabase PG 冷备 · ClickHouse 归档存储",
+    techStack: "ClickHouse S3 Table · PG 冷备镜像",
+    role: "绿能低电价数据湖与审计日志归档",
+    rtt: "145ms",
+    popsCount: "北欧冷备集群",
+    req: "12.0k",
+  },
+};
+
+const DEFAULT_VPS_TOOLTIP: ComputeTooltip = {
   visible: true,
   name: "Australia (悉尼)",
   popsCount: "3 PoPs",
   providers: "Linode · Vultr · Contabo",
-  cpu: "AMD EPYC 32C/64T (独占核心)",
-  gpu: "NVIDIA RTX 6000 Ada (48GB)",
+  field1Label: "CPU 算力",
+  field1Value: "AMD EPYC 32C/64T (独占核心)",
+  field2Label: "GPU 加速",
+  field2Value: "NVIDIA RTX 6000 Ada (48GB)",
   rtt: "142ms",
   req: "3.60k",
   x: "76%",
   y: "44%",
+};
+
+const DEFAULT_SAAS_TOOLTIP: ComputeTooltip = {
+  visible: true,
+  name: "United States (us-central1)",
+  popsCount: "50+ Edge PoPs",
+  providers: "Cloudflare · GCP Cloud Run · GitHub",
+  field1Label: "核心架构",
+  field1Value: "Cloud Run (us-central1) · R2 存储 · Anycast DNS",
+  field2Label: "SaaS 角色",
+  field2Value: "全球 Serverless 弹性 BFF & 零出口费存储中枢",
+  rtt: "< 15ms (Edge)",
+  req: "128.4k",
+  x: "24%",
+  y: "32%",
 };
 
 interface VpsProviderItem {
@@ -140,6 +243,23 @@ interface VpsProviderItem {
   cpuShort: string;
   gpu: string;
   gpuShort: string;
+  role: string;
+  regions: string;
+  targetCountry: string;
+}
+
+interface SaasProviderItem {
+  id: string;
+  name: string;
+  subName: string;
+  tag: string;
+  sharePct: string;
+  color: string;
+  badgeBg: string;
+  techStack: string;
+  techStackShort: string;
+  quota: string;
+  quotaShort: string;
   role: string;
   regions: string;
   targetCountry: string;
@@ -188,7 +308,7 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
     badgeBg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
     cpu: "AMD EPYC Dedicated / ARM64 Ampere (80核)",
     cpuShort: "EPYC / ARM64 (80核)",
-    gpu: "裸金属高性能计算集群 (CPU 高并发)",
+    gpu: "裸金属高性能计算集群 (CPU 并发)",
     gpuShort: "CPU 高吞吐裸金属",
     role: "Telemetry Hub 遥测中继",
     regions: "法尔肯施泰因 · 纽伦堡 · 赫尔辛基",
@@ -228,9 +348,93 @@ const TOP_VPS_PROVIDERS: VpsProviderItem[] = [
   },
 ];
 
+const TOP_SAAS_PROVIDERS: SaasProviderItem[] = [
+  {
+    id: "cloudflare",
+    name: "Cloudflare",
+    subName: "全球 Anycast 边缘与零出网存储",
+    tag: "300+ PoPs",
+    sharePct: "32%",
+    color: "#f97316",
+    badgeBg: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+    techStack: "Anycast DNS · Pages · Workers Router · R2 Storage",
+    techStackShort: "DNS · Workers · R2",
+    quota: "R2 0元出网 · 10万次/天免费 Worker · 免费 DNSSEC",
+    quotaShort: "R2 $0出网 · 免费DNS",
+    role: "边缘极速接入 & 跨云数据总线",
+    regions: "全球 300+ 边缘数据中心 (<15ms)",
+    targetCountry: "United States",
+  },
+  {
+    id: "cloudrun",
+    name: "GCP Cloud Run",
+    subName: "Scale-to-Zero 弹性无服务器微服务",
+    tag: "全球 36+ 区域",
+    sharePct: "25%",
+    color: "#3b82f6",
+    badgeBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    techStack: "Knative 弹性容器 · Andromeda 骨干 · Go/Node BFF",
+    techStackShort: "Knative 容器 · Go/Node",
+    quota: "每月 200万次请求 · 36万 vCPU秒 · 18万 GiB秒内存免费",
+    quotaShort: "200万免费请求 · 缩容至0",
+    role: "弹性业务 BFF · Webhook 异步处理",
+    regions: "爱荷华 (us-central1) · 东京 · 法兰克福",
+    targetCountry: "United States",
+  },
+  {
+    id: "supabase",
+    name: "Supabase (双轨)",
+    subName: "云端身份认证 + 自建 PG/Vector",
+    tag: "双轨融合",
+    sharePct: "20%",
+    color: "#10b981",
+    badgeBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    techStack: "GoTrue Auth · PostgreSQL 16 · pgvector · RLS 隔离",
+    techStackShort: "GoTrue · PG · pgvector",
+    quota: "云端 50k MAU 免费 · 自建节点存储与向量无上限",
+    quotaShort: "50k MAU · 向量无上限",
+    role: "全局统一鉴权 + 核心关系与 AI 向量数据",
+    regions: "全局身份网关 + 德/芬 VPS 本地集群",
+    targetCountry: "Germany",
+  },
+  {
+    id: "observability",
+    name: "Observability",
+    subName: "observability.svc.plus 全栈遥测",
+    tag: "全链路追踪",
+    sharePct: "13%",
+    color: "#a855f7",
+    badgeBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    techStack: "VictoriaMetrics · VictoriaLogs · VictoriaTraces · ClickHouse",
+    techStackShort: "Victoria全家桶 · ClickHouse",
+    quota: "7x 内存压缩 · OTLP 原生协议 · ClickHouse 挂载 R2 冷备",
+    quotaShort: "OTLP 原生 · ClickHouse",
+    role: "APM 性能链路追踪 · 流日志毫秒级检索",
+    regions: "法兰克福 · 纽伦堡 · 外部看门狗",
+    targetCountry: "Germany",
+  },
+  {
+    id: "gitops",
+    name: "GitHub + Gitea",
+    subName: "云端 GitOps 权威 + 私网构建容灾",
+    tag: "双轨 GitOps",
+    sharePct: "10%",
+    color: "#64748b",
+    badgeBg: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+    techStack: "GitHub Actions OIDC · Gitea Mirror · act_runner 离线构建",
+    techStackShort: "Actions OIDC · Gitea Runner",
+    quota: "突破 GitHub Actions 分钟数限制 · 内网极速镜像拉取",
+    quotaShort: "无限制 CI · 离线容灾",
+    role: "声明式基础设施流水线 · 自动化发布",
+    regions: "全球 GitHub CDN + VPS 内部私有 Runner",
+    targetCountry: "Japan",
+  },
+];
+
 export default function GlobalMeshMap() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [tooltip, setTooltip] = useState<ComputeTooltip>(DEFAULT_TOOLTIP);
+  const [activeLayer, setActiveLayer] = useState<"vps" | "saas">("vps");
+  const [tooltip, setTooltip] = useState<ComputeTooltip>(DEFAULT_VPS_TOOLTIP);
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -243,26 +447,47 @@ export default function GlobalMeshMap() {
         const containerRect = containerRef.current.getBoundingClientRect();
         const x = e.clientX - containerRect.left;
         const y = e.clientY - containerRect.top;
-        const matched = COUNTRY_COMPUTE_MAP[name];
-        setTooltip({
-          visible: true,
-          name,
-          popsCount: matched?.popsCount || pops.split(" (")[0] || "1 PoP",
-          providers: matched?.providers || (pops.includes("(") ? pops.split(" (")[1].replace(")", "") : "多云互联"),
-          cpu: matched?.cpu || "弹性计算 vCPU 实例",
-          gpu: matched?.gpu || "CPU 密集型 / 动态算力调度",
-          rtt: matched?.rtt || "< 160ms",
-          req: matched?.req || req,
-          x: Math.max(90, Math.min(x, containerRect.width - 130)),
-          y: Math.max(60, y - 45),
-        });
+
+        if (activeLayer === "vps") {
+          const matched = COUNTRY_COMPUTE_MAP[name];
+          setTooltip({
+            visible: true,
+            name,
+            popsCount: matched?.popsCount || pops.split(" (")[0] || "1 PoP",
+            providers: matched?.providers || (pops.includes("(") ? pops.split(" (")[1].replace(")", "") : "多云互联"),
+            field1Label: "CPU 算力",
+            field1Value: matched?.cpu || "弹性计算 vCPU 实例",
+            field2Label: "GPU 加速",
+            field2Value: matched?.gpu || "CPU 密集型 / 动态算力调度",
+            rtt: matched?.rtt || "< 160ms",
+            req: matched?.req || req,
+            x: Math.max(90, Math.min(x, containerRect.width - 130)),
+            y: Math.max(60, y - 45),
+          });
+        } else {
+          const matched = COUNTRY_SAAS_MAP[name];
+          setTooltip({
+            visible: true,
+            name,
+            popsCount: matched?.popsCount || (name === "United States" || name === "Germany" || name === "Japan" || name === "Singapore" ? "SaaS 核心中继" : "边缘缓存点"),
+            providers: matched?.providers || "Cloudflare Anycast 边缘路由节点",
+            field1Label: "架构服务",
+            field1Value: matched?.techStack || "Anycast Edge · DNS 解析 · DDoS 防护",
+            field2Label: "SaaS 角色",
+            field2Value: matched?.role || "边缘就近分发与流量代理",
+            rtt: matched?.rtt || "< 25ms (Edge)",
+            req: matched?.req || req,
+            x: Math.max(90, Math.min(x, containerRect.width - 130)),
+            y: Math.max(60, y - 45),
+          });
+        }
       }
     }
   };
 
   const handleMouseLeave = () => {
     setActiveProvider(null);
-    setTooltip(DEFAULT_TOOLTIP);
+    setTooltip(activeLayer === "vps" ? DEFAULT_VPS_TOOLTIP : DEFAULT_SAAS_TOOLTIP);
   };
 
   const handleProviderHover = (vps: VpsProviderItem) => {
@@ -273,13 +498,40 @@ export default function GlobalMeshMap() {
       name: `${vps.name} · ${vps.targetCountry}`,
       popsCount: vps.tag,
       providers: `${vps.name} (${vps.subName})`,
-      cpu: vps.cpu,
-      gpu: vps.gpu,
+      field1Label: "CPU 规格",
+      field1Value: vps.cpu,
+      field2Label: "GPU 算力",
+      field2Value: vps.gpu,
       rtt: target?.rtt || "< 80ms",
       req: target?.req || "核心节点",
       x: vps.id === "linode" || vps.id === "contabo" ? "76%" : vps.id === "vultr" ? "24%" : vps.id === "hetzner" ? "52%" : "82%",
       y: vps.id === "linode" || vps.id === "contabo" ? "44%" : vps.id === "vultr" ? "32%" : vps.id === "hetzner" ? "25%" : "34%",
     });
+  };
+
+  const handleSaasHover = (saas: SaasProviderItem) => {
+    setActiveProvider(saas.id);
+    const target = COUNTRY_SAAS_MAP[saas.targetCountry];
+    setTooltip({
+      visible: true,
+      name: `${saas.name} · ${saas.targetCountry}`,
+      popsCount: saas.tag,
+      providers: `${saas.name} (${saas.subName})`,
+      field1Label: "技术体系",
+      field1Value: saas.techStack,
+      field2Label: "配额与价值",
+      field2Value: saas.quota,
+      rtt: target?.rtt || "< 20ms",
+      req: target?.req || "SaaS 核心",
+      x: saas.id === "cloudflare" || saas.id === "cloudrun" ? "24%" : saas.id === "observability" || saas.id === "supabase" ? "52%" : "82%",
+      y: saas.id === "cloudflare" || saas.id === "cloudrun" ? "32%" : saas.id === "observability" || saas.id === "supabase" ? "25%" : "34%",
+    });
+  };
+
+  const switchLayer = (layer: "vps" | "saas") => {
+    setActiveLayer(layer);
+    setActiveProvider(null);
+    setTooltip(layer === "vps" ? DEFAULT_VPS_TOOLTIP : DEFAULT_SAAS_TOOLTIP);
   };
 
   return (
@@ -288,17 +540,44 @@ export default function GlobalMeshMap() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 gap-2">
         <div>
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <span>VPS 算力 PoP 点分布 / CPU &amp; GPU 与五大 VPS 映射关系</span>
+            <span>
+              {activeLayer === "vps"
+                ? "VPS 算力 PoP 点分布 / CPU & GPU 与五大 VPS 映射关系"
+                : "SaaS 零信任服务网格 / 现代云中立基础设施架构映射"}
+            </span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            异构算力规格 · 177 国拓扑分布 · 48+ 核心 PoPs 节点互联
+            {activeLayer === "vps"
+              ? "异构算力规格 · 177 国拓扑分布 · 48+ 核心 PoPs 节点互联"
+              : "Serverless 弹性计算 · 零出口费用存储 · 双轨数据 · 全栈无死角遥测"}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-0.5 rounded-full text-xs font-mono font-medium bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
-            VPS Compute PoPs
-          </span>
-          <span className="text-xs font-mono text-slate-500">5 大核心 VPS 运营商</span>
+          {/* Dual Mesh Switcher */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => switchLayer("vps")}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                activeLayer === "vps"
+                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <span>⚡️ VPS 算力 PoP</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => switchLayer("saas")}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                activeLayer === "saas"
+                  ? "bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <span>🌐 SaaS 零信任网格</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -550,24 +829,24 @@ export default function GlobalMeshMap() {
             >
               <div className="flex items-center justify-between border-b border-slate-700/80 pb-1 mb-1.5">
                 <span className="font-bold text-xs text-white">{tooltip.name}</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30 font-mono">
                   {tooltip.popsCount}
                 </span>
               </div>
               <div className="space-y-1 text-[11px]">
                 <div>
-                  <span className="text-slate-400">映射运营商:</span>{" "}
+                  <span className="text-slate-400">{activeLayer === "vps" ? "映射运营商:" : "核心服务栈:"}</span>{" "}
                   <span className="text-blue-300 font-semibold">{tooltip.providers}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">CPU 算力:</span>{" "}
-                  <span className="text-emerald-300 font-medium">{tooltip.cpu}</span>
+                  <span className="text-slate-400">{tooltip.field1Label || "CPU 算力"}:</span>{" "}
+                  <span className="text-emerald-300 font-medium">{tooltip.field1Value}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">GPU 加速:</span>{" "}
-                  <span className="text-amber-300 font-medium">{tooltip.gpu}</span>
+                  <span className="text-slate-400">{tooltip.field2Label || "GPU 加速"}:</span>{" "}
+                  <span className="text-amber-300 font-medium">{tooltip.field2Value}</span>
                 </div>
-                <div className="text-slate-400 pt-1 border-t border-slate-700/50 flex justify-between text-[10px]">
+                <div className="text-slate-400 pt-1 border-t border-slate-700/50 flex justify-between text-[10px] font-mono">
                   <span>实测 RTT: <strong className="text-slate-200">{tooltip.rtt}</strong></span>
                   <span>流量: <strong className="text-slate-200">{tooltip.req}</strong></span>
                 </div>
@@ -577,88 +856,164 @@ export default function GlobalMeshMap() {
 
           {/* Floating Bottom Metrics Pill Inside Map */}
           <div className="absolute bottom-2 left-2 z-10 hidden sm:flex items-center gap-1.5 pointer-events-none opacity-90">
-            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-white font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
-              48+ 核心 PoP
-            </span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
-              512+ vCPU
-            </span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
-              H100/Ada/A100 GPU
-            </span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
-              0 端口暴露 (mTLS)
-            </span>
+            {activeLayer === "vps" ? (
+              <>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-white font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  48+ 核心 PoP
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  512+ vCPU
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  H100/Ada/A100 GPU
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  0 端口暴露 (mTLS)
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-orange-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  300+ Edge PoPs
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  $0 出网 (R2)
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  Scale-to-Zero (Cloud Run)
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                  全栈遥测 (Victoria+ClickHouse)
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Right Column: 5 大核心 VPS 运营商 (4 cols 压缩简化) */}
+      {/* Right Column: 5 大核心 VPS 运营商 / 5 大云原生 SaaS 服务 (4 cols 压缩简化) */}
       <div className="lg:col-span-4 flex flex-col justify-between space-y-1.5">
         <div className="flex items-center justify-between pb-0.5">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            5 大核心 VPS 运营商
+            {activeLayer === "vps" ? "5 大核心 VPS 运营商" : "5 大云原生 SaaS 基础设施"}
           </span>
           <span className="text-[10px] font-mono text-slate-400">悬浮联动地图</span>
         </div>
 
         <div className="space-y-1.5 flex-1 flex flex-col justify-between">
-          {TOP_VPS_PROVIDERS.map((vps) => {
-            const isSelected = activeProvider === vps.id;
-            return (
-              <div
-                key={vps.id}
-                onMouseEnter={() => handleProviderHover(vps)}
-                onMouseLeave={handleMouseLeave}
-                className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500/70 shadow-xs"
-                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-1.5 mb-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span
-                      className="w-4.5 h-4.5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs"
-                      style={{ backgroundColor: vps.color }}
-                    >
-                      {vps.name[0]}
-                    </span>
-                    <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                      {vps.name}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400 shrink-0">
-                      {vps.tag}
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 shrink-0">
-                    {vps.sharePct}
-                  </span>
-                </div>
-
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-1.5 overflow-hidden">
+          {activeLayer === "vps"
+            ? TOP_VPS_PROVIDERS.map((vps) => {
+                const isSelected = activeProvider === vps.id;
+                return (
                   <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{ width: vps.sharePct, backgroundColor: vps.color }}
-                  />
-                </div>
+                    key={vps.id}
+                    onMouseEnter={() => handleProviderHover(vps)}
+                    onMouseLeave={handleMouseLeave}
+                    className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-blue-50/90 dark:bg-blue-950/50 border-blue-500/70 shadow-xs"
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1.5 mb-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="w-4.5 h-4.5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs"
+                          style={{ backgroundColor: vps.color }}
+                        >
+                          {vps.name[0]}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                          {vps.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                          {vps.tag}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                        {vps.sharePct}
+                      </span>
+                    </div>
 
-                <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
-                  <span className="truncate">
-                    <strong className="text-slate-700 dark:text-slate-300">CPU:</strong> {vps.cpuShort}
-                  </span>
-                  <span className="text-slate-300 dark:text-slate-700">|</span>
-                  <span className="truncate">
-                    <strong className="text-blue-600 dark:text-blue-400">GPU:</strong> {vps.gpuShort}
-                  </span>
-                </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: vps.sharePct, backgroundColor: vps.color }}
+                      />
+                    </div>
 
-                <div className="text-[9.5px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                  {vps.role} · {vps.regions}
-                </div>
-              </div>
-            );
-          })}
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                      <span className="truncate">
+                        <strong className="text-slate-700 dark:text-slate-300">CPU:</strong> {vps.cpuShort}
+                      </span>
+                      <span className="text-slate-300 dark:text-slate-700">|</span>
+                      <span className="truncate">
+                        <strong className="text-blue-600 dark:text-blue-400">GPU:</strong> {vps.gpuShort}
+                      </span>
+                    </div>
+
+                    <div className="text-[9.5px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      {vps.role} · {vps.regions}
+                    </div>
+                  </div>
+                );
+              })
+            : TOP_SAAS_PROVIDERS.map((saas) => {
+                const isSelected = activeProvider === saas.id;
+                return (
+                  <div
+                    key={saas.id}
+                    onMouseEnter={() => handleSaasHover(saas)}
+                    onMouseLeave={handleMouseLeave}
+                    className={`p-2 rounded-lg border transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-purple-50/90 dark:bg-purple-950/50 border-purple-500/70 shadow-xs"
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1.5 mb-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="w-4.5 h-4.5 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs"
+                          style={{ backgroundColor: saas.color }}
+                        >
+                          {saas.name[0]}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                          {saas.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                          {saas.tag}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                        {saas.sharePct}
+                      </span>
+                    </div>
+
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mb-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: saas.sharePct, backgroundColor: saas.color }}
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                      <span className="truncate">
+                        <strong className="text-slate-700 dark:text-slate-300">架构:</strong> {saas.techStackShort}
+                      </span>
+                      <span className="text-slate-300 dark:text-slate-700">|</span>
+                      <span className="truncate">
+                        <strong className="text-emerald-600 dark:text-emerald-400">优势:</strong> {saas.quotaShort}
+                      </span>
+                    </div>
+
+                    <div className="text-[9.5px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      {saas.role} · {saas.regions}
+                    </div>
+                  </div>
+                );
+              })}
         </div>
       </div>
     </div>
