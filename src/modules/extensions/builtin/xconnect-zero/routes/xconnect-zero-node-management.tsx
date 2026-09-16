@@ -129,6 +129,68 @@ function bootstrapTemplate(role: NodeRole): string {
   );
 }
 
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", `'\\''`)}'`;
+}
+
+function joinScript(
+  joinUri: string,
+  role: NodeRole,
+  platform: Platform,
+): string {
+  const installer =
+    role === "gateway"
+      ? "https://install.svc.plus/xconnect-gateway"
+      : "https://install.svc.plus/xconnect-one";
+  const command = role === "gateway" ? "xconnect-gateway" : "xconnect";
+  const platformHint =
+    platform === "darwin"
+      ? "macOS"
+      : platform === "windows"
+        ? "Windows"
+        : "Linux";
+  if (platform === "windows") {
+    return [
+      `# Windows ${role === "gateway" ? "Gateway" : "One"} bootstrap`,
+      `irm ${installer} | iex`,
+      "$env:XCONNECT_INVITE = @'",
+      joinUri,
+      "'@",
+      `$env:XCONNECT_INVITE | ${command} join --invite-stdin`,
+    ].join("\n");
+  }
+  return [
+    `# ${platformHint} ${role === "gateway" ? "Gateway" : "One"} bootstrap`,
+    `curl -fsSL ${installer} | bash`,
+    `printf '%s\\n' ${shellQuote(joinUri)} | ${command} join --invite-stdin`,
+  ].join("\n");
+}
+
+function updateBootstrapJson(
+  json: string,
+  field: "id" | "gateway_id",
+  value: string,
+): string {
+  try {
+    const root = JSON.parse(json) as { network?: Record<string, unknown> };
+    if (!root.network || typeof root.network !== "object") return json;
+    root.network[field] = value;
+    return JSON.stringify(root, null, 2);
+  } catch {
+    return json;
+  }
+}
+
+function bootstrapField(json: string, field: "id" | "gateway_id"): string {
+  try {
+    const root = JSON.parse(json) as { network?: Record<string, unknown> };
+    const value = root.network?.[field];
+    return typeof value === "string" ? value : "";
+  } catch {
+    return "";
+  }
+}
+
 function errorCode(value: unknown): string | undefined {
   if (!value || typeof value !== "object" || !("error" in value))
     return undefined;
@@ -380,6 +442,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     bootstrapTemplate("gateway"),
   );
   const [joinUri, setJoinUri] = useState<string | null>(null);
+  const [scriptCopied, setScriptCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [invitePending, setInvitePending] = useState(false);
@@ -503,6 +566,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     );
     setBootstrapJson(bootstrapTemplate(nextRole));
     setJoinUri(null);
+    setScriptCopied(false);
     setError(null);
     setPage("join");
   };
@@ -516,25 +580,30 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       );
     }
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const changePlatform = (nextPlatform: Platform): void => {
     setPlatform(nextPlatform);
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const changeDeviceId = (nextDeviceId: string): void => {
     setDeviceId(nextDeviceId);
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const changeTtl = (nextTtl: InvitationTtl): void => {
     setTtl(nextTtl);
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const issueInvite = async (): Promise<void> => {
     setJoinUri(null);
+    setScriptCopied(false);
     setError(null);
     const network = networks.find((item) => item.id === networkId);
     if (!writeReady) return;
@@ -590,6 +659,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
 
   const submitBootstrap = async (): Promise<void> => {
     setJoinUri(null);
+    setScriptCopied(false);
     setError(null);
     if (!writeReady) return;
     let parsed: unknown;
@@ -624,9 +694,10 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     ];
     const hasRequiredNetworkFields = Boolean(
       network &&
-      requiredNetworkFields.every(
-        (field) => typeof network[field] === "string" && network[field].trim(),
-      ),
+        requiredNetworkFields.every(
+          (field) =>
+            typeof network[field] === "string" && network[field].trim(),
+        ),
     );
     if (
       !root ||
@@ -896,13 +967,13 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     : undefined;
   const registrationConfirmReady = Boolean(
     registrationTarget &&
-    !registrationExpired(registrationTarget) &&
-    registrationAction &&
-    registrationTargetNetwork &&
-    registrationNetworks[registrationTarget.registration_id] ===
-      registrationTarget.network_id &&
-    writeReady &&
-    registrationState === "ready",
+      !registrationExpired(registrationTarget) &&
+      registrationAction &&
+      registrationTargetNetwork &&
+      registrationNetworks[registrationTarget.registration_id] ===
+        registrationTarget.network_id &&
+      writeReady &&
+      registrationState === "ready",
   );
 
   return (
@@ -1124,7 +1195,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                     </option>
                     {networks.map((network) => (
                       <option key={network.id} value={network.id}>
-                        {network.display_name} · {network.id}
+                        {network.display_name} · {network.id} · Gateway{" "}
+                        {network.gateway_id || "—"}
                       </option>
                     ))}
                   </select>
@@ -1285,6 +1357,55 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                     ? `模板当前按 ${role === "gateway" ? "Gateway / Linux" : "One / Linux"} 角色生成，15 分钟后过期。Gateway 必须先在本机 init 生成公钥，再补全字段提交。`
                     : `Template is generated for ${role === "gateway" ? "Gateway / Linux" : "One / Linux"} and expires in 15 minutes. A Gateway must run local init to generate its public key before submission.`}
                 </p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <label className="text-xs font-semibold text-[var(--color-heading)]">
+                    {zh ? "新网络 ID" : "New network ID"}
+                    <input
+                      aria-label={zh ? "新网络 ID" : "New network ID"}
+                      value={bootstrapField(bootstrapJson, "id")}
+                      onChange={(event) =>
+                        setBootstrapJson(
+                          updateBootstrapJson(
+                            bootstrapJson,
+                            "id",
+                            event.target.value,
+                          ),
+                        )
+                      }
+                      disabled={!writeReady || bootstrapPending}
+                      placeholder="net_uat"
+                      className="mt-1 block w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-normal disabled:opacity-50"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-[var(--color-heading)]">
+                    {zh ? "自定义 Gateway ID" : "Custom Gateway ID"}
+                    <input
+                      aria-label={
+                        zh ? "自定义 Gateway ID" : "Custom Gateway ID"
+                      }
+                      value={bootstrapField(bootstrapJson, "gateway_id")}
+                      onChange={(event) =>
+                        setBootstrapJson(
+                          updateBootstrapJson(
+                            bootstrapJson,
+                            "gateway_id",
+                            event.target.value,
+                          ),
+                        )
+                      }
+                      disabled={
+                        !writeReady || bootstrapPending || role !== "gateway"
+                      }
+                      placeholder="gw-uat-example"
+                      className="mt-1 block w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-normal disabled:opacity-50"
+                    />
+                  </label>
+                </div>
+                <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                  {zh
+                    ? "自定义 Gateway ID 仅用于新网络初始化；已有网络的 Gateway ID 由 Accounts 绑定并只读，避免跨网络或跨用户迁移。"
+                    : "A custom Gateway ID is only used when creating a new network. Existing network Gateway IDs remain Accounts-bound and read-only to prevent cross-network or cross-user migration."}
+                </p>
                 <textarea
                   aria-label={
                     zh ? "高级 bootstrap JSON" : "Advanced bootstrap JSON"
@@ -1330,7 +1451,43 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   : "One-time invitation (shown once on this page)"
               }
             >
-              <code className="block break-all p-5 text-xs">{joinUri}</code>
+              <div className="space-y-4 p-5">
+                <code className="block break-all rounded bg-[var(--color-surface-muted)] p-3 text-xs">
+                  {joinUri}
+                </code>
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[var(--color-heading)]">
+                      {zh ? "一键接入脚本" : "One-command bootstrap script"}
+                    </p>
+                    <Button
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(
+                          joinScript(joinUri, role, platform),
+                        );
+                        setScriptCopied(true);
+                      }}
+                    >
+                      <ClipboardCheck className="h-4 w-4" />
+                      {scriptCopied
+                        ? zh
+                          ? "已复制"
+                          : "Copied"
+                        : zh
+                          ? "复制脚本"
+                          : "Copy script"}
+                    </Button>
+                  </div>
+                  <pre className="mt-2 overflow-x-auto rounded bg-[var(--color-surface-muted)] p-3 text-xs leading-5">
+                    <code>{joinScript(joinUri, role, platform)}</code>
+                  </pre>
+                  <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                    {zh
+                      ? "脚本只在本页短时显示；原始邀请不会写入数据库、GitOps 或日志。执行后由 Accounts 创建节点记录。"
+                      : "The script is shown temporarily on this page; the raw invite is not stored in the database, GitOps, or logs. Accounts creates the node record after execution."}
+                  </p>
+                </div>
+              </div>
             </Frame>
           ) : null}
           <Frame title={zh ? "待确认 One 注册" : "Pending One registrations"}>
