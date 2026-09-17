@@ -17,6 +17,11 @@ import {
   listTaskNamespaces,
   listTaskSessions,
 } from "@/lib/ai-workspace/sessionApi";
+import {
+  fetchSharedTaskCatalog,
+  type PinnedTask,
+  type TaskCatalog,
+} from "@/lib/ai-workspace/catalogApi";
 import { cn } from "@/lib/utils";
 
 type WorkbenchTab = "overview" | "models" | "todo" | "projects" | "inbox";
@@ -271,10 +276,28 @@ function modelSummaries(sessions: ServerSession[]): ModelSummary[] {
     );
 }
 
+function pinnedTaskToSession(task: PinnedTask): ServerSession {
+  return {
+    sessionId: `pinned-${task.id}`,
+    namespaceId: "pinned",
+    title: task.title,
+    state: "running",
+    updatedAt: normalizeTimestamp(task.updatedAt),
+    model: "ChatGPT / Codex",
+    inputTokens: 0,
+    outputTokens: 0,
+    messageCount: 1,
+    artifactCount: 0,
+    artifactPaths: [],
+    projectLabel: task.projectName || "跨 Agent 任务",
+  };
+}
+
 export function AiWorkspaceOverview(): ReactNode {
   const [activeTab, setActiveTab] = useState<WorkbenchTab>("overview");
   const [activityWindow, setActivityWindow] = useState<ActivityWindow>("all");
   const [sessions, setSessions] = useState<ServerSession[]>([]);
+  const [catalog, setCatalog] = useState<TaskCatalog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [lastSyncedAt, setLastSyncedAt] = useState(0);
@@ -283,11 +306,48 @@ export function AiWorkspaceOverview(): ReactNode {
     let cancelled = false;
     async function load() {
       try {
-        const result = await loadServerSessions();
+        const [sessionRes, catalogRes] = await Promise.allSettled([
+          loadServerSessions(),
+          fetchSharedTaskCatalog(),
+        ]);
+
         if (!cancelled) {
-          setSessions(result);
-          setLastSyncedAt(Date.now());
-          setError("");
+          let loadedCatalog: TaskCatalog | null = null;
+          if (catalogRes.status === "fulfilled") {
+            loadedCatalog = catalogRes.value;
+            setCatalog(loadedCatalog);
+          }
+
+          let loadedSessions: ServerSession[] = [];
+          if (sessionRes.status === "fulfilled") {
+            loadedSessions = sessionRes.value;
+          }
+
+          const pinnedSessions = (loadedCatalog?.pinnedTasks ?? []).map(
+            pinnedTaskToSession,
+          );
+
+          if (loadedSessions.length > 0) {
+            const sessionTitles = new Set(loadedSessions.map((s) => s.title));
+            const extraPinned = pinnedSessions.filter(
+              (p) => !sessionTitles.has(p.title),
+            );
+            setSessions([...extraPinned, ...loadedSessions]);
+          } else if (pinnedSessions.length > 0) {
+            setSessions(pinnedSessions);
+          } else {
+            setSessions([]);
+          }
+
+          if (
+            catalogRes.status === "fulfilled" ||
+            sessionRes.status === "fulfilled"
+          ) {
+            setLastSyncedAt(Date.now());
+            setError("");
+          } else {
+            setError("服务端与任务中枢连接失败");
+          }
         }
       } catch (reason) {
         if (!cancelled) {
@@ -352,8 +412,8 @@ export function AiWorkspaceOverview(): ReactNode {
                   ? "云端历史记忆同步中断"
                   : "云端历史记忆连接失败"
                 : lastSyncedAt
-                  ? "云端历史记忆已同步"
-                  : "正在连接云端历史记忆"}
+                  ? `任务与记忆已同步 (${sessions.length})`
+                  : "正在连接任务中枢与记忆…"}
             </div>
             <div>
               {lastSyncedAt
@@ -394,7 +454,27 @@ export function AiWorkspaceOverview(): ReactNode {
       </header>
 
       <div className="min-h-0 flex-1 overflow-auto p-5 lg:p-8">
-        {error ? <ErrorBanner message={error} /> : null}
+        {catalog?.pinnedTasks?.length ? (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-100 bg-[#f4f8fe] px-4 py-3 text-xs text-[#1260cc]">
+            <div className="flex items-center gap-2 font-medium">
+              <span className="flex size-2 rounded-full bg-[#1260cc] animate-pulse" />
+              <span>
+                跨 Agent 任务中枢已就绪：已同步{" "}
+                <strong>{catalog.pinnedTasks.length}</strong> 个置顶任务与{" "}
+                <strong>{catalog.sharedProjects.length}</strong> 个共享工程 (ChatGPT · Claude Code · Antigravity)
+              </span>
+            </div>
+            <Link
+              href="/ai-workspace/tasks"
+              className="font-bold text-[#075ecc] hover:underline"
+            >
+              打开任务中枢 →
+            </Link>
+          </div>
+        ) : null}
+        {error && !sessions.length && !catalog?.pinnedTasks?.length ? (
+          <ErrorBanner message={error} />
+        ) : null}
         {activeTab === "overview" ? (
           <DataOverview sessions={visibleSessions} loading={loading} />
         ) : null}
@@ -412,7 +492,11 @@ export function AiWorkspaceOverview(): ReactNode {
           />
         ) : null}
         {activeTab === "projects" ? (
-          <ProjectsDetail sessions={visibleSessions} loading={loading} />
+          <ProjectsDetail
+            sessions={visibleSessions}
+            catalog={catalog}
+            loading={loading}
+          />
         ) : null}
         {activeTab === "inbox" ? (
           <InboxDetail sessions={visibleSessions} loading={loading} />
@@ -851,7 +935,13 @@ function SessionTable({
                 </td>
                 <td className="px-3 py-3">
                   <Link
-                    href={`/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`}
+                    href={
+                      session.namespaceId === "pinned"
+                        ? `/ai-workspace/tasks?task=${encodeURIComponent(
+                            session.sessionId.replace(/^pinned-/, ""),
+                          )}`
+                        : `/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`
+                    }
                     className="rounded-lg border border-[#dce2ea] px-3 py-1.5 text-xs font-semibold hover:bg-[#f6f8fb]"
                   >
                     查看
@@ -899,49 +989,122 @@ function SessionDetail({
 
 function ProjectsDetail({
   sessions,
+  catalog,
   loading,
 }: {
   sessions: ServerSession[];
+  catalog: TaskCatalog | null;
   loading: boolean;
 }) {
-  const projects = [
+  const sessionProjects = [
     ...new Set(sessions.map((session) => session.projectLabel)),
   ];
+  const sharedProjects = catalog?.sharedProjects ?? [];
+
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">项目 / 专项</h1>
-        <p className="mt-1 text-sm text-[#697386]">
-          按服务端工作目录聚合 TaskThread 与 Artifact
-        </p>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {projects.map((project) => {
-          const items = sessions.filter(
-            (session) => session.projectLabel === project,
-          );
-          return (
-            <div
-              key={project}
-              className="rounded-xl border border-[#e4e8ef] bg-white p-5"
+    <div className="space-y-6">
+      {/* 📁 跨 Agent 共享工程 */}
+      {sharedProjects.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-[#17181c]">
+              跨 Agent 共享工程 ({sharedProjects.length})
+            </h2>
+            <Link
+              href="/ai-workspace/tasks"
+              className="text-xs font-semibold text-[#1260cc] hover:underline"
             >
-              <div className="flex items-center gap-3">
-                <span className="grid size-9 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc]">
-                  <Archive className="size-4.5" />
-                </span>
-                <h2 className="truncate font-bold">{project}</h2>
+              在任务中枢中管理 →
+            </Link>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {sharedProjects.map((proj) => (
+              <div
+                key={proj.id}
+                className="rounded-xl border border-[#e4e8ef] bg-white p-5 shadow-xs"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc]">
+                      <Archive className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-bold text-sm text-[#17181c]">
+                        {proj.name}
+                      </h3>
+                      <p className="mt-0.5 truncate font-mono text-[11px] text-[#7b8494]">
+                        {proj.rootPath}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-1">
+                    {proj.sources.map((s) => (
+                      <span
+                        key={s}
+                        className="rounded bg-[#f0f3f7] px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase text-[#566174]"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-[#edf0f4] pt-3 text-xs">
+                  <span className="text-[#8a93a2]">
+                    {sessions.filter((s) => s.projectLabel === proj.name).length}{" "}
+                    个关联工作项
+                  </span>
+                  <Link
+                    href={`/ai-workspace/tasks?project=${encodeURIComponent(proj.name)}`}
+                    className="font-semibold text-[#075ecc] hover:underline"
+                  >
+                    查看任务 →
+                  </Link>
+                </div>
               </div>
-              <p className="mt-4 text-sm text-[#697386]">
-                {items.length} 个工作项 ·{" "}
-                {items.reduce((sum, item) => sum + item.artifactCount, 0)}{" "}
-                个产物
-              </p>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 工作目录与专项 */}
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-base font-bold text-[#17181c]">工作目录与专项</h2>
+          <p className="mt-0.5 text-xs text-[#697386]">
+            按服务端工作目录聚合 TaskThread 与 Artifact
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {sessionProjects.map((project) => {
+            const items = sessions.filter(
+              (session) => session.projectLabel === project,
+            );
+            return (
+              <div
+                key={project}
+                className="rounded-xl border border-[#e4e8ef] bg-white p-5"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc]">
+                    <Archive className="size-4.5" />
+                  </span>
+                  <h3 className="truncate font-bold">{project}</h3>
+                </div>
+                <p className="mt-4 text-sm text-[#697386]">
+                  {items.length} 个工作项 ·{" "}
+                  {items.reduce((sum, item) => sum + item.artifactCount, 0)}{" "}
+                  个产物
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </div>
+
       {loading ? <EmptyData label="正在读取服务端数据…" /> : null}
-      {!loading && !projects.length ? <EmptyData label="暂无专项" /> : null}
+      {!loading && !sessionProjects.length && !sharedProjects.length ? (
+        <EmptyData label="暂无专项" />
+      ) : null}
     </div>
   );
 }
