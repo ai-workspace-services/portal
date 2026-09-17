@@ -47,13 +47,13 @@ describe("serviceConfig", () => {
     ).toBe(false);
   });
 
-  it("uses the dedicated formal Zero API for the Cloudflare UAT Console", async () => {
+  it("uses the dedicated formal Zero API for the serverless UAT Console", async () => {
     const serviceConfig = await import("./serviceConfig");
 
     expect(
       serviceConfig.getXConnectZeroServiceBaseUrl(
-        "console-cloudflare-uat.onwalk.net",
+        "console-serverless-uat.onwalk.net",
       ),
-    ).toBe("https://accounts-cloudflare-uat.onwalk.net");
+    ).toBe("https://accounts-serverless-uat.onwalk.net");
   });
 });
