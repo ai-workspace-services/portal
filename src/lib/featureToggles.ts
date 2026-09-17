@@ -66,6 +66,14 @@ export function resolveRuntimeEnvironment(): RuntimeEnvironment {
     }
   }
 
+  const consoleHost = ((typeof process !== 'undefined' && process.env.NEXT_PUBLIC_CONSOLE_HOST) || '').toLowerCase()
+  if (consoleHost.includes('onwalk.net') || consoleHost.includes('uat')) {
+    return 'uat'
+  }
+  if (consoleHost.includes('svc.plus')) {
+    return 'prod'
+  }
+
   const siteUrl = ((typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SITE_URL) || '').toLowerCase()
   if (siteUrl.includes('uat') || siteUrl.includes('onwalk.net')) {
     return 'uat'

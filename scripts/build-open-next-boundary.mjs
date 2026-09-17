@@ -119,6 +119,8 @@ await writeFile(
     `    NEXT_PUBLIC_SSR_BOUNDARY: ${JSON.stringify(boundary)},`,
     `    NEXT_PUBLIC_SSR_BOUNDARY_ROUTES: ${JSON.stringify(JSON.stringify(boundaryRoutes))},`,
     `    NEXT_PUBLIC_CONSOLE_HOST: ${JSON.stringify(environmentConfig.console_host)},`,
+    `    NEXT_PUBLIC_RUNTIME_ENVIRONMENT: ${JSON.stringify(deploymentEnvironment)},`,
+    `    RUNTIME_ENV: ${JSON.stringify(deploymentEnvironment)},`,
     "  },",
     "};",
     "",
