@@ -43,17 +43,28 @@ describe('extension loader', () => {
     expect(typeof AgentComponent).toBe('function')
   })
 
-  it('registers and resolves global-mesh routes in user center', async () => {
+  it('keeps AI Aggregator disabled in PROD for registered users', async () => {
+    process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT = 'prod'
+    delete process.env.NEXT_PUBLIC_FEATURE_AI_AGGREGATOR
+    resetExtensionRegistryCache()
+
     const registry = getExtensionRegistry()
-    const globalMeshRoute = registry.getRoute('/panel/global-mesh')
-    expect(globalMeshRoute?.enabled).toBe(true)
-    expect(globalMeshRoute?.sidebar?.section).toBe('workspace')
+    const aggregatorRoute = registry.getRoute('/panel/ai-aggregator')
 
-    const productsRoute = registry.getRoute('/products/global-mesh')
-    expect(productsRoute?.enabled).toBe(true)
-    expect(productsRoute?.sidebar?.section).toBe('workspace')
+    expect(aggregatorRoute?.enabled).toBe(false)
+    await expect(resolveExtensionRouteComponent('/panel/ai-aggregator')).rejects.toThrow('disabled')
+  })
 
-    const GlobalMeshComponent = await resolveExtensionRouteComponent('/panel/global-mesh')
-    expect(typeof GlobalMeshComponent).toBe('function')
+  it('enables AI Aggregator in UAT environment', async () => {
+    process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT = 'uat'
+    delete process.env.NEXT_PUBLIC_FEATURE_AI_AGGREGATOR
+    resetExtensionRegistryCache()
+
+    const registry = getExtensionRegistry()
+    const aggregatorRoute = registry.getRoute('/panel/ai-aggregator')
+
+    expect(aggregatorRoute?.enabled).toBe(true)
+    const AggregatorComponent = await resolveExtensionRouteComponent('/panel/ai-aggregator')
+    expect(typeof AggregatorComponent).toBe('function')
   })
 })
