@@ -1,4 +1,75 @@
 {
+  "environments": {
+    "uat": {
+      "policy": "all_open",
+      "allowedChannels": ["stable", "beta", "develop"],
+      "description": "UAT 环境全部开放"
+    },
+    "prod": {
+      "policy": "stable_only",
+      "allowedChannels": ["stable"],
+      "description": "PROD 环境只开放 stable 的部分"
+    }
+  },
+  "userCenter": {
+    "enabled": true,
+    "description": "用户中心可选功能开关矩阵，按四大类组织",
+    "categories": {
+      "xworkmate": {
+        "name": "XWorkmate",
+        "description": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中",
+        "description_en": "AI Workspace · Make AI a true part of your workflow",
+        "channel": "stable",
+        "enabled": true,
+        "features": {
+          "assistant": { "name": "X助手", "enabled": true, "channel": "stable" },
+          "agent": { "name": "Agent 节点管理", "enabled": true, "channel": "stable" },
+          "workspace": { "name": "AI 协作工作台", "enabled": true, "channel": "stable" }
+        }
+      },
+      "xconnect": {
+        "name": "XConnect",
+        "description": "AI Connectivity · 为 AI Workspace 提供稳定、安全的连接能力",
+        "description_en": "AI Connectivity · Stable and secure access for your AI Workspace",
+        "channel": "stable",
+        "enabled": true,
+        "features": {
+          "ai_aggregator": { "name": "AI 聚合调度中心", "enabled": true, "channel": "develop" },
+          "token_quota": { "name": "Token 配额看板", "enabled": true, "channel": "develop" },
+          "api": { "name": "接口集成 (OpenClaw / Vault / AI Gateway)", "enabled": true, "channel": "stable" },
+          "vless": { "name": "安全连接凭据", "enabled": true, "channel": "stable" },
+          "regional_pools": { "name": "区域入口池", "enabled": true, "channel": "stable" }
+        }
+      },
+      "ai_workspace": {
+        "name": "AI Workspace",
+        "description": "立即进入你的智能工作空间，开始对话、任务与交付",
+        "description_en": "Jump into your workspace — chat, tasks, and delivery",
+        "channel": "stable",
+        "enabled": true,
+        "features": {
+          "dashboard": { "name": "专属工作台总览", "enabled": true, "channel": "stable" },
+          "subscription": { "name": "订阅与计费管理", "enabled": true, "channel": "stable" },
+          "editor": { "name": "Markdown 内容交付编辑器", "enabled": true, "channel": "develop" },
+          "trial": { "name": "免登快速试用体验", "enabled": true, "channel": "stable" }
+        }
+      },
+      "open_platform": {
+        "name": "Open Platform",
+        "description": "开源、可控、可扩展的基础设施支撑，支持自建部署",
+        "description_en": "Open-source, controllable, extensible infrastructure — self-host anytime",
+        "channel": "stable",
+        "enabled": true,
+        "features": {
+          "cloud_iac": { "name": "云基础设施蓝图编排", "enabled": true, "channel": "develop" },
+          "ldp": { "name": "低时延身份平面", "enabled": false, "channel": "develop" },
+          "management": { "name": "管理面与权限矩阵", "enabled": true, "channel": "stable" },
+          "ops": { "name": "运营工作台与审计", "enabled": true, "channel": "develop" },
+          "observability": { "name": "全栈监控与可观测性", "enabled": true, "channel": "develop" }
+        }
+      }
+    }
+  },
   "globalNavigation": {
     "enabled": true,
     "children": {
@@ -9,7 +80,8 @@
       "login": { "enabled": true, "channel": "stable" },
       "register": { "enabled": true, "channel": "stable" },
       "cloud_iac": { "enabled": true, "channel": "develop" },
-      "panel": { "enabled": true, "channel": "stable" }
+      "panel": { "enabled": true, "channel": "stable" },
+      "ai_aggregator": { "enabled": true, "channel": "develop" }
     }
   },
   "appModules": {
@@ -17,6 +89,7 @@
     "children": {
       "cloud_iac": {
         "enabled": true,
+        "channel": "develop",
         "children": {
           "[provider]": {
             "enabled": true,
@@ -41,15 +114,17 @@
           }
         }
       },
-      "docs": { "enabled": true },
+      "docs": { "enabled": true, "channel": "beta" },
       "download": {
         "enabled": true,
+        "channel": "stable",
         "children": {
           "[...segments]": { "enabled": true }
         }
       },
-      "insight": { "enabled": true },
-      "demo": { "enabled": true }
+      "insight": { "enabled": true, "channel": "develop" },
+      "demo": { "enabled": true, "channel": "develop" },
+      "ai_aggregator": { "enabled": true, "channel": "develop" }
     }
   },
   "cmsExperience": {

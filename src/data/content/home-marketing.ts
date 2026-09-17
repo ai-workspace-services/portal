@@ -21,7 +21,7 @@ export const homeMarketingContentData = {
             },
             {
               "label": "AI Workspace",
-              "description": "立即进入你的智能工作台，开始对话、任务与交付",
+              "description": "立即进入你的智能工作空间，开始对话、任务与交付",
               "href": "/products/ai-workspace"
             },
             {

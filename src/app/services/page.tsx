@@ -23,7 +23,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
-const placeholderCount = 1;
+const placeholderCount = 0;
 
 type ServiceCardData = {
   key: string;
@@ -178,6 +178,21 @@ export default function ServicesPage() {
         ? "Litellm 驱动的 LLM API 统一管理与路由。"
         : "Unified LLM API management and routing powered by Litellm.",
       href: "https://ai-gateway.svc.plus",
+      icon: Network,
+      external: true,
+    },
+    {
+      key: "ai-aggregator",
+      name: isChinese ? "AI Aggregator" : "AI Aggregator",
+      description: isChinese
+        ? "双引擎多渠道 LLM 聚合网关与 Token 配额看板（New API + CPA + CodeAgent）。"
+        : "Dual-engine multi-channel LLM aggregator and token quota dashboard.",
+      href:
+        process.env.NEXT_PUBLIC_AI_AGGREGATOR_URL ||
+        (typeof window !== "undefined" &&
+        window.location.hostname.includes("onwalk.net")
+          ? "https://ai.onwalk.net"
+          : "https://ai.svc.plus"),
       icon: Network,
       external: true,
     },

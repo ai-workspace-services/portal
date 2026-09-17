@@ -1,5 +1,6 @@
 import {
   Code,
+  Cpu,
   CreditCard,
   ExternalLink,
   Globe,
@@ -90,6 +91,24 @@ export const userCenterExtension: DashboardExtension = {
         description: "启用 OpenClaw、Vault 与 APISIX AI Gateway 集成页面。",
         envVar: "NEXT_PUBLIC_FEATURE_API_MODULE",
         defaultEnabled: true,
+      },
+    },
+    {
+      id: "ai-aggregator",
+      path: "/panel/ai-aggregator",
+      label: "AI Aggregator",
+      description: "多模型算力汇聚与 API 网关调度控制台",
+      icon: Cpu,
+      loader: () => import("./routes/ai-aggregator"),
+      guard: { requireLogin: true },
+      redirect: { unauthenticated: "/login" },
+      sidebar: { section: "productivity", order: 12 },
+      featureFlag: {
+        id: "user-center.ai_aggregator",
+        title: "AI Aggregator 控制台",
+        description: "启用 AI Aggregator 调度控制台页面。",
+        envVar: "NEXT_PUBLIC_FEATURE_AI_AGGREGATOR",
+        defaultEnabled: false,
       },
     },
     {
