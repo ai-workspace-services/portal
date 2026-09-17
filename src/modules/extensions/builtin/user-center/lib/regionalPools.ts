@@ -98,8 +98,10 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
 }> {
   const usedRegions = new Set<string>();
   const options: Array<{ pool: RegionalPool; node: VlessNode }> = [];
+  const templateNode = nodes[0]; // generic node to fallback to
 
   for (const node of nodes) {
+    if (node.address?.trim() === "*") continue;
     const pool = regionForNode(node);
     if (!pool) {
       continue;
@@ -114,10 +116,17 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
   }
 
   return XCONNECT_REGIONAL_POOLS.flatMap((pool) => {
+    if (!pool.openToUsers) return [];
     const option = options.find(
       (candidate) => candidate.pool.code === pool.code,
     );
-    return option ? [option] : [];
+    if (option) return [option];
+    
+    // Fallback to template node if specific regional node is missing
+    if (templateNode) {
+      return [{ pool, node: withRegionalEntry(templateNode, pool) }];
+    }
+    return [];
   });
 }
 

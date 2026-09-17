@@ -74,10 +74,9 @@ export default function VlessQrCard({
     return (allNodes ?? []).filter((node) => {
       const name = (node.name || '').toLowerCase()
       const address = (node.address || '').trim()
-      if (!address || address === '*') return false
+      if (!address) return false
 
-      // Skip the redundant Internal Agents (Shared Token) node
-      return !(name.includes('internal agents') && name.includes('shared token'))
+      return true
     })
   }, [allNodes])
   const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes])
