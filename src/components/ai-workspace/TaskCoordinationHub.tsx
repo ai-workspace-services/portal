@@ -20,7 +20,10 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  CatalogUnavailableError,
   fetchSharedTaskCatalog,
+  formatLocation,
+  resumeCommand,
   type ActiveClaim,
   type PinnedTask,
   type SharedProject,
@@ -37,6 +40,7 @@ export function TaskCoordinationHub() {
 
   const [catalog, setCatalog] = useState<TaskCatalog | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [activeTab, setActiveTab] = useState<HubTab>(
     initialProject ? "projects" : "pinned",
   );
@@ -45,9 +49,13 @@ export function TaskCoordinationHub() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError("");
     try {
       const data = await fetchSharedTaskCatalog();
       setCatalog(data);
+    } catch (err) {
+      setCatalog(null);
+      setLoadError(err instanceof CatalogUnavailableError ? err.message : "任务目录暂时不可用");
     } finally {
       setLoading(false);
     }
@@ -69,7 +77,7 @@ export function TaskCoordinationHub() {
       (t) =>
         t.title.toLowerCase().includes(q) ||
         (t.projectName && t.projectName.toLowerCase().includes(q)) ||
-        (t.cwd && t.cwd.toLowerCase().includes(q)),
+        formatLocation(t.scope, t.location).toLowerCase().includes(q),
     );
   }, [pinnedTasks, searchQuery]);
 
@@ -79,15 +87,12 @@ export function TaskCoordinationHub() {
     return sharedProjects.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
-        p.rootPath.toLowerCase().includes(q),
+        formatLocation(p.scope, p.location).toLowerCase().includes(q),
     );
   }, [sharedProjects, searchQuery]);
 
   const copyResumeCommand = (task: PinnedTask) => {
-    const cwd = task.cwd || "";
-    const cmd = cwd
-      ? `task_resume(cwd="${cwd}")`
-      : `task_resume(thread_id="${task.id}")`;
+    const cmd = resumeCommand(task);
     navigator.clipboard.writeText(cmd).catch(() => {});
     setCopiedId(task.id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -134,6 +139,12 @@ export function TaskCoordinationHub() {
           </button>
         </div>
       </header>
+
+      {loadError ? (
+        <div role="alert" className="border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs font-medium text-amber-800">
+          {loadError}
+        </div>
+      ) : null}
 
       {/* Tabs & Search Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e8ef] bg-[#f8fafc]/50 px-6 py-3">
@@ -258,9 +269,9 @@ export function TaskCoordinationHub() {
                         </div>
                         <p
                           className="mt-1 truncate font-mono text-xs text-[#7b8494]"
-                          title={task.cwd || "未绑定本地物理路径"}
+                          title={formatLocation(task.scope, task.location) || "未关联代码仓库"}
                         >
-                          {task.cwd || "未绑定本地物理路径"}
+                          {formatLocation(task.scope, task.location) || "未关联代码仓库"}
                         </p>
                       </div>
                     </div>
@@ -313,7 +324,7 @@ export function TaskCoordinationHub() {
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {filteredProjects.map((proj) => (
                   <div
-                    key={proj.id}
+                    key={proj.key}
                     className="flex flex-col justify-between rounded-xl border border-[#e4e8ef] bg-white p-4 shadow-xs transition hover:border-[#075ecc]/50"
                   >
                     <div>
@@ -343,7 +354,7 @@ export function TaskCoordinationHub() {
                         </div>
                       </div>
                       <p className="mt-2.5 break-all rounded-lg border border-[#e4e8ef] bg-[#f8fafc] p-2 font-mono text-xs text-[#697386]">
-                        {proj.rootPath}
+                        {formatLocation(proj.scope, proj.location)}
                       </p>
                     </div>
 
@@ -351,14 +362,14 @@ export function TaskCoordinationHub() {
                       <button
                         type="button"
                         onClick={() => {
-                          const cmd = `task_resume(cwd="${proj.rootPath}")`;
+                          const cmd = `task_resume(cwd="${formatLocation(proj.scope, proj.location)}")`;
                           navigator.clipboard.writeText(cmd).catch(() => {});
-                          setCopiedId(proj.id);
+                          setCopiedId(proj.key);
                           setTimeout(() => setCopiedId(null), 2000);
                         }}
                         className="flex items-center gap-1 text-xs text-[#075ecc] hover:underline"
                       >
-                        {copiedId === proj.id ? (
+                        {copiedId === proj.key ? (
                           <>
                             <Check className="size-3" /> 已复制接续指令
                           </>

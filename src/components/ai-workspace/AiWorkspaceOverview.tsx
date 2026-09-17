@@ -19,6 +19,7 @@ import {
 } from "@/lib/ai-workspace/sessionApi";
 import {
   fetchSharedTaskCatalog,
+  formatLocation,
   type PinnedTask,
   type TaskCatalog,
 } from "@/lib/ai-workspace/catalogApi";
@@ -1020,7 +1021,7 @@ function ProjectsDetail({
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {sharedProjects.map((proj) => (
               <div
-                key={proj.id}
+                key={proj.key}
                 className="rounded-xl border border-[#e4e8ef] bg-white p-5 shadow-xs"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -1033,7 +1034,7 @@ function ProjectsDetail({
                         {proj.name}
                       </h3>
                       <p className="mt-0.5 truncate font-mono text-[11px] text-[#7b8494]">
-                        {proj.rootPath}
+                        {formatLocation(proj.scope, proj.location)}
                       </p>
                     </div>
                   </div>

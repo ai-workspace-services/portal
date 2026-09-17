@@ -58,10 +58,7 @@ async function proxy(
   const token =
     session.token ||
     process.env.AI_WORKSPACE_AUTH_TOKEN ||
-    process.env.BRIDGE_AUTH_TOKEN ||
-    (process.env.NODE_ENV === "development"
-      ? "e0d32642a40b3c7a3d5791ce934c14c5504a03e938aaee34"
-      : undefined);
+    process.env.BRIDGE_AUTH_TOKEN;
   if (!token) {
     return Response.json(
       { error: { message: "Authentication required." } },
