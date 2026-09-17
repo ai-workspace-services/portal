@@ -26,6 +26,7 @@ import {
 } from "@/lib/ai-workspace/sessionApi";
 import {
   fetchSharedTaskCatalog,
+  formatLocation,
   type TaskCatalog,
 } from "@/lib/ai-workspace/catalogApi";
 import { cn } from "@/lib/utils";
@@ -104,7 +105,7 @@ export default function Sidebar({ onHide, mobile = false }: SidebarProps) {
       (t) =>
         t.title.toLowerCase().includes(q) ||
         (t.projectName && t.projectName.toLowerCase().includes(q)) ||
-        (t.cwd && t.cwd.toLowerCase().includes(q)),
+        formatLocation(t.scope, t.location).toLowerCase().includes(q),
     );
   }, [searchQuery, pinnedTasks]);
 
@@ -114,7 +115,7 @@ export default function Sidebar({ onHide, mobile = false }: SidebarProps) {
     return sharedProjects.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
-        p.rootPath.toLowerCase().includes(q),
+        formatLocation(p.scope, p.location).toLowerCase().includes(q),
     );
   }, [searchQuery, sharedProjects]);
 
@@ -302,7 +303,7 @@ export default function Sidebar({ onHide, mobile = false }: SidebarProps) {
                     searchParams.get("project") === proj.name;
                   return (
                     <Link
-                      key={proj.id}
+                      key={proj.key}
                       href={`/ai-workspace/tasks?project=${encodeURIComponent(proj.name)}`}
                       onClick={mobile ? onHide : undefined}
                       className={cn(
