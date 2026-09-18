@@ -302,10 +302,15 @@ function normaliseCloudflareConfig(config) {
     worker_name: item.worker_name,
     route_suffixes: item.route_suffixes,
   }]));
+  const rawConsoleHost = serverless.console_host;
+  const consoleHost =
+    rawConsoleHost?.toLowerCase() === "console-serverless-prod.svc.plus"
+      ? "console.svc.plus"
+      : rawConsoleHost;
   return {
     environments: {
       [environment]: {
-        console_host: serverless.console_host,
+        console_host: consoleHost,
         zone_name: cloudflare.zone_name,
       },
     },

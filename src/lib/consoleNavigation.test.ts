@@ -36,6 +36,13 @@ describe("consoleNavigation", () => {
     expect(toConsoleHref("/login")).toBe("https://console.svc.plus/login");
   });
 
+  it("normalizes console-serverless-prod.svc.plus to the canonical console.svc.plus host", async () => {
+    process.env.NEXT_PUBLIC_CONSOLE_HOST = "console-serverless-prod.svc.plus";
+    const { toConsoleHref } = await import("./consoleNavigation");
+
+    expect(toConsoleHref("/login")).toBe("https://console.svc.plus/login");
+  });
+
   it("never sends a UAT build to the PROD console host", async () => {
     process.env.NEXT_PUBLIC_CONSOLE_HOST = "console-cloudflare-uat.onwalk.net";
     const { toConsoleHref } = await import("./consoleNavigation");
