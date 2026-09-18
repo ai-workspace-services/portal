@@ -471,32 +471,32 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
 
       {isDialogOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] px-4 py-10"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--color-overlay)] p-3 sm:p-4 sm:pt-6 lg:pt-8"
           onClick={closeDialog}
           role="dialog"
           aria-modal="true"
         >
           <div
-            className="relative w-full max-w-5xl overflow-hidden rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-md)]"
+            className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--color-surface)] shadow-[var(--shadow-lg)]"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={closeDialog}
               aria-label={copy.modal.close}
-              className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-subtle)] transition hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)]"
+              className="absolute right-3.5 top-3.5 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-subtle)] transition hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)]"
             >
-              <X className="h-5 w-5" aria-hidden="true" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
-            <div className="max-h-[85vh] overflow-y-auto lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
-              <aside className="border-b border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] px-6 py-7 lg:border-b-0 lg:border-r lg:px-8 lg:py-9">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
-                  <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+            <div className="max-h-[88vh] overflow-y-auto lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
+              <aside className="border-b border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] px-5 py-5 lg:border-b-0 lg:border-r lg:px-6 lg:py-6">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+                  <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <h3 className="mt-5 text-xl font-semibold tracking-tight text-[var(--color-heading)]">
+                <h3 className="mt-3 text-lg font-semibold tracking-tight text-[var(--color-heading)]">
                   {isMandatorySetup ? copy.modal.setupTitle : copy.modal.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--color-text-subtle)]">
+                <p className="mt-1.5 text-xs leading-5 text-[var(--color-text-subtle)]">
                   {isMandatorySetup
                     ? copy.modal.setupDescription
                     : displayStatus?.totpEnabled
@@ -504,44 +504,44 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       : copy.subtitle}
                 </p>
 
-                <ol className="mt-7 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                <ol className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
                   {[
                     { title: copy.guide.step1Title, description: copy.guide.step1Description },
                     { title: copy.guide.step2Title, description: copy.guide.step2Description },
                     { title: copy.guide.step3Title, description: copy.guide.step3Description },
                   ].map((step, index) => (
-                    <li key={step.title} className="flex gap-3">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+                    <li key={step.title} className="flex gap-2.5">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[11px] font-semibold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
                         {index + 1}
                       </span>
                       <div>
-                        <p className="text-sm font-semibold text-[var(--color-heading)]">{step.title}</p>
-                        <p className="mt-0.5 text-xs leading-5 text-[var(--color-text-subtle)]">{step.description}</p>
+                        <p className="text-xs font-semibold text-[var(--color-heading)]">{step.title}</p>
+                        <p className="mt-0.5 text-[11px] leading-normal text-[var(--color-text-subtle)]">{step.description}</p>
                       </div>
                     </li>
                   ))}
                 </ol>
               </aside>
 
-              <div className="p-6 sm:p-8 lg:p-9">
+              <div className="p-4 sm:p-5 lg:p-6">
                 {isMandatorySetup ? (
                   <div
                     role="alert"
-                    className="mb-5 flex items-start gap-3 rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] px-4 py-3 text-sm text-[var(--color-warning-foreground)]"
+                    className="mb-3.5 flex items-start gap-2.5 rounded-lg border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)] px-3.5 py-2 text-xs text-[var(--color-warning-foreground)]"
                   >
-                    <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[var(--color-warning-foreground)]" aria-hidden="true" />
+                    <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-warning-foreground)]" aria-hidden="true" />
                     <div>
                       <p className="font-semibold">{copy.modal.setupTitle}</p>
-                      <p className="mt-0.5">{copy.lockedMessage}</p>
+                      <p className="mt-0.5 text-xs">{copy.lockedMessage}</p>
                     </div>
                   </div>
                 ) : null}
                 {displayStatus?.totpEnabled ? (
-                  <div className="space-y-5 pt-2">
-                    <div className="rounded-lg border border-[color:var(--color-success-muted)] bg-[var(--color-success-muted)] p-4 text-sm text-[var(--color-success-foreground)]">
-                      <p className="font-medium">{copy.successTitle}</p>
+                  <div className="space-y-3.5 pt-1">
+                    <div className="rounded-lg border border-[color:var(--color-success-muted)] bg-[var(--color-success-muted)] p-3 text-xs text-[var(--color-success-foreground)]">
+                      <p className="font-medium text-sm">{copy.successTitle}</p>
                       <p className="mt-1">{copy.successBody}</p>
-                      <dl className="mt-3 grid gap-2 text-xs text-[var(--color-success-foreground)] sm:grid-cols-2">
+                      <dl className="mt-2.5 grid gap-2 sm:grid-cols-2">
                         <div>
                           <dt className="font-semibold uppercase tracking-wide">{copy.status.issuedAt}</dt>
                           <dd>{formatTimestamp(displayStatus?.totpSecretIssuedAt)}</dd>
@@ -553,50 +553,50 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       </dl>
                     </div>
 
-                    <div className="space-y-3 rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-4 text-sm text-[var(--color-danger-foreground)]">
+                    <div className="space-y-2.5 rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-3 text-xs text-[var(--color-danger-foreground)]">
                       <div>
-                        <p className="font-semibold text-[var(--color-danger-foreground)]">{copy.disable.title}</p>
-                        <p className="mt-1 text-[var(--color-danger-foreground)]">{copy.disable.description}</p>
+                        <p className="font-semibold text-sm text-[var(--color-danger-foreground)]">{copy.disable.title}</p>
+                        <p className="mt-0.5 text-[var(--color-danger-foreground)]">{copy.disable.description}</p>
                       </div>
                       <button
                         type="button"
                         onClick={handleDisable}
                         disabled={isDisabling}
-                        className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-danger-muted)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-danger-foreground)] transition hover:border-[color:var(--color-danger)] hover:bg-[var(--color-danger-muted)] disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-danger-muted)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-danger-foreground)] transition hover:border-[color:var(--color-danger)] hover:bg-[var(--color-danger-muted)] disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {isDisabling ? copy.disable.confirming : copy.disable.action}
                       </button>
                     </div>
 
-                    {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
+                    {error ? <p className="text-xs text-[var(--color-danger)]">{error}</p> : null}
                   </div>
                 ) : (
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {lockoutActive ? (
-                      <p className="rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-3 text-sm text-[var(--color-danger-foreground)]">
+                      <p className="rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-2.5 text-xs text-[var(--color-danger-foreground)]">
                         {copy.errors.locked}
                         {lockoutLabel ? (
-                          <span className="mt-1 block text-xs text-[var(--color-danger)]">{lockoutLabel}</span>
+                          <span className="mt-0.5 block text-[11px] text-[var(--color-danger)]">{lockoutLabel}</span>
                         ) : null}
                       </p>
                     ) : null}
 
                     <section>
-                      <div className="flex flex-col gap-1 pr-10">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">{copy.guide.step2Title}</p>
-                        <h4 className="text-lg font-semibold text-[var(--color-heading)]">{copy.qrLabel}</h4>
+                      <div className="flex flex-col gap-0.5 pr-10">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary)]">{copy.guide.step2Title}</p>
+                        <h4 className="text-base font-semibold text-[var(--color-heading)]">{copy.qrLabel}</h4>
                       </div>
-                      <div className="mt-5 grid gap-6 sm:grid-cols-[196px_minmax(0,1fr)] sm:items-center">
+                      <div className="mt-3 grid gap-4 sm:grid-cols-[148px_minmax(0,1fr)] sm:items-center">
                           {qrCodeDataUrl ? (
                             <div className="flex justify-center">
-                              <div className="rounded-2xl border border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-3">
-                                <div className="flex items-center justify-center rounded-xl bg-[var(--color-surface)] p-2 shadow-[var(--shadow-sm)]">
+                              <div className="rounded-xl border border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-2">
+                                <div className="flex items-center justify-center rounded-lg bg-[var(--color-surface)] p-1.5 shadow-[var(--shadow-sm)]">
                                   <Image
                                     src={qrCodeDataUrl}
                                     alt={copy.qrLabel}
-                                    width={176}
-                                    height={176}
-                                    className="h-40 w-40 sm:h-44 sm:w-44"
+                                    width={136}
+                                    height={136}
+                                    className="h-32 w-32 sm:h-32 sm:w-32"
                                     unoptimized
                                   />
                                 </div>
@@ -604,37 +604,37 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                             </div>
                           ) : (
                             <div
-                              className="flex min-h-48 items-center justify-center rounded-2xl border border-dashed border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-5 text-center text-sm text-[var(--color-text-subtle)]"
+                              className="flex min-h-36 items-center justify-center rounded-xl border border-dashed border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] p-4 text-center text-xs text-[var(--color-text-subtle)]"
                               aria-live="polite"
                             >
                               {isProvisioning ? '正在生成认证二维码…' : error ? copy.errors.provisioningFailed : '认证二维码准备中…'}
                             </div>
                           )}
-                          <div className="flex-1 space-y-3">
+                          <div className="flex-1 space-y-2">
                             {secret ? (
                               <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
-                                <code className="mt-1 block break-all rounded-lg bg-[var(--color-surface-muted)] px-3 py-2 text-sm text-[var(--color-primary)]">{secret}</code>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
+                                <code className="mt-0.5 block break-all rounded-md bg-[var(--color-surface-muted)] px-2.5 py-1.5 font-mono text-xs text-[var(--color-primary)]">{secret}</code>
                               </div>
                             ) : null}
                             {issuer ? (
                               <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.issuerLabel}</p>
-                                <p className="mt-1 break-all text-sm text-[var(--color-text-subtle)]">{issuer}</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.issuerLabel}</p>
+                                <p className="mt-0.5 break-all text-xs text-[var(--color-text-subtle)]">{issuer}</p>
                               </div>
                             ) : null}
                             {accountLabel ? (
                               <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.accountLabel}</p>
-                                <p className="mt-1 break-all text-sm text-[var(--color-text-subtle)]">{accountLabel}</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.accountLabel}</p>
+                                <p className="mt-0.5 break-all text-xs text-[var(--color-text-subtle)]">{accountLabel}</p>
                               </div>
                             ) : null}
-                            <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.manualHint}</p>
+                            <p className="text-[11px] leading-normal text-[var(--color-text-subtle)]">{copy.manualHint}</p>
                             <button
                               type="button"
                               onClick={handleProvision}
                               disabled={isProvisioning}
-                              className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-primary-border)] px-3 py-2 text-xs font-medium text-[var(--color-primary)] transition hover:border-[color:var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:cursor-not-allowed disabled:opacity-70"
+                              className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-primary-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-primary)] transition hover:border-[color:var(--color-primary)] hover:bg-[var(--color-primary-muted)] disabled:cursor-not-allowed disabled:opacity-70"
                             >
                               {isProvisioning ? `${copy.regenerate}…` : copy.regenerate}
                             </button>
@@ -642,18 +642,18 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       </div>
                     </section>
 
-                    <section className="border-t border-[color:var(--color-surface-border)] pt-6">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">{copy.guide.step3Title}</p>
-                      <h4 className="mt-1 text-lg font-semibold text-[var(--color-heading)]">{copy.codeLabel}</h4>
+                    <section className="border-t border-[color:var(--color-surface-border)] pt-3.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary)]">{copy.guide.step3Title}</p>
+                      <h4 className="mt-0.5 text-base font-semibold text-[var(--color-heading)]">{copy.codeLabel}</h4>
                         <form
                           onSubmit={handleVerify}
-                          className="mt-4 flex flex-col gap-4"
+                          className="mt-2.5 flex flex-col gap-3"
                         >
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-[var(--color-text-subtle)]" htmlFor="mfa-code-0">
+                            <label className="block text-xs font-medium text-[var(--color-text-subtle)]" htmlFor="mfa-code-0">
                               {copy.codeLabel}
                             </label>
-                            <div className="mt-2 flex gap-2 sm:gap-3">
+                            <div className="mt-1.5 flex gap-2 sm:gap-2.5">
                               {Array.from({ length: 6 }).map((_, index) => {
                                 const digit = code[index] ?? ''
                                 return (
@@ -757,7 +757,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                                       }, 0)
                                     }}
                                     onFocus={(event) => event.currentTarget.select()}
-                                    className="h-12 w-10 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-center text-xl font-mono text-[var(--color-text)] shadow-[var(--shadow-sm)] focus:border-[color:var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)] sm:h-14 sm:w-12 sm:text-2xl"
+                                    className="h-10 w-9 sm:h-11 sm:w-10 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-center text-lg sm:text-xl font-mono text-[var(--color-text)] shadow-[var(--shadow-sm)] focus:border-[color:var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-muted)]"
                                   />
                                 )
                               })}
@@ -773,25 +773,25 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                           <button
                             type="submit"
                             disabled={isVerifying}
-                            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
+                            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
                           >
                             {isVerifying ? copy.verifying : copy.verify}
                           </button>
                         </form>
                     </section>
 
-                    {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
+                    {error ? <p className="text-xs text-[var(--color-danger)]">{error}</p> : null}
                   </div>
                 )}
 
-                <div className="mt-6 border-t border-[color:var(--color-surface-border)] pt-5 text-xs text-[var(--color-text-subtle)]">
+                <div className="mt-3.5 border-t border-[color:var(--color-surface-border)] pt-3 text-xs text-[var(--color-text-subtle)]">
                   <p className="font-semibold text-[var(--color-text-subtle)]">{copy.actions.help}</p>
-                  <p className="mt-1 text-[var(--color-text-subtle)]">{copy.actions.description}</p>
-                  <div className="mt-3 flex flex-wrap gap-3">
+                  <p className="mt-0.5 text-[11px] text-[var(--color-text-subtle)]">{copy.actions.description}</p>
+                  <div className="mt-2 flex flex-wrap gap-2.5">
                     <button
                       type="button"
                       onClick={handleLogoutClick}
-                      className="inline-flex items-center justify-center rounded-md px-1 py-1 text-xs font-medium text-[var(--color-primary)] underline-offset-4 transition hover:underline"
+                      className="inline-flex items-center justify-center rounded-md px-1 py-0.5 text-xs font-medium text-[var(--color-primary)] underline-offset-4 transition hover:underline"
                     >
                       {copy.actions.logout}
                     </button>
@@ -799,7 +799,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       href={copy.actions.docsUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center justify-center rounded-md px-1 py-1 text-xs font-medium text-[var(--color-primary)] underline-offset-4 transition hover:underline"
+                      className="inline-flex items-center justify-center rounded-md px-1 py-0.5 text-xs font-medium text-[var(--color-primary)] underline-offset-4 transition hover:underline"
                     >
                       {copy.actions.docs}
                     </a>

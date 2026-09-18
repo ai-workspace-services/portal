@@ -86,4 +86,35 @@ describe("regional pools", () => {
     );
     expect(options.every(({ pool }) => pool.openToUsers)).toBe(true);
   });
+
+  it("provides canonical regional fallback when nodes list is empty (e.g. UAT)", () => {
+    const options = regionalNodeOptions([]);
+    expect(options.length).toBeGreaterThan(0);
+    expect(options.map(({ pool }) => pool.code)).toEqual(
+      XCONNECT_REGIONAL_POOLS.filter((pool) => pool.openToUsers).map(
+        (pool) => pool.code,
+      ),
+    );
+    expect(options.map(({ node: optNode }) => optNode.address)).toEqual([
+      "jp-xconnect.svc.plus",
+      "us-xconnect.svc.plus",
+      "hk-xconnect.svc.plus",
+      "ph-xconnect.svc.plus",
+    ]);
+  });
+
+  it("uses template node if provided with wildcard address or control-plane name", () => {
+    const template: VlessNode = {
+      name: "Shared Token Template",
+      address: "*",
+      port: 443,
+      transport: "xhttp",
+      path: "/custom-path",
+      uri_scheme_xhttp: "vless://${UUID}@${DOMAIN}:443?path=${PATH}#${TAG}",
+    };
+    const options = regionalNodeOptions([template]);
+    expect(options.length).toBe(4);
+    expect(options[0].node.path).toBe("/custom-path");
+    expect(options[0].node.address).toBe("jp-xconnect.svc.plus");
+  });
 });
