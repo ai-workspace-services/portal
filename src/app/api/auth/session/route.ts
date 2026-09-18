@@ -6,8 +6,6 @@ import { resolvePublicUserEmail } from "@lib/publicUserIdentity";
 import { normalizeServiceReadiness } from "@lib/serviceReadiness";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
-
 type AccountUser = {
   id?: string;
   uuid?: string;
@@ -79,8 +77,9 @@ function normalizeRole(role: unknown): AuthenticatedRole | null {
 }
 
 async function fetchSession(token: string, requestHost?: string | null) {
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
   try {
-    const response = await fetch(`${ACCOUNT_API_BASE}/session`, {
+    const response = await fetch(`${accountApiBase}/session`, {
       headers: {
         Authorization: `Bearer ${token}`,
         ...(requestHost && requestHost.trim().length > 0
@@ -325,11 +324,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  void request;
+  const requestHost = request.headers.get("host");
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (token) {
-    await fetch(`${ACCOUNT_API_BASE}/session`, {
+    await fetch(`${accountApiBase}/session`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -339,6 +339,6 @@ export async function DELETE(request: NextRequest) {
   }
 
   const response = NextResponse.json({ success: true });
-  clearSessionCookie(response, request.headers.get("host") ?? undefined);
+  clearSessionCookie(response, requestHost ?? undefined);
   return response;
 }
