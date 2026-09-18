@@ -14,8 +14,6 @@ import {
   isSelfReferentialServiceTarget,
 } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
-
 type LoginPayload = {
   identifier?: string;
   email?: string;

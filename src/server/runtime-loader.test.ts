@@ -23,7 +23,12 @@ describe("runtime-loader", () => {
 
     const config = loadRuntimeConfig({ hostname: "console.svc.plus" });
 
-    expect(config.authUrl).toBe("https://accounts.svc.plus");
+    expect(config.authUrl).toBe(
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app",
+    );
+    expect(config.xconnectZeroUrl).toBe(
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app",
+    );
     expect(config.dashboardUrl).toBe("https://console.svc.plus");
   });
 
@@ -35,7 +40,7 @@ describe("runtime-loader", () => {
     expect(config.apiBaseUrl).toBe("https://accounts-cloudflare-uat.onwalk.net/api");
     expect(config.authUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
     expect(config.xconnectZeroUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
-    expect(config.dashboardUrl).toBe("https://console-cloudflare-uat.onwalk.net");
+    expect(config.dashboardUrl).toBe("https://console.onwalk.net");
   });
 
   it("keeps the Serverless production console on the production Accounts service", async () => {
@@ -44,6 +49,8 @@ describe("runtime-loader", () => {
     const config = loadRuntimeConfig({ hostname: "console-serverless-prod.svc.plus" });
 
     expect(config.environment).toBe("prod");
-    expect(config.authUrl).toBe("https://accounts.svc.plus");
+    expect(config.authUrl).toBe(
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app",
+    );
   });
 });
