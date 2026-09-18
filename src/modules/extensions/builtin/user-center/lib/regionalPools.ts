@@ -84,6 +84,37 @@ const REGION_ALIASES: ReadonlyArray<{
   },
 ];
 
+export const CANONICAL_FALLBACK_NODE: VlessNode = {
+  name: "XConnect",
+  address: "jp-xconnect.svc.plus",
+  port: 443,
+  transport: "xhttp",
+  path: "/split",
+  mode: "auto",
+  flow: "xtls-rprx-vision",
+  server_name: "jp-xconnect.svc.plus",
+  xhttp_port: 443,
+  tcp_port: 1443,
+  uri_scheme_xhttp:
+    "vless://${UUID}@${NODE}:443?encryption=none&type=xhttp&security=tls&host=${DOMAIN}&path=${PATH}&mode=${MODE}&sni=${SNI}&fp=${FP}&alpn=h2%2Chttp%2F1.1%2Ch3#${TAG}",
+  uri_scheme_tcp:
+    "vless://${UUID}@${NODE}:1443?encryption=none&type=tcp&security=tls&sni=${SNI}&fp=${FP}&flow=${FLOW}#${TAG}",
+};
+
+function isTemplateNode(node: VlessNode): boolean {
+  const address = (node.address || "").trim().toLowerCase();
+  const name = (node.name || "").trim().toLowerCase();
+  return (
+    !address ||
+    address === "*" ||
+    address.includes("accounts.") ||
+    name.includes("template") ||
+    name.includes("xconnect") ||
+    name.includes("shared token") ||
+    name.includes("internal agents")
+  );
+}
+
 export function regionForNode(node: VlessNode): RegionalPool | undefined {
   const identity =
     `${node.name} ${node.address} ${node.server_name ?? ""}`.toLowerCase();
@@ -98,10 +129,11 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
 }> {
   const usedRegions = new Set<string>();
   const options: Array<{ pool: RegionalPool; node: VlessNode }> = [];
-  const templateNode = nodes[0]; // generic node to fallback to
+
+  const templateNode = nodes.find(isTemplateNode);
 
   for (const node of nodes) {
-    if (node.address?.trim() === "*") continue;
+    if (!node.address || node.address.trim() === "*") continue;
     const pool = regionForNode(node);
     if (!pool) {
       continue;
@@ -115,18 +147,29 @@ export function regionalNodeOptions(nodes: VlessNode[]): Array<{
     options.push({ pool, node: withRegionalEntry(node, pool) });
   }
 
+  // If concrete nodes were provided and matched regions, offer only those specific regions.
+  if (options.length > 0) {
+    return XCONNECT_REGIONAL_POOLS.flatMap((pool) => {
+      const option = options.find(
+        (candidate) => candidate.pool.code === pool.code,
+      );
+      return option ? [option] : [];
+    });
+  }
+
+  // If concrete nodes were provided but NONE matched any known region, do not guess.
+  const hasOnlyConcreteUnmatchedNodes =
+    nodes.length > 0 && !templateNode && options.length === 0;
+  if (hasOnlyConcreteUnmatchedNodes) {
+    return [];
+  }
+
+  // In fallback / template mode (e.g. UAT where no runtime edge agents are active, or wildcard template is returned):
+  // Provide all open regional pools using the template node or canonical defaults.
+  const baseNode = templateNode ?? CANONICAL_FALLBACK_NODE;
   return XCONNECT_REGIONAL_POOLS.flatMap((pool) => {
     if (!pool.openToUsers) return [];
-    const option = options.find(
-      (candidate) => candidate.pool.code === pool.code,
-    );
-    if (option) return [option];
-    
-    // Fallback to template node if specific regional node is missing
-    if (templateNode) {
-      return [{ pool, node: withRegionalEntry(templateNode, pool) }];
-    }
-    return [];
+    return [{ pool, node: withRegionalEntry(baseNode, pool) }];
   });
 }
 
@@ -138,3 +181,4 @@ function withRegionalEntry(node: VlessNode, pool: RegionalPool): VlessNode {
     server_name: pool.entry,
   };
 }
+
