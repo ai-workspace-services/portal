@@ -190,7 +190,39 @@ describe("/api/auth/session", () => {
     expect(clearsSessionCookie(response)).toBe(true);
   });
 
-  it("accepts the default member role used by newly created accounts", async () => {
+  it.each([
+    ['<html>Forbidden</html>', "text/html"],
+    [JSON.stringify({ message: "Forbidden" }), "application/json"],
+  ])("does not label an unclassified 403 as account suspension", async (body, contentType) => {
+    withSessionCookie();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(body, { status: 403, headers: { "Content-Type": contentType } }),
+    ));
+    const { GET } = await import("./route");
+    const response = await GET(sessionRequest());
+    await expect(response.json()).resolves.toEqual({ user: null, error: "session_unavailable" });
+    expect(clearsSessionCookie(response)).toBe(false);
+  });
+
+  it("resolves successive session requests against their own environment", async () => {
+    withSessionCookie();
+    delete process.env.RUNTIME_ENV;
+    delete process.env.NEXT_PUBLIC_ACCOUNT_SERVICE_URL;
+    const fetchMock = vi.fn().mockImplementation(async () => new Response(
+      JSON.stringify({ error: "invalid_session" }), { status: 401 },
+    ));
+    vi.stubGlobal("fetch", fetchMock);
+    const { GET } = await import("./route");
+    for (const host of ["console-serverless-uat.onwalk.net", "console-serverless-prod.svc.plus"]) {
+      await GET(new NextRequest(`https://${host}/api/auth/session`, { headers: { host } }));
+    }
+    const urls = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(urls[0]).toContain("uat");
+    expect(urls[1]).toBe("https://accounts.svc.plus/api/auth/session");
+    expect(urls[0]).not.toBe(urls[1]);
+  });
+
+  it("accepts the supported member role alias", async () => {
     withSessionCookie();
     vi.stubGlobal(
       "fetch",

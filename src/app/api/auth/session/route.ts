@@ -6,8 +6,6 @@ import { resolvePublicUserEmail } from "@lib/publicUserIdentity";
 import { normalizeServiceReadiness } from "@lib/serviceReadiness";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
-
 type AccountUser = {
   id?: string;
   uuid?: string;
@@ -80,7 +78,8 @@ function normalizeRole(role: unknown): AuthenticatedRole | null {
 
 async function fetchSession(token: string, requestHost?: string | null) {
   try {
-    const response = await fetch(`${ACCOUNT_API_BASE}/session`, {
+    const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
+    const response = await fetch(`${accountApiBase}/session`, {
       headers: {
         Authorization: `Bearer ${token}`,
         ...(requestHost && requestHost.trim().length > 0
@@ -131,9 +130,7 @@ export async function GET(request: NextRequest) {
     const upstreamError =
       typeof data?.error === "string" && data.error.trim().length > 0
         ? data.error.trim()
-        : response.status === 403
-          ? "account_suspended"
-          : "session_unavailable";
+        : "session_unavailable";
     return NextResponse.json({ user: null, error: upstreamError });
   }
 
@@ -325,11 +322,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  void request;
+  const accountApiBase = getAccountServiceApiBaseUrl(request.headers.get("host"));
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (token) {
-    await fetch(`${ACCOUNT_API_BASE}/session`, {
+    await fetch(`${accountApiBase}/session`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
