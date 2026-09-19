@@ -29,8 +29,14 @@ interface ProductSlugPageProps {
   params: Promise<{ slug: string }>;
 }
 
+import XWorkmateProductView from "@/components/products/XWorkmateProductView";
+
 export default async function ProductDynamicPage({ params }: ProductSlugPageProps) {
   const { slug } = await params;
+
+  if (slug === "xworkmate") {
+    return <XWorkmateProductView />;
+  }
 
   // 1. Try to fetch dynamic content from content-service (Git backed)
   let product: WebsiteProductPayload | null = await getProduct(slug);

@@ -1,0 +1,34 @@
+# XWork Technologies LLC — Platform & Products
+
+> XWork Technologies LLC builds open, secure, and cloud-neutral AI workspace software connecting models, autonomous agents, engineering tools, and enterprise data.
+
+## Core Products
+
+### XWorkmate
+- **Category**: Unified AI Workspace & Multi-Agent Orchestration
+- **URL**: https://xworktech.com/products/xworkmate
+- **Description**: Connects LLMs (via LiteLLM routing), autonomous agents (OpenClaw multi-session runtime), and specialized engineering skills into durable project threads that deliver tangible code, documents, and assets.
+- **Platforms**: macOS, Windows, Linux, Android, Web
+- **Repositories**: https://github.com/ai-workspace-lab/xworkmate-app, https://github.com/ai-workspace-lab/xworkmate-bridge
+
+### XConnect
+- **Category**: AI Workspace Zero-Trust Connector & Acceleration
+- **URL**: https://xworktech.com/products/xconnect
+- **Description**: Fast, secure, and resilient global connectivity providing zero-trust tunneling between local development workspaces and cloud/edge inference nodes.
+- **Platforms**: macOS, Windows, Linux, iOS, Android
+- **Repositories**: https://github.com/ai-workspace-xstream/xconnect-app
+
+### Open Platform & Global Mesh
+- **Category**: Cloud-Neutral Infrastructure & Edge Mesh
+- **URL**: https://xworktech.com/products/open-platform
+- **Description**: Declarative infrastructure-as-code, GitOps workflows, and out-of-band management overlay across multi-cloud VPS providers.
+- **Repositories**: https://github.com/ai-workspace-infra/global-mesh
+
+## Company Identity & Verification
+- **Legal Entity**: XWork Technologies LLC
+- **Website**: https://xworktech.com
+- **Support Email**: support@xworktech.com
+- **Business Contact**: haitaopan@xworktech.com
+- **GitHub Organization**: https://github.com/ai-workspace-lab
+- **Terms of Service**: https://xworktech.com/terms
+- **Privacy Policy**: https://xworktech.com/privacy
