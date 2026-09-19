@@ -80,6 +80,7 @@ export const homeMarketingContentData = {
       "eyebrow": "XWORKMATE / AI WORKSPACE",
       "logoLabel": "AI 模型与智能体",
       "title": [
+        "XWorkmate",
         "开放的 AI 工作空间"
       ],
       "line": "连接模型、Agent、工具与数据，让每个想法走向结果。",
@@ -91,8 +92,8 @@ export const homeMarketingContentData = {
         "href": "/ai-workspace?entry=trial"
       },
       "secondaryCta": {
-        "label": "查看工作空间",
-        "href": "#product-demo"
+        "label": "下载客户端",
+        "href": "/products/xworkmate#source-and-downloads"
       },
       "visual": {
         "eyebrow": "一个空间，所有 AI",
@@ -247,7 +248,7 @@ export const homeMarketingContentData = {
       "facts": [
         {
           "value": "产品预览",
-          "label": "在 Web、Desktop、Mobile 中查看真实工作台界面"
+          "label": "在 Web、Desktop、Mobile 中预览工作台界面"
         },
         {
           "value": "工作闭环",
@@ -560,6 +561,7 @@ export const homeMarketingContentData = {
       "eyebrow": "XWORKMATE / AI WORKSPACE",
       "logoLabel": "AI models & agents",
       "title": [
+        "XWorkmate",
         "An open AI workspace"
       ],
       "line": "Connect models, agents, tools, and data so every idea can move to an outcome.",
@@ -571,8 +573,8 @@ export const homeMarketingContentData = {
         "href": "/ai-workspace?entry=trial"
       },
       "secondaryCta": {
-        "label": "Explore workspace",
-        "href": "#product-demo"
+        "label": "Download",
+        "href": "/products/xworkmate#source-and-downloads"
       },
       "visual": {
         "eyebrow": "ONE SPACE, EVERY AI",
