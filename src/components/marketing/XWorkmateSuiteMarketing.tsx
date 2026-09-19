@@ -31,8 +31,8 @@ type SuiteProduct = {
 const suiteProducts: SuiteProduct[] = [
   {
     name: "xworkmate-app",
-    repo: "x-evor/xworkmate-app",
-    href: "https://github.com/x-evor/xworkmate-app.git",
+    repo: "ai-workspace-lab/xworkmate-app",
+    href: "https://github.com/ai-workspace-lab/xworkmate-app",
     role: "桌面工作台",
     description:
       "承载任务线程、执行模式、工作区文件和产物预览，让用户在 macOS 客户端内完成 AI Agent 工作流。",
@@ -40,8 +40,8 @@ const suiteProducts: SuiteProduct[] = [
   },
   {
     name: "xworkmate-bridge",
-    repo: "x-evor/xworkmate-bridge",
-    href: "https://github.com/x-evor/xworkmate-bridge",
+    repo: "ai-workspace-lab/xworkmate-bridge",
+    href: "https://github.com/ai-workspace-lab/xworkmate-bridge",
     role: "网关与运行时连接",
     description:
       "连接你的桌面工作区与远程 OpenClaw 运行环境，让长任务可以继续跑、可恢复、可回到同一条线程。",
@@ -49,8 +49,8 @@ const suiteProducts: SuiteProduct[] = [
   },
   {
     name: "openclaw-multi-session-plugins",
-    repo: "x-evor/openclaw-multi-session-plugins",
-    href: "https://github.com/x-evor/openclaw-multi-session-plugins",
+    repo: "ai-workspace-lab/openclaw-multi-session-plugins",
+    href: "https://github.com/ai-workspace-lab/openclaw-multi-session-plugins",
     role: "多会话执行插件",
     description:
       "把 OpenClaw 扩展成可并行处理任务的执行环境，支撑多线程、归档任务和产物落盘。",
@@ -58,8 +58,8 @@ const suiteProducts: SuiteProduct[] = [
   },
   {
     name: "xworkspace-core-skills",
-    repo: "x-evor/xworkspace-core-skills",
-    href: "https://github.com/x-evor/xworkspace-core-skills",
+    repo: "ai-workspace-lab/xworkspace-core-skills",
+    href: "https://github.com/ai-workspace-lab/xworkspace-core-skills",
     role: "核心技能包",
     description:
       "沉淀常用写作、编程、图片、视频和工作区处理方式，让个人任务从聊天走向稳定产物。",
@@ -121,7 +121,7 @@ export default function XWorkmateSuiteMarketing() {
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </BoundaryLink>
             <BoundaryLink
-              href="https://github.com/x-evor/xworkmate-app.git"
+              href="https://github.com/ai-workspace-lab/xworkmate-app"
               className="tactile-button tactile-button-soft h-11 px-5"
             >
               查看开源仓库

@@ -106,23 +106,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'XWork Technologies',
-              url: SITE_URL,
-              logo: `${SITE_URL}/icons/cloudnative_32.png`,
-              description: DEFAULT_DESCRIPTION,
-            }).replace(/</g, '\\u003c'),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: 'XWork Technologies',
-              url: SITE_URL,
-              description: DEFAULT_DESCRIPTION,
+              '@graph': [
+                {
+                  '@type': 'Organization',
+                  name: 'XWork Technologies LLC',
+                  url: SITE_URL,
+                  logo: `${SITE_URL}/icons/cloudnative_32.png`,
+                  description: DEFAULT_DESCRIPTION,
+                  sameAs: [
+                    'https://github.com/ai-workspace-lab',
+                    'https://x.com/Cloud_Neutral',
+                    'https://www.linkedin.com/in/haitaopan/',
+                  ],
+                  contactPoint: {
+                    '@type': 'ContactPoint',
+                    email: 'support@xworktech.com',
+                    contactType: 'customer support',
+                  },
+                },
+                {
+                  '@type': 'SoftwareApplication',
+                  name: 'XWorkmate',
+                  applicationCategory: 'BusinessApplication',
+                  operatingSystem: 'macOS, Windows, Linux, Android, Web',
+                  offers: {
+                    '@type': 'Offer',
+                    price: '0',
+                    priceCurrency: 'USD',
+                  },
+                  description:
+                    'Unified AI workspace connecting models, autonomous agents, tools, and enterprise data.',
+                },
+                {
+                  '@type': 'WebSite',
+                  name: 'XWork Technologies',
+                  url: SITE_URL,
+                  description: DEFAULT_DESCRIPTION,
+                },
+              ],
             }).replace(/</g, '\\u003c'),
           }}
         />

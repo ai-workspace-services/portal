@@ -36,8 +36,6 @@ export type ProductConfig = {
 
 export type StripeBillingMode = "payment" | "subscription";
 
-
-
 export const PRODUCT_LIST: ProductConfig[] = [xconnect, xscopehub, xcloudflow, globalMesh];
 
 export const PRODUCT_MAP = new Map<string, ProductConfig>(

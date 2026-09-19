@@ -80,7 +80,7 @@ export default function Homepage() {
           : 'IaC and GitOps core to govern environments and changes.',
       action: language === 'zh' ? '进入' : 'Open',
       icon: '⛁',
-      link: 'https://www.svc.plus/xcloudflow',
+      link: '/xcloudflow',
     },
     {
       name: 'XScopeHub',
@@ -90,7 +90,7 @@ export default function Homepage() {
           : 'Monitoring and AI observability hub for metrics, logs, and alerts.',
       action: language === 'zh' ? '查看' : 'View',
       icon: '◉',
-      link: 'https://www.svc.plus/xscopehub',
+      link: '/xscopehub',
     },
     {
       name: 'XConnect',
@@ -100,7 +100,7 @@ export default function Homepage() {
           : 'The connector for AI workspaces with AI acceleration and secure access.',
       action: language === 'zh' ? '查看' : 'View',
       icon: '↯',
-      link: 'https://www.svc.plus/xconnect',
+      link: '/xconnect',
     },
     {
       name: 'XControl',

@@ -189,10 +189,7 @@ export default function ServicesPage() {
         : "Dual-engine multi-channel LLM aggregator and token quota dashboard.",
       href:
         process.env.NEXT_PUBLIC_AI_AGGREGATOR_URL ||
-        (typeof window !== "undefined" &&
-        window.location.hostname.includes("onwalk.net")
-          ? "https://ai.onwalk.net"
-          : "https://ai.svc.plus"),
+        "https://ai.svc.plus",
       icon: Network,
       external: true,
     },
