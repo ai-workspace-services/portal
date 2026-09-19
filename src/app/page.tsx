@@ -13,6 +13,8 @@ import ProofSection from "@/components/marketing/ProofSection";
 import PricingTeaser from "@/components/marketing/PricingTeaser";
 import FinalCta from "@/components/marketing/FinalCta";
 
+import BuiltByBadge from "@/components/marketing/BuiltByBadge";
+
 export default function HomePage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
@@ -26,6 +28,7 @@ export default function HomePage() {
         <ProofSection />
         <PricingTeaser />
         <FinalCta />
+        <BuiltByBadge />
       </main>
       <div className="mx-auto w-full max-w-6xl px-6 pb-10 lg:px-8">
         <Footer />

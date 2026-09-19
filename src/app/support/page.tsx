@@ -613,8 +613,8 @@ export default async function SupportPage() {
                 d: isChinese
                   ? "描述遇到的问题，工作日内我们会尽快回复。"
                   : "Describe what's wrong; we'll get back to you within a business day.",
-                cta: "haitaopanhq@gmail.com",
-                href: "mailto:haitaopanhq@gmail.com",
+                cta: "support@xworktech.com",
+                href: "mailto:support@xworktech.com",
               },
               {
                 Icon: Github,

@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 import { getBlogList } from '@/lib/docsServiceClient'
 import { PRODUCT_LIST } from '@/modules/products/registry'
 
-const baseUrl = 'https://www.svc.plus'
+const baseUrl = 'https://xworktech.com'
 
 // `force-dynamic` used to cancel out the revalidate window below; the sitemap
 // is now generated once per hour and served from the cache in between.

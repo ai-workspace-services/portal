@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
+import ProductSourceLinks from "@/components/products/ProductSourceLinks";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import {
   XdsBadge,
@@ -785,6 +786,7 @@ export default function XConnectPage() {
         </section>
       </main>
 
+      <ProductSourceLinks slug="xconnect" language={lang} />
       <XdsSiteFooter brand="XConnect" />
     </div>
   );

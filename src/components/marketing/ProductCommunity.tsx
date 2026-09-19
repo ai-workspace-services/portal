@@ -5,6 +5,8 @@ import { forwardRef } from 'react'
 
 import type { ProductConfig } from '@src/products/registry'
 
+import { COMPANY_BRAND_NAME, COMPANY_SITE_URL } from '@/lib/company'
+
 type ProductCommunityProps = {
   config: ProductConfig
   lang: 'zh' | 'en'
@@ -30,7 +32,7 @@ const Poster = forwardRef<HTMLDivElement, { config: ProductConfig; lang: 'zh' | 
           <div>
             <div className="flex items-center gap-3 text-xl font-semibold text-slate-900">
               <QrCode className="h-6 w-6 text-brand-dark" aria-hidden="true" />
-              <span>SVC.plus / {config.name}</span>
+              <span>{COMPANY_BRAND_NAME} / {config.name}</span>
             </div>
             <h2 className="mt-8 text-5xl font-extrabold text-slate-900">
               {lang === 'zh' ? config.title : config.title_en}
@@ -38,7 +40,7 @@ const Poster = forwardRef<HTMLDivElement, { config: ProductConfig; lang: 'zh' | 
             <p className="mt-4 text-lg text-slate-700">{tagline}</p>
             <ul className="mt-6 space-y-2 text-base text-slate-700">
               <li>• {lang === 'zh' ? 'Windows / macOS / Linux 全平台支持' : 'Windows / macOS / Linux support'}</li>
-              <li>• {lang === 'zh' ? '官网 / 下载' : 'Website / Downloads'}: https://www.svc.plus/{config.slug}/</li>
+              <li>• {lang === 'zh' ? '官网 / 下载' : 'Website / Downloads'}: {COMPANY_SITE_URL}/{config.slug}/</li>
             </ul>
           </div>
           <div className="flex items-end justify-between">

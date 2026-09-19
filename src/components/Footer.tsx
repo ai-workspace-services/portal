@@ -3,6 +3,7 @@ import { Moon, Sun } from "lucide-react";
 import { Github, Linkedin, Twitter } from "@/components/icons/brand";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useLanguage } from "../i18n/LanguageProvider";
+import { COMPANY_GITHUB_URL, COMPANY_LEGAL_NAME } from "@/lib/company";
 
 import { useThemeStore } from "@components/theme";
 import { useViewStore } from "./theme/viewStore";
@@ -18,7 +19,7 @@ export default function Footer() {
     {
       label: "GitHub",
       icon: Github,
-      href: "https://github.com/x-evor",
+      href: COMPANY_GITHUB_URL,
     },
     { label: "X", icon: Twitter, href: "https://x.com/Cloud_Neutral" },
     {
@@ -65,7 +66,7 @@ export default function Footer() {
           <BoundaryLink href="/privacy" className={linkClassName}>
             {isChinese ? "隐私政策" : "Privacy Policy"}
           </BoundaryLink>
-          <BoundaryLink href="/support" className={linkClassName}>
+          <BoundaryLink href="/contact" className={linkClassName}>
             {isChinese ? "联系我们" : "Contact Us"}
           </BoundaryLink>
         </div>
@@ -123,6 +124,33 @@ export default function Footer() {
             />
           </button>
         </div>
+      </div>
+      <div
+        data-testid="company-identity"
+        className="flex w-full flex-col items-center gap-2 border-t border-[color:var(--color-surface-border)] pt-3 sm:flex-row sm:justify-between"
+      >
+        <p>
+          {isChinese ? "由 " : "Built by "}
+          <BoundaryLink href="/about" className={`font-semibold ${linkClassName}`}>
+            {COMPANY_LEGAL_NAME}
+          </BoundaryLink>
+          {isChinese ? " 开发与运营" : ""}
+          {" · "}
+          <BoundaryLink href="/about" className={linkClassName}>
+            {isChinese ? "关于我们" : "About"}
+          </BoundaryLink>
+          {" · "}
+          <BoundaryLink href="/contact" className={linkClassName}>
+            {isChinese ? "联系我们" : "Contact"}
+          </BoundaryLink>
+          {" · "}
+          <a href={COMPANY_GITHUB_URL} className={linkClassName}>
+            GitHub
+          </a>
+        </p>
+        <p>
+          © {new Date().getFullYear()} {COMPANY_LEGAL_NAME}
+        </p>
       </div>
     </footer>
   );

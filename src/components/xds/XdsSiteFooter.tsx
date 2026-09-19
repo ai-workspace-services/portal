@@ -13,6 +13,7 @@ import BoundaryLink from "@/components/common/BoundaryLink";
 import { Zap } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { COMPANY_GITHUB_URL, COMPANY_LEGAL_NAME } from "@/lib/company";
 
 type FooterColumn = {
   title: string;
@@ -51,7 +52,7 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
       title: "公司",
       items: [
         { label: "关于", href: "/about" },
-        { label: "联系我们", href: "/support" },
+        { label: "联系我们", href: "/contact" },
         { label: "隐私政策", href: "/privacy" },
         { label: "服务条款", href: "/terms" },
       ],
@@ -88,7 +89,7 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
       title: "Company",
       items: [
         { label: "About", href: "/about" },
-        { label: "Contact", href: "/support" },
+        { label: "Contact", href: "/contact" },
         { label: "Privacy", href: "/privacy" },
         { label: "Terms", href: "/terms" },
       ],
@@ -148,8 +149,11 @@ export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProp
         />
         <div className="xds-row-between">
           <span className="xds-t-caption">
-            © {new Date().getFullYear()} onwalk.net
+            © {new Date().getFullYear()} {COMPANY_LEGAL_NAME}
           </span>
+          <a className="xds-t-caption" href={COMPANY_GITHUB_URL}>
+            GitHub
+          </a>
         </div>
       </div>
     </footer>
