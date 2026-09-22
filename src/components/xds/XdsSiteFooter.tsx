@@ -20,6 +20,12 @@ type FooterColumn = {
   items: Array<{ label: string; href: string }>;
 };
 
+const PLATFORM_LOGIN_ORIGIN = "https://svc.plus/login";
+
+function loginHref(path: string): string {
+  return `${PLATFORM_LOGIN_ORIGIN}?next=${encodeURIComponent(path)}`;
+}
+
 const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
   zh: [
     {
@@ -42,10 +48,10 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
     {
       title: "账户",
       items: [
-        { label: "用户中心", href: "/panel" },
-        { label: "订阅与配额", href: "/panel/subscription" },
-        { label: "账单", href: "/panel/billing" },
-        { label: "安全设置", href: "/panel/account" },
+        { label: "用户中心", href: loginHref("/panel") },
+        { label: "订阅与配额", href: loginHref("/panel/subscription") },
+        { label: "账单", href: loginHref("/panel/billing") },
+        { label: "安全设置", href: loginHref("/panel/account") },
       ],
     },
     {
@@ -79,10 +85,10 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
     {
       title: "Account",
       items: [
-        { label: "User center", href: "/panel" },
-        { label: "Subscription", href: "/panel/subscription" },
-        { label: "Billing", href: "/panel/billing" },
-        { label: "Security", href: "/panel/account" },
+        { label: "User center", href: loginHref("/panel") },
+        { label: "Subscription", href: loginHref("/panel/subscription") },
+        { label: "Billing", href: loginHref("/panel/billing") },
+        { label: "Security", href: loginHref("/panel/account") },
       ],
     },
     {
