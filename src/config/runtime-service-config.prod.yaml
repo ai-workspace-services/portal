@@ -11,7 +11,10 @@ apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
 authUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
 xconnectZeroUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
 dashboardUrl: https://console.svc.plus
-docsServiceUrl: https://docs.svc.plus
+# Use the GitOps-declared Cloud Run source directly. The public docs hostname
+# may point at a stale edge service; server-side requests still carry the
+# INTERNAL_SERVICE_TOKEN through docsServiceClient.
+docsServiceUrl: https://prod-content-service-1004637461064.asia-northeast1.run.app
 logLevel: warn
 regions:
   cn:
@@ -19,10 +22,10 @@ regions:
     authUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
     xconnectZeroUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
     dashboardUrl: https://console.svc.plus
-    docsServiceUrl: https://docs.svc.plus
+    docsServiceUrl: https://prod-content-service-1004637461064.asia-northeast1.run.app
   global:
     apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
     authUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
     xconnectZeroUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
     dashboardUrl: https://console.svc.plus
-    docsServiceUrl: https://docs.svc.plus
+    docsServiceUrl: https://prod-content-service-1004637461064.asia-northeast1.run.app
