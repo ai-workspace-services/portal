@@ -1,5 +1,6 @@
 import {
   Code,
+  ChartNoAxesCombined,
   Cpu,
   CreditCard,
   ExternalLink,
@@ -38,6 +39,17 @@ export const userCenterExtension: DashboardExtension = {
       sidebar: { section: "workspace", order: 0 },
     },
     {
+      id: "finops",
+      path: "/panel/finops",
+      label: "FinOps",
+      description: "多云额度、成本归集与持续优化",
+      icon: ChartNoAxesCombined,
+      loader: () => import("./routes/finops"),
+      guard: { requireLogin: true },
+      redirect: { unauthenticated: "/login" },
+      sidebar: { section: "workspace", order: 1 },
+    },
+    {
       id: "globalMesh",
       path: "/panel/global-mesh",
       label: "Global Mesh 拓扑",
@@ -46,7 +58,7 @@ export const userCenterExtension: DashboardExtension = {
       loader: () => import("./routes/global-mesh"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
-      sidebar: { section: "workspace", order: 1 },
+      sidebar: { section: "workspace", order: 2 },
     },
     {
       id: "productsGlobalMesh",
@@ -55,7 +67,7 @@ export const userCenterExtension: DashboardExtension = {
       description: "全球多云互联与算力 PoP 产品全景",
       icon: ExternalLink,
       loader: () => import("./routes/global-mesh"),
-      sidebar: { section: "workspace", order: 2 },
+      sidebar: { section: "workspace", order: 3 },
     },
     {
       id: "agents",
