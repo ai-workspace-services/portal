@@ -20,27 +20,44 @@ type GithubRelease = {
 
 const RELEASE_CACHE_SECONDS = 3600;
 
-function githubHeaders(): Record<string, string> {
+function githubHeaders(includeToken = true): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "User-Agent": "xworktech-download-catalog",
     "X-GitHub-Api-Version": "2022-11-28",
   };
   const token = process.env.GITHUB_TOKEN;
-  if (token) {
+  if (includeToken && token) {
     headers.Authorization = `Bearer ${token}`;
   }
   return headers;
+}
+
+async function fetchRelease(
+  target: GithubReleaseTarget,
+  includeToken: boolean,
+): Promise<Response> {
+  return fetch(target.apiUrl, {
+    headers: githubHeaders(includeToken),
+    next: { revalidate: RELEASE_CACHE_SECONDS },
+  });
 }
 
 async function fetchLatestRelease(
   target: GithubReleaseTarget,
 ): Promise<DirListing | undefined> {
   try {
-    const response = await fetch(target.apiUrl, {
-      headers: githubHeaders(),
-      next: { revalidate: RELEASE_CACHE_SECONDS },
-    });
+    let response = await fetchRelease(target, true);
+
+    // Public repositories should remain discoverable even when the optional
+    // production token is scoped to a different repository or has expired.
+    // Retry anonymously before falling back to the mirror catalog.
+    if (
+      process.env.GITHUB_TOKEN &&
+      [401, 403, 404].includes(response.status)
+    ) {
+      response = await fetchRelease(target, false);
+    }
 
     // Some products may not have published their first Release yet. That is a
     // normal fallback case, not an application error.
