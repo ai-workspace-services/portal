@@ -4,6 +4,7 @@
 export {
   GET,
   POST,
-  runtime,
-  dynamic,
 } from "../trial/route";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
