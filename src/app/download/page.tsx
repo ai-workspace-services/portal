@@ -7,7 +7,11 @@ import DownloadCatalog from "@/components/download/DownloadCatalog";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { getDownloadListings } from "@/lib/download/dl-index-data-artifacts";
 import { getOfflinePackageListings } from "@/lib/download/dl-index-data-offline-package";
-import { buildDownloadCatalog } from "@/lib/download/catalog";
+import {
+  buildDownloadCatalog,
+  getGithubReleaseTargets,
+} from "@/lib/download/catalog";
+import { getGithubReleaseListings } from "@/lib/download/github-releases";
 import { isFeatureEnabled } from "@lib/featureToggles";
 
 export default async function DownloadHome() {
@@ -17,8 +21,12 @@ export default async function DownloadHome() {
 
   const allListings = await getDownloadListings();
   const offlinePackageListings = await getOfflinePackageListings();
+  const githubReleaseListings = await getGithubReleaseListings(
+    getGithubReleaseTargets(),
+  );
 
   const catalog = buildDownloadCatalog([
+    ...githubReleaseListings,
     ...allListings,
     ...offlinePackageListings,
   ]);
