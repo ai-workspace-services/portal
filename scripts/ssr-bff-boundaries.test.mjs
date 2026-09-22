@@ -54,6 +54,17 @@ test("existing auth and Console BFF boundaries are preserved", () => {
   );
 });
 
+test("public workspace service APIs are bundled in the workspace boundary", () => {
+  for (const path of [
+    "api/ai-workspace/free/route.ts",
+    "api/ai-workspace/sessions/[...segments]/route.ts",
+    "api/ai-workspace/tasks/catalog/route.ts",
+    "api/xworkmate/bridge/route.ts",
+  ]) {
+    assert.equal(bffBoundaryForRoute(path), "workspace");
+  }
+});
+
 test("no generic API or similar prefix gains a BFF handler", () => {
   for (const path of [
     "api/xconnect-zero-evil/[...segments]/route.ts",

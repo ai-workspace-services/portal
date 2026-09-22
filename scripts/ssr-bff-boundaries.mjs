@@ -1,6 +1,14 @@
 // BFF route handlers need the same Worker ownership as frontend-router.
 // Unknown APIs remain excluded from SSR bundles rather than being public pages.
 export function bffBoundaryForRoute(relativePath) {
+  // Public workspace service APIs are same-origin BFF handlers. They must be
+  // bundled with the workspace Worker; otherwise frontend-router can dispatch
+  // the request there while the Worker has no matching route and returns 404.
+  if (
+    relativePath.startsWith("api/ai-workspace/") ||
+    relativePath.startsWith("api/xworkmate/")
+  )
+    return "workspace";
   if (
     relativePath === "api/auth/login/route.ts" ||
     relativePath === "api/auth/register/route.ts" ||
