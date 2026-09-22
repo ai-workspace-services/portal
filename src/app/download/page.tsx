@@ -1,4 +1,7 @@
-// The download catalog is built from hourly manifests, not from the request.
+// Keep the page request-aware so a newly published GitHub Release can appear
+// without rebuilding the marketing site. The upstream fetches remain cached
+// for an hour in the server data cache.
+export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 import { notFound } from "next/navigation";
