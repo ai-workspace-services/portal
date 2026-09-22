@@ -129,8 +129,8 @@ export default function XWorkmateProductView() {
       os: isChinese ? "Web 在线工作空间" : "Web Cloud Workspace",
       badge: "Modern Browser",
       status: isChinese ? "开箱即用 · 免安装" : "Instant Access · Zero Install",
-      action: isChinese ? "开始免费试用" : "Start Free",
-      href: "/ai-workspace?entry=trial",
+      action: isChinese ? "开始使用" : "Get started",
+      href: "/ai-workspace",
     },
   ];
 
@@ -157,11 +157,11 @@ export default function XWorkmateProductView() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <BoundaryLink
-                  href="/ai-workspace?entry=trial"
+                  href="/ai-workspace"
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-primary/90"
                 >
                   <PlayCircle className="h-5 w-5" />
-                  {isChinese ? "开始免费体验" : "Start Free Trial"}
+                  {isChinese ? "开始使用" : "Get started"}
                   <ArrowRight className="h-4 w-4" />
                 </BoundaryLink>
                 <a
@@ -439,7 +439,7 @@ export default function XWorkmateProductView() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <BoundaryLink
-                  href="/ai-workspace?entry=trial"
+                  href="/ai-workspace"
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-md transition hover:bg-primary/90"
                 >
                   <PlayCircle className="h-5 w-5" />
