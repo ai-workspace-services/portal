@@ -452,6 +452,11 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [revokeTarget, setRevokeTarget] = useState<XConnectZeroDevice | null>(
     null,
   );
+  const [deleteNetworkTarget, setDeleteNetworkTarget] =
+    useState<XConnectZeroNetwork | null>(null);
+  const [deleteNetworkConfirmation, setDeleteNetworkConfirmation] =
+    useState("");
+  const [deleteNetworkPending, setDeleteNetworkPending] = useState(false);
   const [roleFilter, setRoleFilter] = useState<"all" | NodeRole>("all");
   const [networkFilter, setNetworkFilter] = useState("all");
   const [platformFilter, setPlatformFilter] = useState<"all" | Platform>("all");
@@ -694,10 +699,9 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     ];
     const hasRequiredNetworkFields = Boolean(
       network &&
-        requiredNetworkFields.every(
-          (field) =>
-            typeof network[field] === "string" && network[field].trim(),
-        ),
+      requiredNetworkFields.every(
+        (field) => typeof network[field] === "string" && network[field].trim(),
+      ),
     );
     if (
       !root ||
@@ -762,6 +766,51 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       setError(zh ? "撤销节点失败" : "Failed to revoke node");
     } finally {
       setRevokePending(false);
+      setMutationPending(false);
+    }
+  };
+
+  const confirmDeleteNetwork = async (): Promise<void> => {
+    const target = deleteNetworkTarget;
+    if (!target || deleteNetworkConfirmation !== target.id || !writeReady) {
+      return;
+    }
+    setDeleteNetworkPending(true);
+    setMutationPending(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/xconnect-zero/networks/${encodeURIComponent(target.id)}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirm_network_id: target.id }),
+        },
+      );
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(errorCode(body) ?? "network_delete_failed");
+      }
+      setDeleteNetworkTarget(null);
+      setDeleteNetworkConfirmation("");
+      setRegistrations((current) =>
+        current.filter((registration) => registration.network_id !== target.id),
+      );
+      setResourceData(await getResources());
+      setResourceState("ready");
+    } catch (deleteError) {
+      const code = deleteError instanceof Error ? deleteError.message : "";
+      setError(
+        code === "resource_conflict"
+          ? zh
+            ? "网络下存在与其他网络同 ID 的设备，控制面拒绝删除以保护其他网络凭据。"
+            : "A device ID is shared with another network; deletion was refused to protect its credentials."
+          : zh
+            ? "删除网络失败，请检查权限与控制面状态。"
+            : "Failed to delete the network; check permissions and control-plane status.",
+      );
+    } finally {
+      setDeleteNetworkPending(false);
       setMutationPending(false);
     }
   };
@@ -967,13 +1016,13 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     : undefined;
   const registrationConfirmReady = Boolean(
     registrationTarget &&
-      !registrationExpired(registrationTarget) &&
-      registrationAction &&
-      registrationTargetNetwork &&
-      registrationNetworks[registrationTarget.registration_id] ===
-        registrationTarget.network_id &&
-      writeReady &&
-      registrationState === "ready",
+    !registrationExpired(registrationTarget) &&
+    registrationAction &&
+    registrationTargetNetwork &&
+    registrationNetworks[registrationTarget.registration_id] ===
+      registrationTarget.network_id &&
+    writeReady &&
+    registrationState === "ready",
   );
 
   return (
@@ -1850,12 +1899,40 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
             </Frame>
           </div>
           <Frame title={zh ? "VPC 与私有网络" : "VPC and private networks"}>
-            <Row
-              icon={Network}
-              title={zh ? "网络与 CIDR" : "Network and CIDR"}
-              detail={networks[0]?.display_name ?? "—"}
-              value={networks[0]?.cidr ?? "—"}
-            />
+            {networks.length ? (
+              networks.map((network) => (
+                <div
+                  key={network.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--color-divider)] p-4 last:border-b-0"
+                >
+                  <Row
+                    icon={Network}
+                    title={network.display_name || network.id}
+                    detail={`${network.id} · ${network.gateway_id}`}
+                    value={network.cidr}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteNetworkTarget(network);
+                      setDeleteNetworkConfirmation("");
+                      setError(null);
+                    }}
+                    disabled={!writeReady || mutationPending}
+                    className="tactile-button tactile-button-soft text-[var(--color-danger-foreground)] disabled:opacity-50"
+                  >
+                    {zh ? "删除网络" : "Delete network"}
+                  </button>
+                </div>
+              ))
+            ) : (
+              <Row
+                icon={Network}
+                title={zh ? "没有已授权网络" : "No authorized networks"}
+                detail="—"
+                value="—"
+              />
+            )}
             <Row
               icon={Server}
               title={zh ? "Gateway 节点" : "Gateway nodes"}
@@ -2065,6 +2142,82 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   : zh
                     ? "确认撤销"
                     : "Confirm revoke"}
+              </button>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+      <AlertDialog.Root
+        open={deleteNetworkTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleteNetworkPending) {
+            setDeleteNetworkTarget(null);
+            setDeleteNetworkConfirmation("");
+          }
+        }}
+      >
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-xl)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-lg)]">
+            <AlertDialog.Cancel asChild>
+              <button
+                type="button"
+                className="float-right"
+                disabled={deleteNetworkPending}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </AlertDialog.Cancel>
+            <ShieldAlert className="h-6 w-6 text-[var(--color-danger-foreground)]" />
+            <AlertDialog.Title className="mt-3 text-xl font-semibold">
+              {zh ? "永久删除此网络？" : "Permanently delete this network?"}
+            </AlertDialog.Title>
+            <AlertDialog.Description className="mt-2 text-sm text-[var(--color-text-muted)]">
+              {zh
+                ? `删除 ${deleteNetworkTarget?.id ?? "网络"} 会移除控制面网络、邀请、注册、设备凭据及配置确认记录。已安装的节点可能保留本地网络配置；请先逐台停止/撤销节点并确认迁移备份。此操作不可撤销。`
+                : `Deleting ${deleteNetworkTarget?.id ?? "this network"} removes its control-plane record, invites, registrations, device credentials and config acknowledgements. Installed nodes may retain their local configuration; stop/revoke them and verify migration backups first. This cannot be undone.`}
+            </AlertDialog.Description>
+            <label className="mt-4 block text-sm font-medium">
+              {zh
+                ? `输入网络 ID 确认：${deleteNetworkTarget?.id ?? ""}`
+                : `Type the network ID to confirm: ${deleteNetworkTarget?.id ?? ""}`}
+              <input
+                autoComplete="off"
+                value={deleteNetworkConfirmation}
+                onChange={(event) =>
+                  setDeleteNetworkConfirmation(event.target.value)
+                }
+                className="mt-2 w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 font-mono text-sm"
+                disabled={deleteNetworkPending}
+              />
+            </label>
+            <div className="mt-5 flex justify-end gap-2">
+              <AlertDialog.Cancel
+                className="tactile-button tactile-button-soft"
+                disabled={deleteNetworkPending}
+              >
+                {zh ? "取消" : "Cancel"}
+              </AlertDialog.Cancel>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteNetwork()}
+                disabled={
+                  deleteNetworkPending ||
+                  !writeReady ||
+                  deleteNetworkConfirmation !== deleteNetworkTarget?.id
+                }
+                className="tactile-button tactile-button-primary disabled:opacity-50"
+              >
+                {deleteNetworkPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : null}
+                {deleteNetworkPending
+                  ? zh
+                    ? "删除中…"
+                    : "Deleting…"
+                  : zh
+                    ? "确认永久删除"
+                    : "Confirm permanent deletion"}
               </button>
             </div>
           </AlertDialog.Content>
