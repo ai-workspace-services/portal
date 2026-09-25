@@ -59,6 +59,14 @@ function resolveRoute(
     return `/admin/networks/${encodeURIComponent(segments[1])}/policy`;
   }
   if (
+    method === "DELETE" &&
+    segments.length === 2 &&
+    segments[0] === "networks" &&
+    segments[1]
+  ) {
+    return `/admin/networks/${encodeURIComponent(segments[1])}`;
+  }
+  if (
     segments.length === 3 &&
     segments[0] === "devices" &&
     segments[2] === "revoke"
@@ -170,16 +178,20 @@ async function proxy(
     Accept: "application/json",
   };
   const registrationRoute = endpointPath.startsWith("/admin/registrations");
+  const networkDeleteRoute =
+    method === "DELETE" && /^\/admin\/networks\/[^/]+$/.test(endpointPath);
+  const boundedBodyRoute = registrationRoute || method === "DELETE";
   let body: string | undefined;
   try {
     const contentLength = Number(request.headers.get("content-length"));
-    if (registrationRoute && contentLength > MAX_REQUEST_BODY_BYTES) {
+    const bodyLimit = method === "DELETE" ? 4096 : MAX_REQUEST_BODY_BYTES;
+    if (boundedBodyRoute && contentLength > bodyLimit) {
       return errorResponse("request_too_large", 413);
     }
     if (method !== "GET" && method !== "HEAD") {
       body =
-        (registrationRoute
-          ? await readRegistrationBody(request.body, MAX_REQUEST_BODY_BYTES)
+        (boundedBodyRoute
+          ? await readRegistrationBody(request.body, bodyLimit)
           : await request.text()) || undefined;
     }
   } catch (error) {
@@ -216,7 +228,11 @@ async function proxy(
     console.error("XConnect Zero control-plane request failed", error);
     return errorResponse("upstream_unreachable", 502);
   }
-  if (response.status === 404 && !(registrationRoute && method === "POST"))
+  if (
+    response.status === 404 &&
+    !(registrationRoute && method === "POST") &&
+    !networkDeleteRoute
+  )
     return errorResponse("control_plane_unavailable", 503);
   if (response.status === 204) {
     return new NextResponse(null, {
@@ -278,10 +294,13 @@ export async function PUT(
   return proxy(request, "PUT", context);
 }
 
-export function PATCH() {
-  return errorResponse("control_plane_unavailable", 404);
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ segments?: string[] }> },
+) {
+  return proxy(request, "DELETE", context);
 }
 
-export function DELETE() {
+export function PATCH() {
   return errorResponse("control_plane_unavailable", 404);
 }
