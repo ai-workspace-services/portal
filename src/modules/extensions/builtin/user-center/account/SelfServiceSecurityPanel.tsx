@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KeyRound, Mail, ShieldCheck, UserRoundX } from "lucide-react";
 
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -24,13 +24,44 @@ export default function SelfServiceSecurityPanel() {
   const logout = useUserStore((state) => state.logout);
   const [email, setEmail] = useState(user?.email ?? "");
   const [code, setCode] = useState("");
-  const [totpCode, setTotpCode] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  const [managementTotpCode, setManagementTotpCode] = useState("");
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [recoveryCodeCount, setRecoveryCodeCount] = useState(0);
+  const [recoveryCodeExpiry, setRecoveryCodeExpiry] = useState<string | null>(
+    null,
+  );
   const [password, setPassword] = useState("");
   const [sendingCode, setSendingCode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const canCancel = user?.groups?.includes(FREE_GROUP) && !user.isAdmin;
+
+  useEffect(() => {
+    if (!user?.mfaEnabled) return;
+    let active = true;
+    void fetch("/api/auth/mfa/recovery-codes", {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return (await response.json()) as {
+          activeCount?: number;
+          expiresAt?: string | null;
+        };
+      })
+      .then((payload) => {
+        if (!active || !payload) return;
+        setRecoveryCodeCount(payload.activeCount ?? 0);
+        setRecoveryCodeExpiry(payload.expiresAt ?? null);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [user?.mfaEnabled]);
 
   const requestEmailCode = async () => {
     if (!email.trim()) return;
@@ -115,11 +146,12 @@ export default function SelfServiceSecurityPanel() {
   };
 
   const resetWithMfa = async () => {
-    if (totpCode.trim().length !== 6 || password.length < 8) {
+    const credential = mfaCode.trim();
+    if (!credential || password.length < 8) {
       setError(
         zh
-          ? "请输入 6 位 MFA 验证码和至少 8 位新密码"
-          : "Enter a 6 digit MFA code and an 8 character password",
+          ? "请输入 MFA 验证码或一次性恢复码，以及至少 8 位新密码"
+          : "Enter an MFA or one-time recovery code and a password of at least 8 characters",
       );
       return;
     }
@@ -131,7 +163,11 @@ export default function SelfServiceSecurityPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ code: totpCode.trim(), password }),
+        body: JSON.stringify({
+          method: /^\d{6}$/.test(credential) ? "totp" : "recovery_code",
+          code: credential,
+          password,
+        }),
       });
       if (!response.ok)
         throw new Error(
@@ -140,10 +176,15 @@ export default function SelfServiceSecurityPanel() {
             zh ? "MFA 重置失败" : "Could not reset with MFA",
           ),
         );
-      setTotpCode("");
+      setMfaCode("");
       setPassword("");
-      setStatus(zh ? "密码已通过 MFA 重置" : "Password reset with MFA");
-      await refresh();
+      setStatus(
+        zh
+          ? "密码已重置，所有会话已注销，请重新登录"
+          : "Password reset; all sessions were signed out. Please log in again.",
+      );
+      await logout();
+      window.location.assign("/login?passwordReset=1");
     } catch (resetError) {
       setError(
         resetError instanceof Error
@@ -151,6 +192,69 @@ export default function SelfServiceSecurityPanel() {
           : zh
             ? "MFA 重置失败"
             : "Could not reset with MFA",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const manageRecoveryCodes = async (action: "rotate" | "revoke") => {
+    if (!/^\d{6}$/.test(managementTotpCode.trim())) {
+      setError(
+        zh
+          ? "请输入当前 6 位 MFA 验证码"
+          : "Enter the current 6 digit MFA code",
+      );
+      return;
+    }
+    setSaving(true);
+    setStatus(null);
+    setError(null);
+    try {
+      const response = await fetch("/api/auth/mfa/recovery-codes", {
+        method: action === "rotate" ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ code: managementTotpCode.trim() }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        recoveryCodes?: string[];
+        activeCount?: number;
+        revokedCount?: number;
+        expiresAt?: string;
+      };
+      if (!response.ok)
+        throw new Error(
+          payload.error ??
+            (zh ? "恢复码操作失败" : "Recovery code operation failed"),
+        );
+      setManagementTotpCode("");
+      setRecoveryCodes(
+        action === "rotate" ? (payload.recoveryCodes ?? []) : [],
+      );
+      setRecoveryCodeCount(
+        action === "rotate" ? (payload.recoveryCodes?.length ?? 0) : 0,
+      );
+      setRecoveryCodeExpiry(
+        action === "rotate" ? (payload.expiresAt ?? null) : null,
+      );
+      setStatus(
+        action === "rotate"
+          ? zh
+            ? "新恢复码只显示这一次，请保存到安全位置"
+            : "New recovery codes are shown once. Store them somewhere safe."
+          : zh
+            ? `已撤销 ${payload.revokedCount ?? 0} 个未使用恢复码`
+            : `Revoked ${payload.revokedCount ?? 0} unused recovery codes`,
+      );
+    } catch (operationError) {
+      setError(
+        operationError instanceof Error
+          ? operationError.message
+          : zh
+            ? "恢复码操作失败"
+            : "Recovery code operation failed",
       );
     } finally {
       setSaving(false);
@@ -278,13 +382,19 @@ export default function SelfServiceSecurityPanel() {
           </p>
           <input
             aria-label={zh ? "MFA 验证码" : "MFA code"}
-            inputMode="numeric"
-            maxLength={6}
-            value={totpCode}
+            autoCapitalize="characters"
+            maxLength={40}
+            value={mfaCode}
             onChange={(event) =>
-              setTotpCode(event.target.value.replace(/\D/g, ""))
+              setMfaCode(
+                event.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""),
+              )
             }
-            placeholder={zh ? "6 位 MFA 验证码" : "6 digit MFA code"}
+            placeholder={
+              zh
+                ? "6 位 MFA 验证码或一次性恢复码"
+                : "6 digit MFA or one-time recovery code"
+            }
             disabled={!user?.mfaEnabled}
             className="mt-3 w-full rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2 text-sm disabled:bg-slate-50"
           />
@@ -294,8 +404,69 @@ export default function SelfServiceSecurityPanel() {
             disabled={saving || !user?.mfaEnabled}
             className="mt-2 rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2 text-sm font-medium disabled:opacity-50"
           >
-            {zh ? "用 MFA 重置密码" : "Reset with MFA"}
+            {zh ? "用 MFA 或恢复码重置密码" : "Reset with MFA or recovery code"}
           </button>
+          <p className="mt-3 text-xs text-[var(--color-text-subtle)]">
+            {zh
+              ? `可用恢复码：${recoveryCodeCount}${recoveryCodeExpiry ? ` · 到期 ${new Date(recoveryCodeExpiry).toLocaleDateString()}` : ""}`
+              : `Recovery codes available: ${recoveryCodeCount}${recoveryCodeExpiry ? ` · expires ${new Date(recoveryCodeExpiry).toLocaleDateString()}` : ""}`}
+          </p>
+          <input
+            aria-label={
+              zh
+                ? "管理恢复码的当前 MFA 验证码"
+                : "Current MFA code to manage recovery codes"
+            }
+            inputMode="numeric"
+            maxLength={6}
+            value={managementTotpCode}
+            onChange={(event) =>
+              setManagementTotpCode(event.target.value.replace(/\D/g, ""))
+            }
+            placeholder={
+              zh ? "当前 6 位 MFA 验证码" : "Current 6 digit MFA code"
+            }
+            disabled={!user?.mfaEnabled}
+            className="mt-3 w-full rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2 text-sm disabled:bg-slate-50"
+          />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void manageRecoveryCodes("rotate")}
+              disabled={saving || !user?.mfaEnabled}
+              className="rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2 text-sm disabled:opacity-50"
+            >
+              {zh ? "生成/更换恢复码" : "Generate/replace recovery codes"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void manageRecoveryCodes("revoke")}
+              disabled={saving || !user?.mfaEnabled || recoveryCodeCount === 0}
+              className="rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2 text-sm disabled:opacity-50"
+            >
+              {zh ? "撤销剩余恢复码" : "Revoke remaining codes"}
+            </button>
+          </div>
+          {recoveryCodes.length > 0 ? (
+            <div
+              className="mt-3 rounded-lg border border-[color:var(--color-surface-border)] p-3"
+              aria-label={zh ? "一次性恢复码" : "One-time recovery codes"}
+            >
+              <p className="mb-2 text-xs text-[var(--color-text-subtle)]">
+                {zh
+                  ? "此列表只显示一次。关闭或离开页面后无法再次查看。"
+                  : "Shown once only. They cannot be viewed again after leaving this page."}
+              </p>
+              <ul
+                className="grid grid-cols-2 gap-2 font-mono text-sm"
+                aria-label={zh ? "恢复码列表" : "Recovery code list"}
+              >
+                {recoveryCodes.map((recoveryCode) => (
+                  <li key={recoveryCode}>{recoveryCode}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
       {status ? (
