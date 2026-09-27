@@ -26,6 +26,15 @@ type BlogPostSummary = {
   language?: "zh" | "en";
 };
 
+function resolvePostLanguage(post: BlogPostSummary): "zh" | "en" {
+  // Knowledge files use an explicit `.en`/`.zh` suffix for translated
+  // variants. Prefer that source-of-truth marker when it is present because
+  // older generated payloads may carry a stale language field.
+  const suffix = post.slug.match(/\.(en|zh)$/)?.[1];
+  if (suffix === "en" || suffix === "zh") return suffix;
+  return post.language === "en" ? "en" : "zh";
+}
+
 function formatDate(
   dateStr: string | undefined,
   language: "zh" | "en",
@@ -66,10 +75,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
   // the active language as the source of truth so a client-side language
   // switch never leaves mixed-language cards, counts, or pagination behind.
   const languagePosts = useMemo(
-    () =>
-      posts.filter(
-        (post) => !post.language || post.language === language,
-      ),
+    () => posts.filter((post) => resolvePostLanguage(post) === language),
     [language, posts],
   );
 
