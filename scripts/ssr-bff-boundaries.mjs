@@ -14,6 +14,9 @@ export function bffBoundaryForRoute(relativePath) {
     relativePath === "api/auth/register/route.ts" ||
     relativePath === "api/auth/register/send/route.ts" ||
     relativePath === "api/auth/register/verify/route.ts" ||
+    relativePath === "api/auth/password/forgot/route.ts" ||
+    relativePath === "api/auth/password/forgot/send-code/route.ts" ||
+    relativePath === "api/auth/password/forgot/confirm-code/route.ts" ||
     relativePath === "api/auth/verify-email/route.ts" ||
     relativePath === "api/auth/verify-email/send/route.ts" ||
     relativePath === "api/auth/token/exchange/route.ts" ||
