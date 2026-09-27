@@ -8,24 +8,24 @@ apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
 # Serverless 生产环境 BFF 直接访问 Cloud Run Accounts 源站，避免 Cloudflare Worker
 # 出站请求经公共 edge 别名（accounts.svc.plus / accounts-serverless-prod.svc.plus）
 # 时触发 Cloudflare Managed Challenge (403)。
-authUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
-xconnectZeroUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
+authUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
+xconnectZeroUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
 dashboardUrl: https://console.svc.plus
 # Use the GitOps-declared Cloud Run source directly. The public docs hostname
 # may point at a stale edge service; server-side requests still carry the
 # INTERNAL_SERVICE_TOKEN through docsServiceClient.
-docsServiceUrl: https://prod-content-service-1004637461064.asia-northeast1.run.app
+docsServiceUrl: https://prod-content-service-b7wzzanztq-de.a.run.app
 logLevel: warn
 regions:
   cn:
     apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
-    authUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
-    xconnectZeroUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
+    authUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
+    xconnectZeroUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
     dashboardUrl: https://console.svc.plus
-    docsServiceUrl: https://prod-content-service-1004637461064.asia-northeast1.run.app
+    docsServiceUrl: https://prod-content-service-b7wzzanztq-de.a.run.app
   global:
     apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
-    authUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
-    xconnectZeroUrl: https://prod-accounts-1004637461064.asia-northeast1.run.app
+    authUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
+    xconnectZeroUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
     dashboardUrl: https://console.svc.plus
-    docsServiceUrl: https://prod-content-service-1004637461064.asia-northeast1.run.app
+    docsServiceUrl: https://prod-content-service-b7wzzanztq-de.a.run.app
