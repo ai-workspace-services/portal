@@ -47,7 +47,6 @@ export default async function BlogPage() {
       html: _html,
       plaintext: _plaintext,
       sourcePath: _sourcePath,
-      language: _language,
       ...post
     }: any) => post,
   );

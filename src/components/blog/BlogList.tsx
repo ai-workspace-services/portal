@@ -23,6 +23,7 @@ type BlogPostSummary = {
   tags: string[];
   excerpt: string;
   category?: BlogCategory;
+  language?: "zh" | "en";
 };
 
 function formatDate(
@@ -61,8 +62,19 @@ export default function BlogList({ posts, categories }: BlogListProps) {
   const selectedCategory = searchParams.get("category");
   const page = searchParams.get("page");
 
+  // The content service returns both language variants in one listing. Keep
+  // the active language as the source of truth so a client-side language
+  // switch never leaves mixed-language cards, counts, or pagination behind.
+  const languagePosts = useMemo(
+    () =>
+      posts.filter(
+        (post) => !post.language || post.language === language,
+      ),
+    [language, posts],
+  );
+
   const categoryTabs = useMemo(() => {
-    const categoriesFromPosts = posts
+    const categoriesFromPosts = languagePosts
       .map((post) => post.category)
       .filter(
         (category): category is NonNullable<BlogPostSummary["category"]> =>
@@ -77,13 +89,18 @@ export default function BlogList({ posts, categories }: BlogListProps) {
       (category, index, self) =>
         self.findIndex((item) => item.key === category.key) === index,
     );
-  }, [categories, posts]);
+  }, [categories, languagePosts]);
 
-  const categoryCounts = useMemo(() => buildCategoryCounts(posts), [posts]);
+  const categoryCounts = useMemo(
+    () => buildCategoryCounts(languagePosts),
+    [languagePosts],
+  );
   const filteredPosts = useMemo(() => {
-    if (!selectedCategory) return posts;
-    return posts.filter((post) => post.category?.key === selectedCategory);
-  }, [posts, selectedCategory]);
+    if (!selectedCategory) return languagePosts;
+    return languagePosts.filter(
+      (post) => post.category?.key === selectedCategory,
+    );
+  }, [languagePosts, selectedCategory]);
 
   const postsPerPage = 10;
   const totalPages = Math.max(
@@ -173,7 +190,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                 getPillCountClass(!selectedCategory)
               }
             >
-              {posts.length}
+              {languagePosts.length}
             </span>
           </Link>
           {categoryTabs.map((tab) => {
@@ -204,11 +221,16 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             );
           })}
         </nav>
+        <p className="px-3 pb-1 pt-2 text-xs font-medium text-slate-500">
+          {isChinese
+            ? `当前显示中文文章 · ${languagePosts.length} 篇`
+            : `Showing English articles · ${languagePosts.length}`}
+        </p>
       </section>
 
       {filteredPosts.length === 0 ? (
         <div className="rounded-[1.25rem] border border-dashed border-slate-900/12 bg-white/80 py-20 text-center text-sm text-slate-500">
-          {isChinese ? "暂无博客文章" : "No posts found."}
+          {isChinese ? "暂无中文博客文章" : "No English posts found."}
         </div>
       ) : (
         <>
