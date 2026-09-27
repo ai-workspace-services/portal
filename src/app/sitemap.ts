@@ -12,7 +12,7 @@ export const revalidate = 3600
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // The sitemap is now prerendered, so an unreachable content service has to
   // degrade to the static routes rather than fail the build.
-  const { posts } = await getBlogList({ page: 1, pageSize: 500 }).catch((error) => {
+  const { posts } = await getBlogList({ page: 1, pageSize: 500, lang: "default" }).catch((error) => {
     console.warn('Sitemap blog entries unavailable', error)
     return { posts: [] }
   })

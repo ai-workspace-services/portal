@@ -108,6 +108,10 @@ export type BlogListPayload = {
   totalPages: number;
 };
 
+// `default` asks content-service for the complete unfiltered blog snapshot.
+// The page UI still localizes its labels and date formatting independently.
+export type BlogListLanguage = ContentLanguage | "default";
+
 export type WebsiteCTA = {
   label: string;
   href: string;
@@ -245,7 +249,7 @@ export async function getBlogList(params?: {
   pageSize?: number;
   category?: string;
   query?: string;
-  lang?: ContentLanguage;
+  lang?: BlogListLanguage;
 }): Promise<BlogListPayload> {
   const lang = params?.lang || (await detectLanguage());
   const search = new URLSearchParams();
@@ -322,4 +326,3 @@ export async function getWebsiteHomepage(
     return null;
   }
 }
-
