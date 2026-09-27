@@ -14,6 +14,8 @@ export type CatalogPlan = {
   /** trial | subscription | paygo_topup */
   kind?: string;
   includedQuotaBytes?: number;
+  /** Explicit maximum traffic in bytes, mirrored from the local accounts catalog. */
+  maxTrafficBytes?: number;
   /** List price in the currency's minor unit (cents, 分). 0 = not published. */
   priceAmount?: number;
   /** ISO 4217, e.g. CNY / USD. */

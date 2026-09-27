@@ -66,7 +66,7 @@ describe("QuotaCard", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("shows the Free maximum for a legacy default package", () => {
+  it("shows the catalog Free maximum as reference without assigning it to a legacy account", () => {
     render(
       <QuotaCard
         zh
@@ -77,15 +77,89 @@ describe("QuotaCard", () => {
           remainingIncludedQuota: 0,
           usedBytes: 0,
           usagePercent: 0,
-          billingProfile: { packageName: "default", includedQuotaBytes: 0 },
+          planAssignmentStatus: "unassigned",
+          defaultPlan: {
+            planId: "FREE",
+            displayName: "Free",
+            packageName: "free",
+            maxTrafficBytes: 5 * 1024 * 1024 * 1024,
+            unlimited: false,
+            assigned: false,
+            source: "local_catalog_default",
+          },
         }}
       />,
     );
 
     expect(
-      screen.getByText("套餐 default · 最大流量 5 GB / 月"),
+      screen.getByText("套餐 Free（默认参考） · 最大流量 5 GB / 月"),
     ).toBeInTheDocument();
-    expect(screen.getByText("0 B / 5 GB")).toBeInTheDocument();
+    expect(screen.getByText("未分配 · 5 GB 默认额度参考")).toBeInTheDocument();
+    expect(screen.queryByText("0 B / 5 GB")).not.toBeInTheDocument();
+  });
+
+  it("shows an assigned Plus plan's maximum from the API", () => {
+    render(
+      <QuotaCard
+        zh
+        usage={{
+          accountUuid: "account-plus",
+          totalBytes: 1024 * 1024 * 1024,
+          includedQuotaBytes: 20 * 1024 * 1024 * 1024,
+          remainingIncludedQuota: 19 * 1024 * 1024 * 1024,
+          usedBytes: 1024 * 1024 * 1024,
+          usagePercent: 5,
+          planAssignmentStatus: "assigned",
+          currentPlan: {
+            planId: "PLUS",
+            displayName: "Plus",
+            packageName: "plus",
+            maxTrafficBytes: 20 * 1024 * 1024 * 1024,
+            catalogMaxTrafficBytes: 20 * 1024 * 1024 * 1024,
+            quotaCycle: "natural_month",
+            unlimited: false,
+            assigned: true,
+            source: "account_entitlement",
+          },
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText("套餐 Plus · 最大流量 20 GB / 月"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("1 GB / 20 GB")).toBeInTheDocument();
+  });
+
+  it("shows unlimited internal plans without rendering a zero-byte cap", () => {
+    render(
+      <QuotaCard
+        zh
+        usage={{
+          accountUuid: "account-beta",
+          totalBytes: 1024,
+          includedQuotaBytes: 0,
+          remainingIncludedQuota: 0,
+          usedBytes: 1024,
+          usagePercent: 0,
+          planAssignmentStatus: "assigned",
+          currentPlan: {
+            planId: "UNLIMITED-BETA",
+            displayName: "无限制（内测）",
+            packageName: "unlimited-beta",
+            maxTrafficBytes: 0,
+            catalogMaxTrafficBytes: 0,
+            quotaCycle: "none",
+            unlimited: true,
+            assigned: true,
+            source: "account_entitlement",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getAllByText(/无限制/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/0 B/)).not.toBeInTheDocument();
   });
 
   it("builds the subscription with the matching lowercase regional entry", async () => {
