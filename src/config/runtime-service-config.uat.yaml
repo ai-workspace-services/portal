@@ -11,5 +11,5 @@ authUrl: https://accounts-cloudflare-uat.onwalk.net
 # edge routes the request to the GitOps-declared Accounts runtime.
 xconnectZeroUrl: https://accounts-cloudflare-uat.onwalk.net
 dashboardUrl: https://console.onwalk.net
-docsServiceUrl: https://docs.svc.plus
+docsServiceUrl: https://uat-content-service-4ueoyqlpbq-de.a.run.app
 logLevel: info
