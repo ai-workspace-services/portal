@@ -29,7 +29,14 @@ export default async function BlogPage() {
   // A content service that is unreachable while the page is being prerendered
   // must not fail the build: render the empty state and let the revalidation
   // window pick the listing up.
-  const listing = await getBlogList({ page: 1, pageSize: 200 }).catch((error) => {
+  const listing = await getBlogList({
+    page: 1,
+    pageSize: 500,
+    // The archive is the complete knowledge feed. The language selector is a
+    // presentation preference; filtering the server request here hid every
+    // post written in the other language from the public archive.
+    lang: "default",
+  }).catch((error) => {
     console.warn("Blog listing unavailable, rendering empty state", error);
     return EMPTY_LISTING;
   });
