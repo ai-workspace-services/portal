@@ -42,6 +42,7 @@ test("existing auth and Console BFF boundaries are preserved", () => {
     "api/auth/session/route.ts",
     "api/auth/token/exchange/route.ts",
     "api/auth/mfa/verify/route.ts",
+    "api/auth/mfa/recovery-codes/route.ts",
   ]) {
     assert.equal(bffBoundaryForRoute(path), "auth");
   }
@@ -51,10 +52,7 @@ test("existing auth and Console BFF boundaries are preserved", () => {
       "console",
     );
   }
-  assert.equal(
-    bffBoundaryForRoute("api/global-mesh/nodes/route.ts"),
-    "public",
-  );
+  assert.equal(bffBoundaryForRoute("api/global-mesh/nodes/route.ts"), "public");
 });
 
 test("public workspace service APIs are bundled in the workspace boundary", () => {

@@ -25,5 +25,10 @@ export async function POST(request: NextRequest) {
     },
   );
   const data = await response.json().catch(() => ({}));
-  return NextResponse.json(data, { status: response.status });
+  const result = NextResponse.json(data, {
+    status: response.status,
+    headers: { "Cache-Control": "no-store" },
+  });
+  if (response.ok) result.cookies.delete(SESSION_COOKIE_NAME);
+  return result;
 }
