@@ -1,0 +1,46 @@
+name: Validate capability parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/config/capabilities.generated.ts"
+      - "src/config/feature-toggles.json"
+      - "src/modules/extensions/builtin/**"
+      - "scripts/generate-capabilities-module.mjs"
+      - "tests/unit/capabilities.parity.test.ts"
+      - "package.json"
+      - "yarn.lock"
+  push:
+    branches: [main]
+    paths:
+      - "src/config/capabilities.generated.ts"
+      - "src/config/feature-toggles.json"
+      - "src/modules/extensions/builtin/**"
+      - "scripts/generate-capabilities-module.mjs"
+      - "tests/unit/capabilities.parity.test.ts"
+      - "package.json"
+      - "yarn.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ai-workspace-services/.github
+          ref: main
+          path: capabilities-source
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: corepack enable && yarn install --immutable
+      - run: yarn capabilities:check
+        env:
+          CAPABILITIES_MANIFEST: capabilities-source/capabilities/modules.yaml
+      - run: yarn test:unit --run tests/unit/capabilities.parity.test.ts
