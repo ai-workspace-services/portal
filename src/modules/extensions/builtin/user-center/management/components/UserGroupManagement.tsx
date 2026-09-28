@@ -121,7 +121,10 @@ const PLAN_ID_BY_GROUP: Record<
   [MONTHLY_PLUS_QUOTA_LIMIT_GROUP]: "PLUS",
   [MONTHLY_UNLIMITED_BETA_GROUP]: "UNLIMITED-BETA",
 };
-const PLAN_LABEL_BY_ID: Record<AdminPlanGroupUpdate["planId"], string> = {
+const PLAN_LABEL_BY_ID: Record<
+  NonNullable<AdminPlanGroupUpdate["planId"]>,
+  string
+> = {
   FREE: "Free 5GB",
   PLUS: "Plus 20GB",
   "UNLIMITED-BETA": "Unlimited Beta",
@@ -1341,7 +1344,9 @@ export function UserGroupManagement({
                           {user ? nameOf(user) : change.userId} ·{" "}
                           {isPlanChange
                             ? (PLAN_LABEL_BY_ID[
-                                change.planId as AdminPlanGroupUpdate["planId"]
+                                change.planId as NonNullable<
+                                  AdminPlanGroupUpdate["planId"]
+                                >
                               ] ?? change.planId)
                             : "有效期更新"}
                         </p>
