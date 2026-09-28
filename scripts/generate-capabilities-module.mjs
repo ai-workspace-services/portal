@@ -37,6 +37,77 @@ if (missing.length > 0) {
   throw new Error(`capability manifest is missing runtime records: ${missing.join(", ")}`);
 }
 
+const builtinModules = manifest.modules.filter(
+  (module) => module.source === "builtinExtension",
+);
+const builtinModuleIds = builtinModules.map((module) => module.id);
+const missingBuiltinContracts = builtinModules
+  .filter((module) => !Array.isArray(module.extension_routes) || module.extension_routes.length === 0)
+  .map((module) => module.id);
+if (missingBuiltinContracts.length > 0) {
+  throw new Error(
+    `builtin capability records must declare extension_routes: ${missingBuiltinContracts.join(", ")}`,
+  );
+}
+const sourceBuiltinSet = new Set(builtinIds);
+const manifestBuiltinSet = new Set(builtinModuleIds);
+if (
+  sourceBuiltinSet.size !== manifestBuiltinSet.size ||
+  [...sourceBuiltinSet].some((id) => !manifestBuiltinSet.has(id))
+) {
+  throw new Error(
+    `builtin implementation ids do not match the capability manifest: source=${builtinIds.join(", ")} manifest=${builtinModuleIds.join(", ")}`,
+  );
+}
+
+function normalizeAccessRule(rule = {}) {
+  return Object.fromEntries(
+    [
+      ["requireLogin", rule.require_login],
+      ["allowGuests", rule.allow_guests],
+      ["roles", rule.roles],
+      ["permissions", rule.permissions],
+      ["groups", rule.groups],
+      ["tenantScoped", rule.tenant_scoped],
+    ].filter(([, value]) => value !== undefined),
+  );
+}
+
+function normalizeRouteContract(route) {
+  return {
+    id: route.id,
+    path: route.path,
+    label: route.label,
+    ...(route.description === undefined ? {} : { description: route.description }),
+    ...(route.match === undefined ? {} : { match: route.match }),
+    guard: normalizeAccessRule(route.guard),
+    ...(route.redirect === undefined
+      ? {}
+      : { redirect: route.redirect }),
+    ...(route.sidebar === undefined
+      ? {}
+      : { sidebar: route.sidebar }),
+    ...(route.feature_flag === undefined
+      ? {}
+      : {
+          featureFlag: {
+            id: route.feature_flag.id,
+            title: route.feature_flag.title,
+            description: route.feature_flag.description,
+            envVar: route.feature_flag.env_var,
+            defaultEnabled: route.feature_flag.default_enabled,
+          },
+        }),
+  };
+}
+
+const builtinRouteContracts = Object.fromEntries(
+  builtinModules.map((module) => [
+    module.id,
+    module.extension_routes.map(normalizeRouteContract),
+  ]),
+);
+
 const channelAllowed = (channel, environment) =>
   !channel || environment === "dev" || environment === "uat" || channel === "stable";
 
@@ -47,7 +118,7 @@ const visibleModuleIds = Object.fromEntries(
       ...Object.entries(appModules)
         .filter(([, node]) => node.enabled !== false && channelAllowed(node.channel, environment))
         .map(([id]) => `portal.app.${id}`),
-      ...builtinIds,
+      ...builtinModuleIds,
     ],
   ]),
 );
@@ -58,6 +129,8 @@ export const capabilities = ${JSON.stringify(
   {
     version: manifest.version,
     modules: manifest.modules,
+    builtinModuleIds,
+    builtinRouteContracts,
     visibleModuleIds,
   },
   null,
@@ -66,6 +139,31 @@ export const capabilities = ${JSON.stringify(
 
 export type CapabilityModule = (typeof capabilities.modules)[number]
 export type CapabilityEnvironment = keyof typeof capabilities.visibleModuleIds
+export type CapabilityAccessRule = {
+  requireLogin?: boolean
+  allowGuests?: boolean
+  roles?: readonly ("user" | "operator" | "admin")[]
+  permissions?: readonly string[]
+  groups?: readonly string[]
+  tenantScoped?: boolean
+}
+export type CapabilityRouteContract = {
+  id: string
+  path: string
+  label: string
+  description?: string
+  match?: "exact" | "startsWith"
+  guard: CapabilityAccessRule
+  redirect?: { unauthenticated?: string; forbidden?: string }
+  sidebar?: { section: string; order?: number; hidden?: boolean }
+  featureFlag?: {
+    id: string
+    title: string
+    description?: string
+    envVar?: string
+    defaultEnabled?: boolean
+  }
+}
 `;
 
 if (checkOnly) {
