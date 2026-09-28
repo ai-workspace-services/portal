@@ -38,8 +38,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-      - run: corepack enable && yarn install --immutable
+      - run: corepack enable
+      - run: yarn install --immutable
       - run: yarn capabilities:check
         env:
           CAPABILITIES_MANIFEST: capabilities-source/capabilities/modules.yaml
