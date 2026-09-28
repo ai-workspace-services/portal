@@ -15,6 +15,8 @@ import PermissionMatrixEditor, {
   type PermissionMatrix,
 } from "../management/components/PermissionMatrixEditor";
 import UserGroupManagement, {
+  type AdminPlanGroupPreview,
+  type AdminPlanGroupUpdate,
   type ManagedUser,
   type CreateManagedUserInput,
 } from "../management/components/UserGroupManagement";
@@ -118,9 +120,6 @@ export default function UserCenterManagementRoute() {
   const [pendingGroupUpdates, setPendingGroupUpdates] = useState<Set<string>>(
     new Set(),
   );
-  const [pendingSubscriptionUpdates, setPendingSubscriptionUpdates] = useState<
-    Set<string>
-  >(new Set());
   const [groupsUpdateMessage, setGroupsUpdateMessage] = useState<
     string | undefined
   >();
@@ -292,18 +291,6 @@ export default function UserCenterManagementRoute() {
     });
   }, []);
 
-  const markSubscriptionPending = useCallback(
-    (userId: string, pending: boolean) => {
-      setPendingSubscriptionUpdates((prev) => {
-        const next = new Set(prev);
-        if (pending) next.add(userId);
-        else next.delete(userId);
-        return next;
-      });
-    },
-    [],
-  );
-
   const handleGroupsChange = useCallback(
     async (userId: string, groups: string[]) => {
       if (!canEditRoles) {
@@ -333,25 +320,63 @@ export default function UserCenterManagementRoute() {
     [canEditRoles, markGroupsPending, usersSWR],
   );
 
-  const handleGroupsBatchChange = useCallback(
-    async (updates: Array<{ userId: string; groups: string[] }>) => {
+  const handlePlanGroupPreview = useCallback(
+    async (
+      scope: "single" | "batch",
+      updates: AdminPlanGroupUpdate[],
+      reason: string,
+    ): Promise<AdminPlanGroupPreview> => {
+      if (!canEditRoles || updates.length === 0) {
+        throw new Error("没有可修改的用户");
+      }
+      setGroupsUpdateMessage(undefined);
+      const endpoint =
+        scope === "single"
+          ? `${ADMIN_API_BASE}/users/${encodeURIComponent(updates[0].userId)}/plan-group`
+          : `${ADMIN_API_BASE}/users/plan-groups/batch`;
+      return jsonFetcher<AdminPlanGroupPreview>(endpoint, {
+        method: "PUT",
+        body: JSON.stringify({
+          mode: "preview",
+          requestId: crypto.randomUUID(),
+          reason,
+          updates,
+        }),
+      });
+    },
+    [canEditRoles],
+  );
+
+  const handlePlanGroupApply = useCallback(
+    async (
+      scope: "single" | "batch",
+      updates: AdminPlanGroupUpdate[],
+      requestId: string,
+      previewToken: string,
+      reason: string,
+    ) => {
       if (!canEditRoles || updates.length === 0) return;
       setGroupsUpdateMessage(undefined);
       updates.forEach(({ userId }) => markGroupsPending(userId, true));
+      const endpoint =
+        scope === "single"
+          ? `${ADMIN_API_BASE}/users/${encodeURIComponent(updates[0].userId)}/plan-group`
+          : `${ADMIN_API_BASE}/users/plan-groups/batch`;
       try {
-        await jsonFetcher(`${ADMIN_API_BASE}/users/groups/batch`, {
+        await jsonFetcher(endpoint, {
           method: "PUT",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ updates }),
+          body: JSON.stringify({
+            mode: "apply",
+            requestId,
+            previewToken,
+            reason,
+            updates,
+          }),
         });
         await usersSWR.mutate();
       } catch (error) {
         setGroupsUpdateMessage(
-          error instanceof Error ? error.message : "批量更新失败",
+          error instanceof Error ? error.message : "套餐变更失败",
         );
         throw error;
       } finally {
@@ -359,43 +384,6 @@ export default function UserCenterManagementRoute() {
       }
     },
     [canEditRoles, markGroupsPending, usersSWR],
-  );
-
-  const handleSubscriptionValidityChange = useCallback(
-    async (
-      userId: string,
-      validity: { validFrom: string | null; validUntil: string | null },
-    ) => {
-      if (!canEditRoles) return;
-      setGroupsUpdateMessage(undefined);
-      markSubscriptionPending(userId, true);
-      try {
-        await jsonFetcher(
-          `${ADMIN_API_BASE}/users/${encodeURIComponent(userId)}/subscription-validity`,
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              validFrom: validity.validFrom,
-              validUntil: validity.validUntil,
-            }),
-          },
-        );
-        await usersSWR.mutate();
-      } catch (error) {
-        setGroupsUpdateMessage(
-          error instanceof Error ? error.message : "有效期更新失败",
-        );
-        throw error;
-      } finally {
-        markSubscriptionPending(userId, false);
-      }
-    },
-    [canEditRoles, markSubscriptionPending, usersSWR],
   );
 
   const handleRoleChange = useCallback(
@@ -725,10 +713,9 @@ export default function UserCenterManagementRoute() {
             onCreateCustomUser={handleCreateCustomUser}
             onManageBlacklist={() => setIsBlacklistOpen(true)}
             onGroupsChange={handleGroupsChange}
-            onGroupsBatchChange={handleGroupsBatchChange}
-            onSubscriptionValidityChange={handleSubscriptionValidityChange}
+            onPlanGroupPreview={handlePlanGroupPreview}
+            onPlanGroupApply={handlePlanGroupApply}
             pendingGroupUserIds={pendingGroupUpdates}
-            pendingSubscriptionUserIds={pendingSubscriptionUpdates}
           />
         </div>
       ) : null}
