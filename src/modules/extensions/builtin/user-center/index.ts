@@ -182,6 +182,7 @@ export const userCenterExtension: DashboardExtension = {
       sidebar: { section: "preferences", order: 30 },
     },
     {
+      id: "management",
       path: "/panel/management",
       label: "Management",
       description: "集中化的权限矩阵与用户编排",
