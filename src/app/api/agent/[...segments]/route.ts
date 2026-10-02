@@ -1,46 +1,44 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import type { NextRequest } from 'next/server'
+import type { NextRequest } from "next/server";
 
-import { createUpstreamProxyHandler } from '@lib/apiProxy'
-import { getAccountServiceBaseUrl } from '@server/serviceConfig'
+import { createUpstreamProxyHandler } from "@lib/apiProxy";
+import { getAccountServiceBaseUrl } from "@server/serviceConfig";
 
-const AGENT_PREFIX = '/api/agent'
+const AGENT_PREFIX = "/api/agent";
 
-function createHandler() {
-  const upstreamBaseUrl = getAccountServiceBaseUrl()
+function createHandler(request: NextRequest) {
+  const upstreamBaseUrl = getAccountServiceBaseUrl(request.nextUrl.hostname);
   return createUpstreamProxyHandler({
     upstreamBaseUrl,
     upstreamPathPrefix: AGENT_PREFIX,
-  })
+  });
 }
 
-const handler = createHandler()
-
 export function GET(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
 
 export function POST(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
 
 export function PUT(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
 
 export function PATCH(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
 
 export function DELETE(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
 
 export function HEAD(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
 
 export function OPTIONS(request: NextRequest) {
-  return handler(request)
+  return createHandler(request)(request);
 }
