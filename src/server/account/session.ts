@@ -1,5 +1,7 @@
 "use server";
 
+import { resolveForwardedHost } from "./requestHost";
+
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 
@@ -229,20 +231,6 @@ async function resolveTokenFromRequest(
   }
 
   return undefined;
-}
-
-export function resolveForwardedHost(request?: NextRequest): string | undefined {
-  if (!request) {
-    return undefined;
-  }
-
-  const hostHeader =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  if (!hostHeader) {
-    return undefined;
-  }
-  const trimmed = hostHeader.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
 }
 
 export async function userHasRole(

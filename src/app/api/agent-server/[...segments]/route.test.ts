@@ -14,8 +14,6 @@ vi.mock("@server/serviceConfig", () => ({
 }));
 vi.mock("@server/account/session", () => ({
   getAccountSession: resolveSession,
-  resolveForwardedHost: (request: NextRequest) =>
-    request.headers.get("x-forwarded-host") ?? request.nextUrl.hostname,
 }));
 vi.mock("@lib/apiProxy", () => ({ createUpstreamProxyHandler: proxyFactory }));
 import { GET } from "./route";
