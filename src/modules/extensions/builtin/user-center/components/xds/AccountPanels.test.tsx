@@ -162,14 +162,17 @@ describe("QuotaCard", () => {
     expect(screen.queryByText(/0 B/)).not.toBeInTheDocument();
   });
 
-  it("builds the subscription with the matching lowercase regional entry", async () => {
+  it("builds the subscription with the reported regional entry", async () => {
     render(
       <VlessConnectionCard
         proxyUuid="11111111-1111-4111-8111-111111111111"
         nodes={[
           {
             name: "US-XHTTP",
-            address: "runtime-us.internal",
+            address: "us.entry.example",
+            region: "us-ca",
+            pool_count: 1,
+            open_to_users: true,
             port: 443,
             transport: "xhttp",
             uri_scheme_xhttp:
@@ -183,7 +186,7 @@ describe("QuotaCard", () => {
     expect(screen.getByText("VLESS 连接")).toBeInTheDocument();
     await waitFor(() => {
       expect(toDataURLMock).toHaveBeenCalledWith(
-        expect.stringContaining("@us-xconnect.svc.plus"),
+        expect.stringContaining("@us.entry.example"),
         expect.any(Object),
       );
     });
@@ -193,7 +196,10 @@ describe("QuotaCard", () => {
 describe("VlessConnectionCard region selector", () => {
   const regionalNode = (shortCode: string): VlessNode => ({
     name: `${shortCode}-XHTTP`,
-    address: `runtime-${shortCode.toLowerCase()}.internal`,
+    address: `${shortCode.toLowerCase()}.entry.example`,
+    region: shortCode.toLowerCase(),
+    pool_count: 1,
+    open_to_users: true,
     port: 443,
     transport: "xhttp",
     uri_scheme_xhttp:
@@ -216,7 +222,7 @@ describe("VlessConnectionCard region selector", () => {
     expect(select).toBeInTheDocument();
     expect(
       screen.getAllByRole("option").map((option) => option.textContent),
-    ).toEqual(["JP 区域", "US 区域", "HK 区域", "PH 区域"]);
+    ).toEqual(["HK 区域", "JP 区域", "PH 区域", "US 区域"]);
     // The pills and the select are alternatives, never both at once.
     expect(screen.queryByRole("button", { name: "HK 区域" })).toBeNull();
   });

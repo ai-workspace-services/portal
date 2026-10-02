@@ -44,7 +44,7 @@ import {
 import { buildVlessUri, type VlessNode } from "../../lib/vless";
 import {
   regionalNodeOptions,
-  XCONNECT_REGIONAL_POOLS,
+  type RegionalPool,
 } from "../../lib/regionalPools";
 import type {
   AccountPolicy,
@@ -353,14 +353,14 @@ export function VlessConnectionCard({
   const useCompactRegionSelect = regionOptions.length > REGION_PILL_LIMIT;
   const node = useMemo(() => {
     return (
-      regionOptions.find(({ pool }) => pool.code === selectedRegionCode)
-        ?.node ?? regionOptions[0]?.node
+      regionOptions.find(({ pool }) => pool.key === selectedRegionCode)?.node ??
+      regionOptions[0]?.node
     );
   }, [regionOptions, selectedRegionCode]);
   useEffect(() => {
     const currentRegion = regionOptions.find(
       ({ node: candidate }) => candidate === node,
-    )?.pool.code;
+    )?.pool.key;
     if (!currentRegion) {
       setSelectedRegionCode(null);
       return;
@@ -436,7 +436,7 @@ export function VlessConnectionCard({
               onChange={(event) => setSelectedRegionCode(event.target.value)}
             >
               {regionOptions.map((option) => (
-                <option key={option.pool.code} value={option.pool.code}>
+                <option key={option.pool.key} value={option.pool.key}>
                   {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
                 </option>
               ))}
@@ -444,14 +444,14 @@ export function VlessConnectionCard({
           ) : (
             <div className="xds-vless-region-list" role="list">
               {regionOptions.map((option) => {
-                const active = selectedRegionCode === option.pool.code;
+                const active = selectedRegionCode === option.pool.key;
                 return (
                   <button
-                    key={option.pool.code}
+                    key={option.pool.key}
                     type="button"
                     aria-pressed={active}
                     className={`xds-vless-region${active ? " xds-is-active" : ""}`}
-                    onClick={() => setSelectedRegionCode(option.pool.code)}
+                    onClick={() => setSelectedRegionCode(option.pool.key)}
                   >
                     {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
                   </button>
@@ -815,7 +815,17 @@ export function UsageCard({
 
 /* ═══════════════════════════════ 区域入口与 pool ═══════════════════════════════ */
 
-export function NodesTable({ zh }: { zh: boolean }) {
+export function NodesTable({
+  zh,
+  pools,
+  isLoading,
+  error,
+}: {
+  zh: boolean;
+  pools: RegionalPool[];
+  isLoading?: boolean;
+  error?: Error;
+}) {
   return (
     <XdsCard id="xds-nodes">
       <XdsCardHead
@@ -826,7 +836,9 @@ export function NodesTable({ zh }: { zh: boolean }) {
             : "Shows regional entry domains, whether each is open to users, and pool counts only; individual runtime nodes are not displayed. A closed region is not offered in the user connection selector."
         }
         actions={
-          <XdsBadge dot={false}>{XCONNECT_REGIONAL_POOLS.length}</XdsBadge>
+          <XdsBadge dot={false}>
+            {isLoading || error ? DASH : pools.length}
+          </XdsBadge>
         }
       />
       <div className="xds-scroll-x">
@@ -843,8 +855,25 @@ export function NodesTable({ zh }: { zh: boolean }) {
             </tr>
           </thead>
           <tbody>
-            {XCONNECT_REGIONAL_POOLS.map((pool) => (
-              <tr key={pool.code}>
+            {(isLoading || error || pools.length === 0) && (
+              <tr>
+                <td colSpan={5} role={error ? "alert" : "status"}>
+                  {isLoading
+                    ? zh
+                      ? "加载中…"
+                      : "Loading…"
+                    : error
+                      ? zh
+                        ? "区域入口加载失败"
+                        : "Unable to load regional entries"
+                      : zh
+                        ? "暂无已注册的区域入口"
+                        : "No registered regional entries"}
+                </td>
+              </tr>
+            )}
+            {pools.map((pool) => (
+              <tr key={pool.key}>
                 <td style={{ fontWeight: 500 }}>
                   {zh ? pool.zhName : pool.enName}
                 </td>
@@ -872,8 +901,8 @@ export function NodesTable({ zh }: { zh: boolean }) {
         <div className="xds-row-between">
           <span className="xds-t-caption">
             {zh
-              ? `显示 ${XCONNECT_REGIONAL_POOLS.length} 个区域 pool`
-              : `${XCONNECT_REGIONAL_POOLS.length} regional pools`}
+              ? `显示 ${pools.length} 个区域 pool`
+              : `${pools.length} regional pools`}
           </span>
           <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
             {zh ? "区域入口说明" : "Regional entry point guide"}
