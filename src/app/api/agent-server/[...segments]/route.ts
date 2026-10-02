@@ -3,13 +3,18 @@ export const dynamic = "force-dynamic";
 import type { NextRequest } from "next/server";
 
 import { createUpstreamProxyHandler } from "@lib/apiProxy";
-import { getAccountSession } from "@server/account/session";
+import {
+  getAccountSession,
+  resolveForwardedHost,
+} from "@server/account/session";
 import { getAccountServiceBaseUrl } from "@server/serviceConfig";
 
 const AGENT_SERVER_PREFIX = "/api/agent-server";
 
 function createHandler(request: NextRequest) {
-  const upstreamBaseUrl = getAccountServiceBaseUrl(request.nextUrl.hostname);
+  const upstreamBaseUrl = getAccountServiceBaseUrl(
+    resolveForwardedHost(request),
+  );
   return createUpstreamProxyHandler({
     upstreamBaseUrl,
     upstreamPathPrefix: AGENT_SERVER_PREFIX,

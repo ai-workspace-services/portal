@@ -231,7 +231,7 @@ async function resolveTokenFromRequest(
   return undefined;
 }
 
-function resolveForwardedHost(request?: NextRequest): string | undefined {
+export function resolveForwardedHost(request?: NextRequest): string | undefined {
   if (!request) {
     return undefined;
   }
