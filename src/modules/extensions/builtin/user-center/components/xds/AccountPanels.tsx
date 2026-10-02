@@ -481,12 +481,30 @@ export function VlessConnectionCard({
               color: "var(--text-tertiary)",
             }}
           >
-            {DASH}
+            {zh ? "二维码待生成" : "QR code pending"}
           </div>
         )}
       </div>
 
       <div style={{ minWidth: 0 }}>
+        {!uri ? (
+          <p
+            role="status"
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "var(--fs-caption)",
+              marginBottom: 8,
+            }}
+          >
+            {!proxyUuid
+              ? zh
+                ? "连接凭据尚未就绪，就绪后会显示二维码。"
+                : "Connection credentials are pending. The QR code will appear when ready."
+              : zh
+                ? "当前暂无已开放的区域入口。区域开放后会自动显示二维码和订阅链接。"
+                : "No regional entry is currently open. The QR code and subscription link will appear when a region opens."}
+          </p>
+        ) : null}
         <div className="xds-row" style={{ gap: 8, flexWrap: "wrap" }}>
           <XdsButton
             variant="primary"

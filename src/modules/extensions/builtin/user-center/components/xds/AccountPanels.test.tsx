@@ -234,3 +234,44 @@ describe("VlessConnectionCard region selector", () => {
     expect(screen.getByRole("button", { name: "HK 区域" })).toBeInTheDocument();
   });
 });
+
+describe("VlessConnectionCard availability", () => {
+  it("explains why no QR exists and recovers when an open region arrives", async () => {
+    const { rerender } = render(
+      <VlessConnectionCard proxyUuid="test-user" nodes={[]} zh />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "当前暂无已开放的区域入口",
+    );
+    expect(screen.getByRole("button", { name: "复制订阅链接" })).toBeDisabled();
+    rerender(
+      <VlessConnectionCard
+        proxyUuid="test-user"
+        nodes={[
+          {
+            name: "SG-XHTTP",
+            address: "sg-xconnect.onwalk.net",
+            port: 443,
+            transport: "xhttp",
+            region: "sg",
+            pool_count: 1,
+            open_to_users: true,
+            uri_scheme_xhttp:
+              "vless://${UUID}@${DOMAIN}:443?type=xhttp&sni=${SNI}#${TAG}",
+          },
+        ]}
+        zh
+      />,
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "复制订阅链接" }),
+      ).toBeEnabled(),
+    );
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(toDataURLMock).toHaveBeenCalledWith(
+      expect.stringContaining("@sg-xconnect.onwalk.net:443"),
+      expect.any(Object),
+    );
+  });
+});
