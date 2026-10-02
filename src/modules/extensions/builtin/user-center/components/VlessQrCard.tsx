@@ -66,19 +66,19 @@ export default function VlessQrCard({
   visibleTransports,
   className,
 }: VlessQrCardProps) {
-  const { data: allNodes, error: nodesError } = useSWR<VlessNode[]>('user-center-agent-nodes', fetchAgentNodes)
+  const { data: allNodes, error: nodesError } = useSWR<VlessNode[]>('user-center-agent-nodes', fetchAgentNodes, { refreshInterval: 30_000 })
 
   const transportOptions = useMemo(() => normalizeVisibleTransports(visibleTransports), [visibleTransports])
 
   const nodes = useMemo(() => {
-    return (allNodes ?? []).filter((node) => {
+    return (nodesError ? [] : allNodes ?? []).filter((node) => {
       const name = (node.name || '').toLowerCase()
       const address = (node.address || '').trim()
       if (!address) return false
 
       return true
     })
-  }, [allNodes])
+  }, [allNodes, nodesError])
   const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes])
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null)
   const [preferredTransport, setPreferredTransport] = useState<VlessTransport>(() =>
@@ -102,7 +102,7 @@ export default function VlessQrCard({
   }, [defaultTransport, transportOptions])
 
   const rawNode = useMemo(() => {
-    return regionOptions.find(({ pool }) => pool.code === selectedRegionCode)?.node
+    return regionOptions.find(({ pool }) => pool.key === selectedRegionCode)?.node
       ?? regionOptions[0]?.node
   }, [regionOptions, selectedRegionCode])
 
@@ -252,16 +252,16 @@ export default function VlessQrCard({
                   <div className="max-h-60 overflow-y-auto py-1">
                     {regionOptions.map(({ pool }) => (
                       <button
-                        key={pool.code}
+                        key={pool.key}
                         type="button"
                         onClick={() => {
-                          setSelectedRegionCode(pool.code)
+                          setSelectedRegionCode(pool.key)
                           setIsSelectorOpen(false)
                         }}
                         className="flex w-full items-center justify-between px-3 py-2 text-left text-xs text-[var(--color-text)] hover:bg-[var(--color-primary-muted)]"
                       >
                         <span>{`${pool.shortCode} 区域`}</span>
-                        {(selectedRegionCode === pool.code || (!selectedRegionCode && pool === regionOptions[0]?.pool)) && (
+                        {(selectedRegionCode === pool.key || (!selectedRegionCode && pool === regionOptions[0]?.pool)) && (
                           <Check className="h-3 w-3 text-[var(--color-primary)]" />
                         )}
                       </button>

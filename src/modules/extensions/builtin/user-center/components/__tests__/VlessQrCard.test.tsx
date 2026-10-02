@@ -21,6 +21,9 @@ vi.mock("swr", () => ({
     data: [
       {
         name: "JP-XHTTP.SVC.PLUS",
+        region: "jpn-tky",
+        pool_count: 1,
+        open_to_users: true,
         address: "jp-xhttp.svc.plus",
         port: 443,
         xhttp_port: 443,
@@ -69,7 +72,7 @@ describe("VlessQrCard", () => {
       ).toBeEnabled();
     });
     expect(toDataURLMock).toHaveBeenCalledWith(
-      expect.stringContaining("@jp-xconnect.svc.plus"),
+      expect.stringContaining("@jp-xhttp.svc.plus"),
       expect.any(Object),
     );
   });

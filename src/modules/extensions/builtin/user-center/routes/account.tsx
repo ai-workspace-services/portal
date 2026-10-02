@@ -111,9 +111,10 @@ export default function UserCenterAccountRoute() {
     { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
-  const { data: nodes } = useSWR<VlessNode[]>(
+  const { data: nodes, error: nodesError } = useSWR<VlessNode[]>(
     "user-center-agent-nodes",
     fetchAgentNodes,
+    { refreshInterval: 30_000 },
   );
 
   const monthStart = useMemo(() => {
@@ -133,7 +134,7 @@ export default function UserCenterAccountRoute() {
   const hasTraffic =
     breakdown.last1Hour + breakdown.last24Hours + breakdown.monthToDate > 0;
 
-  const nodeList = nodes ?? [];
+  const nodeList = nodesError ? [] : nodes ?? [];
   const credentialsReady = Boolean(proxyUuid);
   // 「验证连接」只有在服务端确实下发了节点、且已经出现过用量时才算完成。
   // 没有连通性接口，所以不假装知道单个节点通不通。
