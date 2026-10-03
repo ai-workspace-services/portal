@@ -130,9 +130,7 @@ export async function GET(request: NextRequest) {
     const upstreamError =
       typeof data?.error === "string" && data.error.trim().length > 0
         ? data.error.trim()
-        : response.status === 403
-          ? "account_suspended"
-          : "session_unavailable";
+        : "session_unavailable";
     return NextResponse.json({ user: null, error: upstreamError });
   }
 
@@ -324,8 +322,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+<<<<<<< HEAD
+  const accountApiBase = getAccountServiceApiBaseUrl(request.headers.get("host"));
+=======
   const requestHost = request.headers.get("host");
   const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
+>>>>>>> origin/main
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (token) {
