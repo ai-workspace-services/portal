@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 import "../../src/app/globals.css"
 import { StaticProviders } from "./StaticProviders"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://console.xworktech.com"
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://xworktech.com"
 const title = "XWorkmate · XConnect · AI Workspace | XWork Technologies"
 const description =
   "XWork Technologies 打造开放的 AI 工作空间平台，支持托管使用和自建部署。"
