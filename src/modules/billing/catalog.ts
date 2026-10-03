@@ -22,6 +22,8 @@ export type CatalogPlan = {
   priceCurrency?: string;
   /** month | year | once | gb */
   priceUnit?: string;
+  /** Optional operator-managed display features from the local catalog. */
+  features?: Record<string, unknown>;
   active: boolean;
   sortOrder?: number;
 };
@@ -247,6 +249,62 @@ export function sellablePlans(
       plan: catalog.get(planId),
     }),
   );
+}
+
+function copyForUnlistedPlan(plan: CatalogPlan): PlanCopyEntry {
+  const mode = plan.kind === "subscription" ? "subscription" : "payment";
+  const featureValues = Object.values(plan.features ?? {}).filter(
+    (value): value is string =>
+      typeof value === "string" && value.trim() !== "",
+  );
+  const name = plan.displayName?.trim() || plan.planId;
+  const description =
+    plan.kind === "subscription"
+      ? "由账户本地权益模型维护的订阅套餐。"
+      : "由账户本地账务模型记录的用量或一次性方案。";
+  const features = featureValues.length > 0 ? featureValues : [description];
+  return {
+    mode,
+    zh: { name, description, features },
+    en: { name, description, features },
+  };
+}
+
+/**
+ * Returns every active account-backed billing plan for the authenticated
+ * checkout surface. Unlike the marketing copy map above, this also renders
+ * newly-created operator plans (including an unpriced Free plan) so the
+ * current entitlement can be explained without a Portal deploy.
+ */
+export function billingPlans(
+  catalog: Map<string, CatalogPlan>,
+): Array<{ planId: string; copy: PlanCopyEntry; plan: CatalogPlan }> {
+  const known = sellablePlans(catalog);
+  const knownIds = new Set(known.map(({ planId }) => planId));
+  const dynamic = [...catalog.values()]
+    .filter(
+      (plan) =>
+        plan.active && !knownIds.has(plan.planId) && plan.kind !== "trial",
+    )
+    .sort(
+      (left, right) =>
+        (right.sortOrder ?? 0) - (left.sortOrder ?? 0) ||
+        left.planId.localeCompare(right.planId),
+    )
+    .map((plan) => ({
+      planId: plan.planId,
+      copy: copyForUnlistedPlan(plan),
+      plan,
+    }));
+
+  return [
+    ...known.flatMap((offer) =>
+      offer.plan
+        ? [{ planId: offer.planId, copy: offer.copy, plan: offer.plan }]
+        : [],
+    ),
+    ...dynamic,
+  ];
 }
 
 /**

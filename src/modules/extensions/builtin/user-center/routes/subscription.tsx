@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/xds";
 
 import BillingOptionsPanel from "../account/BillingOptionsPanel";
+import SubscriptionStatusCard from "../account/SubscriptionStatusCard";
 import {
   fetchAccountBillingSummary,
   fetchAccountPolicy,
@@ -280,6 +281,14 @@ export default function UserCenterSubscriptionRoute() {
           </XdsAlert>
         ) : null}
 
+        {usageSummary || data ? (
+          <SubscriptionStatusCard
+            records={records}
+            usageSummary={usageSummary}
+            zh={zh}
+          />
+        ) : null}
+
         {/* ── Tabs ── */}
         <div className="xds-tabs">
           {(
@@ -426,7 +435,13 @@ export default function UserCenterSubscriptionRoute() {
                 }
               />
               <XdsCardBody>
-                <BillingOptionsPanel />
+                <BillingOptionsPanel
+                  currentPlanId={
+                    usageSummary?.currentPlan?.assigned
+                      ? usageSummary.currentPlan.planId
+                      : undefined
+                  }
+                />
                 <XdsAlert
                   tone="info"
                   icon={<Info className="h-4 w-4" />}
