@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { homeMarketingContent } from "@/components/marketing/content";
 import HeroWorkspacePreview from "@/components/marketing/HeroWorkspacePreview";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { COMPANY_LEGAL_NAME } from "@/lib/company";
 
 function renderTitle(title: string) {
   return title.split(/(AI)/g).map((part, index) =>
@@ -31,7 +32,13 @@ export default function HeroSection() {
       <div className="hero-container">
         <div className="hero-copy">
           <p className="hero-eyebrow">{hero.eyebrow}</p>
-          <h1 className="hero-title">{renderTitle(hero.title.join(" "))}</h1>
+          <h1 className="hero-title">
+            {hero.title.map((line) => (
+              <span key={line} className="hero-title-line">
+                {renderTitle(line)}
+              </span>
+            ))}
+          </h1>
           <p className="hero-tagline">{hero.tagline}</p>
           <p className="hero-description">{hero.line}</p>
           <div className="hero-actions">
@@ -49,6 +56,11 @@ export default function HeroSection() {
               {hero.secondaryCta.label}
             </BoundaryLink>
           </div>
+          <p className="hero-attribution" data-testid="hero-company-attribution">
+            {language === "zh" ? "由 " : "Built by "}
+            <BoundaryLink href="/about">{COMPANY_LEGAL_NAME}</BoundaryLink>
+            {language === "zh" ? " 开发与运营" : ""}
+          </p>
         </div>
         <HeroWorkspacePreview />
       </div>

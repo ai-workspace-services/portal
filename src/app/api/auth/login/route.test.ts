@@ -80,7 +80,7 @@ describe("/api/auth/login", () => {
       error: "user_not_found",
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://accounts.svc.plus/api/auth/login",
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app/api/auth/login",
       expect.objectContaining({
         method: "POST",
       }),

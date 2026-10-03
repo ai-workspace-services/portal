@@ -11,12 +11,14 @@ import xconnectData from "@/data/content/xconnect.json";
 import xworkmateData from "@/data/content/xworkmate.json";
 import openPlatformData from "@/data/content/open-platform.json";
 import aiWorkspaceData from "@/data/content/ai-workspace.json";
+import globalMeshData from "@/data/content/global-mesh.json";
 
 const STATIC_FALLBACKS: Record<string, any> = {
   xconnect: xconnectData,
   xworkmate: xworkmateData,
   "open-platform": openPlatformData,
   "ai-workspace": aiWorkspaceData,
+  "global-mesh": globalMeshData,
 };
 
 export function generateStaticParams() {
@@ -27,8 +29,14 @@ interface ProductSlugPageProps {
   params: Promise<{ slug: string }>;
 }
 
+import XWorkmateProductView from "@/components/products/XWorkmateProductView";
+
 export default async function ProductDynamicPage({ params }: ProductSlugPageProps) {
   const { slug } = await params;
+
+  if (slug === "xworkmate") {
+    return <XWorkmateProductView />;
+  }
 
   // 1. Try to fetch dynamic content from content-service (Git backed)
   let product: WebsiteProductPayload | null = await getProduct(slug);

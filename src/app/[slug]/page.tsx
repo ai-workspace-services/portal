@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const description = `${config.name} — ${config.tagline_en}`
-  const canonical = `https://www.svc.plus/${config.slug}`
+  const canonical = `https://xworktech.com/${config.slug}`
 
   return {
     title: config.title,

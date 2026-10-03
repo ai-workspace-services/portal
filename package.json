@@ -29,6 +29,8 @@
     "build:static": "yarn build",
     "content:pull": "bash scripts/sync-content.sh pull",
     "content:validate": "tsx scripts/validate-website-content.ts",
+    "capabilities:generate": "node scripts/generate-capabilities-module.mjs",
+    "capabilities:check": "node scripts/generate-capabilities-module.mjs --check",
     "check:boundary-links": "node scripts/check-boundary-links.mjs",
     "start": "node ./scripts/start.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --no-eslintrc -c .eslintrc.json && yarn check:boundary-links && yarn check:type-scale",

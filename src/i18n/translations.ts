@@ -571,6 +571,10 @@ type UserCenterTranslation = {
     apiKeys: string
     logs: string
     settings: string
+    globalMesh?: string
+    productsGlobalMesh?: string
+    "global-mesh"?: string
+    "products-global-mesh"?: string
   }
   overview: UserCenterOverviewTranslation
   mfa: UserCenterMfaTranslation
@@ -820,7 +824,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     contactDescription:
       'Share your feedback or feature ideas and we will respond as soon as possible. For technical help, reach us via email.',
     contactEmailLabel: 'Technical support email',
-    contactEmail: 'haitaopanhq@gmail.com',
+    contactEmail: 'support@xworktech.com',
     download: {
       home: {
         title: 'Download Center',
@@ -1099,6 +1103,10 @@ export const translations: Record<'en' | 'zh', Translation> = {
         apiKeys: 'API Keys',
         logs: 'Observability',
         settings: 'Settings',
+        globalMesh: 'Global Mesh',
+        productsGlobalMesh: 'Global Mesh Showcase',
+        'global-mesh': 'Global Mesh',
+        'products-global-mesh': 'Global Mesh Showcase',
       },
       overview: {
         heading: 'User Center',
@@ -1478,13 +1486,13 @@ export const translations: Record<'en' | 'zh', Translation> = {
               description: 'Share feedback and tap into community support.',
               ctaLabel: 'Contact us',
               bodyHtml:
-                'Send us your feedback or feature suggestions and we will respond as quickly as possible.<br />For technical help, contact <strong>manbuzhe2008@gmail.com</strong>.',
+                'Send us your feedback or feature suggestions and we will respond as quickly as possible.<br />For technical help, contact <strong>support@xworktech.com</strong>.',
             },
             'github-star': {
               title: 'Show your support',
               description: 'Star us on GitHub to stay informed.',
               bodyHtml:
-                'Visit the CloudNativeSuite GitHub organization, star the repositories, and keep up with project updates.',
+                'Visit the XWork Technologies GitHub organization, star the repositories, and keep up with project updates.',
             },
           },
         },
@@ -1605,7 +1613,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           title: 'Cloud Infrastructure',
           content: 'GitHub / Cloudflare / Vercel / Google Cloud Run',
           links: [
-            { label: 'GitHub', url: 'https://github.com/x-evor' },
+            { label: 'GitHub', url: 'https://github.com/ai-workspace-lab' },
             { label: 'Cloudflare', url: 'https://www.cloudflare.com' },
             { label: 'Vercel', url: 'https://vercel.com' },
             { label: 'Google Cloud Run', url: 'https://cloud.google.com' }
@@ -1714,7 +1722,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
     contactTitle: '联系我们',
     contactDescription: '欢迎提交使用反馈或功能建议，我们会尽快回复。如需技术协助，请通过下方邮箱联系我们。',
     contactEmailLabel: '技术支持邮箱',
-    contactEmail: 'manbuzhe2008@gmail.com',
+    contactEmail: 'support@xworktech.com',
     download: {
       home: {
         title: '下载中心',
@@ -1876,7 +1884,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
         title: '欢迎回来',
         subtitle: '在一个控制台中管理项目和账号设置。',
         highlights: [],
-        bottomNote: '如需支持，请联系 manbuzhe2008@gmail.com。',
+        bottomNote: '如需支持，请联系 support@xworktech.com。',
         form: {
           title: '登录账号',
           subtitle: '使用注册时的邮箱、密码和动态验证码即可访问。',
@@ -1978,6 +1986,10 @@ export const translations: Record<'en' | 'zh', Translation> = {
         apiKeys: '接口密钥',
         logs: '可观测性',
         settings: '系统设置',
+        globalMesh: 'Global Mesh 拓扑',
+        productsGlobalMesh: 'Global Mesh 产品页',
+        'global-mesh': 'Global Mesh 拓扑',
+        'products-global-mesh': 'Global Mesh 产品页',
       },
       overview: {
         heading: '用户中心',
@@ -2348,7 +2360,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
           title: '云基础设施',
           content: 'GitHub / Cloudflare / Vercel / Google Cloud Run',
           links: [
-            { label: 'GitHub', url: 'https://github.com/x-evor' },
+            { label: 'GitHub', url: 'https://github.com/ai-workspace-lab' },
             { label: 'Cloudflare', url: 'https://www.cloudflare.com' },
             { label: 'Vercel', url: 'https://vercel.com' },
             { label: 'Google Cloud Run', url: 'https://cloud.google.com' }

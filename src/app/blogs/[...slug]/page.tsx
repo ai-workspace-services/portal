@@ -11,7 +11,6 @@ import BrandCTA from "@components/BrandCTA";
 import BlogArticle from "@components/blog/BlogArticle";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { getBlogList, getBlogPost } from "@lib/docsServiceClient";
-import { getDefaultContentLanguage } from "@server/contentLanguage";
 
 export async function generateStaticParams() {
   try {
@@ -20,7 +19,7 @@ export async function generateStaticParams() {
     const { posts } = await getBlogList({
       page: 1,
       pageSize: 500,
-      lang: getDefaultContentLanguage(),
+      lang: "default",
     });
     return posts.map((post) => ({ slug: post.slug.split("/") }));
   } catch (error) {

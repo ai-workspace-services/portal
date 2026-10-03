@@ -286,3 +286,51 @@ Required fidelity surfaces remain unverified: typography, spacing/layout, colors
 final result: blocked
 
 Blocker: an authenticated local Portal session is required to capture the protected implementation at the same route/state as the selected source image.
+
+---
+
+# FinOps image-to-code QA — 2026-09-22
+
+## Comparison target
+
+- Source visual truth: `/Users/shenlan/.codex/generated_images/01a0c75c-8081-7872-91d7-f8ac61aa8a58/exec-0f056bb3-158d-4321-80f2-fa220357097e.png`
+- Supplemental reference: `/var/folders/wx/dst2rbcx24jd3mnzwvb5w_9h0000gn/T/codex-clipboard-4dad7191-2ab0-4d89-a95c-c14694d62998.png`
+- Implementation route: `http://127.0.0.1:3100/panel/finops`
+- Target viewport: desktop, 1440 × 1024 CSS px.
+- Source pixels: 1487 × 1058 (generated desktop design). The implementation browser uses the local panel shell and requires an authenticated session.
+- State: unauthenticated local preview.
+
+## Evidence and findings
+
+The local route compiled and server-rendered its FinOps content. Browser accessibility evidence confirmed the existing panel shell contains the new `FinOps` sidebar item, the Cloud Credit Portfolio heading, provider filter, credit-first guardrail, four credit cards, burn-rate chart, OpenCost allocation, and actionable-recommendation control.
+
+The browser subsequently redirected to the existing `/login` gate because no local Portal account session is available. The only stable browser screenshot therefore represents the login/loading state rather than the selected authenticated FinOps design. A same-state full-view or focused-region comparison would be misleading and cannot be passed.
+
+## Required fidelity surfaces
+
+- Fonts and typography: source review confirms the implementation uses the Portal Geist/system type scale and a 24 px dashboard title; authenticated visual capture is still needed.
+- Spacing and layout rhythm: source review confirms the implementation follows the selected hierarchy: guardrail banner, four-card portfolio, chart/action split, allocation and decision-chain panels; authenticated visual capture is still needed.
+- Colors and visual tokens: implemented with the existing Portal surface, border, shadow, primary, semantic-success, and focus tokens; authenticated visual capture is still needed.
+- Image quality and asset fidelity: no custom raster asset is required in the selected dashboard. Provider identity uses plain text plus the existing standard cloud icon treatment; no handcrafted SVG or CSS illustration replaces a source asset.
+- Copy and content: verified in rendered DOM: AWS $100 credit and 30+ free-tier context, GCP, Azure, Akamai, OpenCost allocation, and three prioritized actions are present as intentionally fictional dashboard data.
+
+## Interaction checks
+
+- [x] Provider filter is a native labelled select with all four cloud providers.
+- [x] Sync control exposes a loading state.
+- [x] Prioritized-actions dialog has a named modal, close action, and queue-confirmation state.
+- [ ] Browser interaction execution is blocked by the existing authentication redirect before the hydrated route remains visible.
+
+## Implementation checklist
+
+- [x] Register `/panel/finops` as an authenticated Workspace navigation destination.
+- [x] Preserve the existing panel shell and component language.
+- [x] Implement portfolio, burn-rate, OpenCost allocation, decision-chain, and action-queue UI states.
+- [x] Run TypeScript and targeted ESLint checks.
+- [ ] Sign in locally, capture `/panel/finops` at 1440 × 1024, test filter/dialog actions, and perform same-state visual comparison.
+
+## Final result
+
+final result: blocked
+
+Blocker: an authenticated local Portal session is required to capture and compare the protected FinOps route in the selected design state.

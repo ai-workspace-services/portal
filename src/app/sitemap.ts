@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 import { getBlogList } from '@/lib/docsServiceClient'
 import { PRODUCT_LIST } from '@/modules/products/registry'
 
-const baseUrl = 'https://www.svc.plus'
+const baseUrl = 'https://xworktech.com'
 
 // `force-dynamic` used to cancel out the revalidate window below; the sitemap
 // is now generated once per hour and served from the cache in between.
@@ -12,7 +12,7 @@ export const revalidate = 3600
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // The sitemap is now prerendered, so an unreachable content service has to
   // degrade to the static routes rather than fail the build.
-  const { posts } = await getBlogList({ page: 1, pageSize: 500 }).catch((error) => {
+  const { posts } = await getBlogList({ page: 1, pageSize: 500, lang: "default" }).catch((error) => {
     console.warn('Sitemap blog entries unavailable', error)
     return { posts: [] }
   })

@@ -22,7 +22,15 @@
 // guessing at a production fallback.
 function resolveConsoleOrigin(): string | undefined {
   const host = process.env.NEXT_PUBLIC_CONSOLE_HOST?.trim();
-  return host ? `https://${host}` : undefined;
+  if (!host) {
+    return undefined;
+  }
+  // console.svc.plus is the canonical public CNAME for console-serverless-prod.svc.plus
+  const canonicalHost =
+    host.toLowerCase() === "console-serverless-prod.svc.plus"
+      ? "console.svc.plus"
+      : host;
+  return `https://${canonicalHost}`;
 }
 
 export const CONSOLE_ORIGIN = resolveConsoleOrigin();

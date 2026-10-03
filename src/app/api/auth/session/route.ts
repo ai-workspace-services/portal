@@ -77,8 +77,8 @@ function normalizeRole(role: unknown): AuthenticatedRole | null {
 }
 
 async function fetchSession(token: string, requestHost?: string | null) {
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
   try {
-    const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
     const response = await fetch(`${accountApiBase}/session`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -322,7 +322,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+<<<<<<< HEAD
   const accountApiBase = getAccountServiceApiBaseUrl(request.headers.get("host"));
+=======
+  const requestHost = request.headers.get("host");
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
+>>>>>>> origin/main
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (token) {
@@ -336,6 +341,6 @@ export async function DELETE(request: NextRequest) {
   }
 
   const response = NextResponse.json({ success: true });
-  clearSessionCookie(response, request.headers.get("host") ?? undefined);
+  clearSessionCookie(response, requestHost ?? undefined);
   return response;
 }

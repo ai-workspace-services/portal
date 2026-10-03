@@ -108,16 +108,18 @@ function installApi(options?: {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("XConnect Zero onboarding and management", () => {
-  it("binds Gateway to Linux and One to all three platforms, with explicit network and short TTL", async () => {
+  it("binds Gateway to Linux and One to all supported platforms, with explicit network and short TTL", async () => {
     const fetchMock = installApi();
     const user = userEvent.setup();
-    render(<XConnectZeroOverviewRoute />);
+    const view = render(<XConnectZeroOverviewRoute />);
     await screen.findByText("XConnect Zero");
     await user.click(screen.getByRole("button", { name: "节点管理" }));
     await user.click(screen.getByRole("button", { name: /加入 One 节点/ }));
     expect(screen.getByRole("radio", { name: "One" })).toBeChecked();
     expect(screen.getByRole("radio", { name: "macOS" })).toBeEnabled();
     expect(screen.getByRole("radio", { name: "Windows" })).toBeEnabled();
+    expect(screen.getByRole("radio", { name: "iOS" })).toBeEnabled();
+    expect(screen.getByRole("radio", { name: "Android" })).toBeEnabled();
     await user.selectOptions(screen.getByLabelText("已授权网络"), "net-b");
     await user.type(screen.getByLabelText("设备 ID"), "one-win-01");
     await user.click(screen.getByRole("radio", { name: "Windows" }));
@@ -155,6 +157,11 @@ describe("XConnect Zero onboarding and management", () => {
     );
     expect(body).not.toHaveProperty("controller_url");
     expect(await screen.findByText("xconnect://join/one")).toBeInTheDocument();
+    const generatedScript = view.container.querySelector("pre")?.textContent;
+    expect(generatedScript).toContain(
+      "irm https://install.svc.plus/xconnect-one | iex",
+    );
+    expect(generatedScript).toContain("xconnect join --invite-stdin");
 
     await user.click(
       screen.getByRole("button", { name: /加入 Gateway · Linux/ }),
@@ -174,6 +181,23 @@ describe("XConnect Zero onboarding and management", () => {
     expect(bootstrap.network.cidr).toBe("10.77.0.0/24");
     expect(bootstrapText).not.toContain("REPLACE");
     expect(bootstrapText).not.toContain("2030");
+  });
+
+  it("exposes custom network and Gateway IDs through the existing bootstrap JSON flow", async () => {
+    installApi();
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+    await screen.findByText("XConnect Zero");
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    await user.click(screen.getByText("查看并提交 bootstrap JSON"));
+    await user.type(screen.getByLabelText("新网络 ID"), "net-custom");
+    await user.type(screen.getByLabelText("自定义 Gateway ID"), "gw-custom");
+    const bootstrap = JSON.parse(
+      (screen.getByLabelText("高级 bootstrap JSON") as HTMLTextAreaElement)
+        .value,
+    ) as { network: { id: string; gateway_id: string } };
+    expect(bootstrap.network.id).toBe("net-custom");
+    expect(bootstrap.network.gateway_id).toBe("gw-custom");
   });
 
   it("prevents duplicate invite submits while pending and reports request errors", async () => {

@@ -36,30 +36,6 @@ export async function getDocResource(slug: string): Promise<DocCollection | unde
   return collections.find((doc) => doc.slug === slug)
 }
 
-/**
- * Every `(collection, slug)` pair the content service currently knows about, so
- * `/docs/[collection]/[...slug]` can be prerendered instead of rendered per
- * request. Returns an empty list when docs are disabled or the service is
- * unreachable, which downgrades the route to render-on-first-request.
- */
-export async function getDocVersionParams(): Promise<Array<{ collection: string; slug: string[] }>> {
-  if (!isDocsModuleEnabled()) {
-    return []
-  }
-  try {
-    const collections = await loadDocCollections(getDefaultContentLanguage())
-    return collections.flatMap((collection) =>
-      (collection.versions ?? []).map((version) => ({
-        collection: collection.slug,
-        slug: version.slug.split('/'),
-      })),
-    )
-  } catch (error) {
-    console.warn('Skipping docs prerender: content service unavailable', error)
-    return []
-  }
-}
-
 /** Collection slugs, for prerendering `/docs/[collection]`. */
 export async function getDocCollectionParams(): Promise<Array<{ collection: string }>> {
   if (!isDocsModuleEnabled()) {

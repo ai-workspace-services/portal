@@ -88,7 +88,7 @@ describe("/api/auth/mfa/status", () => {
       mfa: { totpEnabled: true },
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://accounts.svc.plus/api/auth/mfa/status?identifier=admin%40svc.plus",
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app/api/auth/mfa/status?identifier=admin%40svc.plus",
       expect.any(Object),
     );
     expect(init.headers).toMatchObject({

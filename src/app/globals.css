@@ -259,6 +259,9 @@ body {
   letter-spacing: var(--ls-display);
   white-space: nowrap;
 }
+.hero-title-line {
+  display: block;
+}
 .hero-title-accent {
   color: #4b43e8;
 }
@@ -282,6 +285,17 @@ body {
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: 2.7rem;
+}
+.hero-attribution {
+  margin: 1.25rem 0 0;
+  color: #44516f;
+  font-size: var(--fs-body-sm);
+}
+.hero-attribution a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .hero-button {
   display: inline-flex;

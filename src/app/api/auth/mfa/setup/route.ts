@@ -4,8 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { applyMfaCookie, MFA_COOKIE_NAME, SESSION_COOKIE_NAME } from '@lib/authGateway'
 import { getAccountServiceApiBaseUrl } from '@server/serviceConfig'
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl()
-
 // This Next.js route proxies MFA provisioning requests to the account service.
 // The UI calls /api/auth/mfa/setup, which in turn forwards to the Go backend
 // at /api/auth/mfa/totp/provision, keeping browser credentials opaque to the
@@ -22,6 +20,8 @@ function normalizeString(value: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const requestHost = request.headers.get('host')
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost)
   const cookieStore = await cookies()
   let payload: SetupPayload
   try {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       body.account = account
     }
 
-    const response = await fetch(`${ACCOUNT_API_BASE}/mfa/totp/provision`, {
+    const response = await fetch(`${accountApiBase}/mfa/totp/provision`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),

@@ -119,6 +119,8 @@ await writeFile(
     `    NEXT_PUBLIC_SSR_BOUNDARY: ${JSON.stringify(boundary)},`,
     `    NEXT_PUBLIC_SSR_BOUNDARY_ROUTES: ${JSON.stringify(JSON.stringify(boundaryRoutes))},`,
     `    NEXT_PUBLIC_CONSOLE_HOST: ${JSON.stringify(environmentConfig.console_host)},`,
+    `    NEXT_PUBLIC_RUNTIME_ENVIRONMENT: ${JSON.stringify(deploymentEnvironment)},`,
+    `    RUNTIME_ENV: ${JSON.stringify(deploymentEnvironment)},`,
     "  },",
     "};",
     "",
@@ -300,10 +302,15 @@ function normaliseCloudflareConfig(config) {
     worker_name: item.worker_name,
     route_suffixes: item.route_suffixes,
   }]));
+  const rawConsoleHost = serverless.console_host;
+  const consoleHost =
+    rawConsoleHost?.toLowerCase() === "console-serverless-prod.svc.plus"
+      ? "console.svc.plus"
+      : rawConsoleHost;
   return {
     environments: {
       [environment]: {
-        console_host: serverless.console_host,
+        console_host: consoleHost,
         zone_name: cloudflare.zone_name,
       },
     },

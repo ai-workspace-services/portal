@@ -17,6 +17,7 @@ import {
   Search,
   ShieldCheck,
   UsersRound,
+  X,
 } from "lucide-react";
 
 import Card from "../../components/Card";
@@ -30,12 +31,34 @@ export type ManagedUser = {
   groups?: string[];
   active?: boolean;
   created_at?: string;
+  subscriptionValidFrom?: string | null;
+  subscriptionValidUntil?: string | null;
 };
 export type CreateManagedUserInput = {
   email: string;
   uuid: string;
   groups: string[];
 };
+export type AdminPlanGroupUpdate = {
+  userId: string;
+  planId?: "FREE" | "PLUS" | "UNLIMITED-BETA";
+  groups?: string[];
+  validFrom?: string | null;
+  validUntil?: string | null;
+};
+export type AdminPlanGroupPreview = {
+  requestId: string;
+  previewToken: string;
+  expiresAt: string;
+  changes: Array<{
+    userId: string;
+    planId: string;
+    usedBytesPreserved: number;
+    remainingIncludedQuota: number;
+    configurationSyncWillPause: boolean;
+  }>;
+};
+type PlanGroupChangeScope = "single" | "batch";
 
 type Props = {
   users?: ManagedUser[];
@@ -51,6 +74,18 @@ type Props = {
   onManageBlacklist?: () => void;
   onCreateCustomUser?: (input: CreateManagedUserInput) => Promise<void> | void;
   onGroupsChange?: (userId: string, groups: string[]) => void;
+  onPlanGroupPreview?: (
+    scope: PlanGroupChangeScope,
+    updates: AdminPlanGroupUpdate[],
+    reason: string,
+  ) => Promise<AdminPlanGroupPreview>;
+  onPlanGroupApply?: (
+    scope: PlanGroupChangeScope,
+    updates: AdminPlanGroupUpdate[],
+    requestId: string,
+    previewToken: string,
+    reason: string,
+  ) => Promise<void>;
   pendingGroupUserIds?: Set<string>;
 };
 type SegmentId =
@@ -78,6 +113,34 @@ const MONTHLY_QUOTA_GROUP_OPTIONS = [
   { value: MONTHLY_UNLIMITED_BETA_GROUP, label: "无限制（内测分组）" },
 ] as const;
 type MonthlyQuotaGroup = (typeof MONTHLY_QUOTA_GROUP_OPTIONS)[number]["value"];
+const PLAN_ID_BY_GROUP: Record<
+  Exclude<MonthlyQuotaGroup, "">,
+  AdminPlanGroupUpdate["planId"]
+> = {
+  [MONTHLY_FREE_QUOTA_LIMIT_GROUP]: "FREE",
+  [MONTHLY_PLUS_QUOTA_LIMIT_GROUP]: "PLUS",
+  [MONTHLY_UNLIMITED_BETA_GROUP]: "UNLIMITED-BETA",
+};
+const PLAN_LABEL_BY_ID: Record<
+  NonNullable<AdminPlanGroupUpdate["planId"]>,
+  string
+> = {
+  FREE: "Free 5GB",
+  PLUS: "Plus 20GB",
+  "UNLIMITED-BETA": "Unlimited Beta",
+};
+
+type PlanGroupDialogState = {
+  scope: PlanGroupChangeScope;
+  updates: AdminPlanGroupUpdate[];
+  reason: string;
+  validFrom: string;
+  validUntil: string;
+  clearEmptyDates?: boolean;
+  preview?: AdminPlanGroupPreview;
+  busy?: boolean;
+  error?: string;
+};
 
 const SEGMENTS: Segment[] = [
   {
@@ -155,8 +218,10 @@ const primarySegment = (user: ManagedUser): Segment =>
   SEGMENTS.find((segment) => segment.parent && hasSegment(user, segment)) ??
   SEGMENTS.find((segment) => hasSegment(user, segment)) ??
   SEGMENTS[0];
-const formatDate = (value?: string): string =>
+const formatDate = (value?: string | null): string =>
   value ? new Date(value).toLocaleDateString("zh-CN") : "—";
+const formatQuotaBytes = (value: number): string =>
+  `${Number((value / 1024 ** 3).toFixed(1))} GiB`;
 
 function Donut({ automatic, manual }: { automatic: number; manual: number }) {
   const percent = Math.round((automatic / (automatic + manual || 1)) * 100);
@@ -202,6 +267,8 @@ export function UserGroupManagement({
   onManageBlacklist,
   onCreateCustomUser,
   onGroupsChange,
+  onPlanGroupPreview,
+  onPlanGroupApply,
   pendingGroupUserIds,
 }: Props) {
   const data = useMemo(() => users ?? [], [users]);
@@ -213,8 +280,14 @@ export function UserGroupManagement({
   const [quotaQuery, setQuotaQuery] = useState("");
   const [source, setSource] = useState<"all" | "manual" | "automatic">("all");
   const [override, setOverride] = useState(true);
-  const [validFrom, setValidFrom] = useState("2026-09-04");
-  const [validUntil, setValidUntil] = useState("2026-10-04");
+  const [validFrom, setValidFrom] = useState("");
+  const [validUntil, setValidUntil] = useState("");
+  const [selectedQuotaUserIds, setSelectedQuotaUserIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [batchQuotaGroup, setBatchQuotaGroup] = useState<MonthlyQuotaGroup>("");
+  const [planGroupDialog, setPlanGroupDialog] =
+    useState<PlanGroupDialogState>();
   const [benefit, setBenefit] = useState("高级版套餐");
   const [email, setEmail] = useState("");
   const [uuid, setUuid] = useState("");
@@ -270,6 +343,11 @@ export function UserGroupManagement({
     if (!selectedUserId && visibleUsers[0])
       setSelectedUserId(visibleUsers[0].id);
   }, [selectedUserId, visibleUsers]);
+  useEffect(() => {
+    setValidFrom(selectedUser?.subscriptionValidFrom?.slice(0, 10) ?? "");
+    setValidUntil(selectedUser?.subscriptionValidUntil?.slice(0, 10) ?? "");
+    setOverride(true);
+  }, [selectedUser]);
 
   const changeGroup = (nextSegment: Segment) => {
     if (!selectedUser || !onGroupsChange || !canEditRoles) return;
@@ -284,17 +362,180 @@ export function UserGroupManagement({
         : [...base, nextSegment.value],
     );
   };
-  const toggleMonthlyQuotaLimit = (
+  const requestMonthlyQuotaChange = (
     user: ManagedUser,
     nextGroup: MonthlyQuotaGroup,
   ) => {
-    if (!onGroupsChange || !canEditRoles) return;
-    const nextGroups = (user.groups ?? []).filter(
-      (group) =>
-        !MONTHLY_QUOTA_GROUP_OPTIONS.some((option) => option.value === group),
+    if (!onPlanGroupPreview || !onPlanGroupApply || !canEditRoles || !nextGroup)
+      return;
+    const planId = PLAN_ID_BY_GROUP[nextGroup];
+    setPlanGroupDialog({
+      scope: "single",
+      updates: [{ userId: user.id, planId }],
+      reason: "",
+      validFrom,
+      validUntil,
+    });
+  };
+  const toggleQuotaUserSelection = (userId: string, checked: boolean) => {
+    setSelectedQuotaUserIds((current) => {
+      const next = new Set(current);
+      if (checked) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+  };
+  const allQuotaUsersSelected =
+    quotaLimitUsers.length > 0 &&
+    quotaLimitUsers.every((user) => selectedQuotaUserIds.has(user.id));
+  const toggleAllQuotaUsers = (checked: boolean) => {
+    setSelectedQuotaUserIds((current) => {
+      const next = new Set(current);
+      quotaLimitUsers.forEach((user) => {
+        if (checked) next.add(user.id);
+        else next.delete(user.id);
+      });
+      return next;
+    });
+  };
+  const stageBatchPlanGroupChange = () => {
+    if (
+      !onPlanGroupPreview ||
+      !onPlanGroupApply ||
+      !canEditRoles ||
+      selectedQuotaUserIds.size === 0 ||
+      !batchQuotaGroup
+    )
+      return;
+    const updates: AdminPlanGroupUpdate[] = quotaLimitUsers
+      .filter((user) => selectedQuotaUserIds.has(user.id))
+      .map((user) => ({
+        userId: user.id,
+        planId: PLAN_ID_BY_GROUP[batchQuotaGroup],
+      }));
+    if (updates.length === 0) return;
+    setPlanGroupDialog({
+      scope: "batch",
+      updates,
+      reason: "",
+      validFrom: "",
+      validUntil: "",
+    });
+  };
+  const stageSubscriptionValidityChange = () => {
+    if (
+      !selectedUser ||
+      !onPlanGroupPreview ||
+      !onPlanGroupApply ||
+      !canEditRoles
+    )
+      return;
+    setPlanGroupDialog({
+      scope: "single",
+      updates: [
+        {
+          userId: selectedUser.id,
+          groups: [...(selectedUser.groups ?? [])],
+          validFrom: validFrom || null,
+          validUntil: validUntil || null,
+        },
+      ],
+      reason: "",
+      validFrom,
+      validUntil,
+      clearEmptyDates: true,
+    });
+  };
+  const previewPlanGroupChange = async () => {
+    if (!planGroupDialog || !onPlanGroupPreview) return;
+    const reason = planGroupDialog.reason.trim();
+    if (!reason) {
+      setPlanGroupDialog((current) =>
+        current ? { ...current, error: "请填写变更理由" } : current,
+      );
+      return;
+    }
+    if (
+      planGroupDialog.validFrom &&
+      planGroupDialog.validUntil &&
+      planGroupDialog.validUntil < planGroupDialog.validFrom
+    ) {
+      setPlanGroupDialog((current) =>
+        current ? { ...current, error: "结束日期不能早于开始日期" } : current,
+      );
+      return;
+    }
+    const updates = planGroupDialog.updates.map((update) => ({
+      ...update,
+      ...(planGroupDialog.clearEmptyDates
+        ? {
+            validFrom: planGroupDialog.validFrom || null,
+            validUntil: planGroupDialog.validUntil || null,
+          }
+        : {
+            ...(planGroupDialog.validFrom
+              ? { validFrom: planGroupDialog.validFrom }
+              : {}),
+            ...(planGroupDialog.validUntil
+              ? { validUntil: planGroupDialog.validUntil }
+              : {}),
+          }),
+    }));
+    setPlanGroupDialog((current) =>
+      current ? { ...current, busy: true, error: undefined } : current,
     );
-    if (nextGroup) nextGroups.push(nextGroup);
-    onGroupsChange(user.id, nextGroups);
+    try {
+      const preview = await onPlanGroupPreview(
+        planGroupDialog.scope,
+        updates,
+        reason,
+      );
+      setPlanGroupDialog((current) =>
+        current
+          ? { ...current, updates, preview, busy: false, error: undefined }
+          : current,
+      );
+    } catch (error) {
+      setPlanGroupDialog((current) =>
+        current
+          ? {
+              ...current,
+              busy: false,
+              error: error instanceof Error ? error.message : "预览失败",
+            }
+          : current,
+      );
+    }
+  };
+  const confirmPlanGroupChange = async () => {
+    if (!planGroupDialog?.preview || !onPlanGroupApply) return;
+    setPlanGroupDialog((current) =>
+      current ? { ...current, busy: true, error: undefined } : current,
+    );
+    try {
+      await onPlanGroupApply(
+        planGroupDialog.scope,
+        planGroupDialog.updates,
+        planGroupDialog.preview.requestId,
+        planGroupDialog.preview.previewToken,
+        planGroupDialog.reason.trim(),
+      );
+      if (planGroupDialog.scope === "batch") {
+        setSelectedQuotaUserIds(new Set());
+        setBatchQuotaGroup("");
+      }
+      setPlanGroupDialog(undefined);
+    } catch (error) {
+      setPlanGroupDialog((current) =>
+        current
+          ? {
+              ...current,
+              busy: false,
+              error: error instanceof Error ? error.message : "应用失败",
+            }
+          : current,
+      );
+    }
   };
   const createUser = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -494,24 +735,91 @@ export function UserGroupManagement({
               className="w-full rounded-md border border-[color:var(--color-surface-border)] bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-[var(--color-primary)]"
             />
           </label>
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-dashed border-[color:var(--color-surface-border)] bg-white px-3 py-2 text-xs">
+            <label className="inline-flex items-center gap-2 text-[var(--color-text-muted)]">
+              <input
+                type="checkbox"
+                checked={allQuotaUsersSelected}
+                onChange={(event) => toggleAllQuotaUsers(event.target.checked)}
+                disabled={!canEditRoles || quotaLimitUsers.length === 0}
+                aria-label="全选月度限流用户"
+                className="h-4 w-4 accent-[var(--color-primary)]"
+              />
+              全选当前列表
+            </label>
+            <span className="text-[var(--color-text-muted)]">
+              已选 {selectedQuotaUserIds.size} 人
+            </span>
+            <select
+              value={batchQuotaGroup}
+              onChange={(event) =>
+                setBatchQuotaGroup(event.target.value as MonthlyQuotaGroup)
+              }
+              disabled={
+                !canEditRoles ||
+                !onPlanGroupPreview ||
+                selectedQuotaUserIds.size === 0
+              }
+              aria-label="批量修改月度限流分组"
+              className="ml-auto rounded border border-[color:var(--color-surface-border)] bg-white px-2 py-1.5 text-xs disabled:opacity-50"
+            >
+              <option value="" disabled>
+                选择套餐
+              </option>
+              {MONTHLY_QUOTA_GROUP_OPTIONS.slice(1).map((option) => (
+                <option key={option.value || "none"} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={stageBatchPlanGroupChange}
+              disabled={
+                !canEditRoles ||
+                !onPlanGroupPreview ||
+                !onPlanGroupApply ||
+                selectedQuotaUserIds.size === 0 ||
+                !batchQuotaGroup
+              }
+              className="rounded-md bg-[var(--color-primary)] px-3 py-1.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              预览并批量修改套餐
+            </button>
+          </div>
           <div className="mt-3 grid max-h-44 gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
             {quotaLimitUsers.map((user) => {
               const selectedGroup = monthlyQuotaGroupOf(user);
               const disabled =
-                !canEditRoles || pending.has(user.id) || !onGroupsChange;
+                !canEditRoles ||
+                pending.has(user.id) ||
+                !onPlanGroupPreview ||
+                !onPlanGroupApply;
               return (
-                <label
+                <div
                   key={user.id}
                   className={`flex items-center justify-between gap-2 rounded-md border border-[color:var(--color-surface-border)] bg-white px-3 py-2 text-xs ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
                 >
-                  <span className="min-w-0 truncate text-[var(--color-text)]">
-                    {nameOf(user)}
-                  </span>
+                  <label className="flex min-w-0 items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedQuotaUserIds.has(user.id)}
+                      onChange={(event) =>
+                        toggleQuotaUserSelection(user.id, event.target.checked)
+                      }
+                      disabled={!canEditRoles || pending.has(user.id)}
+                      aria-label={`选择月度限流用户 ${nameOf(user)}`}
+                      className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
+                    />
+                    <span className="min-w-0 truncate text-[var(--color-text)]">
+                      {nameOf(user)}
+                    </span>
+                  </label>
                   <select
                     value={selectedGroup}
                     disabled={disabled}
                     onChange={(event) =>
-                      toggleMonthlyQuotaLimit(
+                      requestMonthlyQuotaChange(
                         user,
                         event.target.value as MonthlyQuotaGroup,
                       )
@@ -520,12 +828,16 @@ export function UserGroupManagement({
                     className="max-w-[150px] rounded border border-[color:var(--color-surface-border)] bg-white px-2 py-1 text-xs"
                   >
                     {MONTHLY_QUOTA_GROUP_OPTIONS.map((option) => (
-                      <option key={option.value || "none"} value={option.value}>
+                      <option
+                        key={option.value || "none"}
+                        value={option.value}
+                        disabled={!option.value}
+                      >
                         {option.label}
                       </option>
                     ))}
                   </select>
-                </label>
+                </div>
               );
             })}
           </div>
@@ -658,7 +970,22 @@ export function UserGroupManagement({
                               </span>
                             </td>
                             <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
-                              {formatDate(user.created_at)} —
+                              {user.subscriptionValidFrom ||
+                              user.subscriptionValidUntil ? (
+                                <>
+                                  {formatDate(user.subscriptionValidFrom)} —{" "}
+                                  {formatDate(user.subscriptionValidUntil)}
+                                  {user.subscriptionValidUntil &&
+                                  user.subscriptionValidUntil.slice(0, 10) <
+                                    new Date().toISOString().slice(0, 10) ? (
+                                    <span className="ml-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-amber-700">
+                                      已降级 Free
+                                    </span>
+                                  ) : null}
+                                </>
+                              ) : (
+                                "未配置"
+                              )}
                             </td>
                             <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
                               {isManual ? "高级版套餐" : "标准版套餐"}
@@ -763,8 +1090,24 @@ export function UserGroupManagement({
                       />
                     </label>
                   </div>
+                  <button
+                    type="button"
+                    onClick={stageSubscriptionValidityChange}
+                    disabled={
+                      !override ||
+                      !canEditRoles ||
+                      !onPlanGroupPreview ||
+                      !onPlanGroupApply ||
+                      pending.has(selectedUser.id) ||
+                      Boolean(validFrom && validUntil && validUntil < validFrom)
+                    }
+                    className="mt-3 rounded-md bg-[var(--color-primary)] px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    保存有效期
+                  </button>
                   <p className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
-                    有效期字段待计费服务提供读写接口后持久化；当前保存只更新手动分组。
+                    结束日期按当天有效；次日自动降级到 Free
+                    5GB，并暂停后续配置同步。
                   </p>
                 </section>
                 <section>
@@ -849,6 +1192,241 @@ export function UserGroupManagement({
           </details>
         ) : null}
       </div>
+      {planGroupDialog ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !planGroupDialog.busy) {
+              setPlanGroupDialog(undefined);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="plan-group-dialog-title"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 shadow-xl"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3
+                  id="plan-group-dialog-title"
+                  className="text-lg font-semibold text-[var(--color-heading)]"
+                >
+                  {planGroupDialog.scope === "single"
+                    ? planGroupDialog.updates[0].planId
+                      ? "修改用户套餐"
+                      : "调整订阅有效期"
+                    : "批量修改套餐"}
+                </h3>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                  {planGroupDialog.updates.length} 名用户 ·{" "}
+                  {planGroupDialog.updates[0].planId
+                    ? PLAN_LABEL_BY_ID[planGroupDialog.updates[0].planId]
+                    : "仅更新有效期，套餐和额度保持不变"}
+                  。预览确认后才会应用
+                  {planGroupDialog.updates[0].planId
+                    ? "；本期已用流量保留，不会因重复切换重置。"
+                    : "。"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPlanGroupDialog(undefined)}
+                disabled={planGroupDialog.busy}
+                className="rounded-lg p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)] disabled:opacity-50"
+                aria-label="关闭套餐预览"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <label className="text-xs text-[var(--color-text-muted)] sm:col-span-3">
+                变更理由（必填）
+                <textarea
+                  value={planGroupDialog.reason}
+                  onChange={(event) =>
+                    setPlanGroupDialog((current) =>
+                      current
+                        ? {
+                            ...current,
+                            reason: event.target.value,
+                            preview: undefined,
+                            error: undefined,
+                          }
+                        : current,
+                    )
+                  }
+                  maxLength={500}
+                  rows={2}
+                  disabled={planGroupDialog.busy}
+                  className="mt-1 w-full resize-y rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text)]"
+                  placeholder="例如：客服工单 #1234"
+                />
+              </label>
+              <label className="text-xs text-[var(--color-text-muted)]">
+                有效期开始（可选）
+                <input
+                  type="date"
+                  value={planGroupDialog.validFrom}
+                  onChange={(event) =>
+                    setPlanGroupDialog((current) =>
+                      current
+                        ? {
+                            ...current,
+                            validFrom: event.target.value,
+                            preview: undefined,
+                            error: undefined,
+                          }
+                        : current,
+                    )
+                  }
+                  disabled={planGroupDialog.busy}
+                  className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm"
+                />
+              </label>
+              <label className="text-xs text-[var(--color-text-muted)]">
+                有效期结束（可选）
+                <input
+                  type="date"
+                  value={planGroupDialog.validUntil}
+                  min={planGroupDialog.validFrom || undefined}
+                  onChange={(event) =>
+                    setPlanGroupDialog((current) =>
+                      current
+                        ? {
+                            ...current,
+                            validUntil: event.target.value,
+                            preview: undefined,
+                            error: undefined,
+                          }
+                        : current,
+                    )
+                  }
+                  disabled={planGroupDialog.busy}
+                  className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm"
+                />
+              </label>
+              <p className="self-end text-xs text-[var(--color-text-muted)]">
+                留空表示不修改对应日期。
+              </p>
+            </div>
+            {planGroupDialog.error ? (
+              <p
+                role="alert"
+                className="mt-3 text-sm text-[var(--color-danger)]"
+              >
+                {planGroupDialog.error}
+              </p>
+            ) : null}
+            {planGroupDialog.preview ? (
+              <div className="mt-4 rounded-md border border-[color:var(--color-surface-border)]">
+                <div className="border-b border-[color:var(--color-surface-border)] px-3 py-2 text-sm font-medium">
+                  变更预览 · 到期时间{" "}
+                  {new Date(
+                    planGroupDialog.preview.expiresAt,
+                  ).toLocaleTimeString("zh-CN")}
+                </div>
+                <ul className="divide-y divide-[color:var(--color-surface-border)]">
+                  {planGroupDialog.preview.changes.map((change) => {
+                    const user = data.find((item) => item.id === change.userId);
+                    const update = planGroupDialog.updates.find(
+                      (item) => item.userId === change.userId,
+                    );
+                    const isPlanChange = Boolean(update?.planId);
+                    return (
+                      <li
+                        key={change.userId}
+                        className="space-y-1 px-3 py-3 text-sm"
+                      >
+                        <p className="font-medium text-[var(--color-heading)]">
+                          {user ? nameOf(user) : change.userId} ·{" "}
+                          {isPlanChange
+                            ? (PLAN_LABEL_BY_ID[
+                                change.planId as NonNullable<
+                                  AdminPlanGroupUpdate["planId"]
+                                >
+                              ] ?? change.planId)
+                            : "有效期更新"}
+                        </p>
+                        <p className="text-xs text-[var(--color-text-muted)]">
+                          有效期：
+                          {planGroupDialog.validFrom ||
+                          planGroupDialog.clearEmptyDates
+                            ? planGroupDialog.validFrom || "清除开始日期"
+                            : "开始日期不变"}
+                          {" — "}
+                          {planGroupDialog.validUntil ||
+                          planGroupDialog.clearEmptyDates
+                            ? planGroupDialog.validUntil || "清除结束日期"
+                            : "结束日期不变"}
+                        </p>
+                        {isPlanChange ? (
+                          <>
+                            <p className="text-xs text-[var(--color-text-muted)]">
+                              本期已用保留{" "}
+                              {formatQuotaBytes(change.usedBytesPreserved)} ·
+                              新剩余额度{" "}
+                              {formatQuotaBytes(change.remainingIncludedQuota)}
+                            </p>
+                            <p
+                              className={
+                                change.configurationSyncWillPause
+                                  ? "text-xs font-medium text-amber-700"
+                                  : "text-xs text-emerald-700"
+                              }
+                            >
+                              {change.configurationSyncWillPause
+                                ? "变更后额度已耗尽：配置同步将立即暂停"
+                                : "变更后不会因额度耗尽暂停配置同步"}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-[var(--color-text-muted)]">
+                            套餐、剩余额度和配置同步状态保持不变
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPlanGroupDialog(undefined)}
+                disabled={planGroupDialog.busy}
+                className="rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] disabled:opacity-50"
+              >
+                取消
+              </button>
+              {!planGroupDialog.preview ? (
+                <button
+                  type="button"
+                  onClick={() => void previewPlanGroupChange()}
+                  disabled={
+                    planGroupDialog.busy || !planGroupDialog.reason.trim()
+                  }
+                  className="rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {planGroupDialog.busy ? "生成预览中…" : "生成预览"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void confirmPlanGroupChange()}
+                  disabled={planGroupDialog.busy}
+                  className="rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {planGroupDialog.busy ? "应用中…" : "确认并应用"}
+                </button>
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </Card>
   );
 }
