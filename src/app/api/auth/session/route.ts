@@ -322,12 +322,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-<<<<<<< HEAD
-  const accountApiBase = getAccountServiceApiBaseUrl(request.headers.get("host"));
-=======
   const requestHost = request.headers.get("host");
   const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
->>>>>>> origin/main
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (token) {

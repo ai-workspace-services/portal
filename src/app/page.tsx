@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "error";
-
 import Footer from "@/components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import HeroSection from "@/components/marketing/HeroSection";

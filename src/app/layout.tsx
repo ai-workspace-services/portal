@@ -93,15 +93,15 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
   }
+}
 
 const htmlAttributes = { lang: 'zh' }
 const bodyClassName = 'bg-[var(--color-background)] text-[var(--color-text)]'
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const assistantDefaults = getConsoleIntegrationDefaults()
   const releaseMetadata = resolveWebReleaseMetadata()
-  const siteUrl = await siteUrlForRequest()
-  const siteHost = new URL(siteUrl).host
+  const siteUrl = PLATFORM_SITE_URL
 
   return (
     <html {...htmlAttributes}>

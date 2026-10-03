@@ -1,5 +1,3 @@
-export const dynamic = 'error'
-
 import Link from 'next/link'
 
 export default function NotFoundPage() {
