@@ -23,7 +23,6 @@ const DISABLED_VALUES = new Set(["", "off", "false", "0", "no"]);
  */
 const FALLBACK = {
   googleId: "G-T4VM8G4Q42",
-  datafastId: "dfid_RRpFATHOgNffArMsKNpYT",
 } as const;
 
 function resolve(
@@ -54,8 +53,6 @@ export type SiteAnalyticsConfig = {
   googleId?: string;
   /** Cloudflare Web Analytics beacon token */
   cloudflareToken?: string;
-  /** DataFast website id */
-  datafastId?: string;
   /**
    * Vercel Web Analytics。默认关：本站跑在 Cloudflare 上，
    * /_vercel/insights/script.js 不存在，开着只会每页 404 一次并被 MIME 拦下。
@@ -76,10 +73,6 @@ export function resolveSiteAnalytics(): SiteAnalyticsConfig {
     ),
     cloudflareToken: resolve(
       process.env.NEXT_PUBLIC_ANALYTICS_CLOUDFLARE_TOKEN,
-    ),
-    datafastId: resolve(
-      process.env.NEXT_PUBLIC_ANALYTICS_DATAFAST_ID,
-      FALLBACK.datafastId,
     ),
     vercel: resolveFlag(process.env.NEXT_PUBLIC_ANALYTICS_VERCEL, false),
   };

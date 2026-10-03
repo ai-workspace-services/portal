@@ -104,7 +104,6 @@ be present in the build environment — putting them in Worker runtime vars alon
 | `NEXT_PUBLIC_ANALYTICS_DISABLED` | `1` turns every provider off. Use for preview/self-hosted builds. |
 | `NEXT_PUBLIC_ANALYTICS_GOOGLE_ID` | Google Analytics measurement id. |
 | `NEXT_PUBLIC_ANALYTICS_CLOUDFLARE_TOKEN` | Cloudflare Web Analytics beacon token — map `CLOUDFLARE_WEB_ANALYTICS_SITE_TAG` onto this in the build env. |
-| `NEXT_PUBLIC_ANALYTICS_DATAFAST_ID` | DataFast website id. |
 | `NEXT_PUBLIC_ANALYTICS_VERCEL` | `1` enables Vercel Web Analytics. Leave off anywhere that is not Vercel: `/_vercel/insights/script.js` does not exist there, so it only costs a 404 per page load. |
 
 Set a variable to an empty string, `off`, `false`, or `0` to disable that provider explicitly.

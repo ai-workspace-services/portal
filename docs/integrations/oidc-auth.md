@@ -164,7 +164,7 @@ environment path.
 |---|---|---|---|
 | UAT | `https://console-cloudflare-uat.onwalk.net` | `https://accounts-cloudflare-uat.onwalk.net` | `https://accounts-cloudflare-uat.onwalk.net/api/auth/oauth/callback/github` |
 | PROD | `https://console.svc.plus` | `https://accounts.svc.plus` | `https://accounts.svc.plus/api/auth/oauth/callback/github` |
-| PROD Serverless | `https://console-serverless-prod.svc.plus` | `https://accounts.svc.plus` | `https://accounts.svc.plus/api/auth/oauth/callback/github` |
+| PROD Serverless | `https://console.svc.plus` | `https://accounts.svc.plus` | `https://accounts.svc.plus/api/auth/oauth/callback/github` |
 
 The runtime deployment injects the following variables after resolving the
 matching GitOps and Vault entries:
@@ -280,7 +280,7 @@ Go to **OAuth consent screen > Publishing status** and click **"Publish App"** t
 | Google Cloud Credentials | https://console.cloud.google.com/apis/credentials |
 | UAT GitHub Callback URL | `https://accounts-cloudflare-uat.onwalk.net/api/auth/oauth/callback/github` |
 | PROD GitHub Callback URL | `https://accounts.svc.plus/api/auth/oauth/callback/github` |
-| PROD Serverless Console | `https://console-serverless-prod.svc.plus/login` |
+| PROD Serverless Console | `https://console.svc.plus/login` |
 | UAT Google Callback URL | `https://accounts-cloudflare-uat.onwalk.net/api/auth/oauth/callback/google` |
 | PROD Google Callback URL | `https://accounts.svc.plus/api/auth/oauth/callback/google` |
 | Backend Config File | `accounts.svc.plus/config/account.yaml` |

@@ -42,7 +42,7 @@ import {
 
 type Page = "overview" | "join" | "configuration";
 type NodeRole = "gateway" | "one";
-type Platform = "linux" | "darwin" | "windows";
+type Platform = "linux" | "darwin" | "windows" | "ios" | "android";
 type InvitationTtl = 15 | 30 | 60;
 type ConnectionModeId = "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 type ResourceState = "loading" | "ready" | "error" | "unavailable";
@@ -74,18 +74,18 @@ const modes: Array<{
     name: { zh: "高性能直连", en: "High-performance direct" },
     technology: "WireGuard UDP / L3",
     description: {
-      zh: "纯三层 VPN，直接使用 WireGuard UDP；延迟最低、吞吐最高，需要网络允许 UDP 51820。",
-      en: "A pure L3 VPN using WireGuard UDP directly for the lowest latency and highest throughput; requires UDP 51820 access.",
+      zh: "规划中的直连模式；本轮 UAT 不启用，公网不开放 WireGuard UDP 51820。",
+      en: "A planned direct mode; disabled for this UAT baseline because public WireGuard UDP 51820 is not exposed.",
     },
   },
   {
     id: "wg_vless_l3",
     icon: ShieldCheck,
     name: { zh: "抗干扰连接", en: "Resilient connection" },
-    technology: "WireGuard over VLESS / L3",
+    technology: "WireGuard over VLESS / XHTTP / L3",
     description: {
-      zh: "通过 VLESS/TLS/XUDP 封装 WireGuard；适合 UDP 受限或容易受到干扰的网络。",
-      en: "Wraps WireGuard with VLESS/TLS/XUDP for networks where UDP is restricted or easily disrupted.",
+      zh: "通过 VLESS/XHTTP TLS TCP 443 封装 WireGuard；这是当前 Gateway/One 的 UAT 默认模式。",
+      en: "Wraps WireGuard with VLESS/XHTTP TLS TCP 443; this is the current Gateway/One UAT default.",
     },
     recommended: true,
   },
@@ -95,8 +95,8 @@ const modes: Array<{
     name: { zh: "二层互联", en: "Layer 2 interconnect" },
     technology: "WireGuard over VLESS / L2-MAC",
     description: {
-      zh: "在安全隧道上扩展二层网络；支持 MAC、ARP 和广播，仅限 Linux Gateway。",
-      en: "Extends Layer 2 networking over the secure tunnel with MAC, ARP and broadcast support; Linux Gateways only.",
+      zh: "规划中的二层模式；当前 UAT 不下发，仅保留卡片用于后续 Linux Gateway 扩展。",
+      en: "A planned Layer 2 mode; not dispatched in the current UAT and retained for a future Linux Gateway extension.",
     },
     linuxGatewayOnly: true,
   },
@@ -127,6 +127,68 @@ function bootstrapTemplate(role: NodeRole): string {
     null,
     2,
   );
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replaceAll("'", `'\\''`)}'`;
+}
+
+function joinScript(
+  joinUri: string,
+  role: NodeRole,
+  platform: Platform,
+): string {
+  const installer =
+    role === "gateway"
+      ? "https://install.svc.plus/xconnect-gateway"
+      : "https://install.svc.plus/xconnect-one";
+  const command = role === "gateway" ? "xconnect-gateway" : "xconnect";
+  const platformHint =
+    platform === "darwin"
+      ? "macOS"
+      : platform === "windows"
+        ? "Windows"
+        : "Linux";
+  if (platform === "windows") {
+    return [
+      `# Windows ${role === "gateway" ? "Gateway" : "One"} bootstrap`,
+      `irm ${installer} | iex`,
+      "$env:XCONNECT_INVITE = @'",
+      joinUri,
+      "'@",
+      `$env:XCONNECT_INVITE | ${command} join --invite-stdin`,
+    ].join("\n");
+  }
+  return [
+    `# ${platformHint} ${role === "gateway" ? "Gateway" : "One"} bootstrap`,
+    `curl -fsSL ${installer} | bash`,
+    `printf '%s\\n' ${shellQuote(joinUri)} | ${command} join --invite-stdin`,
+  ].join("\n");
+}
+
+function updateBootstrapJson(
+  json: string,
+  field: "id" | "gateway_id",
+  value: string,
+): string {
+  try {
+    const root = JSON.parse(json) as { network?: Record<string, unknown> };
+    if (!root.network || typeof root.network !== "object") return json;
+    root.network[field] = value;
+    return JSON.stringify(root, null, 2);
+  } catch {
+    return json;
+  }
+}
+
+function bootstrapField(json: string, field: "id" | "gateway_id"): string {
+  try {
+    const root = JSON.parse(json) as { network?: Record<string, unknown> };
+    const value = root.network?.[field];
+    return typeof value === "string" ? value : "";
+  } catch {
+    return "";
+  }
 }
 
 function errorCode(value: unknown): string | undefined {
@@ -380,6 +442,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     bootstrapTemplate("gateway"),
   );
   const [joinUri, setJoinUri] = useState<string | null>(null);
+  const [scriptCopied, setScriptCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [invitePending, setInvitePending] = useState(false);
@@ -389,6 +452,11 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [revokeTarget, setRevokeTarget] = useState<XConnectZeroDevice | null>(
     null,
   );
+  const [deleteNetworkTarget, setDeleteNetworkTarget] =
+    useState<XConnectZeroNetwork | null>(null);
+  const [deleteNetworkConfirmation, setDeleteNetworkConfirmation] =
+    useState("");
+  const [deleteNetworkPending, setDeleteNetworkPending] = useState(false);
   const [roleFilter, setRoleFilter] = useState<"all" | NodeRole>("all");
   const [networkFilter, setNetworkFilter] = useState("all");
   const [platformFilter, setPlatformFilter] = useState<"all" | Platform>("all");
@@ -503,6 +571,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     );
     setBootstrapJson(bootstrapTemplate(nextRole));
     setJoinUri(null);
+    setScriptCopied(false);
     setError(null);
     setPage("join");
   };
@@ -516,25 +585,30 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       );
     }
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const changePlatform = (nextPlatform: Platform): void => {
     setPlatform(nextPlatform);
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const changeDeviceId = (nextDeviceId: string): void => {
     setDeviceId(nextDeviceId);
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const changeTtl = (nextTtl: InvitationTtl): void => {
     setTtl(nextTtl);
     setJoinUri(null);
+    setScriptCopied(false);
   };
 
   const issueInvite = async (): Promise<void> => {
     setJoinUri(null);
+    setScriptCopied(false);
     setError(null);
     const network = networks.find((item) => item.id === networkId);
     if (!writeReady) return;
@@ -590,6 +664,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
 
   const submitBootstrap = async (): Promise<void> => {
     setJoinUri(null);
+    setScriptCopied(false);
     setError(null);
     if (!writeReady) return;
     let parsed: unknown;
@@ -691,6 +766,51 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       setError(zh ? "撤销节点失败" : "Failed to revoke node");
     } finally {
       setRevokePending(false);
+      setMutationPending(false);
+    }
+  };
+
+  const confirmDeleteNetwork = async (): Promise<void> => {
+    const target = deleteNetworkTarget;
+    if (!target || deleteNetworkConfirmation !== target.id || !writeReady) {
+      return;
+    }
+    setDeleteNetworkPending(true);
+    setMutationPending(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/xconnect-zero/networks/${encodeURIComponent(target.id)}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirm_network_id: target.id }),
+        },
+      );
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(errorCode(body) ?? "network_delete_failed");
+      }
+      setDeleteNetworkTarget(null);
+      setDeleteNetworkConfirmation("");
+      setRegistrations((current) =>
+        current.filter((registration) => registration.network_id !== target.id),
+      );
+      setResourceData(await getResources());
+      setResourceState("ready");
+    } catch (deleteError) {
+      const code = deleteError instanceof Error ? deleteError.message : "";
+      setError(
+        code === "resource_conflict"
+          ? zh
+            ? "网络下存在与其他网络同 ID 的设备，控制面拒绝删除以保护其他网络凭据。"
+            : "A device ID is shared with another network; deletion was refused to protect its credentials."
+          : zh
+            ? "删除网络失败，请检查权限与控制面状态。"
+            : "Failed to delete the network; check permissions and control-plane status.",
+      );
+    } finally {
+      setDeleteNetworkPending(false);
       setMutationPending(false);
     }
   };
@@ -1071,8 +1191,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                 title={zh ? "加入 One 节点" : "Join a One node"}
                 detail={
                   zh
-                    ? "One 可选择 Linux、macOS 或 Windows"
-                    : "One supports Linux, macOS or Windows"
+                    ? "One 可选择 Linux、macOS、Windows、iOS 或 Android"
+                    : "One supports Linux, macOS, Windows, iOS or Android"
                 }
                 value={role === "one" ? (zh ? "当前角色" : "Selected") : ""}
                 onClick={() => chooseRole("one")}
@@ -1124,7 +1244,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                     </option>
                     {networks.map((network) => (
                       <option key={network.id} value={network.id}>
-                        {network.display_name} · {network.id}
+                        {network.display_name} · {network.id} · Gateway{" "}
+                        {network.gateway_id || "—"}
                       </option>
                     ))}
                   </select>
@@ -1172,7 +1293,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   <div className="mt-2 flex flex-wrap gap-2">
                     {(role === "gateway"
                       ? ["linux"]
-                      : ["linux", "darwin", "windows"]
+                      : ["linux", "darwin", "windows", "ios", "android"]
                     ).map((item) => (
                       <label
                         key={item}
@@ -1190,7 +1311,11 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                           ? "macOS"
                           : item === "windows"
                             ? "Windows"
-                            : "Linux"}
+                            : item === "ios"
+                              ? "iOS"
+                              : item === "android"
+                                ? "Android"
+                                : "Linux"}
                       </label>
                     ))}
                   </div>
@@ -1281,6 +1406,55 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                     ? `模板当前按 ${role === "gateway" ? "Gateway / Linux" : "One / Linux"} 角色生成，15 分钟后过期。Gateway 必须先在本机 init 生成公钥，再补全字段提交。`
                     : `Template is generated for ${role === "gateway" ? "Gateway / Linux" : "One / Linux"} and expires in 15 minutes. A Gateway must run local init to generate its public key before submission.`}
                 </p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <label className="text-xs font-semibold text-[var(--color-heading)]">
+                    {zh ? "新网络 ID" : "New network ID"}
+                    <input
+                      aria-label={zh ? "新网络 ID" : "New network ID"}
+                      value={bootstrapField(bootstrapJson, "id")}
+                      onChange={(event) =>
+                        setBootstrapJson(
+                          updateBootstrapJson(
+                            bootstrapJson,
+                            "id",
+                            event.target.value,
+                          ),
+                        )
+                      }
+                      disabled={!writeReady || bootstrapPending}
+                      placeholder="net_uat"
+                      className="mt-1 block w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-normal disabled:opacity-50"
+                    />
+                  </label>
+                  <label className="text-xs font-semibold text-[var(--color-heading)]">
+                    {zh ? "自定义 Gateway ID" : "Custom Gateway ID"}
+                    <input
+                      aria-label={
+                        zh ? "自定义 Gateway ID" : "Custom Gateway ID"
+                      }
+                      value={bootstrapField(bootstrapJson, "gateway_id")}
+                      onChange={(event) =>
+                        setBootstrapJson(
+                          updateBootstrapJson(
+                            bootstrapJson,
+                            "gateway_id",
+                            event.target.value,
+                          ),
+                        )
+                      }
+                      disabled={
+                        !writeReady || bootstrapPending || role !== "gateway"
+                      }
+                      placeholder="gw-uat-example"
+                      className="mt-1 block w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-normal disabled:opacity-50"
+                    />
+                  </label>
+                </div>
+                <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                  {zh
+                    ? "自定义 Gateway ID 仅用于新网络初始化；已有网络的 Gateway ID 由 Accounts 绑定并只读，避免跨网络或跨用户迁移。"
+                    : "A custom Gateway ID is only used when creating a new network. Existing network Gateway IDs remain Accounts-bound and read-only to prevent cross-network or cross-user migration."}
+                </p>
                 <textarea
                   aria-label={
                     zh ? "高级 bootstrap JSON" : "Advanced bootstrap JSON"
@@ -1326,7 +1500,43 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   : "One-time invitation (shown once on this page)"
               }
             >
-              <code className="block break-all p-5 text-xs">{joinUri}</code>
+              <div className="space-y-4 p-5">
+                <code className="block break-all rounded bg-[var(--color-surface-muted)] p-3 text-xs">
+                  {joinUri}
+                </code>
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[var(--color-heading)]">
+                      {zh ? "一键接入脚本" : "One-command bootstrap script"}
+                    </p>
+                    <Button
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(
+                          joinScript(joinUri, role, platform),
+                        );
+                        setScriptCopied(true);
+                      }}
+                    >
+                      <ClipboardCheck className="h-4 w-4" />
+                      {scriptCopied
+                        ? zh
+                          ? "已复制"
+                          : "Copied"
+                        : zh
+                          ? "复制脚本"
+                          : "Copy script"}
+                    </Button>
+                  </div>
+                  <pre className="mt-2 overflow-x-auto rounded bg-[var(--color-surface-muted)] p-3 text-xs leading-5">
+                    <code>{joinScript(joinUri, role, platform)}</code>
+                  </pre>
+                  <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                    {zh
+                      ? "脚本只在本页短时显示；原始邀请不会写入数据库、GitOps 或日志。执行后由 Accounts 创建节点记录。"
+                      : "The script is shown temporarily on this page; the raw invite is not stored in the database, GitOps, or logs. Accounts creates the node record after execution."}
+                  </p>
+                </div>
+              </div>
             </Frame>
           ) : null}
           <Frame title={zh ? "待确认 One 注册" : "Pending One registrations"}>
@@ -1543,6 +1753,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   <option value="linux">Linux</option>
                   <option value="darwin">macOS</option>
                   <option value="windows">Windows</option>
+                  <option value="ios">iOS</option>
+                  <option value="android">Android</option>
                 </select>
               </label>
             </div>
@@ -1687,12 +1899,40 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
             </Frame>
           </div>
           <Frame title={zh ? "VPC 与私有网络" : "VPC and private networks"}>
-            <Row
-              icon={Network}
-              title={zh ? "网络与 CIDR" : "Network and CIDR"}
-              detail={networks[0]?.display_name ?? "—"}
-              value={networks[0]?.cidr ?? "—"}
-            />
+            {networks.length ? (
+              networks.map((network) => (
+                <div
+                  key={network.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--color-divider)] p-4 last:border-b-0"
+                >
+                  <Row
+                    icon={Network}
+                    title={network.display_name || network.id}
+                    detail={`${network.id} · ${network.gateway_id}`}
+                    value={network.cidr}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteNetworkTarget(network);
+                      setDeleteNetworkConfirmation("");
+                      setError(null);
+                    }}
+                    disabled={!writeReady || mutationPending}
+                    className="tactile-button tactile-button-soft text-[var(--color-danger-foreground)] disabled:opacity-50"
+                  >
+                    {zh ? "删除网络" : "Delete network"}
+                  </button>
+                </div>
+              ))
+            ) : (
+              <Row
+                icon={Network}
+                title={zh ? "没有已授权网络" : "No authorized networks"}
+                detail="—"
+                value="—"
+              />
+            )}
             <Row
               icon={Server}
               title={zh ? "Gateway 节点" : "Gateway nodes"}
@@ -1902,6 +2142,82 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   : zh
                     ? "确认撤销"
                     : "Confirm revoke"}
+              </button>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+      <AlertDialog.Root
+        open={deleteNetworkTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleteNetworkPending) {
+            setDeleteNetworkTarget(null);
+            setDeleteNetworkConfirmation("");
+          }
+        }}
+      >
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-xl)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-lg)]">
+            <AlertDialog.Cancel asChild>
+              <button
+                type="button"
+                className="float-right"
+                disabled={deleteNetworkPending}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </AlertDialog.Cancel>
+            <ShieldAlert className="h-6 w-6 text-[var(--color-danger-foreground)]" />
+            <AlertDialog.Title className="mt-3 text-xl font-semibold">
+              {zh ? "永久删除此网络？" : "Permanently delete this network?"}
+            </AlertDialog.Title>
+            <AlertDialog.Description className="mt-2 text-sm text-[var(--color-text-muted)]">
+              {zh
+                ? `删除 ${deleteNetworkTarget?.id ?? "网络"} 会移除控制面网络、邀请、注册、设备凭据及配置确认记录。已安装的节点可能保留本地网络配置；请先逐台停止/撤销节点并确认迁移备份。此操作不可撤销。`
+                : `Deleting ${deleteNetworkTarget?.id ?? "this network"} removes its control-plane record, invites, registrations, device credentials and config acknowledgements. Installed nodes may retain their local configuration; stop/revoke them and verify migration backups first. This cannot be undone.`}
+            </AlertDialog.Description>
+            <label className="mt-4 block text-sm font-medium">
+              {zh
+                ? `输入网络 ID 确认：${deleteNetworkTarget?.id ?? ""}`
+                : `Type the network ID to confirm: ${deleteNetworkTarget?.id ?? ""}`}
+              <input
+                autoComplete="off"
+                value={deleteNetworkConfirmation}
+                onChange={(event) =>
+                  setDeleteNetworkConfirmation(event.target.value)
+                }
+                className="mt-2 w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 font-mono text-sm"
+                disabled={deleteNetworkPending}
+              />
+            </label>
+            <div className="mt-5 flex justify-end gap-2">
+              <AlertDialog.Cancel
+                className="tactile-button tactile-button-soft"
+                disabled={deleteNetworkPending}
+              >
+                {zh ? "取消" : "Cancel"}
+              </AlertDialog.Cancel>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteNetwork()}
+                disabled={
+                  deleteNetworkPending ||
+                  !writeReady ||
+                  deleteNetworkConfirmation !== deleteNetworkTarget?.id
+                }
+                className="tactile-button tactile-button-primary disabled:opacity-50"
+              >
+                {deleteNetworkPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : null}
+                {deleteNetworkPending
+                  ? zh
+                    ? "删除中…"
+                    : "Deleting…"
+                  : zh
+                    ? "确认永久删除"
+                    : "Confirm permanent deletion"}
               </button>
             </div>
           </AlertDialog.Content>

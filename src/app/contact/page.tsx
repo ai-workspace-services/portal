@@ -5,28 +5,34 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import Footer from "../../components/Footer";
 import { Mail, Globe } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageProvider";
+import {
+  COMPANY_LEGAL_NAME,
+  COMPANY_SITE_URL,
+  COMPANY_SUPPORT_EMAIL,
+  COMPANY_CONTACT_EMAIL,
+} from "@/lib/company";
 
 const enContent = {
   title: "Contact Us",
-  company: "XWork Technologies LLC",
+  company: COMPANY_LEGAL_NAME,
   cards: [
     {
       icon: Mail,
       title: "Email",
-      value: "haitaopan@xworktech.com",
-      link: "mailto:haitaopan@xworktech.com",
+      value: COMPANY_CONTACT_EMAIL,
+      link: `mailto:${COMPANY_CONTACT_EMAIL}`,
     },
     {
       icon: Globe,
       title: "Website",
-      value: "https://xworktech.com",
-      link: "https://xworktech.com",
+      value: COMPANY_SITE_URL,
+      link: COMPANY_SITE_URL,
     },
     {
       icon: Mail,
       title: "Support",
-      value: "support@xworktech.com",
-      link: "mailto:support@xworktech.com",
+      value: COMPANY_SUPPORT_EMAIL,
+      link: `mailto:${COMPANY_SUPPORT_EMAIL}`,
     }
   ],
   inquiriesTitle: "Business Inquiries",
@@ -35,25 +41,25 @@ const enContent = {
 
 const zhContent = {
   title: "联系我们",
-  company: "XWork Technologies LLC",
+  company: COMPANY_LEGAL_NAME,
   cards: [
     {
       icon: Mail,
       title: "电子邮件",
-      value: "haitaopan@xworktech.com",
-      link: "mailto:haitaopan@xworktech.com",
+      value: COMPANY_CONTACT_EMAIL,
+      link: `mailto:${COMPANY_CONTACT_EMAIL}`,
     },
     {
       icon: Globe,
       title: "官方网站",
-      value: "https://xworktech.com",
-      link: "https://xworktech.com",
+      value: COMPANY_SITE_URL,
+      link: COMPANY_SITE_URL,
     },
     {
       icon: Mail,
       title: "技术支持",
-      value: "support@xworktech.com",
-      link: "mailto:support@xworktech.com",
+      value: COMPANY_SUPPORT_EMAIL,
+      link: `mailto:${COMPANY_SUPPORT_EMAIL}`,
     }
   ],
   inquiriesTitle: "商业合作",

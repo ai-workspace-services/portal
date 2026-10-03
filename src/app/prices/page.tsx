@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, Suspense } from "react";
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { Check, Shield } from "lucide-react";
 
 import CheckoutStatusBanner from "@components/billing/CheckoutStatusBanner";
@@ -311,7 +311,7 @@ export default function PricesPage() {
           {card.button}
         </button>
       ) : (
-        <Link
+        <BoundaryLink
           href={card.href || "/"}
           className={`w-full rounded-lg py-2 text-center text-xs font-semibold transition-colors ${
             card.highlight
@@ -320,7 +320,7 @@ export default function PricesPage() {
           }`}
         >
           {card.button}
-        </Link>
+        </BoundaryLink>
       )}
     </div>
   );

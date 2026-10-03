@@ -98,8 +98,10 @@ function normalizeBrowserBaseUrl(baseUrl: string): string {
 export function getAccountServiceBaseUrl(requestHost?: string | null): string {
   const runtimeUrl = getRuntimeDefaultAccountServiceUrl(requestHost)
   const configured = readEnvValue('ACCOUNT_SERVICE_URL', 'NEXT_PUBLIC_ACCOUNT_SERVICE_URL')
-  // Dynamic runtime config takes precedence over static .env.production build fallbacks (https://accounts.svc.plus)
-  const isStaticProdFallback = configured === 'https://accounts.svc.plus'
+  // Dynamic runtime config takes precedence over static .env.production build fallbacks (https://accounts.svc.plus / accounts-serverless-prod.svc.plus)
+  const isStaticProdFallback =
+    configured === 'https://accounts.svc.plus' ||
+    configured === 'https://accounts-serverless-prod.svc.plus'
   const resolved = (configured && !isStaticProdFallback) ? configured : (runtimeUrl || FALLBACK_ACCOUNT_SERVICE_URL)
   return normalizeServiceOrigin(normalizeBrowserBaseUrl(resolved))
 }

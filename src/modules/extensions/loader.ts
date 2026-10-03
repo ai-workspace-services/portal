@@ -1,4 +1,5 @@
 import { createFeatureFlag } from '@lib/featureFlags'
+import { isUserCenterFeatureEnabled, resolveRuntimeEnvironment } from '@lib/featureToggles'
 
 import { builtinExtensions } from './builtin'
 import type {
@@ -25,7 +26,21 @@ function instantiateExtension(definition: DashboardExtension): RegisteredExtensi
 
   registered.routes = definition.routes.map((route) => {
     const routeFlag = route.featureFlag ? createFeatureFlag(route.featureFlag) : undefined
-    const routeEnabled = extensionEnabled && (routeFlag ? routeFlag.enabled : true)
+    let routeEnabled = extensionEnabled && (routeFlag ? routeFlag.enabled : true)
+
+    // AI Aggregator 作为非 stable 的开发中特性，在 PROD 用户中心对注册用户默认不开放，在 UAT 环境全面开放
+    if (route.id === 'ai-aggregator' || route.featureFlag?.id === 'user-center.ai_aggregator') {
+      const runtimeEnv = resolveRuntimeEnvironment()
+      const allowedByToggle = isUserCenterFeatureEnabled('xconnect', 'ai_aggregator', runtimeEnv)
+      const explicitEnv = process.env.NEXT_PUBLIC_FEATURE_AI_AGGREGATOR
+      if (explicitEnv === '1' || explicitEnv === 'true') {
+        routeEnabled = true
+      } else if (explicitEnv === '0' || explicitEnv === 'false') {
+        routeEnabled = false
+      } else {
+        routeEnabled = allowedByToggle
+      }
+    }
 
     const registeredRoute: RegisteredRoute = {
       ...route,

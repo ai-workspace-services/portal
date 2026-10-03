@@ -15,6 +15,8 @@ import PermissionMatrixEditor, {
   type PermissionMatrix,
 } from "../management/components/PermissionMatrixEditor";
 import UserGroupManagement, {
+  type AdminPlanGroupPreview,
+  type AdminPlanGroupUpdate,
   type ManagedUser,
   type CreateManagedUserInput,
 } from "../management/components/UserGroupManagement";
@@ -32,7 +34,6 @@ type UserMetricsResponse = {
   overview: MetricsOverview;
   series: MetricsSeries;
 };
-
 
 type AdminSettingsResponse = {
   version: number;
@@ -319,6 +320,72 @@ export default function UserCenterManagementRoute() {
     [canEditRoles, markGroupsPending, usersSWR],
   );
 
+  const handlePlanGroupPreview = useCallback(
+    async (
+      scope: "single" | "batch",
+      updates: AdminPlanGroupUpdate[],
+      reason: string,
+    ): Promise<AdminPlanGroupPreview> => {
+      if (!canEditRoles || updates.length === 0) {
+        throw new Error("没有可修改的用户");
+      }
+      setGroupsUpdateMessage(undefined);
+      const endpoint =
+        scope === "single"
+          ? `${ADMIN_API_BASE}/users/${encodeURIComponent(updates[0].userId)}/plan-group`
+          : `${ADMIN_API_BASE}/users/plan-groups/batch`;
+      return jsonFetcher<AdminPlanGroupPreview>(endpoint, {
+        method: "PUT",
+        body: JSON.stringify({
+          mode: "preview",
+          requestId: crypto.randomUUID(),
+          reason,
+          updates,
+        }),
+      });
+    },
+    [canEditRoles],
+  );
+
+  const handlePlanGroupApply = useCallback(
+    async (
+      scope: "single" | "batch",
+      updates: AdminPlanGroupUpdate[],
+      requestId: string,
+      previewToken: string,
+      reason: string,
+    ) => {
+      if (!canEditRoles || updates.length === 0) return;
+      setGroupsUpdateMessage(undefined);
+      updates.forEach(({ userId }) => markGroupsPending(userId, true));
+      const endpoint =
+        scope === "single"
+          ? `${ADMIN_API_BASE}/users/${encodeURIComponent(updates[0].userId)}/plan-group`
+          : `${ADMIN_API_BASE}/users/plan-groups/batch`;
+      try {
+        await jsonFetcher(endpoint, {
+          method: "PUT",
+          body: JSON.stringify({
+            mode: "apply",
+            requestId,
+            previewToken,
+            reason,
+            updates,
+          }),
+        });
+        await usersSWR.mutate();
+      } catch (error) {
+        setGroupsUpdateMessage(
+          error instanceof Error ? error.message : "套餐变更失败",
+        );
+        throw error;
+      } finally {
+        updates.forEach(({ userId }) => markGroupsPending(userId, false));
+      }
+    },
+    [canEditRoles, markGroupsPending, usersSWR],
+  );
+
   const handleRoleChange = useCallback(
     async (userId: string, role: string) => {
       if (!canEditRoles) {
@@ -409,7 +476,9 @@ export default function UserCenterManagementRoute() {
   const handleDeleteUser = useCallback(
     async (userId: string) => {
       try {
-        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}`, { method: "DELETE" });
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}`, {
+          method: "DELETE",
+        });
         usersSWR.mutate();
       } catch (error) {
         alert(error instanceof Error ? error.message : "操作失败");
@@ -644,6 +713,8 @@ export default function UserCenterManagementRoute() {
             onCreateCustomUser={handleCreateCustomUser}
             onManageBlacklist={() => setIsBlacklistOpen(true)}
             onGroupsChange={handleGroupsChange}
+            onPlanGroupPreview={handlePlanGroupPreview}
+            onPlanGroupApply={handlePlanGroupApply}
             pendingGroupUserIds={pendingGroupUpdates}
           />
         </div>

@@ -1,0 +1,52 @@
+{
+  "zh": {
+    "hero": {
+      "badge": "全球非业务管理专网",
+      "title": "Global Mesh",
+      "subtitle": "一朵不是云的虚拟云 · 基于全球 5 大 VPS 运营商交叉覆盖与 Xconec 零信任体系构筑的多云去中心化带外管理专网。",
+      "cta": {
+        "label": "查看全球拓扑看板",
+        "href": "/products/global-mesh"
+      },
+      "downloadUrl": "https://github.com/ai-workspace-infra/global-mesh/releases",
+      "supportedPlatforms": "Linode · Hetzner · UCloud · Contabo · Vultr (全网 0 入站端口暴露)"
+    },
+    "wizard": {
+      "title": "3 步组建全球虚拟带外管理网",
+      "description": "通过 Xconec Gateway 极简部署，打通多云异构节点，实现业务与运维彻底隔离。",
+      "steps": [
+        {
+          "step": 1,
+          "title": "执行安全基线",
+          "description": "运行 cloud-init 脚本，封禁所有外部公网入站端口，启用 BBR 拥塞控制。",
+          "link": "https://github.com/ai-workspace-infra/global-mesh#readme",
+          "platforms": "Ubuntu 22.04/24.04 · Debian 12"
+        },
+        {
+          "step": 2,
+          "title": "启动 Gateway 容器",
+          "description": "通过 Docker Compose 启动 xconec-gateway，主动发起出站长连接加入全球 Mesh 网络。"
+        },
+        {
+          "step": 3,
+          "title": "无感动态容灾",
+          "description": "节点间实施 500ms 实时 RTT 探针探测，单云或单机房光缆中断自动毫秒级切换。"
+        }
+      ]
+    },
+    "showcases": [
+      {
+        "title": "五大异构 VPS 交叉覆盖",
+        "description": "聚合 Akamai、Hetzner、UCloud、Contabo、Vultr 全球 48+ PoP 节点，100% 骨干区域双活容灾。"
+      },
+      {
+        "title": "0 公网入站端口暴露",
+        "description": "所有管理流量收敛至 10.240.0.0/16 虚拟网段，SRE 配合短效证书动态访问，公网完全隐身。"
+      },
+      {
+        "title": "极低企业级构建成本",
+        "description": "整套横跨五大洲、包含 55,000GB+ 月流量的带外网络，总预算低至 $20 ~ $23 / 月。"
+      }
+    ]
+  }
+}

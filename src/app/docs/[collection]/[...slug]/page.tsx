@@ -14,10 +14,12 @@ import { getContentLanguage } from "@server/contentLanguage";
 
 import Feedback from "../../Feedback";
 import DocActions from "../../DocActions";
-import { getDocVersion, getDocVersionParams } from "../../resources.server";
+import { getDocVersion } from "../../resources.server";
 
 export async function generateStaticParams() {
-  return getDocVersionParams();
+  // Keep documentation pages on-demand so a growing content catalog cannot
+  // turn the SSR content build into an unbounded prerender job.
+  return [];
 }
 
 function DocsBreadcrumbs({

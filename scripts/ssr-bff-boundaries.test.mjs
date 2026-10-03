@@ -30,9 +30,19 @@ test("Zero catch-all is bundled in Console, not auth/public or excluded", async 
 
 test("existing auth and Console BFF boundaries are preserved", () => {
   for (const path of [
+    "api/auth/login/route.ts",
+    "api/auth/register/route.ts",
+    "api/auth/register/send/route.ts",
+    "api/auth/register/verify/route.ts",
+    "api/auth/password/forgot/route.ts",
+    "api/auth/password/forgot/send-code/route.ts",
+    "api/auth/password/forgot/confirm-code/route.ts",
+    "api/auth/verify-email/route.ts",
+    "api/auth/verify-email/send/route.ts",
     "api/auth/session/route.ts",
     "api/auth/token/exchange/route.ts",
     "api/auth/mfa/verify/route.ts",
+    "api/auth/mfa/recovery-codes/route.ts",
   ]) {
     assert.equal(bffBoundaryForRoute(path), "auth");
   }
@@ -42,13 +52,24 @@ test("existing auth and Console BFF boundaries are preserved", () => {
       "console",
     );
   }
+  assert.equal(bffBoundaryForRoute("api/global-mesh/nodes/route.ts"), "public");
+});
+
+test("public workspace service APIs are bundled in the workspace boundary", () => {
+  for (const path of [
+    "api/ai-workspace/free/route.ts",
+    "api/ai-workspace/sessions/[...segments]/route.ts",
+    "api/ai-workspace/tasks/catalog/route.ts",
+    "api/xworkmate/bridge/route.ts",
+  ]) {
+    assert.equal(bffBoundaryForRoute(path), "workspace");
+  }
 });
 
 test("no generic API or similar prefix gains a BFF handler", () => {
   for (const path of [
     "api/xconnect-zero-evil/[...segments]/route.ts",
     "api/overlay/v1/route.ts",
-    "api/auth/login/route.ts",
     "panel/xconnect-zero/page.tsx",
   ]) {
     assert.equal(bffBoundaryForRoute(path), undefined);

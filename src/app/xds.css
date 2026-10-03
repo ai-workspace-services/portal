@@ -795,7 +795,10 @@
 .xds-mnav-mobile a:hover { color: var(--text-primary); }
 @media (max-width: 1100px) {
   .xds-mnav-desktop { display: none; }
-  .xds-mnav-burger { display: grid; }
+  /* The desktop nav/actions disappear at this breakpoint. Keep the menu
+     trigger in the right-hand grid column instead of auto-placing it in the
+     now-empty center column. */
+  .xds-mnav-burger { display: grid; grid-column: 3; }
   .xds-mnav-menu { grid-template-columns: 1fr; min-width: 260px; }
 }
 

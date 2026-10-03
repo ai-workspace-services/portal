@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 
 import { homeMarketingContent } from "@/components/marketing/content";
@@ -56,14 +56,14 @@ export default function ProofSection() {
               : "Inspect the real product surfaces"}
           </p>
           {content.links.map((link) => (
-            <Link
+            <BoundaryLink
               key={link.href}
               href={link.href}
               className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-[var(--color-primary-hover)]"
             >
               {link.label}
               <ArrowUpRight className="h-4 w-4" aria-hidden />
-            </Link>
+            </BoundaryLink>
           ))}
         </div>
       </div>

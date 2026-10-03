@@ -6,8 +6,6 @@ import { resolvePublicUserEmail } from "@lib/publicUserIdentity";
 import { normalizeServiceReadiness } from "@lib/serviceReadiness";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
-
 type AccountUser = {
   id?: string;
   uuid?: string;
@@ -64,17 +62,24 @@ function normalizeRole(role: unknown): AuthenticatedRole | null {
   }
   if (
     normalized === "user" ||
+    normalized === "member" ||
     normalized === "operator" ||
-    normalized === "admin"
+    normalized === "ops" ||
+    normalized === "admin" ||
+    normalized === "administrator"
   ) {
+    if (normalized === "member") return "user";
+    if (normalized === "ops") return "operator";
+    if (normalized === "administrator") return "admin";
     return normalized;
   }
   return null;
 }
 
 async function fetchSession(token: string, requestHost?: string | null) {
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
   try {
-    const response = await fetch(`${ACCOUNT_API_BASE}/session`, {
+    const response = await fetch(`${accountApiBase}/session`, {
       headers: {
         Authorization: `Bearer ${token}`,
         ...(requestHost && requestHost.trim().length > 0
@@ -102,8 +107,37 @@ export async function GET(request: NextRequest) {
 
   const requestHost = request.headers.get("host");
   const { response, data } = await fetchSession(token, requestHost);
-  if (!response || !response.ok || !data?.user) {
-    const res = NextResponse.json({ user: null });
+
+  // Only a 401 means the token itself is no longer a session. Everything else
+  // -- a blocked account, a bad gateway, the service being unreachable -- says
+  // nothing about the token, so dropping the cookie there logs the user out
+  // over someone else's problem and destroys the evidence on the way.
+  //
+  // A 403 is the account being refused while the session is perfectly valid;
+  // the reason travels back so the UI can say which account is blocked instead
+  // of showing an empty sign-in form.
+  if (!response) {
+    return NextResponse.json({ user: null, error: "session_unavailable" });
+  }
+
+  if (response.status === 401) {
+    const res = NextResponse.json({ user: null, error: "session_expired" });
+    clearSessionCookie(res, requestHost ?? undefined);
+    return res;
+  }
+
+  if (!response.ok) {
+    const upstreamError =
+      typeof data?.error === "string" && data.error.trim().length > 0
+        ? data.error.trim()
+        : response.status === 403
+          ? "account_suspended"
+          : "session_unavailable";
+    return NextResponse.json({ user: null, error: upstreamError });
+  }
+
+  if (!data?.user) {
+    const res = NextResponse.json({ user: null, error: "session_expired" });
     clearSessionCookie(res, requestHost ?? undefined);
     return res;
   }
@@ -290,11 +324,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  void request;
+  const requestHost = request.headers.get("host");
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (token) {
-    await fetch(`${ACCOUNT_API_BASE}/session`, {
+    await fetch(`${accountApiBase}/session`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -304,6 +339,6 @@ export async function DELETE(request: NextRequest) {
   }
 
   const response = NextResponse.json({ success: true });
-  clearSessionCookie(response, request.headers.get("host") ?? undefined);
+  clearSessionCookie(response, requestHost ?? undefined);
   return response;
 }

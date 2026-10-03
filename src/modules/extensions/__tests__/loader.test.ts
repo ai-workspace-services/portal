@@ -42,4 +42,29 @@ describe('extension loader', () => {
     const AgentComponent = await resolveExtensionRouteComponent('/panel/agent')
     expect(typeof AgentComponent).toBe('function')
   })
+
+  it('keeps AI Aggregator disabled in PROD for registered users', async () => {
+    process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT = 'prod'
+    delete process.env.NEXT_PUBLIC_FEATURE_AI_AGGREGATOR
+    resetExtensionRegistryCache()
+
+    const registry = getExtensionRegistry()
+    const aggregatorRoute = registry.getRoute('/panel/ai-aggregator')
+
+    expect(aggregatorRoute?.enabled).toBe(false)
+    await expect(resolveExtensionRouteComponent('/panel/ai-aggregator')).rejects.toThrow('disabled')
+  })
+
+  it('enables AI Aggregator in UAT environment', async () => {
+    process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT = 'uat'
+    delete process.env.NEXT_PUBLIC_FEATURE_AI_AGGREGATOR
+    resetExtensionRegistryCache()
+
+    const registry = getExtensionRegistry()
+    const aggregatorRoute = registry.getRoute('/panel/ai-aggregator')
+
+    expect(aggregatorRoute?.enabled).toBe(true)
+    const AggregatorComponent = await resolveExtensionRouteComponent('/panel/ai-aggregator')
+    expect(typeof AggregatorComponent).toBe('function')
+  })
 })

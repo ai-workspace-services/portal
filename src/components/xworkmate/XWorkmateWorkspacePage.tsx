@@ -261,7 +261,7 @@ export function XWorkmateWorkspacePage({
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
 
   const bridgeEndpoint = trialMode
-    ? "/api/ai-workspace/trial"
+    ? "/api/ai-workspace/free"
     : "/api/xworkmate/bridge";
 
   const refreshTrialStatus = async () => {
@@ -269,7 +269,7 @@ export function XWorkmateWorkspacePage({
       return;
     }
     try {
-      const response = await fetch("/api/ai-workspace/trial", {
+      const response = await fetch("/api/ai-workspace/free", {
         credentials: "include",
         cache: "no-store",
       });
@@ -523,7 +523,7 @@ export function XWorkmateWorkspacePage({
                 className="mt-3 block rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-blue-700"
                 href={
                   trialStatus.registerHref ??
-                  "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial"
+                  "/register?returnTo=%2Fai-workspace"
                 }
               >
                 注册后保存会话与下载制品 →
@@ -679,7 +679,7 @@ export function XWorkmateWorkspacePage({
                   className="shrink-0 underline underline-offset-2"
                   href={
                     trialStatus.registerHref ??
-                    "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial"
+                    "/register?returnTo=%2Fai-workspace"
                   }
                 >
                   去注册

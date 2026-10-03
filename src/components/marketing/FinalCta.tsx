@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { ArrowRight } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -22,19 +22,19 @@ export default function FinalCta() {
           {finalCta.description}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link
+          <BoundaryLink
             href={finalCta.primaryCta.href}
             className={marketingTheme.cta.primary}
           >
             {finalCta.primaryCta.label}
             <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-          <Link
+          </BoundaryLink>
+          <BoundaryLink
             href={finalCta.secondaryCta.href}
             className={marketingTheme.cta.secondary}
           >
             {finalCta.secondaryCta.label}
-          </Link>
+          </BoundaryLink>
         </div>
       </div>
     </section>

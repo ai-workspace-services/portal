@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { Check } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -22,12 +22,12 @@ export default function PricingTeaser() {
           <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-500">
             {pricingTeaser.description}
           </p>
-          <Link
+          <BoundaryLink
             href={pricingTeaser.cta.href}
             className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
           >
             {pricingTeaser.cta.label}
-          </Link>
+          </BoundaryLink>
         </div>
 
         <div className="flex items-center gap-8">
