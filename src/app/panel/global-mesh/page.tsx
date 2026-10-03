@@ -1,5 +1,3 @@
-export const dynamic = 'error'
-
 import { redirect } from 'next/navigation'
 
 import { resolveExtensionRouteComponent } from '@extensions/loader'

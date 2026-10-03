@@ -1,5 +1,3 @@
-export const dynamic = "error";
-
 import DownloadListingContent from "@/components/download/DownloadListingContent";
 import DownloadNotFound from "@/components/download/DownloadNotFound";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
