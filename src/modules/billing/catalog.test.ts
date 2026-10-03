@@ -4,6 +4,7 @@ import {
   formatPlanPrice,
   isPurchasable,
   PLAN_COPY,
+  billingPlans,
   sellablePlans,
   type CatalogPlan,
 } from "./catalog";
@@ -73,6 +74,37 @@ describe("billing catalog", () => {
     );
   });
 
+  it("keeps operator-managed subscription plans visible with live copy", () => {
+    const offers = billingPlans(
+      catalogOf(
+        {
+          planId: "FREE-5GB",
+          displayName: "Free 5GB",
+          kind: "subscription",
+          includedQuotaBytes: 5 * 1024 ** 3,
+          active: true,
+          sortOrder: 30,
+        },
+        {
+          planId: "PLUS-20GB",
+          displayName: "Plus 20GB",
+          kind: "subscription",
+          includedQuotaBytes: 20 * 1024 ** 3,
+          active: true,
+          sortOrder: 20,
+        },
+      ),
+    );
+
+    expect(offers.map((offer) => offer.planId)).toEqual([
+      "FREE-5GB",
+      "PLUS-20GB",
+    ]);
+    expect(offers[0].copy.zh.name).toBe("Free 5GB");
+    expect(offers[1].plan.includedQuotaBytes).toBe(20 * 1024 ** 3);
+    expect(isPurchasable(offers[0].plan)).toBe(false);
+  });
+
   it("checks out top-ups as one-off payments and Pro as subscriptions", () => {
     // A top-up sent with mode=subscription would create a recurring charge;
     // a subscription sent with mode=payment would never renew. Both are money
@@ -88,7 +120,10 @@ describe("billing catalog", () => {
       for (const locale of ["zh", "en"] as const) {
         const copy = entry[locale];
         expect(copy.name, `${planId}.${locale}.name`).toBeTruthy();
-        expect(copy.description, `${planId}.${locale}.description`).toBeTruthy();
+        expect(
+          copy.description,
+          `${planId}.${locale}.description`,
+        ).toBeTruthy();
         expect(
           copy.features.length,
           `${planId}.${locale}.features`,
@@ -162,9 +197,7 @@ describe("formatPlanPrice", () => {
     // No amount, or an amount with no currency to read it in, must not render
     // as a number — the caller shows "coming soon" instead.
     expect(formatPlanPrice(undefined, "zh")).toBeNull();
-    expect(
-      formatPlanPrice({ planId: "FREE", active: true }, "zh"),
-    ).toBeNull();
+    expect(formatPlanPrice({ planId: "FREE", active: true }, "zh")).toBeNull();
     expect(
       formatPlanPrice(
         { planId: "FREE", active: true, priceAmount: 2000 },
