@@ -360,3 +360,14 @@ Typography uses existing Portal system fonts, with monospace immutable tags and 
 Verified day/week/year selectors (including Monday week starts), environment filtering, TAG search, build/deployment switch, selectable repository evidence, historical pagination, and empty PROD coverage. Fixture data is sanitized evidence collected from real Actions runs over seven days: 92 attempts, 55 environment/tag pairs and 76 evidence gaps. Unknown production history is shown as unavailable, never synthetic success. Unit verification covers daily/week/year deduplication, timezone boundaries, later failed retries, full UAT authority and unsafe URL/ref rejection. Proxy checks cover authentication and role denial. Production APIs are not bypassed by the preview.
 
 The preview route is local verification scaffolding and is excluded from the change. Live authenticated UAT acceptance remains a rollout gate after merge and a fresh immutable deployment. Optional P3 follow-up: adjust matrix column density for very long version tags.
+
+
+## 2026-10-04 responsive follow-up
+
+Source: user supplied authenticated UAT screenshots show the page overflowing horizontally, the PROD card and controls offscreen, and old count dates appearing first.
+
+Changes: constrain every shared Panel flex ancestor with min-width: 0; preserve the desktop sidebar width; keep matrix and counts scrolling within their sections; stack environment summaries on mobile; use mobile history cards and 44px matrix targets; show newest count periods first. Wide screens retain fluid available space.
+
+Local verification uses the real ReleaseStatusPage with a captured catalog and a geometry-equivalent Panel shell, not an authenticated production session. At measured CSS widths 389, 1035, 1363, and 2557, document.scrollWidth equals viewport width. Phone summaries stack; laptop summaries share the row; matrix remains independently scrollable. Screenshots: /tmp/release-responsive-qa/mobile.png, laptop.png, wide.png. Browser viewport overrides are scaled by the app. Full-page screenshot capture may crop at the displayed app panel; DOM bounds were checked separately. Live logged-in Chrome automation was unavailable because its request-header policy failed to load; production visual acceptance remains pending deployment.
+
+Validation: 8 release schema/count/proxy tests pass, TypeScript and changed-file ESLint pass, console SSR/OpenNext Worker build passes. Full-repository ESLint retains 6 pre-existing no-html-link-for-pages errors in Header, PanelSidebarContent, and ai-aggregator.

@@ -1,3 +1,4 @@
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
 import {
   Code,
   ChartNoAxesCombined,
@@ -52,7 +53,7 @@ export const userCenterExtension: DashboardExtension = {
     {
       id: "globalMesh",
       path: "/panel/cloud-hub",
-      label: "Global Mesh 拓扑",
+      label: cloudHubCopy.zh.navTopology,
       description: "全球多云互联与算力 PoP 拓扑",
       icon: Globe,
       loader: () => import("./routes/global-mesh"),
@@ -63,7 +64,7 @@ export const userCenterExtension: DashboardExtension = {
     {
       id: "productsGlobalMesh",
       path: "/products/cloud-hub",
-      label: "Global Mesh 产品页",
+      label: cloudHubCopy.zh.navProduct,
       description: "全球多云互联与算力 PoP 产品全景",
       icon: ExternalLink,
       loader: () => import("./routes/global-mesh"),
@@ -240,7 +241,14 @@ export const userCenterExtension: DashboardExtension = {
     ...["billing/plans", "billing/ledger", "audit", "system"].map((suffix) => ({
       id: `ops-${suffix.replace("/", "-")}`,
       path: `/panel/ops/${suffix}`,
-      label: suffix === "audit" ? "审计与系统" : suffix === "system" ? "系统管理" : suffix === "billing/plans" ? "套餐与订阅" : "账单与对账",
+      label:
+        suffix === "audit"
+          ? "审计与系统"
+          : suffix === "system"
+            ? "系统管理"
+            : suffix === "billing/plans"
+              ? "套餐与订阅"
+              : "账单与对账",
       description: "运营工作台子模块",
       icon: LayoutDashboard,
       loader: () => import("./routes/ops"),

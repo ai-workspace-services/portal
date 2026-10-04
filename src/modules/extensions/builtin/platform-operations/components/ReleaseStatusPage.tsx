@@ -45,7 +45,7 @@ const SYMBOLS: Record<ReleaseState, string> = {
   unknown: "?",
 };
 const PANEL =
-  "min-w-0 max-w-full rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 sm:p-6";
+  "min-w-0 max-w-full rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-4 sm:p-5 lg:p-6";
 const dateTime = (value: string | null) =>
   value
     ? new Intl.DateTimeFormat("zh-CN", {
@@ -132,7 +132,7 @@ export default function ReleaseStatusPage({
     [columns],
   );
   const daily = useMemo(
-    () => periodReleaseCounts(releases ?? [], period),
+    () => periodReleaseCounts(releases ?? [], period).reverse(),
     [releases, period],
   );
   const today = dailyReleaseCounts(releases ?? [], 1)[0];
@@ -220,7 +220,7 @@ export default function ReleaseStatusPage({
       )}
       {data && (
         <>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
             {(["uat", "prod"] as const).map((env) => {
               const latest = latestSuccess(data.releases, env);
               return (
@@ -229,7 +229,7 @@ export default function ReleaseStatusPage({
                   className={PANEL}
                   aria-label={`${env.toUpperCase()} 最新成功发布`}
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold text-[var(--color-heading)]">
                       {env.toUpperCase()}{" "}
                       <span className="ml-2 text-sm font-normal text-[var(--color-text-muted)]">
@@ -334,7 +334,7 @@ export default function ReleaseStatusPage({
                     <tr>
                       <th
                         scope="col"
-                        className="sticky left-0 z-10 min-w-48 bg-[var(--color-surface)] pr-4 text-xs text-[var(--color-text-muted)]"
+                        className="sticky left-0 z-10 w-32 min-w-32 max-w-32 break-words sm:w-48 sm:min-w-48 sm:max-w-48 bg-[var(--color-surface)] pr-4 text-xs text-[var(--color-text-muted)]"
                       >
                         仓库 / TAG
                       </th>
@@ -380,7 +380,7 @@ export default function ReleaseStatusPage({
                             }
                             aria-label={`${r.environment.toUpperCase()} ${r.tag} 环境发布：${RELEASE_LABELS[r.status]}`}
                             title={`${r.tag} · 环境发布${RELEASE_LABELS[r.status]}`}
-                            className={`inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${COLORS[r.status]}`}
+                            className={`inline-flex h-11 w-11 items-center justify-center rounded-md text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${COLORS[r.status]}`}
                           >
                             <span aria-hidden="true">{SYMBOLS[r.status]}</span>
                           </button>
@@ -416,7 +416,7 @@ export default function ReleaseStatusPage({
                                 aria-pressed={active}
                                 aria-label={`${repo} ${r.environment.toUpperCase()} ${r.tag}：${p ? `部署${RELEASE_LABELS[p.deployment]}，构建${RELEASE_LABELS[p.build]}` : "不在本次快照范围"}`}
                                 title={`${r.tag} · ${p ? RELEASE_LABELS[state] : "无记录"}`}
-                                className={`inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${COLORS[state]} ${active ? "ring-2 ring-blue-600 ring-offset-2" : ""} disabled:cursor-default disabled:opacity-40`}
+                                className={`inline-flex h-11 w-11 items-center justify-center rounded-md text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${COLORS[state]} ${active ? "ring-2 ring-blue-600 ring-offset-2" : ""} disabled:cursor-default disabled:opacity-40`}
                               >
                                 <span aria-hidden="true">{SYMBOLS[state]}</span>
                               </button>
@@ -571,7 +571,7 @@ export default function ReleaseStatusPage({
                       <th
                         scope="col"
                         key={d.day}
-                        className="min-w-9 font-normal text-[var(--color-text-muted)]"
+                        className="min-w-9 whitespace-nowrap font-normal text-[var(--color-text-muted)]"
                       >
                         {d.label}
                       </th>
@@ -622,7 +622,7 @@ export default function ReleaseStatusPage({
                 {tags.length} 个 TAG
               </span>
             </div>
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 hidden overflow-x-auto md:block">
               <table className="w-full min-w-[40rem] text-left text-sm">
                 <thead className="border-b border-[color:var(--color-divider)] text-xs text-[var(--color-text-subtle)]">
                   <tr>
@@ -695,6 +695,48 @@ export default function ReleaseStatusPage({
                 </tbody>
               </table>
             </div>
+            <ul className="mt-4 divide-y divide-[color:var(--color-divider)] md:hidden">
+              {tags.slice(historyPage * 10, historyPage * 10 + 10).map((r) => (
+                <li key={r.id} className="space-y-2 py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium">
+                      {r.environment.toUpperCase()} ·{" "}
+                      {r.scope === "full-uat" ? "完整 UAT" : "Serverless"}
+                    </span>
+                    <StateBadge state={r.status} />
+                  </div>
+                  <button
+                    type="button"
+                    className="min-h-11 break-all text-left font-mono text-sm text-[var(--color-primary)]"
+                    onClick={() => {
+                      setSelection({
+                        id: r.id,
+                        repository: r.repositories[0]?.repository ?? "",
+                      });
+                      document
+                        .getElementById("release-detail")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                    }}
+                  >
+                    {r.tag}
+                  </button>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
+                    <span>{dateTime(r.completedAt)}</span>
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-11 items-center text-[var(--color-primary)]"
+                    >
+                      查看记录 #{r.runId} ↗
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
             {!attempts.length && (
               <p className="py-5 text-sm text-[var(--color-text-muted)]">
                 暂无历史记录。

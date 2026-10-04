@@ -1,3 +1,4 @@
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
 type CountTemplate = {
   singular: string
   plural: string
@@ -1103,10 +1104,10 @@ export const translations: Record<'en' | 'zh', Translation> = {
         apiKeys: 'API Keys',
         logs: 'Observability',
         settings: 'Settings',
-        globalMesh: 'Global Mesh',
-        productsGlobalMesh: 'Global Mesh Showcase',
-        'global-mesh': 'Global Mesh',
-        'products-global-mesh': 'Global Mesh Showcase',
+        globalMesh: cloudHubCopy.en.navTopology,
+        productsGlobalMesh: cloudHubCopy.en.navProduct,
+        'global-mesh': cloudHubCopy.en.navTopology,
+        'products-global-mesh': cloudHubCopy.en.navProduct,
       },
       overview: {
         heading: 'User Center',
@@ -1986,10 +1987,10 @@ export const translations: Record<'en' | 'zh', Translation> = {
         apiKeys: '接口密钥',
         logs: '可观测性',
         settings: '系统设置',
-        globalMesh: 'Global Mesh 拓扑',
-        productsGlobalMesh: 'Global Mesh 产品页',
-        'global-mesh': 'Global Mesh 拓扑',
-        'products-global-mesh': 'Global Mesh 产品页',
+        globalMesh: cloudHubCopy.zh.navTopology,
+        productsGlobalMesh: cloudHubCopy.zh.navProduct,
+        'global-mesh': cloudHubCopy.zh.navTopology,
+        'products-global-mesh': cloudHubCopy.zh.navProduct,
       },
       overview: {
         heading: '用户中心',

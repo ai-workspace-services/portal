@@ -154,6 +154,12 @@ async function main(): Promise<void> {
     const marketing = parseFrontMatter(await readFile(marketingPath), marketingPath);
     parseFrontMatter(await readFile(heroPath), heroPath);
     validateMarketingContent(marketingPath, marketing as MarketingContent);
+    const productPath = `product/global-mesh/${locale}/hero.md`;
+    const product = parseFrontMatter(await readFile(productPath), productPath);
+    const ui = product.ui as Record<string, unknown> | undefined;
+    for (const field of ["name", "productTitle", "navTopology", "navProduct", "computeTopology", "dualTopology", "finopsTitle", "mixedMonthly", "aggregationAdvantage", "aggregationValue", "mapTitle", "llmsHeading"]) {
+      requireString(ui?.[field], `ui.${field}`, productPath);
+    }
   }
 
   console.log(`Website content is valid: ${contentRoot}`);

@@ -1,11 +1,13 @@
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
 import { type ProductConfig } from "./registry";
 
 const globalMesh: ProductConfig = {
   slug: "global-mesh",
-  name: "Global Mesh",
-  title: "Global Mesh — 一朵不是云的虚拟云",
-  title_en: "Global Mesh — A Virtual Cloud That Isn't Just a Cloud",
-  tagline_zh: "基于全球 5 大 VPS 运营商交叉覆盖与 Xconec 零信任体系构筑的全球非业务带外管理网络。",
+  name: cloudHubCopy.zh.name,
+  title: cloudHubCopy.zh.productTitle,
+  title_en: cloudHubCopy.en.productTitle,
+  tagline_zh:
+    "基于全球 5 大 VPS 运营商交叉覆盖与 Xconec 零信任体系构筑的全球非业务带外管理网络。",
   tagline_en:
     "Decentralized multi-cloud VPS mesh with Zero-Trust out-of-band management overlay powered by Xconec.",
   ogImage: "https://xworktech.com/assets/og/global-mesh.png",
