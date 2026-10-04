@@ -18,7 +18,7 @@ const STATIC_FALLBACKS: Record<string, any> = {
   xworkmate: xworkmateData,
   "open-platform": openPlatformData,
   "ai-workspace": aiWorkspaceData,
-  "global-mesh": globalMeshData,
+  "cloud-hub": globalMeshData,
 };
 
 export function generateStaticParams() {

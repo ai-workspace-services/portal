@@ -22,7 +22,7 @@ import {
   XdsCardBody,
   XdsCardHead,
 } from "@/components/ui/xds";
-import GlobalMeshMap from "@/app/products/global-mesh/GlobalMeshMap";
+import GlobalMeshMap from "@/app/products/cloud-hub/GlobalMeshMap";
 
 interface VpsProviderSummary {
   name: string;
@@ -181,7 +181,7 @@ export default function UserCenterGlobalMeshRoute() {
 
           <div className="flex items-center gap-3">
             <BoundaryLink
-              href="/products/global-mesh"
+              href="/products/cloud-hub"
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -214,7 +214,7 @@ export default function UserCenterGlobalMeshRoute() {
             {zh ? "在线服务工程全生命周期状态 (Code · Plan · Build · Deploy · Security · Run · Obs)" : "Online Service Engineering Lifecycle"}
           </h2>
           <BoundaryLink
-            href="/products/global-mesh"
+            href="/products/cloud-hub"
             className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 font-medium"
           >
             <span>{zh ? "查看架构与成本对账" : "View Architecture & FinOps"}</span>

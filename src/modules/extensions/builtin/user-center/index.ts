@@ -51,7 +51,7 @@ export const userCenterExtension: DashboardExtension = {
     },
     {
       id: "globalMesh",
-      path: "/panel/global-mesh",
+      path: "/panel/cloud-hub",
       label: "Global Mesh 拓扑",
       description: "全球多云互联与算力 PoP 拓扑",
       icon: Globe,
@@ -62,7 +62,7 @@ export const userCenterExtension: DashboardExtension = {
     },
     {
       id: "productsGlobalMesh",
-      path: "/products/global-mesh",
+      path: "/products/cloud-hub",
       label: "Global Mesh 产品页",
       description: "全球多云互联与算力 PoP 产品全景",
       icon: ExternalLink,

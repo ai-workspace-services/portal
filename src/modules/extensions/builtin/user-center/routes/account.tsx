@@ -397,14 +397,14 @@ export default function UserCenterAccountRoute() {
               actions={
                 <div className="flex items-center gap-2">
                   <BoundaryLink
-                    href="/panel/global-mesh"
+                    href="/panel/cloud-hub"
                     className="xds-btn xds-btn-primary xds-btn-sm inline-flex items-center gap-1.5"
                   >
                     <Network className="h-3.5 w-3.5" />
                     <span>{zh ? "控制台拓扑" : "Console Topology"}</span>
                   </BoundaryLink>
                   <BoundaryLink
-                    href="/products/global-mesh"
+                    href="/products/cloud-hub"
                     className="xds-btn xds-btn-secondary xds-btn-sm inline-flex items-center gap-1.5"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
