@@ -75,3 +75,8 @@ test("no generic API or similar prefix gains a BFF handler", () => {
     assert.equal(bffBoundaryForRoute(path), undefined);
   }
 });
+
+test("release status is bundled in Console with a fixed read-only route", () => {
+  assert.equal(bffBoundaryForRoute("api/operations/releases/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/operations/releases/dispatch/route.ts"), undefined);
+});

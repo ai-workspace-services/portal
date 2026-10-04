@@ -334,3 +334,29 @@ The browser subsequently redirected to the existing `/login` gate because no loc
 final result: blocked
 
 Blocker: an authenticated local Portal session is required to capture and compare the protected FinOps route in the selected design state.
+
+---
+
+# Release overview design QA
+
+final result: passed
+
+The user selected the supplied blue square matrix as a style reference and then requested a concise three-part release overview. This is an adaptation to Portal's existing tokens, not a pixel clone of the unrelated VPS capability screen. Source and implementation were opened in the same comparison input; desktop and narrow layouts were captured. Desktop capture used 1091 CSS pixels; the narrow test was additionally checked at 296 CSS pixels. Viewport density differs from the 2226-pixel source; comparisons concern component hierarchy and style, not identical unrelated copy or page dimensions.
+
+## Findings and repairs
+
+- P2: A sparse matrix stretched a single tag across the full card. Replaced the table's full-width sizing with content-sized columns and fixed minimum tracks.
+- P2: Narrow container sizing let wide tables determine the page width. Added full-width/min-width-zero containers and isolated horizontal scrolling inside the matrix and history.
+- P2: Build successes could obscure failed environment releases. Added a dedicated environment-result row and separate build/deployment selector. Unknown evidence stays a dashed neutral cell.
+- P2: Compact labels could wrap inside history status badges. Added no-wrap badges and a scrollable minimum-width history table.
+- Post-fix captures show bounded containers, readable square cells, visible status distinctions, and no clipped environment cards. History and matrix overflow remains inside their own scrolling regions.
+
+## Required fidelity surfaces
+
+Typography uses existing Portal system fonts, with monospace immutable tags and SHAs. Headings, labels and values keep a readable hierarchy. Light surface tokens, rounded bordered cards, blue success cells and neutral empty evidence retain the reference's matrix language. Red failures and amber pending states add release semantics. Spacing follows the existing card system, with compact matrix rows and collapsed details. There are no raster illustrations in the source; data cells are actual controls and existing Lucide icons are reused.
+
+## Interaction evidence
+
+Verified day/week/year selectors (including Monday week starts), environment filtering, TAG search, build/deployment switch, selectable repository evidence, historical pagination, and empty PROD coverage. Fixture data is sanitized evidence collected from real Actions runs over seven days: 92 attempts, 55 environment/tag pairs and 76 evidence gaps. Unknown production history is shown as unavailable, never synthetic success. Unit verification covers daily/week/year deduplication, timezone boundaries, later failed retries, full UAT authority and unsafe URL/ref rejection. Proxy checks cover authentication and role denial. Production APIs are not bypassed by the preview.
+
+The preview route is local verification scaffolding and is excluded from the change. Live authenticated UAT acceptance remains a rollout gate after merge and a fresh immutable deployment. Optional P3 follow-up: adjust matrix column density for very long version tags.

@@ -29,6 +29,7 @@ export function bffBoundaryForRoute(relativePath) {
       "api/agent-server/[...segments]/route.ts",
       "api/agent/[...segments]/route.ts",
       "api/account/[...segments]/route.ts",
+      "api/operations/releases/route.ts",
       "api/xconnect-zero/[...segments]/route.ts",
     ].includes(relativePath)
   )
