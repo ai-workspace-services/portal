@@ -177,7 +177,7 @@ export const capabilities = {
       "routes": [
         "/panel",
         "/panel/*",
-        "/products/global-mesh"
+        "/products/cloud-hub"
       ],
       "api_prefixes": [
         "/api/auth",
@@ -228,7 +228,7 @@ export const capabilities = {
         },
         {
           "id": "globalMesh",
-          "path": "/panel/global-mesh",
+          "path": "/panel/cloud-hub",
           "label": "Global Mesh 拓扑",
           "description": "全球多云互联与算力 PoP 拓扑",
           "guard": {
@@ -244,7 +244,7 @@ export const capabilities = {
         },
         {
           "id": "productsGlobalMesh",
-          "path": "/products/global-mesh",
+          "path": "/products/cloud-hub",
           "label": "Global Mesh 产品页",
           "description": "全球多云互联与算力 PoP 产品全景",
           "guard": {},
@@ -1019,7 +1019,7 @@ export const capabilities = {
       },
       {
         "id": "globalMesh",
-        "path": "/panel/global-mesh",
+        "path": "/panel/cloud-hub",
         "label": "Global Mesh 拓扑",
         "description": "全球多云互联与算力 PoP 拓扑",
         "guard": {
@@ -1035,7 +1035,7 @@ export const capabilities = {
       },
       {
         "id": "productsGlobalMesh",
-        "path": "/products/global-mesh",
+        "path": "/products/cloud-hub",
         "label": "Global Mesh 产品页",
         "description": "全球多云互联与算力 PoP 产品全景",
         "guard": {},

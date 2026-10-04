@@ -6,7 +6,7 @@
       "subtitle": "一朵不是云的虚拟云 · 基于全球 5 大 VPS 运营商交叉覆盖与 Xconec 零信任体系构筑的多云去中心化带外管理专网。",
       "cta": {
         "label": "查看全球拓扑看板",
-        "href": "/products/global-mesh"
+        "href": "/products/cloud-hub"
       },
       "downloadUrl": "https://github.com/ai-workspace-infra/global-mesh/releases",
       "supportedPlatforms": "Linode · Hetzner · UCloud · Contabo · Vultr (全网 0 入站端口暴露)"

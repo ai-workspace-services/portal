@@ -20,8 +20,8 @@ const expectedPanelRouteSnapshot: Array<
 > = [
   { id: 'dashboard', path: '/panel', match: 'startsWith', section: 'workspace', order: 0, hidden: false, guard: { requireLogin: true } },
   { id: 'finops', path: '/panel/finops', match: 'exact', section: 'workspace', order: 1, hidden: false, guard: { requireLogin: true } },
-  { id: 'globalMesh', path: '/panel/global-mesh', match: 'exact', section: 'workspace', order: 2, hidden: false, guard: { requireLogin: true } },
-  { id: 'productsGlobalMesh', path: '/products/global-mesh', match: 'exact', section: 'workspace', order: 3, hidden: false, guard: {} },
+  { id: 'globalMesh', path: '/panel/cloud-hub', match: 'exact', section: 'workspace', order: 2, hidden: false, guard: { requireLogin: true } },
+  { id: 'productsGlobalMesh', path: '/products/cloud-hub', match: 'exact', section: 'workspace', order: 3, hidden: false, guard: {} },
   { id: 'agents', path: '/panel/agent', match: 'exact', section: 'admin', order: 9, hidden: false, guard: { requireLogin: true, roles: ['admin'] } },
   { id: 'apis', path: '/panel/api', match: 'exact', section: 'productivity', order: 11, hidden: false, guard: { requireLogin: true } },
   { id: 'ai-aggregator', path: '/panel/ai-aggregator', match: 'exact', section: 'productivity', order: 12, hidden: false, guard: { requireLogin: true } },

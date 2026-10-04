@@ -44,7 +44,7 @@ const globalMesh: ProductConfig = {
     saas: [
       {
         label: "控制台入口",
-        href: "/panel/global-mesh",
+        href: "/panel/cloud-hub",
       },
     ],
   },
