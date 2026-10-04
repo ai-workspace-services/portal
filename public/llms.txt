@@ -18,7 +18,7 @@
 - **Platforms**: macOS, Windows, Linux, iOS, Android
 - **Repositories**: https://github.com/ai-workspace-xstream/xconnect-app
 
-### Open Platform & Global Mesh
+### Open Platform & Cloud hub
 - **Category**: Cloud-Neutral Infrastructure & Edge Mesh
 - **URL**: https://xworktech.com/products/open-platform
 - **Description**: Declarative infrastructure-as-code, GitOps workflows, and out-of-band management overlay across multi-cloud VPS providers.

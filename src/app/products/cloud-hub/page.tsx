@@ -1,5 +1,8 @@
 "use client";
 
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
+
+
 import React, { useState, useEffect } from "react";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
@@ -631,7 +634,7 @@ export default function GlobalMeshPage() {
         </div>
       </main>
 
-      <XdsSiteFooter brand="Global Mesh" />
+      <XdsSiteFooter brand={cloudHubCopy.zh.name} />
     </div>
   );
 }

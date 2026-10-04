@@ -1,5 +1,7 @@
 "use client";
 
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
+
 import React from "react";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import {
@@ -166,7 +168,7 @@ export default function UserCenterGlobalMeshRoute() {
                 <Globe className="h-5 w-5" />
               </div>
               <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {zh ? "Global Mesh 全球双网拓扑" : "Global Mesh Dual-Mesh Topology"}
+                {cloudHubCopy[language].dualTopology}
               </h1>
               <XdsBadge tone="success">
                 {zh ? "VPS + SaaS 双轮就绪" : "VPS + SaaS Dual Ready"}

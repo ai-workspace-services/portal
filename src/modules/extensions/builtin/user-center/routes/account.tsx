@@ -1,5 +1,7 @@
 "use client";
 
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
+
 /**
  * 用户中心 —— Micro SaaS 模版第 2 页
  *
@@ -383,14 +385,14 @@ export default function UserCenterAccountRoute() {
           </XdsCard>
         </section>
 
-        {/* ── Global Mesh 全球算力网格 ── */}
+        {/* ── Cloud hub 全球算力网格 ── */}
         <section className="xds-grid" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
           <XdsCard className="overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-gradient-to-r from-blue-50/40 via-white to-indigo-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850">
             <XdsCardHead
               title={
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span>{zh ? "Global Mesh 全球算力拓扑" : "Global Mesh Compute Topology"}</span>
+                  <span>{cloudHubCopy[language].computeTopology}</span>
                   <XdsBadge tone="success">{zh ? "48+ PoPs 已联通" : "48+ PoPs Connected"}</XdsBadge>
                 </div>
               }

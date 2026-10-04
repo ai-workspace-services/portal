@@ -141,6 +141,7 @@ async function main() {
 
   // Generate product content
   const products = [
+    'global-mesh',
     'xconnect',
     'xworkmate',
     'open-platform',
@@ -162,6 +163,24 @@ async function main() {
         JSON.stringify(productContent, null, 2)
       )
     }
+  }
+
+  // These static output titles share the reviewed product-copy source.
+  const cloudHub = await generateProductContent("global-mesh");
+  for (const [file, pattern, replacement] of [
+    [
+      "public/map-embed.html",
+      /<title>[^<]*<\/title>/,
+      `<title>${cloudHub.en.ui.mapTitle}</title>`,
+    ],
+    [
+      "public/llms.txt",
+      /^### Open Platform & (?:Global Mesh|Cloud hub)$/m,
+      `### ${cloudHub.en.ui.llmsHeading}`,
+    ],
+  ] as const) {
+    const source = await fs.readFile(file, "utf8");
+    await fs.writeFile(file, source.replace(pattern, replacement));
   }
 
   console.log('Generating docs content...')
