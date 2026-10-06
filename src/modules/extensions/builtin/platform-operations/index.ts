@@ -31,12 +31,12 @@ export const platformOperationsExtension: DashboardExtension = {
     {
       id: "platformOperations",
       path: "/panel/operations",
-      label: "Overview",
+      label: "Operations",
       description: "平台运行与操作总览",
       icon: LayoutDashboard,
       loader: () => import("./routes/overview"),
       guard: platformOperationsAccessRule,
-      sidebar: { section: "management", order: 24 },
+      sidebar: { section: "platform-operations", order: 24 },
     },
     {
       id: "platformOperationsReleases",
@@ -46,7 +46,7 @@ export const platformOperationsExtension: DashboardExtension = {
       icon: GitBranch,
       loader: () => import("./routes/releases"),
       guard: platformOperationsAccessRule,
-      sidebar: { section: "management", order: 25 },
+      sidebar: { section: "platform-operations", order: 25 },
     },
     {
       id: "platformOperationsEnvironments",
@@ -56,7 +56,7 @@ export const platformOperationsExtension: DashboardExtension = {
       icon: ServerCog,
       loader: () => import("./routes/environments"),
       guard: platformOperationsAccessRule,
-      sidebar: { section: "management", order: 26 },
+      sidebar: { section: "platform-operations", order: 26 },
     },
     {
       id: "platformOperationsAudit",
@@ -66,7 +66,7 @@ export const platformOperationsExtension: DashboardExtension = {
       icon: FileClock,
       loader: () => import("./routes/audit"),
       guard: platformOperationsAccessRule,
-      sidebar: { section: "management", order: 27 },
+      sidebar: { section: "platform-operations", order: 27 },
     },
     {
       id: "platformOperationsVault",
@@ -76,7 +76,7 @@ export const platformOperationsExtension: DashboardExtension = {
       icon: ShieldCheck,
       loader: () => import("./routes/vault-access"),
       guard: platformOperationsAccessRule,
-      sidebar: { section: "management", order: 28 },
+      sidebar: { section: "platform-operations", order: 28 },
     },
   ],
 };

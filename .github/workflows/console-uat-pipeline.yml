@@ -48,7 +48,7 @@ jobs:
       ACCOUNT_SERVICE_URL: https://accounts-serverless-uat.onwalk.net
       REQUIRE_EXTERNAL_WEBSITE_CONTENT: 'true'
       WEBSITE_CONTENT_REPOSITORY: https://github.com/ai-workspace-services/knowledge.git
-      WEBSITE_CONTENT_REF: 825d7bd058fd197f8703cbc899b7d664b6800ec2
+      WEBSITE_CONTENT_REF: 4eadd2bb31c2168861b021ae47ac846b388bcc90
       WEBSITE_CONTENT_SUBDIR: content/website
       WRANGLER_SEND_METRICS: 'false'
       CI: 'true'
@@ -134,7 +134,10 @@ jobs:
         run: |
           node scripts/check-boundary-links.mjs
           node --test scripts/ssr-bff-boundaries.test.mjs
-          yarn build:ssr:console
+          # github.sha identifies the main dispatcher, not the checked-out tag.
+          # Set the child process environment explicitly; do not rely on
+          # step-level overrides of GitHub's reserved GITHUB_* variables.
+          env GITHUB_SHA="$EXPECTED_SHA" SOURCE_VERSION="$EXPECTED_SHA" yarn build:ssr:console
 
       - name: Verify complete console asset inventory before credentials
         run: |
