@@ -20,6 +20,7 @@ export type ProductSourceLink = {
 };
 
 export type ProductSources = {
+  organization?: ProductSourceLink;
   repositories: ProductSourceLink[];
   downloads: ProductSourceLink[];
 };
@@ -71,13 +72,21 @@ export const PRODUCT_SOURCES: Record<string, ProductSources> = {
     downloads: [latestRelease("ai-workspace-services/portal", "AI Workspace Portal release")],
   },
   "open-platform": {
+    organization: {
+      label: "ai-workspace-infra",
+      href: "https://github.com/ai-workspace-infra",
+    },
     repositories: [
       repo("ai-workspace-services/portal"),
       repo("ai-workspace-services/accounts"),
       repo("ai-workspace-infra/platform-ops-toolkit"),
+      repo("ai-workspace-infra/gitops"),
       repo("ai-workspace-infra/iac_modules"),
+      repo("ai-workspace-infra/playbooks"),
     ],
-    downloads: [latestRelease("ai-workspace-infra/platform-ops-toolkit", "Platform Ops Toolkit release")],
+    downloads: [
+      latestRelease("ai-workspace-infra/platform-ops-toolkit", "Platform Ops Toolkit release"),
+    ],
   },
   "global-mesh": {
     repositories: [repo("ai-workspace-infra/global-mesh")],

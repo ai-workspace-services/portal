@@ -3,19 +3,26 @@
 export const revalidate = 900;
 
 import { getProduct } from "@/lib/docsServiceClient";
+import { getContentLanguage } from "@/server/contentLanguage";
 import ProductPageTemplate from "@/components/products/ProductPageTemplate";
 import openPlatformData from "@/data/content/open-platform.json";
 
 export default async function OpenPlatformPage() {
   let product = await getProduct("open-platform");
   if (!product) {
-    const raw = (openPlatformData as any).zh || (openPlatformData as any).en || openPlatformData;
+    const language = await getContentLanguage();
+    const raw =
+      (openPlatformData as any)[language] ||
+      (openPlatformData as any).zh ||
+      (openPlatformData as any).en ||
+      openPlatformData;
     product = {
       slug: "open-platform",
-      language: "zh",
+      language,
       hero: raw.hero,
       wizard: raw.wizard,
       showcases: raw.showcases || [],
+      solutions: raw.solutions || [],
     };
   }
 

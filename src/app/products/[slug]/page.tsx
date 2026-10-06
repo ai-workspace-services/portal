@@ -51,6 +51,7 @@ export default async function ProductDynamicPage({ params }: ProductSlugPageProp
       hero: localized.hero,
       wizard: localized.wizard,
       showcases: localized.showcases || [],
+      solutions: localized.solutions || [],
     };
   }
 
