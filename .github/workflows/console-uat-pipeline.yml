@@ -267,7 +267,9 @@ jobs:
               bindings: bindings.filter(x => x.type !== 'assets').map(x => ({ name: x.name, type: 'inherit' })),
               metadata: {
                 ...(settings.usage_model ? { usage_model: settings.usage_model } : {}),
-                annotations: { ...(settings.annotations || {}), 'workers/tag': process.env.RELEASE_TAG, 'workers/message': `Portal console UAT ${process.env.EXPECTED_SHA}` },
+                // Provider-owned annotations (e.g. workers/triggered_by) are
+                // read-only. Only supported release annotations are writable.
+                annotations: { 'workers/tag': process.env.RELEASE_TAG, 'workers/message': `Portal console UAT ${process.env.EXPECTED_SHA}` },
               },
             };
             // No routes/custom domains are configured here: the existing router
