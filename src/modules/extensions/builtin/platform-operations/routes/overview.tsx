@@ -1,5 +1,5 @@
-import PlatformOperationsPage from "../components/PlatformOperationsPage";
+import SnapshotOperationsPage from "../components/SnapshotOperationsPage";
 
 export default function PlatformOperationsOverviewRoute() {
-  return <PlatformOperationsPage view="overview" />;
+  return <SnapshotOperationsPage />;
 }

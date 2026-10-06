@@ -22,7 +22,7 @@ type HeroContent = {
 const CONTENT_ROOT = path.resolve(
   process.env.WEBSITE_CONTENT_DIR ??
     process.env.CONTENT_SOURCE_DIR ??
-    path.join(process.cwd(), 'src', 'content')
+    path.join(process.cwd(), 'src', 'content'),
 )
 const OUTPUT_ROOT = path.join(process.cwd(), 'src', 'data', 'content')
 
@@ -84,7 +84,13 @@ async function generateProductContent(product: string) {
 
   for (const lang of languages) {
     try {
-      const heroPath = path.join(CONTENT_ROOT, 'product', product, lang, 'hero.md')
+      const heroPath = path.join(
+        CONTENT_ROOT,
+        'product',
+        product,
+        lang,
+        'hero.md',
+      )
       const raw = await fs.readFile(heroPath, 'utf-8')
       const { metadata } = parseFrontMatter(raw)
       if (metadata && Object.keys(metadata).length > 0) {
@@ -125,18 +131,20 @@ async function main() {
   const homepageContent = await generateHomepageContent()
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'homepage.ts'),
-    'export default ' + JSON.stringify(homepageContent, null, 2) + ';'
+    'export default ' + JSON.stringify(homepageContent, null, 2) + ';',
   )
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'homepage.json'),
-    JSON.stringify(homepageContent, null, 2)
+    JSON.stringify(homepageContent, null, 2),
   )
 
   console.log('Generating home marketing content...')
   const homeMarketingContent = await generateHomeMarketingContent()
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'home-marketing.ts'),
-    'export const homeMarketingContentData = ' + JSON.stringify(homeMarketingContent, null, 2) + ';'
+    'export const homeMarketingContentData = ' +
+      JSON.stringify(homeMarketingContent, null, 2) +
+      ';',
   )
 
   // Generate product content
@@ -149,49 +157,68 @@ async function main() {
     'xstream',
     'xcloudflow',
     'xscopehub',
+    'operations',
   ]
   for (const product of products) {
     console.log(`Generating ${product} content...`)
-    const productContent = await generateProductContent(product)
+    const productContent =
+      product === 'operations'
+        ? Object.fromEntries(
+            await Promise.all(
+              (['zh', 'en'] as const).map(async (lang) => {
+                const file = path.join(
+                  CONTENT_ROOT,
+                  'operations',
+                  lang,
+                  'hero.md',
+                )
+                return [
+                  lang,
+                  parseFrontMatter(await fs.readFile(file, 'utf8')).metadata,
+                ]
+              }),
+            ),
+          )
+        : await generateProductContent(product)
     if (Object.keys(productContent).length > 0) {
       await fs.writeFile(
         path.join(OUTPUT_ROOT, `${product}.ts`),
-        'export default ' + JSON.stringify(productContent, null, 2) + ';'
+        'export default ' + JSON.stringify(productContent, null, 2) + ';',
       )
       await fs.writeFile(
         path.join(OUTPUT_ROOT, `${product}.json`),
-        JSON.stringify(productContent, null, 2)
+        JSON.stringify(productContent, null, 2),
       )
     }
   }
 
   // These static output titles share the reviewed product-copy source.
-  const cloudHub = await generateProductContent("global-mesh");
+  const cloudHub = await generateProductContent('global-mesh')
   for (const [file, pattern, replacement] of [
     [
-      "public/map-embed.html",
+      'public/map-embed.html',
       /<title>[^<]*<\/title>/,
       `<title>${cloudHub.en.ui.mapTitle}</title>`,
     ],
     [
-      "public/llms.txt",
+      'public/llms.txt',
       /^### Open Platform & (?:Global Mesh|Cloud hub)$/m,
       `### ${cloudHub.en.ui.llmsHeading}`,
     ],
   ] as const) {
-    const source = await fs.readFile(file, "utf8");
-    await fs.writeFile(file, source.replace(pattern, replacement));
+    const source = await fs.readFile(file, 'utf8')
+    await fs.writeFile(file, source.replace(pattern, replacement))
   }
 
   console.log('Generating docs content...')
   const docsContent = await generateDocsContent()
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'docs-home.ts'),
-    'export default ' + JSON.stringify(docsContent, null, 2) + ';'
+    'export default ' + JSON.stringify(docsContent, null, 2) + ';',
   )
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'docs-home.json'),
-    JSON.stringify(docsContent, null, 2)
+    JSON.stringify(docsContent, null, 2),
   )
 
   console.log('Content generation complete!')

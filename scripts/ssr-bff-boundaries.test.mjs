@@ -3,6 +3,15 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { bffBoundaryForRoute } from "./ssr-bff-boundaries.mjs";
 
+test("Operations catalog, plan and MCP share the console boundary", () => {
+  for (const route of [
+    "api/operations/catalog/route.ts",
+    "api/operations/plans/route.ts",
+    "api/operations/mcp/route.ts",
+  ])
+    assert.equal(bffBoundaryForRoute(route), "console");
+});
+
 test("Zero catch-all is bundled in Console, not auth/public or excluded", async () => {
   const route = "api/xconnect-zero/[...segments]/route.ts";
   assert.equal(bffBoundaryForRoute(route), "console");
@@ -77,6 +86,12 @@ test("no generic API or similar prefix gains a BFF handler", () => {
 });
 
 test("release status is bundled in Console with a fixed read-only route", () => {
-  assert.equal(bffBoundaryForRoute("api/operations/releases/route.ts"), "console");
-  assert.equal(bffBoundaryForRoute("api/operations/releases/dispatch/route.ts"), undefined);
+  assert.equal(
+    bffBoundaryForRoute("api/operations/releases/route.ts"),
+    "console",
+  );
+  assert.equal(
+    bffBoundaryForRoute("api/operations/releases/dispatch/route.ts"),
+    undefined,
+  );
 });

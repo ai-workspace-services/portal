@@ -50,7 +50,10 @@ async function readFile(relativePath: string): Promise<string> {
   }
 }
 
-function parseFrontMatter(raw: string, relativePath: string): Record<string, unknown> {
+function parseFrontMatter(
+  raw: string,
+  relativePath: string,
+): Record<string, unknown> {
   const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
   if (!match) {
     fail(`${relativePath} must start with YAML front matter`);
@@ -63,13 +66,20 @@ function parseFrontMatter(raw: string, relativePath: string): Record<string, unk
   return parsed as Record<string, unknown>;
 }
 
-function requireString(value: unknown, field: string, relativePath: string): void {
+function requireString(
+  value: unknown,
+  field: string,
+  relativePath: string,
+): void {
   if (typeof value !== "string" || value.trim() === "") {
     fail(`${relativePath} requires a non-empty ${field}`);
   }
 }
 
-function validateMarketingContent(relativePath: string, metadata: MarketingContent): void {
+function validateMarketingContent(
+  relativePath: string,
+  metadata: MarketingContent,
+): void {
   const hero = metadata.hero;
   if (!hero || typeof hero !== "object") {
     fail(`${relativePath} requires a hero object`);
@@ -86,8 +96,16 @@ function validateMarketingContent(relativePath: string, metadata: MarketingConte
   requireString(hero.tagline, "hero.tagline", relativePath);
   requireString(hero.primaryCta?.label, "hero.primaryCta.label", relativePath);
   requireString(hero.primaryCta?.href, "hero.primaryCta.href", relativePath);
-  requireString(hero.secondaryCta?.label, "hero.secondaryCta.label", relativePath);
-  requireString(hero.secondaryCta?.href, "hero.secondaryCta.href", relativePath);
+  requireString(
+    hero.secondaryCta?.label,
+    "hero.secondaryCta.label",
+    relativePath,
+  );
+  requireString(
+    hero.secondaryCta?.href,
+    "hero.secondaryCta.href",
+    relativePath,
+  );
 }
 
 async function validateManifest(): Promise<void> {
@@ -149,15 +167,49 @@ async function main(): Promise<void> {
   await validateManifest();
 
   for (const locale of locales) {
+    const operationsPath = `operations/${locale}/hero.md`;
+    const operations = parseFrontMatter(
+      await readFile(operationsPath),
+      operationsPath,
+    );
+    const operationsUI = operations.ui as Record<string, unknown> | undefined;
+    for (const field of [
+      "title",
+      "environment",
+      "previewNotice",
+      "plan",
+      "createPlan",
+      "executionUnavailable",
+      "prodUnavailable",
+      "mcpScope",
+    ]) {
+      requireString(operationsUI?.[field], `ui.${field}`, operationsPath);
+    }
     const marketingPath = `homepage/${locale}/marketing.md`;
     const heroPath = `homepage/${locale}/hero.md`;
-    const marketing = parseFrontMatter(await readFile(marketingPath), marketingPath);
+    const marketing = parseFrontMatter(
+      await readFile(marketingPath),
+      marketingPath,
+    );
     parseFrontMatter(await readFile(heroPath), heroPath);
     validateMarketingContent(marketingPath, marketing as MarketingContent);
     const productPath = `product/global-mesh/${locale}/hero.md`;
     const product = parseFrontMatter(await readFile(productPath), productPath);
     const ui = product.ui as Record<string, unknown> | undefined;
-    for (const field of ["name", "productTitle", "navTopology", "navProduct", "computeTopology", "dualTopology", "finopsTitle", "mixedMonthly", "aggregationAdvantage", "aggregationValue", "mapTitle", "llmsHeading"]) {
+    for (const field of [
+      "name",
+      "productTitle",
+      "navTopology",
+      "navProduct",
+      "computeTopology",
+      "dualTopology",
+      "finopsTitle",
+      "mixedMonthly",
+      "aggregationAdvantage",
+      "aggregationValue",
+      "mapTitle",
+      "llmsHeading",
+    ]) {
       requireString(ui?.[field], `ui.${field}`, productPath);
     }
   }
