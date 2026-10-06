@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
@@ -47,6 +47,7 @@ const rpc = (method: string, params?: unknown, extra = {}) =>
   );
 
 describe("Operations API and read-only MCP", () => {
+  afterEach(() => vi.unstubAllEnvs());
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.session.mockResolvedValue({
@@ -54,6 +55,50 @@ describe("Operations API and read-only MCP", () => {
       token: "session-token",
     });
     mocks.operations.mockReturnValue(true);
+  });
+
+  it("accepts the configured public origin behind an internal Worker URL", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CONSOLE_HOST", "console.example");
+    const behindWorker = (
+      body: unknown,
+      headers: Record<string, string> = {},
+    ) =>
+      new NextRequest("http://localhost:3000/api/operations/plans", {
+        method: "POST",
+        headers: {
+          origin,
+          "content-type": "application/json",
+          accept: "application/json, text/event-stream",
+          ...headers,
+        },
+        body: JSON.stringify(body),
+      });
+    expect(
+      (await plan(behindWorker({ environment: "uat", mode: "none" }))).status,
+    ).toBe(200);
+    expect(
+      (await mcp(behindWorker({ jsonrpc: "2.0", id: 1, method: "tools/list" })))
+        .status,
+    ).toBe(200);
+    for (const handler of [plan, mcp]) {
+      expect(
+        (
+          await handler(
+            behindWorker(
+              {},
+              {
+                origin: "https://attacker.example",
+                "x-forwarded-host": "attacker.example",
+              },
+            ),
+          )
+        ).status,
+      ).toBe(403);
+      expect(
+        (await handler(behindWorker({}, { "sec-fetch-site": "cross-site" })))
+          .status,
+      ).toBe(403);
+    }
   });
 
   it("authenticates and role-gates every route with private responses", async () => {

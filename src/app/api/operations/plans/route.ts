@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAccountSession } from "@server/account/session";
 import { isOperationsUser } from "@server/account/adminAccess";
+import { operationsRequestOrigin } from "@server/operations/requestOrigin";
 import { createSnapshotPlan } from "@/modules/extensions/builtin/platform-operations/lib/snapshot-plan";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return fail("session_unavailable", 503);
   }
   if (
-    request.headers.get("origin") !== new URL(request.url).origin ||
+    request.headers.get("origin") !== operationsRequestOrigin(request) ||
     request.headers.get("sec-fetch-site") === "cross-site"
   )
     return fail("invalid_origin", 403);
