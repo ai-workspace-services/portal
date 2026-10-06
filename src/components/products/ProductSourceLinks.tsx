@@ -8,6 +8,7 @@
 import { Download } from "lucide-react";
 
 import { Github } from "@/components/icons/brand";
+import { publicDiscovery } from "@/data/content/public-discovery";
 
 import {
   XdsCard,
@@ -29,6 +30,8 @@ export default function ProductSourceLinks({
   const sources = PRODUCT_SOURCES[slug];
   if (!sources) return null;
   const isEn = language === "en";
+  const locale = isEn ? "en" : "zh";
+  const product = publicDiscovery.products.find((item) => item.slug === slug);
 
   return (
     <section id="source-and-downloads" style={{ paddingTop: 64 }}>
@@ -46,7 +49,8 @@ export default function ProductSourceLinks({
           style={{
             display: "grid",
             gap: "var(--sp-5)",
-            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
           }}
         >
           <XdsCard>
@@ -55,26 +59,70 @@ export default function ProductSourceLinks({
               <ul style={{ display: "grid", gap: 10 }}>
                 {sources.repositories.map((item) => (
                   <li key={item.href}>
-                    <a className="xds-link-arrow" href={item.href} rel="noopener">
-                      <Github className="h-4 w-4" aria-hidden="true" /> {item.label}
+                    <a
+                      className="xds-link-arrow"
+                      href={item.href}
+                      rel="noopener"
+                    >
+                      <Github className="h-4 w-4" aria-hidden="true" />{" "}
+                      {item.label}
                     </a>
                   </li>
                 ))}
               </ul>
+              {product ? (
+                <details style={{ marginTop: "var(--sp-5)" }}>
+                  <summary className="cursor-pointer">
+                    {publicDiscovery.sections.what[locale]}
+                  </summary>
+                  <dl className="mt-3 space-y-3">
+                    {(
+                      [
+                        ["what", product.description[locale]],
+                        ["problem", product.problem[locale]],
+                        ["how", product.how[locale]],
+                        ["availability", publicDiscovery.availability[locale]],
+                        ["pricing", publicDiscovery.pricing[locale]],
+                      ] as const
+                    ).map(([key, value]) => (
+                      <div key={key}>
+                        <dt className="font-semibold">
+                          {publicDiscovery.sections[key][locale]}
+                        </dt>
+                        <dd>{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <a
+                    className="xds-link-arrow mt-3"
+                    href={`/products/${slug}${isEn ? ".en" : ""}.md`}
+                    type="text/markdown"
+                  >
+                    Markdown
+                  </a>
+                </details>
+              ) : null}
             </XdsCardBody>
           </XdsCard>
           {sources.downloads.length > 0 ? (
             <XdsCard>
               <XdsCardHead
                 title={isEn ? "Downloads" : "下载"}
-                description={isEn ? "Latest GitHub Release" : "最新 GitHub Release"}
+                description={
+                  isEn ? "Latest GitHub Release" : "最新 GitHub Release"
+                }
               />
               <XdsCardBody>
                 <ul style={{ display: "grid", gap: 10 }}>
                   {sources.downloads.map((item) => (
                     <li key={item.href}>
-                      <a className="xds-link-arrow" href={item.href} rel="noopener">
-                        <Download className="h-4 w-4" aria-hidden="true" /> {item.label}
+                      <a
+                        className="xds-link-arrow"
+                        href={item.href}
+                        rel="noopener"
+                      >
+                        <Download className="h-4 w-4" aria-hidden="true" />{" "}
+                        {item.label}
                       </a>
                     </li>
                   ))}

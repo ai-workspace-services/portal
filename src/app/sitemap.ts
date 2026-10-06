@@ -1,78 +1,41 @@
-import type { MetadataRoute } from 'next'
+import type { MetadataRoute } from "next";
 
-import { getBlogList } from '@/lib/docsServiceClient'
-import { PRODUCT_LIST } from '@/modules/products/registry'
+import {
+  publicDiscovery,
+  publicProductRoutes,
+} from "@/data/content/public-discovery";
+import { COMPANY_SITE_URL } from "@/lib/company";
+import { getBlogList, getDocCollections } from "@/lib/docsServiceClient";
+import { catalogEntries, collectBlogPages } from "@/lib/public-sitemap";
 
-const baseUrl = 'https://xworktech.com'
-
-// `force-dynamic` used to cancel out the revalidate window below; the sitemap
-// is now generated once per hour and served from the cache in between.
-export const revalidate = 3600
+// Runtime credentials for content-service are not necessarily present during
+// the image build. Never bake an empty build-time catalog into the sitemap.
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // The sitemap is now prerendered, so an unreachable content service has to
-  // degrade to the static routes rather than fail the build.
-  const { posts } = await getBlogList({ page: 1, pageSize: 500, lang: "default" }).catch((error) => {
-    console.warn('Sitemap blog entries unavailable', error)
-    return { posts: [] }
-  })
-
-  const staticEntries: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/`,
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/about`,
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/blogs`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/download`,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/services`,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-
-    {
-      url: `${baseUrl}/cloud_iac`,
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/login`,
-      changeFrequency: 'monthly',
-      priority: 0.4,
-    },
-    {
-      url: `${baseUrl}/register`,
-      changeFrequency: 'monthly',
-      priority: 0.4,
-    },
-  ]
-
-  const productEntries: MetadataRoute.Sitemap = PRODUCT_LIST.map((product) => ({
-    url: `${baseUrl}/${product.slug}`,
-    changeFrequency: 'monthly',
-    priority: 0.9,
-  }))
-
-  const blogEntries: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${baseUrl}/blogs/${post.slug}`,
-    lastModified: post.date ? new Date(post.date) : undefined,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }))
-
-  return [...staticEntries, ...productEntries, ...blogEntries]
+  const paths = [
+    "/",
+    ...publicDiscovery.resources.map(({ href }) => href),
+    ...publicProductRoutes,
+  ];
+  const entries: MetadataRoute.Sitemap = [...new Set(paths)].map((route) => ({
+    url: `${COMPANY_SITE_URL}${route}`,
+  }));
+  // Content archives stay in content-service, not in the Portal image.
+  const [posts, collections] = await Promise.all([
+    collectBlogPages((page) =>
+      getBlogList({ page, pageSize: 100, lang: "default" }),
+    ).catch((error) => {
+      console.warn("Sitemap blog catalog unavailable", error);
+      return [];
+    }),
+    Promise.all([getDocCollections("zh"), getDocCollections("en")])
+      .then((results) => results.flat())
+      .catch((error) => {
+        console.warn("Sitemap documentation catalog unavailable", error);
+        return [];
+      }),
+  ]);
+  entries.push(...catalogEntries(COMPANY_SITE_URL, posts, collections));
+  return [...new Map(entries.map((entry) => [entry.url, entry])).values()];
 }
