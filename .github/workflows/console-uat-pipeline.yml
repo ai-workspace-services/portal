@@ -134,7 +134,10 @@ jobs:
         run: |
           node scripts/check-boundary-links.mjs
           node --test scripts/ssr-bff-boundaries.test.mjs
-          yarn build:ssr:console
+          # github.sha identifies the main dispatcher, not the checked-out tag.
+          # Set the child process environment explicitly; do not rely on
+          # step-level overrides of GitHub's reserved GITHUB_* variables.
+          env GITHUB_SHA="$EXPECTED_SHA" SOURCE_VERSION="$EXPECTED_SHA" yarn build:ssr:console
 
       - name: Verify complete console asset inventory before credentials
         run: |
