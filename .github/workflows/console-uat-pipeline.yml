@@ -220,6 +220,7 @@ jobs:
             value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
           const fingerprint = value => crypto.createHash('sha256').update(JSON.stringify(canonical(value))).digest('hex');
           const configPath = '.edge-build/console/wrangler.jsonc';
+          let stage = 'read_existing_configuration';
           try {
             if (!/^[0-9a-f]{32}$/.test(process.env.CLOUDFLARE_ACCOUNT_ID || '')) fail('Invalid UAT account identifier');
             const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -253,9 +254,14 @@ jobs:
             config.preview_urls = subdomain.previews_enabled;
             config.compatibility_date = settings.compatibility_date;
             config.compatibility_flags = settings.compatibility_flags;
-            for (const key of ['placement', 'limits', 'observability', 'logpush', 'tail_consumers', 'streaming_tail_consumers']) {
+            for (const key of ['limits', 'observability', 'logpush', 'tail_consumers', 'streaming_tail_consumers']) {
               if (settings[key] !== undefined) config[key] = settings[key];
             }
+            // Provider settings represent disabled placement as {}. Wrangler
+            // requires a mode when the placement field is present. Omit only
+            // that empty default; reject an unknown non-empty representation.
+            if (settings.placement?.mode) config.placement = settings.placement;
+            else if (settings.placement && Object.keys(settings.placement).length) fail('Unsupported placement representation');
             if (settings.assets?.config) Object.assign(config.assets, settings.assets.config);
             config.unsafe = {
               bindings: bindings.filter(x => x.type !== 'assets').map(x => ({ name: x.name, type: 'inherit' })),
@@ -275,12 +281,14 @@ jobs:
             const logPath = path.join(privateDir, 'deploy.log');
             const log = fs.openSync(logPath, 'wx', 0o600);
             let child;
+            stage = 'upload_worker';
             try {
               child = spawnSync('yarn', ['deploy:ssr', '--boundary', 'console'], {
                 env: process.env, stdio: ['ignore', log, log], timeout: 600000,
               });
             } finally { fs.closeSync(log); }
             if (child.error || child.status !== 0) fail('Console Worker deployment failed; raw provider output withheld');
+            stage = 'verify_preserved_configuration';
             const after = await api('/settings');
             const afterSubdomain = await api('/subdomain');
             const preserved = list => list.filter(x => x.type !== 'assets').sort((a, b) => a.name.localeCompare(b.name));
@@ -297,6 +305,7 @@ jobs:
             if (version.annotations?.['workers/tag'] !== process.env.RELEASE_TAG ||
                 version.annotations?.['workers/message'] !== `Portal console UAT ${process.env.EXPECTED_SHA}`) fail('Deployed Worker release identity mismatch');
             const assetsRoot = '.edge-build/console/.open-next/assets/_edge/console/_next';
+            stage = 'verify_public_assets_and_login_gate';
             const assets = fs.readdirSync(assetsRoot, { recursive: true }).filter(x => /\.(js|css)$/.test(x));
             if (!assets.length) fail('Console build has no client assets');
             // Verify exact deployed bytes through the public router, not Pages.
@@ -322,7 +331,7 @@ jobs:
           } catch (error) {
             // Errors are ours only; fetch/parser/subprocess errors may contain
             // request or response details, so never emit their raw messages.
-            console.error('Console-only UAT deployment/verification failed. No raw logs or bindings published.');
+            console.error(`Console-only UAT failed at ${stage}. No raw logs or bindings published.`);
             process.exitCode = 1;
           } finally {
             fs.rmSync(privateDir, { recursive: true, force: true });
