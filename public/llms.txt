@@ -1,34 +1,39 @@
-# XWork Technologies LLC — Platform & Products
+# XWork Technologies LLC
 
-> XWork Technologies LLC builds open, secure, and cloud-neutral AI workspace software connecting models, autonomous agents, engineering tools, and enterprise data.
+> XWork Technologies LLC builds AI workspace software, secure connectivity, and open infrastructure for hosted and self-managed use.
 
-## Core Products
+Website: https://xworktech.com
+Support: support@xworktech.com
 
-### XWorkmate
-- **Category**: Unified AI Workspace & Multi-Agent Orchestration
-- **URL**: https://xworktech.com/products/xworkmate
-- **Description**: Connects LLMs (via LiteLLM routing), autonomous agents (OpenClaw multi-session runtime), and specialized engineering skills into durable project threads that deliver tangible code, documents, and assets.
-- **Platforms**: macOS, Windows, Linux, Android, Web
-- **Repositories**: https://github.com/ai-workspace-lab/xworkmate-app, https://github.com/ai-workspace-lab/xworkmate-bridge
+## Products
 
-### XConnect
-- **Category**: AI Workspace Zero-Trust Connector & Acceleration
-- **URL**: https://xworktech.com/products/xconnect
-- **Description**: Fast, secure, and resilient global connectivity providing zero-trust tunneling between local development workspaces and cloud/edge inference nodes.
-- **Platforms**: macOS, Windows, Linux, iOS, Android
-- **Repositories**: https://github.com/ai-workspace-xstream/xconnect-app
+- [XWorkmate](https://xworktech.com/products/xworkmate.en.md): Connect models, agents, tools, and data so AI can execute work and deliver durable results.
+  - [Official page](https://xworktech.com/products/xworkmate) · [中文](https://xworktech.com/products/xworkmate.md)
+- [XConnect](https://xworktech.com/products/xconnect.en.md): Secure connectivity, remote access, and real-time collaboration for AI workspaces.
+  - [Official page](https://xworktech.com/products/xconnect) · [中文](https://xworktech.com/products/xconnect.md)
+- [AI Workspace](https://xworktech.com/products/ai-workspace.en.md): Start conversations, tasks, tool calls, and delivery in the browser with no installation.
+  - [Official page](https://xworktech.com/products/ai-workspace) · [中文](https://xworktech.com/products/ai-workspace.md)
+- [Open Platform](https://xworktech.com/products/open-platform.en.md): An open platform for self-hosting and developers, keeping control of code, data, and deployment.
+  - [Official page](https://xworktech.com/products/open-platform) · [中文](https://xworktech.com/products/open-platform.md)
+- [Cloud Hub](https://xworktech.com/products/cloud-hub.en.md): Explore multi-cloud resources and global connectivity architecture for infrastructure selection and self-managed deployment.
+  - [Official page](https://xworktech.com/products/cloud-hub) · [中文](https://xworktech.com/products/cloud-hub.md)
 
-### Open Platform & Cloud hub
-- **Category**: Cloud-Neutral Infrastructure & Edge Mesh
-- **URL**: https://xworktech.com/products/open-platform
-- **Description**: Declarative infrastructure-as-code, GitOps workflows, and out-of-band management overlay across multi-cloud VPS providers.
-- **Repositories**: https://github.com/ai-workspace-infra/global-mesh
+## Public resources
 
-## Company Identity & Verification
-- **Legal Entity**: XWork Technologies LLC
-- **Website**: https://xworktech.com
-- **Support Email**: support@xworktech.com
-- **Business Contact**: haitaopan@xworktech.com
-- **GitHub Organization**: https://github.com/ai-workspace-lab
-- **Terms of Service**: https://xworktech.com/terms
-- **Privacy Policy**: https://xworktech.com/privacy
+- [Products](https://xworktech.com/products)
+- [Docs](https://xworktech.com/docs)
+- [Articles](https://xworktech.com/blogs)
+- [Pricing](https://xworktech.com/prices)
+- [Downloads](https://xworktech.com/download)
+- [About](https://xworktech.com/about)
+- [Company](https://xworktech.com/company)
+- [Contact](https://xworktech.com/contact)
+- [Support](https://xworktech.com/support)
+- [Privacy](https://xworktech.com/privacy)
+- [Terms](https://xworktech.com/terms)
+
+## Availability and pricing
+
+Public product information, documentation, and source code are accessible without signing in. Client platforms, versions, and installers are determined by the download center and repository release assets. Source code or a product description does not establish app-store approval.
+
+Start with free access rather than a separate trial plan. See the public pricing page for subscription, pay-as-you-go, and custom terms, quotas, and prices. Free access does not imply that upstream models or self-managed infrastructure have no cost.

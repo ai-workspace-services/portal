@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import yaml from 'js-yaml'
+import { generatePublicDiscovery } from './generate-public-discovery'
 
 type Language = 'zh' | 'en'
 
@@ -123,6 +124,7 @@ async function generateDocsContent() {
 }
 
 async function main() {
+  await generatePublicDiscovery(CONTENT_ROOT)
   // Create output directory
   await fs.mkdir(OUTPUT_ROOT, { recursive: true })
 
