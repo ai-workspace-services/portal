@@ -148,12 +148,24 @@ export type WebsiteShowcasePayload = {
   reverse?: boolean;
 };
 
+export type WebsiteSolutionLinkPayload = {
+  label: string;
+  href: string;
+};
+
+export type WebsiteSolutionGroupPayload = {
+  title: string;
+  description?: string;
+  links: WebsiteSolutionLinkPayload[];
+};
+
 export type WebsiteProductPayload = {
   slug: string;
   language: string;
   hero: WebsiteHeroPayload;
   wizard?: WebsiteWizardPayload;
   showcases: WebsiteShowcasePayload[];
+  solutions?: WebsiteSolutionGroupPayload[];
   sourcePath?: string;
   updatedAt?: string;
 };
