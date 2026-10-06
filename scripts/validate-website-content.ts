@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import yaml from "js-yaml";
+import { validateDiscovery } from "../src/lib/public-discovery";
 
 type ContentManifest = {
   apiVersion?: unknown;
@@ -147,6 +148,7 @@ async function main(): Promise<void> {
   }
 
   await validateManifest();
+  validateDiscovery(JSON.parse(await readFile("discovery.json")));
 
   for (const locale of locales) {
     const marketingPath = `homepage/${locale}/marketing.md`;

@@ -10,6 +10,7 @@
  */
 
 import BoundaryLink from "@/components/common/BoundaryLink";
+import AiResourceLinks from "@/components/marketing/AiResourceLinks";
 import { Zap } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -112,7 +113,9 @@ interface XdsSiteFooterProps {
   brand?: string;
 }
 
-export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProps) {
+export default function XdsSiteFooter({
+  brand = "XWorkmate",
+}: XdsSiteFooterProps) {
   const { language } = useLanguage();
   const lang = language === "en" ? "en" : "zh";
 
@@ -153,6 +156,9 @@ export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProp
           className="xds-divider"
           style={{ margin: "var(--sp-8) 0 var(--sp-5)" }}
         />
+        <div style={{ marginBottom: "var(--sp-5)" }}>
+          <AiResourceLinks language={lang} />
+        </div>
         <div className="xds-row-between">
           <span className="xds-t-caption">
             © {new Date().getFullYear()} {COMPANY_LEGAL_NAME}

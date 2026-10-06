@@ -2,6 +2,7 @@
 import { Moon, Sun } from "lucide-react";
 import { Github, Linkedin, Twitter } from "@/components/icons/brand";
 import BoundaryLink from "@/components/common/BoundaryLink";
+import AiResourceLinks from "@/components/marketing/AiResourceLinks";
 import { useLanguage } from "../i18n/LanguageProvider";
 import { COMPANY_GITHUB_URL, COMPANY_LEGAL_NAME } from "@/lib/company";
 
@@ -125,13 +126,17 @@ export default function Footer() {
           </button>
         </div>
       </div>
+      <AiResourceLinks language={language} />
       <div
         data-testid="company-identity"
         className="flex w-full flex-col items-center gap-2 border-t border-[color:var(--color-surface-border)] pt-3 sm:flex-row sm:justify-between"
       >
         <p>
           {isChinese ? "由 " : "Built by "}
-          <BoundaryLink href="/about" className={`font-semibold ${linkClassName}`}>
+          <BoundaryLink
+            href="/about"
+            className={`font-semibold ${linkClassName}`}
+          >
             {COMPANY_LEGAL_NAME}
           </BoundaryLink>
           {isChinese ? " 开发与运营" : ""}
