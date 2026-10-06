@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAccountSession } from "@server/account/session";
 import { isOperationsUser } from "@server/account/adminAccess";
+import { operationsRequestOrigin } from "@server/operations/requestOrigin";
 import { snapshotCatalog } from "@/modules/extensions/builtin/platform-operations/lib/snapshot-plan";
 import { GET as getCatalog } from "../catalog/route";
 import { POST as createPlan } from "../plans/route";
@@ -85,7 +86,7 @@ const tools = [
 async function authorize(request: NextRequest): Promise<NextResponse | null> {
   if (
     (request.headers.has("origin") &&
-      request.headers.get("origin") !== new URL(request.url).origin) ||
+      request.headers.get("origin") !== operationsRequestOrigin(request)) ||
     request.headers.get("sec-fetch-site") === "cross-site"
   )
     return NextResponse.json(
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (denied) return denied;
   // Cookie-authenticated callers must supply Origin. Native clients can send
   // the same origin explicitly; authentication remains the existing session.
-  if (request.headers.get("origin") !== new URL(request.url).origin)
+  if (request.headers.get("origin") !== operationsRequestOrigin(request))
     return NextResponse.json(
       { error: "invalid_origin" },
       { status: 403, headers },
