@@ -11,6 +11,8 @@ type OverviewCardsProps = {
   overview?: MetricsOverview;
   isLoading?: boolean;
   lastUpdatedLabel?: string;
+  errorMessage?: string;
+  onRetry?: () => void;
 };
 
 const METRIC_ITEMS: Array<{
@@ -32,6 +34,8 @@ export function OverviewCards({
   overview,
   isLoading = false,
   lastUpdatedLabel,
+  errorMessage,
+  onRetry,
 }: OverviewCardsProps) {
   return (
     <div>
@@ -68,6 +72,24 @@ export function OverviewCards({
           );
         })}
       </dl>
+      {errorMessage ? (
+        <div
+          role="alert"
+          className="mt-3 flex items-center gap-3 text-sm text-[var(--color-danger)]"
+        >
+          <span>用户统计加载失败：{errorMessage}</span>
+          {onRetry ? (
+            <button
+              type="button"
+              onClick={onRetry}
+              disabled={isLoading}
+              className="underline"
+            >
+              重试
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

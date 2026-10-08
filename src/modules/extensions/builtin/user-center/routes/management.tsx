@@ -650,12 +650,18 @@ export default function UserCenterManagementRoute() {
               overview={metricsSWR.data?.overview}
               isLoading={metricsLoading}
               lastUpdatedLabel={lastUpdatedLabel}
+              errorMessage={metricsSWR.error?.message}
+              onRetry={() => {
+                void metricsSWR.mutate();
+              }}
             />
-            <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-subtle)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
-              系统运行正常
-              {lastUpdatedLabel ? <span>· {lastUpdatedLabel}</span> : null}
-            </div>
+            {metricsSWR.data && !metricsSWR.error ? (
+              <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-subtle)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
+                用户统计已更新
+                {lastUpdatedLabel ? <span>· {lastUpdatedLabel}</span> : null}
+              </div>
+            ) : null}
           </div>
           <UserManagementWorkspace
             users={usersSWR.data}
