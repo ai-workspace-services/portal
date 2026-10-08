@@ -37,9 +37,10 @@ export const metadata: Metadata = {
   title: 'Cloud IaC Catalog',
 }
 
-export default function CloudIacServicePage({ params }: { params: PageParams }) {
-  const providerKey = params.provider as ProviderKey
-  const serviceSlug = params.service
+export default async function CloudIacServicePage({ params }: { params: Promise<PageParams> }) {
+  const { provider, service } = await params
+  const providerKey = provider as ProviderKey
+  const serviceSlug = service
 
   if (!isFeatureEnabled('appModules', `/cloud_iac/${providerKey}/${serviceSlug}`)) {
     notFound()
