@@ -8,7 +8,7 @@
  * 不能用 process.env[key] 动态取，否则 Next 不会替换。）
  *
  * 取值语义：
- *   未设置        → 用 FALLBACK 里的历史默认值（GitOps 全量下发后可以删掉 FALLBACK）
+ *   未设置        → 关闭该项
  *   空串/off/false/0 → 关闭该项
  *   其它          → 作为 id/token 使用
  * 另有总开关 NEXT_PUBLIC_ANALYTICS_DISABLED=1，一把全关（预发、私有化部署用）。
@@ -17,14 +17,9 @@
 const DISABLED_VALUES = new Set(["", "off", "false", "0", "no"]);
 
 /**
- * 迁移期的历史默认值：GitOps 还没下发时保持线上行为不变。
- * cloudflare 没有默认值 —— 它原来写的是 CF_TOKEN_PLACEHOLDER，全仓库没有任何地方
- * 替换过这个占位符，等于一直在往 Cloudflare 打无效 token，属于该关掉的东西。
+ * 不在源码中保留厂商 measurement id 或 token。未配置的分析项保持关闭，
+ * 避免私有化或受限网络环境加载无关的第三方资源。
  */
-const FALLBACK = {
-  googleId: "G-T4VM8G4Q42",
-} as const;
-
 function resolve(
   raw: string | undefined,
   fallback?: string,
@@ -69,7 +64,6 @@ export function resolveSiteAnalytics(): SiteAnalyticsConfig {
   return {
     googleId: resolve(
       process.env.NEXT_PUBLIC_ANALYTICS_GOOGLE_ID,
-      FALLBACK.googleId,
     ),
     cloudflareToken: resolve(
       process.env.NEXT_PUBLIC_ANALYTICS_CLOUDFLARE_TOKEN,
