@@ -16,8 +16,13 @@ import {
 } from "@/lib/download/catalog";
 import { getGithubReleaseListings } from "@/lib/download/github-releases";
 import { isFeatureEnabled } from "@lib/featureToggles";
+import { prioritizeDownloadProduct } from "@/lib/download/product-entry";
 
-export default async function DownloadHome() {
+export default async function DownloadHome({
+  searchParams,
+}: {
+  searchParams: Promise<{ product?: string | string[] }>;
+}) {
   if (!isFeatureEnabled("appModules", "/download")) {
     notFound();
   }
@@ -28,11 +33,14 @@ export default async function DownloadHome() {
     getGithubReleaseTargets(),
   );
 
-  const catalog = buildDownloadCatalog([
-    ...githubReleaseListings,
-    ...allListings,
-    ...offlinePackageListings,
-  ]);
+  const catalog = prioritizeDownloadProduct(
+    buildDownloadCatalog([
+      ...githubReleaseListings,
+      ...allListings,
+      ...offlinePackageListings,
+    ]),
+    (await searchParams).product,
+  );
 
   return (
     <PublicPageShell>

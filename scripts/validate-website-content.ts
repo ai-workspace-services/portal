@@ -3,6 +3,7 @@ import path from "node:path";
 
 import yaml from "js-yaml";
 import { validateDiscovery } from "../src/lib/public-discovery";
+import { validateXConnectLocale } from "../src/lib/xconnectContent";
 
 type ContentManifest = {
   apiVersion?: unknown;
@@ -195,6 +196,8 @@ async function main(): Promise<void> {
     );
     parseFrontMatter(await readFile(heroPath), heroPath);
     validateMarketingContent(marketingPath, marketing as MarketingContent);
+    const xconnectPath = `product/xconnect/${locale}/hero.md`;
+    validateXConnectLocale(parseFrontMatter(await readFile(xconnectPath), xconnectPath), xconnectPath);
     const productPath = `product/global-mesh/${locale}/hero.md`;
     const product = parseFrontMatter(await readFile(productPath), productPath);
     const ui = product.ui as Record<string, unknown> | undefined;
