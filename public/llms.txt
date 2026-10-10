@@ -9,7 +9,7 @@ Support: support@xworktech.com
 
 - [XWorkmate](https://xworktech.com/products/xworkmate.en.md): Connect models, agents, tools, and data so AI can execute work and deliver durable results.
   - [Official page](https://xworktech.com/products/xworkmate) · [中文](https://xworktech.com/products/xworkmate.md)
-- [XConnect](https://xworktech.com/products/xconnect.en.md): Secure connectivity, remote access, and real-time collaboration for AI workspaces.
+- [XConnect](https://xworktech.com/products/xconnect.en.md): XConnect is an open-source AI connectivity accelerator for users worldwide, supporting iOS, Android, macOS, Windows, and Linux with real-time diagnostics and repair guidance.
   - [Official page](https://xworktech.com/products/xconnect) · [中文](https://xworktech.com/products/xconnect.md)
 - [AI Workspace](https://xworktech.com/products/ai-workspace.en.md): Start conversations, tasks, tool calls, and delivery in the browser with no installation.
   - [Official page](https://xworktech.com/products/ai-workspace) · [中文](https://xworktech.com/products/ai-workspace.md)

@@ -371,3 +371,31 @@ Changes: constrain every shared Panel flex ancestor with min-width: 0; preserve 
 Local verification uses the real ReleaseStatusPage with a captured catalog and a geometry-equivalent Panel shell, not an authenticated production session. At measured CSS widths 389, 1035, 1363, and 2557, document.scrollWidth equals viewport width. Phone summaries stack; laptop summaries share the row; matrix remains independently scrollable. Screenshots: /tmp/release-responsive-qa/mobile.png, laptop.png, wide.png. Browser viewport overrides are scaled by the app. Full-page screenshot capture may crop at the displayed app panel; DOM bounds were checked separately. Live logged-in Chrome automation was unavailable because its request-header policy failed to load; production visual acceptance remains pending deployment.
 
 Validation: 8 release schema/count/proxy tests pass, TypeScript and changed-file ESLint pass, console SSR/OpenNext Worker build passes. Full-repository ESLint retains 6 pre-existing no-html-link-for-pages errors in Header, PanelSidebarContent, and ai-aggregator.
+
+---
+
+# XConnect landing design QA
+
+Status: passed for implementation handoff, with visual differences noted below.
+
+## Scope
+
+Selected blue-and-white XConnect reference: global AI connectivity hero, five-device showcase, register/download/sign-in steps, Android diagnostics, guide, open source, compact header/footer. Bilingual editorial content remains owned by knowledge; Portal renders its validated generated content.
+
+## Evidence
+
+- Desktop and 375/390px mobile browser checks: images loaded, no horizontal overflow, Chinese/English switching works.
+- Registration opens the existing registration route; no account was submitted.
+- Download CTA opens `/download?product=xconnect` with XConnect selected.
+- Clean main-based production Webpack build passed; production page checked on localhost:3108, including loaded images and mobile width.
+- Eight focused content/download tests, TypeScript check, focused ESLint, content validation, boundary links and diff whitespace checks passed.
+- Full lint remains blocked by six existing anchor-link errors in Header, PanelSidebarContent and ai-aggregator; these unrelated files were not changed.
+- Default Turbopack cannot follow the temporary external node_modules symlink in the clean verification worktree. Webpack production verification passed without changing repository build configuration.
+
+## Known visual differences
+
+Illustrative device, diagnostic and guide assets are generated visualizations rather than literal product screenshots; UI numbers are labelled demonstration data. The page follows the selected composition but is not pixel-identical: section spacing/page height, the shared language dropdown and existing service icons differ from the supplied image. The diagnosis illustration is cropped on desktop and stacked on mobile.
+
+## Release boundary
+
+This verifies source, tests, build and local rendering only. No production deployment or authenticated end-to-end connectivity claim is made.
