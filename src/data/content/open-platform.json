@@ -1,55 +1,53 @@
 {
   "zh": {
     "hero": {
-      "badge": "开源解决方案",
-      "title": "Open-platform",
-      "subtitle": "涵盖 IAC、DevOps、安全、IAM 以及全局可观测性的平台解决方案。",
+      "badge": "Open-platform 解决方案",
+      "title": "自主部署，构建可控的开放平台",
+      "subtitle": "面向自主部署与多云平台建设，整合 IaC、GitOps、安全、身份与可观测性。从架构选型到交付治理，保留对代码、数据与部署的控制权。",
       "cta": {
-        "label": "了解更多",
-        "href": "/panel"
+        "label": "阅读方案架构",
+        "href": "/docs/reference/multi-cloud-platform-engineering-whitepaper"
       }
     },
     "wizard": {
-      "title": "3 步构建云原生开放底座",
-      "description": "以基础设施即代码（IaC）方式快速部署可信、可控的企业级平台。",
+      "title": "从环境规划到部署验收",
+      "description": "按实际需求选择组件，逐步建立可追溯的交付与运维流程。",
       "steps": [
         {
           "step": 1,
-          "title": "初始化基础组件",
-          "description": "一键拉起 Gitea、Vault、Zitadel 与 APISIX 核心控制面。",
-          "link": "/panel"
+          "title": "明确环境与组件",
+          "description": "梳理云资源、自建环境、业务依赖与数据边界，选择适合的部署架构。"
         },
         {
           "step": 2,
-          "title": "配置安全与权限策略",
-          "description": "开箱即用的零信任鉴权与自动化 Secret / ACME 证书轮转。"
+          "title": "配置身份与交付",
+          "description": "规划身份、权限和密钥管理，用 IaC 与 GitOps 管理资源及环境配置。"
         },
         {
           "step": 3,
-          "title": "声明式交付工作流",
-          "description": "基于 GitOps 理念实现环境清单版本化与自动化部署。"
+          "title": "验证运行与治理",
+          "description": "结合可观测性、发布记录与验收检查，验证部署并规划持续运维。"
         }
       ]
     },
     "showcases": [
       {
-        "title": "统一开放控制面",
-        "description": "集成 Gitea, Vault, Zitadel 等开源基础设施，为您提供一站式的企业级控制平面。",
+        "title": "基础设施与多云",
+        "description": "用 IaC 管理资源与状态，明确云平台、环境和组件的责任边界。",
         "icon": "layers",
-        "image": "/marketing/Open-Platform/unified-open-control-plane.png"
+        "image": ""
       },
       {
-        "title": "安全交付生命周期",
-        "description": "从代码提交到生产部署，每一步都内置安全审计和策略合规，确保研发流程无懈可击。",
+        "title": "交付与安全治理",
+        "description": "用 GitOps 管理环境配置，将身份、权限、密钥与发布检查纳入交付流程。",
         "icon": "shield-check",
-        "image": "/marketing/Open-Platform/secure-delivery-lifecycle.png",
-        "reverse": true
+        "image": ""
       },
       {
-        "title": "可信基础设施",
-        "description": "以基础设施即代码 (IaC) 的形式管理所有资源，实现版本化、可追溯和可复制的云原生底座。",
-        "icon": "lock",
-        "image": "/marketing/Open-Platform/four-trusted-foundations.png"
+        "title": "可观测性与运维",
+        "description": "结合运行观测、变更记录和部署验收，为故障诊断与持续运维提供依据。",
+        "icon": "activity",
+        "image": ""
       }
     ],
     "solutions": [
@@ -149,55 +147,53 @@
   },
   "en": {
     "hero": {
-      "badge": "Open Source Solutions",
-      "title": "Open-platform",
-      "subtitle": "Platform solutions covering IAC, DevOps, Security, IAM, and global observability.",
+      "badge": "Open-platform solution",
+      "title": "Build an open platform you control",
+      "subtitle": "Combine IaC, GitOps, security, identity, and observability for self-managed and multi-cloud platforms. Keep control of code, data, and deployment from architecture selection to delivery governance.",
       "cta": {
-        "label": "Learn More",
-        "href": "/panel"
+        "label": "Read the solution architecture",
+        "href": "/docs/reference/multi-cloud-platform-engineering-whitepaper"
       }
     },
     "wizard": {
-      "title": "Build Open Infrastructure in 3 Simple Steps",
-      "description": "Quickly deploy a trusted, controllable enterprise platform with Infrastructure as Code (IaC).",
+      "title": "From environment planning to deployment acceptance",
+      "description": "Select components for your needs and establish traceable delivery and operations step by step.",
       "steps": [
         {
           "step": 1,
-          "title": "Initialize Core Components",
-          "description": "Spin up Gitea, Vault, Zitadel, and APISIX control planes with one click.",
-          "link": "/panel"
+          "title": "Define environment and components",
+          "description": "Map cloud resources, self-managed environments, dependencies, and data boundaries before choosing an architecture."
         },
         {
           "step": 2,
-          "title": "Configure Security & IAM",
-          "description": "Out-of-the-box Zero-Trust authentication and automated certificate rotations."
+          "title": "Configure identity and delivery",
+          "description": "Plan identity, permissions, and secrets, then manage resources and environment configuration with IaC and GitOps."
         },
         {
           "step": 3,
-          "title": "Declarative Delivery",
-          "description": "Implement versioned environments and automated deployments powered by GitOps."
+          "title": "Verify operations and governance",
+          "description": "Use observability, release records, and acceptance checks to verify deployment and plan ongoing operations."
         }
       ]
     },
     "showcases": [
       {
-        "title": "Unified Open Control Plane",
-        "description": "Integrate open source infrastructure such as Gitea, Vault, Zitadel to provide a one-stop enterprise-level control plane.",
+        "title": "Infrastructure and multi-cloud",
+        "description": "Manage resources and state with IaC, with clear ownership across clouds, environments, and components.",
         "icon": "layers",
-        "image": "/marketing/Open-Platform/unified-open-control-plane.png"
+        "image": ""
       },
       {
-        "title": "Secure Delivery Lifecycle",
-        "description": "From code commit to production deployment, every step has built-in security auditing and policy compliance, ensuring a flawless R&D process.",
+        "title": "Delivery and security governance",
+        "description": "Manage environment configuration with GitOps and include identity, permissions, secrets, and release checks in delivery.",
         "icon": "shield-check",
-        "image": "/marketing/Open-Platform/secure-delivery-lifecycle.png",
-        "reverse": true
+        "image": ""
       },
       {
-        "title": "Trusted Infrastructure",
-        "description": "Manage all resources as Infrastructure as Code (IaC) to achieve a versioned, traceable, and reproducible cloud-native foundation.",
-        "icon": "lock",
-        "image": "/marketing/Open-Platform/four-trusted-foundations.png"
+        "title": "Observability and operations",
+        "description": "Use runtime observations, change records, and deployment acceptance as evidence for diagnosis and ongoing operations.",
+        "icon": "activity",
+        "image": ""
       }
     ],
     "solutions": [

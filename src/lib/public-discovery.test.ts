@@ -27,6 +27,23 @@ describe("public discovery content", () => {
     untranslated.products[0].description.en = "";
     expect(() => validateDiscovery(untranslated)).toThrow();
   });
+  it("keeps Open-platform separate from the three ordered products", () => {
+    const fourthProduct = structuredClone(publicDiscovery);
+    fourthProduct.products.find(
+      (product) => product.slug === "open-platform",
+    )!.kind = "product";
+    expect(() => validateDiscovery(fourthProduct)).toThrow(
+      /three ordered products/,
+    );
+    const reordered = structuredClone(publicDiscovery);
+    [reordered.products[0], reordered.products[1]] = [
+      reordered.products[1],
+      reordered.products[0],
+    ];
+    expect(() => validateDiscovery(reordered)).toThrow(
+      /three ordered products/,
+    );
+  });
   it("renders reproducible facts, public URLs and release pointers without trial links", () => {
     const index = llmsIndex(publicDiscovery);
     expect(index).toContain("https://xworktech.com/download");

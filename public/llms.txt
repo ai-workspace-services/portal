@@ -13,7 +13,7 @@ Support: support@xworktech.com
   - [Official page](https://xworktech.com/products/xconnect) · [中文](https://xworktech.com/products/xconnect.md)
 - [AI Workspace](https://xworktech.com/products/ai-workspace.en.md): Start conversations, tasks, tool calls, and delivery in the browser with no installation.
   - [Official page](https://xworktech.com/products/ai-workspace) · [中文](https://xworktech.com/products/ai-workspace.md)
-- [Open Platform](https://xworktech.com/products/open-platform.en.md): An open platform for self-hosting and developers, keeping control of code, data, and deployment.
+- [Open-platform](https://xworktech.com/products/open-platform.en.md): Combine IaC, GitOps, security, identity, and observability with architecture and implementation paths for self-managed and multi-cloud platforms.
   - [Official page](https://xworktech.com/products/open-platform) · [中文](https://xworktech.com/products/open-platform.md)
 - [Cloud Hub](https://xworktech.com/products/cloud-hub.en.md): Explore multi-cloud resources and global connectivity architecture for infrastructure selection and self-managed deployment.
   - [Official page](https://xworktech.com/products/cloud-hub) · [中文](https://xworktech.com/products/cloud-hub.md)
