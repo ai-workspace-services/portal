@@ -114,7 +114,7 @@ export default function UserCenterAccountRoute() {
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
   const { data: nodes, error: nodesError } = useSWR<VlessNode[]>(
-    "user-center-agent-nodes",
+    user ? ["user-center-agent-nodes", user.id, user.proxyUuid] : null,
     fetchAgentNodes,
     { refreshInterval: 30_000 },
   );

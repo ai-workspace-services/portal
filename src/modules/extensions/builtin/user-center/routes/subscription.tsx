@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
+import NetworkTeamsPanel from "../components/NetworkTeamsPanel";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import useSWR from "swr";
 import {
@@ -241,6 +242,8 @@ export default function UserCenterSubscriptionRoute() {
               : "Plans, usage, balance and ledger all come from the existing subscription and accounts.svc.plus APIs. Payments settle through Stripe."}
           </p>
         </header>
+
+        <NetworkTeamsPanel />
 
         {/* ── 安全门禁：只出现一处，且可行动 ── */}
         {mfaRequired ? (

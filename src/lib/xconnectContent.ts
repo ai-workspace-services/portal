@@ -1,6 +1,34 @@
 type Cta = { label: string; href: string };
 
 export type XConnectLocale = {
+  team?: Record<
+    | "title"
+    | "description"
+    | "nodesLabel"
+    | "membersLabel"
+    | "validityLabel"
+    | "contactLabel"
+    | "contactHref"
+    | "unavailable"
+    | "manageTitle"
+    | "idLabel"
+    | "nameLabel"
+    | "fromLabel"
+    | "untilLabel"
+    | "activeLabel"
+    | "reasonLabel"
+    | "saveTeamLabel"
+    | "userLabel"
+    | "modeLabel"
+    | "personalLabel"
+    | "dedicatedLabel"
+    | "removedLabel"
+    | "saveMemberLabel"
+    | "selectLabel"
+    | "newTeamLabel"
+    | "statusLabel",
+    string
+  >;
   navigation: { label: string; links: Cta[]; cta: Cta; copyright: string };
   hero: {
     badge: string;
@@ -62,6 +90,33 @@ export function validateXConnectLocale(
 ): asserts value is XConnectLocale {
   const record = value as Record<string, Record<string, unknown>>;
   const fields: Record<string, string[]> = {
+    team: [
+      "title",
+      "description",
+      "nodesLabel",
+      "membersLabel",
+      "validityLabel",
+      "contactLabel",
+      "contactHref",
+      "unavailable",
+      "manageTitle",
+      "idLabel",
+      "nameLabel",
+      "fromLabel",
+      "untilLabel",
+      "activeLabel",
+      "reasonLabel",
+      "saveTeamLabel",
+      "userLabel",
+      "modeLabel",
+      "personalLabel",
+      "dedicatedLabel",
+      "removedLabel",
+      "saveMemberLabel",
+      "selectLabel",
+      "newTeamLabel",
+      "statusLabel",
+    ],
     navigation: ["label", "copyright"],
     hero: [
       "badge",
@@ -97,6 +152,7 @@ export function validateXConnectLocale(
   if (!record || typeof record !== "object" || Array.isArray(record))
     fail("content");
   for (const [section, names] of Object.entries(fields)) {
+    if (section === "team" && !record.team) continue;
     if (!record[section] || typeof record[section] !== "object") fail(section);
     names.forEach((name) =>
       string(record[section][name], `${section}.${name}`),
@@ -130,6 +186,7 @@ export function validateXConnectLocale(
     string(cta?.label, `${section}.${name}.label`);
     href(cta?.href, `${section}.${name}.href`);
   }
+  if (record.team) href(record.team.contactHref, "team.contactHref");
   const links = record.navigation.links;
   if (!Array.isArray(links) || links.length !== 3) fail("navigation.links");
   (links as Cta[]).forEach((link) => {

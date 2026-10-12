@@ -233,6 +233,24 @@ export default function XConnectProductView({
             </div>
           </div>
         </section>
+        {c.team ? (
+          <section className={styles.source} aria-label={c.team.title}>
+            <div>
+              <h2>{c.team.title}</h2>
+              <p>{c.team.description}</p>
+              <p>
+                {c.team.nodesLabel} / {c.team.membersLabel} /{" "}
+                {c.team.validityLabel}
+              </p>
+            </div>
+            <BoundaryLink
+              className={styles.secondary}
+              href={c.team.contactHref}
+            >
+              {c.team.contactLabel}
+            </BoundaryLink>
+          </section>
+        ) : null}
       </main>
       <footer className={styles.footer}>
         <div>
