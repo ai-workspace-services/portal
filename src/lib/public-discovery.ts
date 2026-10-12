@@ -8,6 +8,7 @@ import {
 export type LocalizedText = { zh: string; en: string };
 export type DiscoveryProduct = {
   slug: string;
+  kind?: "product" | "solution";
   sourceSlug?: string;
   showInOverview?: boolean;
   name: LocalizedText;
@@ -39,6 +40,32 @@ export type PublicDiscovery = {
   availability: LocalizedText;
   pricing: LocalizedText;
   products: DiscoveryProduct[];
+  overview: Record<
+    | "catalogLabel"
+    | "eyebrow"
+    | "title"
+    | "description"
+    | "productsLabel"
+    | "productsTitle"
+    | "solutionLabel"
+    | "solutionTitle"
+    | "architectureLabel"
+    | "architectureTitle"
+    | "pathsTitle"
+    | "journeyLabel"
+    | "relatedTitle"
+    | "relatedDescription"
+    | "closingTitle"
+    | "closingDescription"
+    | "docsCta"
+    | "backCta"
+    | "downloadsLabel"
+    | "downloadsTitle"
+    | "downloadsCta"
+    | "footerTagline"
+    | "productCta",
+    LocalizedText
+  >;
 };
 
 export function validateDiscovery(
@@ -64,6 +91,8 @@ export function validateDiscovery(
     throw new Error("Invalid discovery content schema");
   }
   localized(data.footerLabel);
+  if (!data.overview) throw new Error("Missing product overview copy");
+  for (const text of Object.values(data.overview)) localized(text);
   for (const key of [
     "officialPage",
     "website",
@@ -93,6 +122,8 @@ export function validateDiscovery(
     throw new Error("Missing discovery catalog");
   const slugs = new Set<string>();
   for (const product of data.products) {
+    if (product.kind !== "product" && product.kind !== "solution")
+      throw new Error("Discovery entry requires a product or solution kind");
     if (
       !/^[a-z0-9-]+$/.test(product.slug) ||
       slugs.has(product.slug) ||
@@ -119,6 +150,22 @@ export function validateDiscovery(
       throw new Error("Discovery resources must be public canonical routes");
     localized(resource.label);
   }
+  const visible = data.products.filter(
+    (product) => product.showInOverview !== false,
+  );
+  if (
+    visible
+      .filter((product) => product.kind === "product")
+      .map((product) => product.slug)
+      .join(",") !== "xworkmate,xconnect,ai-workspace" ||
+    visible
+      .filter((product) => product.kind === "solution")
+      .map((product) => product.slug)
+      .join(",") !== "open-platform"
+  )
+    throw new Error(
+      "The public catalog requires three ordered products and the Open-platform solution",
+    );
 }
 
 export function productMarkdown(
