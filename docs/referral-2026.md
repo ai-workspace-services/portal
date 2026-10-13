@@ -36,3 +36,28 @@ The calculator rounds the 10% estimate per invoice in integer minor units and mu
 ## Release and rollback
 
 No production database changes are included in Portal. Release requires separately reviewed Accounts migration/rollback, Knowledge content and edge routing PRs. Apply Accounts changes first in UAT, build the Portal image with the reviewed Knowledge revision, deploy through existing GitOps and capture runtime evidence. Portal deployment rollback restores its prior immutable image and route configuration; the database rollback belongs to Accounts and must preserve financial and entitlement audit records. User authorization excludes merging PRs and PROD deployment.
+
+
+## Accounts migration and operator boundaries
+
+Accounts migration `sql/migrations/2026101301_referral_program.up.sql` adds:
+
+- `referral_codes`, `referrals`: unique code and single-level attribution.
+- `referral_rewards`, `referral_reward_events`: invoice reward and idempotent audit/reversal entries.
+- `referral_payment_risks`: refund/dispute facts, including events arriving before the reward.
+- `referral_settlements`, `referral_settlement_items`: currency-separated manual-review reservation and reconciliation.
+- `subscription_extension_ledger`: actual subscription extension and reversal records.
+
+Verified payment facts reuse existing `finance_invoices` and `finance_payments`; Accounts also updates its checked native schema and transfer contract. No database runtime, IaC or separate payment/account system is introduced.
+
+Staff completion and manual reversal require existing `admin.billing.money.write`; an unprivileged operator must be rejected. Complete a settlement only after the actual offline payout is independently confirmed, recording a non-secret reconciliation reference and reason. Do not enter payment credentials in either field.
+
+The down migration intentionally refuses any existing referral or ledger data. It is suitable for an empty, disposable migration qualification database. After awards exist, preserve financial history and release a reviewed forward fix. In particular, reverting Accounts to a binary without the ledger reader would remove granted extension access: retain ledger-based entitlement reads while stopping faulty new reward writes. Portal/router may revert together to prior immutable images; that does not authorize dropping financial records.
+
+## Remaining UAT-only checks
+
+- Validate both requested hosts and router/worker bindings with the reviewed immutable releases.
+- Run Stripe test-mode signed events, out-of-order retries, refunds and disputes through the deployed stack; a direct Store fixture is not equivalent evidence.
+- Confirm real session/cookie scope across public, registration and console hosts, copy-to-system-clipboard and native share behavior on supported devices.
+- Validate migration against a non-production copy of the current schema, and reconcile retained paid rewards/extensions during the rollback rehearsal.
+- Native App Store/Play purchase or external-link changes require their applicable storefront review; this web change introduces no native purchase flow.
