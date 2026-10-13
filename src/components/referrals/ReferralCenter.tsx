@@ -5,6 +5,7 @@ import { Copy, Share2, QrCode, RefreshCw } from "lucide-react";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { translations } from "@/i18n/translations";
 import type { ReferralContent } from "@/lib/referral-content";
 import { type ReferralOverview, isReferralOverview } from "@/lib/referral-api";
 import { formatReferralMoney } from "@/lib/referral-calculator";
@@ -169,7 +170,7 @@ export default function ReferralCenter({
         <div className={styles.actions}>
           <LanguageToggle size="md" />
           <BoundaryLink href="/panel/account" className={styles.secondary}>
-            {c.title}
+            {translations[language].userCenter.items.accounts}
           </BoundaryLink>
         </div>
       </header>

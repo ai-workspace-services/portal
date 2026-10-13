@@ -69,6 +69,7 @@ describe("personal referral center", () => {
       screen.getByText(content.en.center.extensions.empty),
     ).toBeInTheDocument();
     expect(screen.queryByText("$109.50")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Accounts" })).toHaveAttribute("href", "/panel/account");
   });
   it("shows an authentication recovery CTA on expired session", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
