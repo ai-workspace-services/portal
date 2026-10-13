@@ -95,3 +95,15 @@ test("release status is bundled in Console with a fixed read-only route", () => 
     undefined,
   );
 });
+
+
+test("Referral self-service BFF routes stay in console, campaign stays public", async () => {
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/settlements/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/unknown/route.ts"), undefined);
+  const { buildBoundaryRoutes, resolveBoundaryForPath } = await import("./ssr-boundary-routes.mjs");
+  const config = JSON.parse(await readFile(new URL("../config/cloudflare-boundaries.json", import.meta.url), "utf8"));
+  const routes = buildBoundaryRoutes(config.boundaries);
+  assert.equal(resolveBoundaryForPath("/referral", routes), "public");
+  assert.equal(resolveBoundaryForPath("/referrals", routes), "console");
+});

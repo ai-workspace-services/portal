@@ -143,7 +143,7 @@ if (boundary === "console") {
     "",
     "export function middleware(request: NextRequest) {",
     '  const { pathname } = request.nextUrl;',
-    '  if (pathname !== "/panel" && !pathname.startsWith("/panel/")) return undefined;',
+    '  if (pathname !== "/panel" && !pathname.startsWith("/panel/") && pathname !== "/referrals" && !pathname.startsWith("/referrals/")) return undefined;',
     '  if (request.cookies.get(SESSION_COOKIE_NAME)?.value?.trim()) return undefined;',
     '  const loginUrl = new URL("/login", request.url);',
     '  const redirect = `${pathname}${request.nextUrl.search}`;',
@@ -152,7 +152,7 @@ if (boundary === "console") {
     "}",
     "",
     "export const config = {",
-    '  matcher: ["/panel/:path*"],',
+    '  matcher: ["/panel/:path*", "/referrals/:path*"],',
     "};",
     "",
   ].join("\n"));

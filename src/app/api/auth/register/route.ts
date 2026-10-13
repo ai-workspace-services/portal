@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { normalizeReferralCode } from '@/lib/referral-code'
 import { getAccountServiceApiBaseUrl } from '@server/serviceConfig'
 
 const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl()
@@ -10,6 +11,7 @@ type RegistrationPayload = {
   password?: string
   confirmPassword?: string
   code?: string
+  referralCode?: string
 }
 
 function normalizeEmail(value: unknown) {
@@ -35,6 +37,8 @@ export async function POST(request: NextRequest) {
     typeof payload?.confirmPassword === 'string' ? payload.confirmPassword : payload?.password ?? ''
   const name = normalizeString(payload?.name)
   const code = normalizeString(payload?.code)
+  const referralCode = normalizeReferralCode(payload?.referralCode)
+  if (payload?.referralCode !== undefined && !referralCode) return NextResponse.json({ success: false, error: "invalid_referral_code", needMfa: false }, { status: 400 })
 
   if (!email || !password) {
     return NextResponse.json({ success: false, error: 'missing_credentials', needMfa: false }, { status: 400 })
@@ -53,6 +57,7 @@ export async function POST(request: NextRequest) {
     password,
     code,
     ...(name ? { name } : {}),
+    ...(referralCode ? { referralCode } : {}),
   }
 
   try {

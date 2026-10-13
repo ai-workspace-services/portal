@@ -2,6 +2,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import yaml from 'js-yaml'
 import { generatePublicDiscovery } from './generate-public-discovery'
+import { validateReferralLocale } from '../src/lib/referral-content'
 import { validateXConnectLocale } from '../src/lib/xconnectContent'
 
 type Language = 'zh' | 'en'
@@ -126,7 +127,57 @@ async function generateDocsContent() {
   return content
 }
 
+async function generateReferralContent() {
+  const sourceFiles = ["zh", "en"].map((lang) =>
+    path.join(CONTENT_ROOT, "campaign", "referral", `${lang}.json`),
+  );
+  const exists = await Promise.all(
+    sourceFiles.map((file) =>
+      fs
+        .access(file)
+        .then(() => true)
+        .catch(() => false),
+    ),
+  );
+  if (!exists.some(Boolean)) {
+    const manifestRaw = await fs.readFile(path.join(CONTENT_ROOT, 'content-manifest.yaml'), 'utf8').catch(() => '');
+    const manifest = yaml.load(manifestRaw) as { spec?: { entrypoints?: { referral?: unknown } } } | undefined;
+    if (manifest?.spec?.entrypoints?.referral) throw new Error('Declared referral content source is missing');
+    const generated = JSON.parse(
+      await fs.readFile(path.join(OUTPUT_ROOT, "referral.json"), "utf8"),
+    );
+    validateReferralLocale(generated.zh, "generated referral/zh");
+    validateReferralLocale(generated.en, "generated referral/en");
+    console.log(
+      "Referral source not yet present in content revision; retaining reviewed generated artifact (see docs/referral-2026.md).",
+    );
+    return;
+  }
+  if (!exists.every(Boolean))
+    throw new Error("Referral content requires both locales");
+  const content = Object.fromEntries(
+    await Promise.all(
+      (["zh", "en"] as const).map(async (lang) => {
+        const value = JSON.parse(
+          await fs.readFile(
+            path.join(CONTENT_ROOT, "campaign", "referral", `${lang}.json`),
+            "utf8",
+          ),
+        );
+        validateReferralLocale(value, `referral/${lang}`);
+        return [lang, value];
+      }),
+    ),
+  );
+  await fs.mkdir(OUTPUT_ROOT, { recursive: true });
+  await fs.writeFile(
+    path.join(OUTPUT_ROOT, "referral.json"),
+    JSON.stringify(content, null, 2) + "\n",
+  );
+}
+
 async function main() {
+  if (process.argv.includes("--campaign=referral")) { await generateReferralContent(); return; }
   // A scoped refresh must not overwrite unrelated locally edited products.
   if (process.argv.includes('--product=xconnect')) {
     const content = await generateProductContent('xconnect')
@@ -136,6 +187,7 @@ async function main() {
     console.log('XConnect content generation complete!')
     return
   }
+  await generateReferralContent();
   await generatePublicDiscovery(CONTENT_ROOT)
   // Create output directory
   await fs.mkdir(OUTPUT_ROOT, { recursive: true })

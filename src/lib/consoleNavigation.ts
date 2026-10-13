@@ -42,6 +42,7 @@ const CONSOLE_PATH_PREFIXES = [
   "/logout",
   "/panel",
   "/dashboard",
+  "/referrals",
 ] as const;
 
 export function isConsolePath(pathname: string): boolean {

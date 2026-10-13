@@ -1,3 +1,65 @@
+# Referral Program 2026 — design QA
+
+## Reference and comparison
+
+The user selected Product Design option **1**. Original generated reference: `exec-1c34d3b5-9b43-46e3-ba6c-f13779e4149b.png`, 1024 × 1536. The comparison below clips its top 1024 × 720 region and pairs it with the implementation captured at 1024 × 720, both displayed at 0.5×. Browser screenshots are unretouched.
+
+![Selected option and implemented desktop](docs/assets/referral-2026/design-comparison.png)
+
+## Review and iterations
+
+| Area | Observed issue | Correction / final evidence |
+| --- | --- | --- |
+| Layout | Initial desktop reward cards were wider and taller than the reference; the mobile primary CTA fell below the first viewport. | Compact 700px reward grid, reduced card padding, smaller mobile assets and shorter canonical copy. At 390 × 844 the primary CTA is visible. |
+| Typography | Existing styles did not consistently use Portal typography tokens. | Geist and existing size/weight tokens; strong headline and numerical reward hierarchy retained. |
+| Color | Reference uses white, pale blue and a saturated blue CTA. | Existing brand blues and pale cards retained; focus outline visible in the mobile screenshot. |
+| Assets | The mockup presented a generic device arrangement. | Reused the accurate existing XConnect multi-device asset; generated two transparent decorative reward illustrations, no currency-specific coin markings. |
+| Copy | Reference implied rewards to both friends; annual eligibility required precise explanation. | Canonical Chinese/English Knowledge copy explicitly awards the inviter, with an active subscription at the friend's payment time. |
+| Narrow English | A line clamp hid the annual eligibility sentence at 320px. | Removed the clamp; full eligibility sentence visible with no horizontal overflow. |
+| Navigation | Download and product links required real destinations. | Existing product and download routes, terms anchor and FAQ disclosure verified. |
+
+Intentional differences from the illustrative reference: actual product asset, accurate inviter-only rules, full eligibility language, existing brand typography and real campaign period. No financial reward displayed on the public calculator is treated as an account reward.
+
+## Responsive and interaction evidence
+
+- Desktop: 1024 × 720 and 1280 × 720.
+- Chinese mobile: 390 × 844; English narrow mobile: 320 × 844. DOM viewport and document scroll width both measured 320px for the narrow view.
+- Calculator: 6 invitations × CNY 200 annual with active inviter → CNY 120 cashback estimate and 180 days; monthly or inactive inviter → zero extra days. Inputs and checkbox remain labeled estimates.
+- FAQ disclosure, language switch, terms anchor, SEO description and Open Graph metadata inspected.
+- Public page console inspection found no application errors. Screenshot Next.js development indicator is a local-preview control.
+
+![Desktop](docs/assets/referral-2026/referral-desktop-final.png)
+![Chinese mobile](docs/assets/referral-2026/referral-mobile-final.png)
+![English 320px](docs/assets/referral-2026/referral-mobile-en-320.png)
+![Calculator](docs/assets/referral-2026/referral-mobile-calculator.png)
+
+## Authenticated center evidence
+
+The uncommitted local test harness used the real Accounts router, TokenService and PostgreSQL 17 Store in an isolated disposable database. All accounts and invoice facts were synthetic fixtures. Some dates were deliberately seeded before campaign start to exercise the seven-day display; this is layout/API evidence, not proof of production eligibility or a signed Stripe payment.
+
+- Masked monthly/annual records and currency-separated totals came from Accounts, not client mock responses.
+- A real Store reward operation inserted the 30-day extension ledger; the UI displayed April 11 → May 11, 2027.
+- A local test-account settlement request reserved USD 1.29, changed available balance to zero and displayed `Under review`; no payout occurred.
+- Copy action success feedback, QR visibility, refresh and bilingual layouts were exercised. Browser bridge clipboard readback was empty, so system clipboard delivery remains a manual UAT check. Native share-sheet behavior remains device-dependent; the implemented fallback uses copy.
+- Fixed the account-navigation label and 320px header overlap by reusing the existing account translation and wrapping the header. Both 390px Chinese and 320px English measured no document-level horizontal overflow; record tables scroll within their container.
+
+![Local PostgreSQL center](docs/assets/referral-2026/referrals-desktop-final.png)
+![Center Chinese mobile](docs/assets/referral-2026/referrals-mobile-final.png)
+![Center English 320px](docs/assets/referral-2026/referrals-mobile-en-320.png)
+![Local QR interaction](docs/assets/referral-2026/referrals-qr.png)
+![Local settlement](docs/assets/referral-2026/referrals-settlement.png)
+![Actual Store extension ledger](docs/assets/referral-2026/referrals-extension-ledger.png)
+
+## Final result
+
+**Passed for local visual, responsive and authenticated API integration QA.** UAT/production acceptance remains pending. All previous unrelated QA records below are preserved.
+
+## Runtime scope
+
+Captures are from the isolated local Portal preview. They establish local layout and interaction behavior, not UAT or production acceptance. Live host routing, Stripe test-mode delivery, production-like database migration and payment approval remain in the UAT checklist in `docs/referral-2026.md`.
+
+---
+
 # AI Workspace Web parity design QA
 
 ## XConnect Zero three-page redesign — 2026-09-08
