@@ -35,7 +35,7 @@ The calculator rounds the 10% estimate per invoice in integer minor units and mu
 
 ## Release and rollback
 
-No production database changes are included in Portal. Release requires separately reviewed Accounts migration/rollback, Knowledge content and edge routing PRs. Apply Accounts changes first in UAT, build the Portal image with the reviewed Knowledge revision, deploy through existing GitOps and capture runtime evidence. Portal deployment rollback restores its prior immutable image and route configuration; the database rollback belongs to Accounts and must preserve financial and entitlement audit records. User authorization excludes merging PRs and PROD deployment.
+No production database changes are included in Portal. Release requires separately reviewed Accounts migration/rollback, Knowledge content and edge routing PRs. Apply Accounts changes first in UAT, build the Portal image with the reviewed Knowledge revision, deploy through existing GitOps and capture runtime evidence. Portal deployment rollback restores its prior immutable image and route configuration; the database rollback belongs to Accounts and must preserve financial and entitlement audit records. Production deployment and production database migration require separate release authorization.
 
 
 ## Accounts migration and operator boundaries
@@ -48,7 +48,7 @@ Accounts migration `sql/migrations/2026101301_referral_program.up.sql` adds:
 - `referral_settlements`, `referral_settlement_items`: currency-separated manual-review reservation and reconciliation.
 - `subscription_extension_ledger`: actual subscription extension and reversal records.
 
-Verified payment facts reuse existing `finance_invoices` and `finance_payments`; Accounts also updates its checked native schema and transfer contract. No database runtime, IaC or separate payment/account system is introduced.
+Verified payment facts reuse existing `finance_invoices` and `finance_payments`. Nullable `service_period_start` and `service_period_end` invoice fields preserve verified service periods for payment-time eligibility across renewals; Accounts also updates its checked native schema and transfer contract. No database runtime, IaC or separate payment/account system is introduced.
 
 Staff completion and manual reversal require existing `admin.billing.money.write`; an unprivileged operator must be rejected. Complete a settlement only after the actual offline payout is independently confirmed, recording a non-secret reconciliation reference and reason. Do not enter payment credentials in either field.
 
