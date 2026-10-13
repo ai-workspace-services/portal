@@ -14,6 +14,7 @@ import OverviewCards, {
 import PermissionMatrixEditor, {
   type PermissionMatrix,
 } from "../management/components/PermissionMatrixEditor";
+import NetworkTeamsPanel from "../components/NetworkTeamsPanel";
 import UserGroupManagement, {
   type AdminPlanGroupPreview,
   type AdminPlanGroupUpdate,
@@ -704,6 +705,9 @@ export default function UserCenterManagementRoute() {
             <p className="text-sm text-[var(--color-danger)]">
               {groupsUpdateMessage}
             </p>
+          ) : null}
+          {canEditRoles ? (
+            <NetworkTeamsPanel users={usersSWR.data ?? []} />
           ) : null}
           <UserGroupManagement
             users={usersSWR.data}
