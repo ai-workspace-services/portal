@@ -29,7 +29,7 @@
     },
     "console": {
       "worker_name": "frontend-ssr-console",
-      "route_suffixes": ["/panel*", "/dashboard*", "/_edge/console/*"]
+      "route_suffixes": ["/panel*", "/dashboard*", "/referrals*", "/_edge/console/*"]
     },
     "workspace": {
       "worker_name": "frontend-ssr-workspace",

@@ -14,6 +14,7 @@ import {
   useState,
   useId,
 } from "react";
+import { useReferralAttribution } from "@/state/referral-attribution";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
@@ -45,6 +46,13 @@ export default function RegisterContent({
   accountServiceBaseUrl,
 }: RegisterContentProps) {
   const { language } = useLanguage();
+  const referralCode = useReferralAttribution((s) => s.referralCode);
+  const captureReferralLocation = useReferralAttribution(
+    (s) => s.captureLocation,
+  );
+  useEffect(() => {
+    captureReferralLocation();
+  }, [captureReferralLocation]);
   const t = translations[language].auth.register;
   const alerts = t.alerts;
   const searchParams = useSearchParams();
@@ -430,6 +438,7 @@ export default function RegisterContent({
           email: email.trim(),
           password,
           code: verificationCode,
+          ...(referralCode ? { referralCode } : {}),
         }),
       });
 

@@ -6,6 +6,22 @@ import { NextRequest } from "next/server";
 import { middleware } from "../middleware";
 
 describe("middleware public route policy", () => {
+  it("keeps the campaign public but requires a session for referral records", () => {
+    expect(
+      middleware(
+        new NextRequest("https://console.svc.plus/referral?code=AB12CD34"),
+      ),
+    ).toBeUndefined();
+    const response = middleware(
+      new NextRequest("https://console.svc.plus/referrals"),
+    );
+    expect(response?.headers.get("location")).toContain(
+      "/login?redirect=%2Freferrals",
+    );
+    const authenticated = new NextRequest("https://console.svc.plus/referrals");
+    authenticated.cookies.set("xc_session", "test-session");
+    expect(middleware(authenticated)).toBeUndefined();
+  });
   it("keeps homepage public", () => {
     const response = middleware(new NextRequest("https://console.svc.plus/"));
 
