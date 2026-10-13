@@ -29,6 +29,8 @@ export function bffBoundaryForRoute(relativePath) {
       "api/agent-server/[...segments]/route.ts",
       "api/agent/[...segments]/route.ts",
       "api/account/[...segments]/route.ts",
+      "api/auth/referrals/route.ts",
+      "api/auth/referrals/settlements/route.ts",
       "api/operations/releases/route.ts",
       "api/operations/catalog/route.ts",
       "api/operations/plans/route.ts",

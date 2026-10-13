@@ -21,7 +21,7 @@ The calculator rounds the 10% estimate per invoice in integer minor units and mu
 
 ## Routing
 
-`/referral` belongs to the public boundary and is indexed in the sitemap. `/referrals` belongs to the authenticated console boundary, uses the existing login redirect and is `noindex`. Edge routing must consume the updated console suffix `/referrals*`; otherwise the public fallback could route the invitation center to the wrong worker. The requested `svc.plus/referrals` host must be confirmed in existing domain routing before UAT acceptance; the existing runtime console host determines cross-boundary links.
+`/referral` belongs to the public boundary and is indexed in the sitemap. `/referrals` belongs to the authenticated console boundary, uses the existing login redirect and is `noindex`. Edge routing must consume the updated console suffix `/referrals*` and route `/api/auth/referrals` plus `/api/auth/referrals/settlements` to the console worker; these two exact BFF handlers are explicitly bundled in console by the build allowlist. otherwise the public fallback could route the invitation center to the wrong worker. The requested `svc.plus/referrals` host must be confirmed in existing domain routing before UAT acceptance; the existing runtime console host determines cross-boundary links.
 
 ## UAT acceptance
 
