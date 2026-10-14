@@ -56,6 +56,20 @@ export default function ProductSourceLinks({
           <XdsCard>
             <XdsCardHead title={isEn ? "GitHub repositories" : "GitHub 仓库"} />
             <XdsCardBody>
+              {sources.organization ? (
+                <a
+                  className="xds-link-arrow"
+                  href={sources.organization.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ marginBottom: 12 }}
+                >
+                  <Github className="h-4 w-4" aria-hidden="true" />{" "}
+                  {isEn
+                    ? "ai-workspace-infra organization"
+                    : "ai-workspace-infra 组织"}
+                </a>
+              ) : null}
               <ul style={{ display: "grid", gap: 10 }}>
                 {sources.repositories.map((item) => (
                   <li key={item.href}>

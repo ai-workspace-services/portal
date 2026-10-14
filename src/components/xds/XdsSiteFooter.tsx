@@ -15,6 +15,7 @@ import { Zap } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { COMPANY_GITHUB_URL, COMPANY_LEGAL_NAME } from "@/lib/company";
+import { publicDiscovery } from "@/data/content/public-discovery";
 
 type FooterColumn = {
   title: string;
@@ -111,13 +112,39 @@ const TAGLINE = {
 
 interface XdsSiteFooterProps {
   brand?: string;
+  catalogMode?: boolean;
 }
 
 export default function XdsSiteFooter({
   brand = "XWorkmate",
+  catalogMode = false,
 }: XdsSiteFooterProps) {
   const { language } = useLanguage();
   const lang = language === "en" ? "en" : "zh";
+  const columns = catalogMode
+    ? [
+        {
+          title: publicDiscovery.overview.productsLabel[lang],
+          items: ["xworkmate", "xconnect", "ai-workspace"].map((slug) => {
+            const product = publicDiscovery.products.find(
+              (item) => item.slug === slug,
+            )!;
+            return { label: product.name[lang], href: `/products/${slug}` };
+          }),
+        },
+        {
+          title: publicDiscovery.overview.solutionLabel[lang],
+          items: publicDiscovery.products
+            .filter((item) => item.kind === "solution")
+            .map((item) => ({
+              label: item.name[lang],
+              href: `/products/${item.slug}`,
+            })),
+        },
+        COLUMNS[lang][1],
+        COLUMNS[lang][3],
+      ]
+    : COLUMNS[lang];
 
   return (
     <footer className="xds-footer">
@@ -134,11 +161,13 @@ export default function XdsSiteFooter({
               className="xds-t-caption"
               style={{ marginTop: "var(--sp-3)", maxWidth: "26ch" }}
             >
-              {TAGLINE[lang]}
+              {catalogMode
+                ? publicDiscovery.overview.footerTagline[lang]
+                : TAGLINE[lang]}
             </p>
           </div>
 
-          {COLUMNS[lang].map((column) => (
+          {columns.map((column) => (
             <div key={column.title}>
               <h5>{column.title}</h5>
               <ul>

@@ -2,6 +2,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import yaml from 'js-yaml'
 import { generatePublicDiscovery } from './generate-public-discovery'
+import { validateXConnectLocale } from '../src/lib/xconnectContent'
 
 type Language = 'zh' | 'en'
 
@@ -85,13 +86,22 @@ async function generateProductContent(product: string) {
 
   for (const lang of languages) {
     try {
-      const heroPath = path.join(CONTENT_ROOT, 'product', product, lang, 'hero.md')
+      const heroPath = path.join(
+        CONTENT_ROOT,
+        'product',
+        product,
+        lang,
+        'hero.md'
+      )
       const raw = await fs.readFile(heroPath, 'utf-8')
       const { metadata } = parseFrontMatter(raw)
+      if (product === 'xconnect')
+        validateXConnectLocale(metadata, `${product}/${lang}`)
       if (metadata && Object.keys(metadata).length > 0) {
         content[lang] = metadata
       }
     } catch (error) {
+      if (product === 'xconnect') throw error
       // product or language variant might not exist locally
     }
   }
@@ -118,6 +128,24 @@ async function generateDocsContent() {
 }
 
 async function main() {
+  // A scoped refresh must not overwrite unrelated locally edited products.
+  const scopedProduct = process.argv
+    .find((arg) => arg.startsWith('--product='))
+    ?.split('=')[1]
+  if (scopedProduct === 'xconnect' || scopedProduct === 'open-platform') {
+    const content = await generateProductContent(scopedProduct)
+    await fs.mkdir(OUTPUT_ROOT, { recursive: true })
+    await fs.writeFile(
+      path.join(OUTPUT_ROOT, `${scopedProduct}.json`),
+      JSON.stringify(content, null, 2)
+    )
+    await fs.writeFile(
+      path.join(OUTPUT_ROOT, `${scopedProduct}.ts`),
+      'export default ' + JSON.stringify(content, null, 2) + ';'
+    )
+    console.log(`${scopedProduct} content generation complete!`)
+    return
+  }
   await generatePublicDiscovery(CONTENT_ROOT)
   // Create output directory
   await fs.mkdir(OUTPUT_ROOT, { recursive: true })

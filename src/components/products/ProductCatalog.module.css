@@ -1,0 +1,263 @@
+.page {
+  background: #fff;
+  color: #182230;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+.container {
+  width: min(1160px, calc(100% - 48px));
+  margin-inline: auto;
+}
+.page h1,
+.page h2,
+.page h3 {
+  color: #182230;
+  letter-spacing: -0.035em;
+}
+.page h1 {
+  max-width: 900px;
+  font-size: clamp(36px, 5vw, 60px);
+  line-height: 1.18;
+  font-weight: 600;
+  margin: 18px 0 24px;
+}
+.page h2 {
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.3;
+  font-weight: 600;
+  margin: 12px 0 28px;
+}
+.page h3 {
+  font-size: 24px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.hero {
+  padding: 88px 0 72px;
+  border-bottom: 1px solid #e4e7ec;
+  background: #f8fafc;
+}
+.eyebrow {
+  color: #245caa;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+}
+.lead {
+  max-width: 760px;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #475467;
+}
+.section {
+  padding: 64px 0;
+}
+.productGrid,
+.capabilityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.card {
+  padding: 28px;
+  border: 1px solid #e4e7ec;
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #245caa;
+  display: grid;
+  place-items: center;
+}
+.number {
+  color: #667085;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.cardTitle {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.65;
+  margin-top: 10px;
+  color: #344054;
+}
+.description {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #475467;
+  margin-top: 14px;
+}
+.card .description {
+  flex: 1;
+}
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #245caa;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 24px;
+  min-height: 44px;
+  align-self: flex-start;
+}
+.solutionSection {
+  background: #f8fafc;
+  padding: 64px 0;
+  border-block: 1px solid #e4e7ec;
+}
+.solutionCard {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  padding: 36px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.solutionMark {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  background: #eff6ff;
+  color: #245caa;
+  border-radius: 16px;
+}
+.solutionCard .primaryLink {
+  grid-column: 2;
+  justify-self: start;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.primaryLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  border: 1px solid #d0d5dd;
+}
+.page .primaryLink {
+  color: #fff;
+  background: #245caa;
+  border-color: #245caa;
+}
+.page .secondaryLink {
+  color: #344054;
+  background: #fff;
+}
+.page a:focus-visible {
+  outline: 3px solid #245caa;
+  outline-offset: 4px;
+}
+.page .primaryLink:hover {
+  background: #1b4786;
+}
+.textLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.closing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+}
+.closing .actions {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+.closing h2 {
+  margin-bottom: 0;
+}
+.capabilityGrid .card h3 {
+  font-size: 20px;
+}
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.resourceGrid ul {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+.resourceGrid .textLink {
+  margin-top: 0;
+  overflow-wrap: anywhere;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.steps li {
+  border-top: 2px solid #dbe7f5;
+  padding-top: 20px;
+}
+.steps h3 {
+  font-size: 20px;
+  margin-top: 12px;
+}
+@media (max-width: 800px) {
+  .productGrid,
+  .capabilityGrid,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .resourceGrid {
+    grid-template-columns: 1fr;
+  }
+  .closing {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hero {
+    padding: 56px 0 48px;
+  }
+  .section,
+  .solutionSection {
+    padding: 44px 0;
+  }
+  .solutionCard {
+    padding: 24px;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .solutionCard .primaryLink {
+    grid-column: 1;
+  }
+  .card {
+    padding: 24px;
+  }
+}

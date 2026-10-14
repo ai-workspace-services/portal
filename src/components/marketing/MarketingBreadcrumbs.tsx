@@ -18,6 +18,7 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { Zap } from "lucide-react";
 
+import { publicDiscovery } from "@/data/content/public-discovery";
 import { homeMarketingContent } from "@/components/marketing/content";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
@@ -75,6 +76,13 @@ export default function MarketingBreadcrumbs() {
     for (const [href, labels] of Object.entries(EXTRA_LABELS)) {
       if (!index.has(href)) index.set(href, { label: labels[locale] });
     }
+
+    index.set("/products", {
+      label: publicDiscovery.overview.catalogLabel[locale],
+    });
+    index.set("/products/open-platform", {
+      label: `${publicDiscovery.products.find((item) => item.slug === "open-platform")!.name[locale]} · ${publicDiscovery.overview.solutionLabel[locale]}`,
+    });
 
     let matchedHref = "";
     let matched: { label: string; group?: string } | undefined;

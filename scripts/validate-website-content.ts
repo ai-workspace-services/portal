@@ -3,6 +3,7 @@ import path from "node:path";
 
 import yaml from "js-yaml";
 import { validateDiscovery } from "../src/lib/public-discovery";
+import { validateXConnectLocale } from "../src/lib/xconnectContent";
 
 type ContentManifest = {
   apiVersion?: unknown;
@@ -51,7 +52,10 @@ async function readFile(relativePath: string): Promise<string> {
   }
 }
 
-function parseFrontMatter(raw: string, relativePath: string): Record<string, unknown> {
+function parseFrontMatter(
+  raw: string,
+  relativePath: string,
+): Record<string, unknown> {
   const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
   if (!match) {
     fail(`${relativePath} must start with YAML front matter`);
@@ -64,13 +68,20 @@ function parseFrontMatter(raw: string, relativePath: string): Record<string, unk
   return parsed as Record<string, unknown>;
 }
 
-function requireString(value: unknown, field: string, relativePath: string): void {
+function requireString(
+  value: unknown,
+  field: string,
+  relativePath: string,
+): void {
   if (typeof value !== "string" || value.trim() === "") {
     fail(`${relativePath} requires a non-empty ${field}`);
   }
 }
 
-function validateMarketingContent(relativePath: string, metadata: MarketingContent): void {
+function validateMarketingContent(
+  relativePath: string,
+  metadata: MarketingContent,
+): void {
   const hero = metadata.hero;
   if (!hero || typeof hero !== "object") {
     fail(`${relativePath} requires a hero object`);
@@ -87,8 +98,16 @@ function validateMarketingContent(relativePath: string, metadata: MarketingConte
   requireString(hero.tagline, "hero.tagline", relativePath);
   requireString(hero.primaryCta?.label, "hero.primaryCta.label", relativePath);
   requireString(hero.primaryCta?.href, "hero.primaryCta.href", relativePath);
-  requireString(hero.secondaryCta?.label, "hero.secondaryCta.label", relativePath);
-  requireString(hero.secondaryCta?.href, "hero.secondaryCta.href", relativePath);
+  requireString(
+    hero.secondaryCta?.label,
+    "hero.secondaryCta.label",
+    relativePath,
+  );
+  requireString(
+    hero.secondaryCta?.href,
+    "hero.secondaryCta.href",
+    relativePath,
+  );
 }
 
 async function validateManifest(): Promise<void> {
@@ -153,9 +172,17 @@ async function main(): Promise<void> {
   for (const locale of locales) {
     const marketingPath = `homepage/${locale}/marketing.md`;
     const heroPath = `homepage/${locale}/hero.md`;
-    const marketing = parseFrontMatter(await readFile(marketingPath), marketingPath);
+    const marketing = parseFrontMatter(
+      await readFile(marketingPath),
+      marketingPath,
+    );
     parseFrontMatter(await readFile(heroPath), heroPath);
     validateMarketingContent(marketingPath, marketing as MarketingContent);
+    const productPath = `product/xconnect/${locale}/hero.md`;
+    validateXConnectLocale(
+      parseFrontMatter(await readFile(productPath), productPath),
+      productPath,
+    );
   }
 
   console.log(`Website content is valid: ${contentRoot}`);
