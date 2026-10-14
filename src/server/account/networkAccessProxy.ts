@@ -29,7 +29,9 @@ export async function proxyNetworkAccess(
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      ...(request.method === "PUT" ? { body: await request.text() } : {}),
+      ...(["GET", "HEAD"].includes(request.method)
+        ? {}
+        : { body: await request.text() }),
       cache: "no-store",
     },
   );

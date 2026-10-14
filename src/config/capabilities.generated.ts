@@ -368,6 +368,22 @@ export const capabilities = {
           }
         },
         {
+          "id": "team",
+          "path": "/panel/team",
+          "label": "Team management",
+          "description": "Dedicated team resources and members",
+          "guard": {
+            "require_login": true
+          },
+          "redirect": {
+            "unauthenticated": "/login"
+          },
+          "sidebar": {
+            "section": "management",
+            "order": 22
+          }
+        },
+        {
           "id": "ldp",
           "path": "/panel/ldp",
           "label": "LDP",
@@ -380,7 +396,7 @@ export const capabilities = {
           },
           "sidebar": {
             "section": "management",
-            "order": 22
+            "order": 23
           },
           "feature_flag": {
             "id": "user-center.ldp",
@@ -765,11 +781,7 @@ export const capabilities = {
         "/panel/operations/*"
       ],
       "api_prefixes": [
-        "/api/platform-operations",
-        "/api/operations/catalog",
-        "/api/operations/plans",
-        "/api/operations/mcp",
-        "/api/operations/releases"
+        "/api/platform-operations"
       ],
       "tables": [],
       "depends_on": [
@@ -779,7 +791,7 @@ export const capabilities = {
         {
           "id": "platformOperations",
           "path": "/panel/operations",
-          "label": "Operations",
+          "label": "Overview",
           "description": "平台运行与操作总览",
           "guard": {
             "require_login": true,
@@ -797,7 +809,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "platform-operations",
+            "section": "management",
             "order": 24
           }
         },
@@ -822,7 +834,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "platform-operations",
+            "section": "management",
             "order": 25
           }
         },
@@ -847,7 +859,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "platform-operations",
+            "section": "management",
             "order": 26
           }
         },
@@ -872,7 +884,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "platform-operations",
+            "section": "management",
             "order": 27
           }
         },
@@ -897,7 +909,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "platform-operations",
+            "section": "management",
             "order": 28
           }
         }
@@ -1163,6 +1175,22 @@ export const capabilities = {
         }
       },
       {
+        "id": "team",
+        "path": "/panel/team",
+        "label": "Team management",
+        "description": "Dedicated team resources and members",
+        "guard": {
+          "requireLogin": true
+        },
+        "redirect": {
+          "unauthenticated": "/login"
+        },
+        "sidebar": {
+          "section": "management",
+          "order": 22
+        }
+      },
+      {
         "id": "ldp",
         "path": "/panel/ldp",
         "label": "LDP",
@@ -1175,7 +1203,7 @@ export const capabilities = {
         },
         "sidebar": {
           "section": "management",
-          "order": 22
+          "order": 23
         },
         "featureFlag": {
           "id": "user-center.ldp",
@@ -1480,7 +1508,7 @@ export const capabilities = {
       {
         "id": "platformOperations",
         "path": "/panel/operations",
-        "label": "Operations",
+        "label": "Overview",
         "description": "平台运行与操作总览",
         "guard": {
           "requireLogin": true,
@@ -1498,7 +1526,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "platform-operations",
+          "section": "management",
           "order": 24
         }
       },
@@ -1523,7 +1551,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "platform-operations",
+          "section": "management",
           "order": 25
         }
       },
@@ -1548,7 +1576,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "platform-operations",
+          "section": "management",
           "order": 26
         }
       },
@@ -1573,7 +1601,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "platform-operations",
+          "section": "management",
           "order": 27
         }
       },
@@ -1598,7 +1626,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "platform-operations",
+          "section": "management",
           "order": 28
         }
       }

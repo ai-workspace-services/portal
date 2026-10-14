@@ -27,7 +27,8 @@ const expectedPanelRouteSnapshot: Array<
   { id: 'ai-aggregator', path: '/panel/ai-aggregator', match: 'exact', section: 'productivity', order: 12, hidden: false, guard: { requireLogin: true } },
   { id: 'accounts', path: '/panel/account', match: 'exact', section: 'management', order: 20, hidden: true, guard: { requireLogin: true } },
   { id: 'subscription', path: '/panel/subscription', match: 'exact', section: 'management', order: 21, hidden: false, guard: { requireLogin: true } },
-  { id: 'ldp', path: '/panel/ldp', match: 'exact', section: 'management', order: 22, hidden: false, guard: { requireLogin: true } },
+  { id: 'team', path: '/panel/team', match: 'exact', section: 'management', order: 22, hidden: false, guard: { requireLogin: true } },
+  { id: 'ldp', path: '/panel/ldp', match: 'exact', section: 'management', order: 23, hidden: false, guard: { requireLogin: true } },
   { id: 'appearance', path: '/panel/appearance', match: 'exact', section: 'preferences', order: 30, hidden: false, guard: { requireLogin: true } },
   { id: 'management', path: '/panel/management', match: 'startsWith', section: 'admin', order: 99, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['admin.settings.read', 'admin.users.metrics.read', 'admin.users.list.read', 'admin.agents.status.read', 'admin.blacklist.read'] } },
   { id: 'ops', path: '/panel/ops', match: 'startsWith', section: 'admin', order: 10, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'] } },
@@ -42,11 +43,11 @@ const expectedPanelRouteSnapshot: Array<
   { id: 'logs', path: '/panel/observability', match: 'exact', section: 'infra', order: 3, hidden: false, guard: { requireLogin: true } },
   { id: 'settings', path: '/panel/settings', match: 'exact', section: 'preferences', order: 99, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['admin.settings.read'] } },
   { id: 'xconnectZero', path: '/panel/xconnect-zero', match: 'exact', section: 'management', order: 23, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator', 'user'], permissions: ['xconnect.zero.read'] } },
-  { id: 'platformOperations', path: '/panel/operations', match: 'exact', section: 'platform-operations', order: 24, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
-  { id: 'platformOperationsReleases', path: '/panel/operations/releases', match: 'exact', section: 'platform-operations', order: 25, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
-  { id: 'platformOperationsEnvironments', path: '/panel/operations/environments', match: 'exact', section: 'platform-operations', order: 26, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
-  { id: 'platformOperationsAudit', path: '/panel/operations/audit', match: 'exact', section: 'platform-operations', order: 27, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
-  { id: 'platformOperationsVault', path: '/panel/operations/vault-access', match: 'exact', section: 'platform-operations', order: 28, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
+  { id: 'platformOperations', path: '/panel/operations', match: 'exact', section: 'management', order: 24, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
+  { id: 'platformOperationsReleases', path: '/panel/operations/releases', match: 'exact', section: 'management', order: 25, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
+  { id: 'platformOperationsEnvironments', path: '/panel/operations/environments', match: 'exact', section: 'management', order: 26, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
+  { id: 'platformOperationsAudit', path: '/panel/operations/audit', match: 'exact', section: 'management', order: 27, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
+  { id: 'platformOperationsVault', path: '/panel/operations/vault-access', match: 'exact', section: 'management', order: 28, hidden: false, guard: { requireLogin: true, roles: ['admin', 'operator'], permissions: ['platform.ops.read'], groups: ['platform-ops', 'platform-operations'], tenantScoped: true } },
 ]
 
 function snapshotRoute(route: RegisteredRoute): RouteSnapshot {

@@ -87,4 +87,21 @@ describe("network access BFF", () => {
       }),
     );
   });
+
+  it("forwards self-service member invitations", async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ memberId: "u2" }), { status: 201 }));
+    const body = JSON.stringify({ email: "member@example.com" });
+    const result = await proxyNetworkAccess(
+      new NextRequest("https://uat-console.example/api/auth/network-team", {
+        method: "POST",
+        body,
+      }),
+      "network-team/members",
+    );
+    expect(result.status).toBe(201);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://accounts.example/api/auth/network-team/members",
+      expect.objectContaining({ method: "POST", body }),
+    );
+  });
 });
