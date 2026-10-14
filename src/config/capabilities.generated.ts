@@ -368,6 +368,22 @@ export const capabilities = {
           }
         },
         {
+          "id": "team",
+          "path": "/panel/team",
+          "label": "Team management",
+          "description": "Dedicated team resources and members",
+          "guard": {
+            "require_login": true
+          },
+          "redirect": {
+            "unauthenticated": "/login"
+          },
+          "sidebar": {
+            "section": "management",
+            "order": 22
+          }
+        },
+        {
           "id": "ldp",
           "path": "/panel/ldp",
           "label": "LDP",
@@ -380,7 +396,7 @@ export const capabilities = {
           },
           "sidebar": {
             "section": "management",
-            "order": 22
+            "order": 23
           },
           "feature_flag": {
             "id": "user-center.ldp",
@@ -1163,6 +1179,22 @@ export const capabilities = {
         }
       },
       {
+        "id": "team",
+        "path": "/panel/team",
+        "label": "Team management",
+        "description": "Dedicated team resources and members",
+        "guard": {
+          "requireLogin": true
+        },
+        "redirect": {
+          "unauthenticated": "/login"
+        },
+        "sidebar": {
+          "section": "management",
+          "order": 22
+        }
+      },
+      {
         "id": "ldp",
         "path": "/panel/ldp",
         "label": "LDP",
@@ -1175,7 +1207,7 @@ export const capabilities = {
         },
         "sidebar": {
           "section": "management",
-          "order": 22
+          "order": 23
         },
         "featureFlag": {
           "id": "user-center.ldp",

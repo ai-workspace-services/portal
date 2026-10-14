@@ -13,6 +13,7 @@ import {
   Settings,
   Shield,
   User,
+  UsersRound,
 } from "lucide-react";
 
 import type { DashboardExtension } from "../../types";
@@ -154,6 +155,17 @@ export const userCenterExtension: DashboardExtension = {
       },
     },
     {
+      id: "team",
+      path: "/panel/team",
+      label: "Team management",
+      description: "Dedicated team resources and members",
+      icon: UsersRound,
+      loader: () => import("./routes/team"),
+      guard: { requireLogin: true },
+      redirect: { unauthenticated: "/login" },
+      sidebar: { section: "management", order: 22 },
+    },
+    {
       id: "ldp",
       path: "/panel/ldp",
       label: "LDP",
@@ -162,7 +174,7 @@ export const userCenterExtension: DashboardExtension = {
       loader: () => import("./routes/ldp"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
-      sidebar: { section: "management", order: 22 },
+      sidebar: { section: "management", order: 23 },
       featureFlag: {
         id: "user-center.ldp",
         title: "LDP 管理",

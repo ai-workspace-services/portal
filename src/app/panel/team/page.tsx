@@ -1,0 +1,16 @@
+export const dynamic = "force-dynamic";
+
+import { redirect } from "next/navigation";
+import { resolveExtensionRouteComponent } from "@extensions/loader";
+
+export default async function TeamPage() {
+  try {
+    const Component = await resolveExtensionRouteComponent("/panel/team");
+    return <Component />;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("disabled")) {
+      redirect("/panel");
+    }
+    throw error;
+  }
+}

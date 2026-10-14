@@ -54,6 +54,7 @@ function applyRouteContract(
     implementationRoute: DashboardExtension['routes'][number],
     contract: CapabilityRouteContract,
 ): DashboardExtension['routes'][number] {
+    const { roles, permissions, groups, ...baseGuard } = contract.guard
     return {
         ...implementationRoute,
         id: contract.id,
@@ -62,10 +63,10 @@ function applyRouteContract(
         description: contract.description,
         match: contract.match,
         guard: {
-            ...contract.guard,
-            roles: contract.guard.roles ? [...contract.guard.roles] : undefined,
-            permissions: contract.guard.permissions ? [...contract.guard.permissions] : undefined,
-            groups: contract.guard.groups ? [...contract.guard.groups] : undefined,
+            ...baseGuard,
+            ...(roles ? { roles: Array.from(roles) } : {}),
+            ...(permissions ? { permissions: Array.from(permissions) } : {}),
+            ...(groups ? { groups: Array.from(groups) } : {}),
         },
         redirect: contract.redirect,
         sidebar: contract.sidebar,
