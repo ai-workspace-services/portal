@@ -8,6 +8,7 @@ describe("runtime-loader", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env.RUNTIME_ENV;
+    delete process.env.RUNTIME_HOSTNAME;
     delete process.env.REGION;
     delete process.env.RUNTIME_ENV_CONFIG_PATH;
     delete process.env.ACCOUNT_SERVICE_URL;
@@ -24,15 +25,15 @@ describe("runtime-loader", () => {
     const config = loadRuntimeConfig({ hostname: "console.svc.plus" });
 
     expect(config.authUrl).toBe(
-      "https://prod-accounts-1004637461064.asia-northeast1.run.app",
+      "https://prod-accounts-b7wzzanztq-de.a.run.app",
     );
     expect(config.xconnectZeroUrl).toBe(
-      "https://prod-accounts-1004637461064.asia-northeast1.run.app",
+      "https://prod-accounts-b7wzzanztq-de.a.run.app",
     );
     expect(config.dashboardUrl).toBe("https://console.svc.plus");
   });
 
-  it("uses the GitOps Cloudflare service entrances for UAT OAuth", async () => {
+  it("keeps Serverless UAT on its Cloudflare and Cloud Run service entrances", async () => {
     const { loadRuntimeConfig } = await import("./runtime-loader");
 
     const config = loadRuntimeConfig({ hostname: "console-cloudflare-uat.onwalk.net" });
@@ -41,6 +42,31 @@ describe("runtime-loader", () => {
     expect(config.authUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
     expect(config.xconnectZeroUrl).toBe("https://accounts-cloudflare-uat.onwalk.net");
     expect(config.dashboardUrl).toBe("https://console.onwalk.net");
+    expect(config.docsServiceUrl).toBe("https://uat-content-service-4ueoyqlpbq-de.a.run.app");
+  });
+
+  it("selects only Compose-local service endpoints for Selfhost UAT", async () => {
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+
+    const config = loadRuntimeConfig({ hostname: "console-selfhost-uat.onwalk.net" });
+
+    expect(config.environment).toBe("uat");
+    expect(config.apiBaseUrl).toBe("https://accounts-selfhost-uat.onwalk.net/api");
+    expect(config.authUrl).toBe("https://accounts-selfhost-uat.onwalk.net");
+    expect(config.xconnectZeroUrl).toBe("http://accounts:8080");
+    expect(config.docsServiceUrl).toBe("http://content:8084");
+    expect(config.dashboardUrl).toBe("https://console-selfhost-uat.onwalk.net");
+  });
+
+  it("uses the configured runtime hostname for server-side requests without request context", async () => {
+    process.env.RUNTIME_ENV = "uat";
+    process.env.RUNTIME_HOSTNAME = "console-selfhost-uat.onwalk.net";
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+
+    const config = loadRuntimeConfig();
+
+    expect(config.xconnectZeroUrl).toBe("http://accounts:8080");
+    expect(config.docsServiceUrl).toBe("http://content:8084");
   });
 
   it("keeps the Serverless production console on the production Accounts service", async () => {
@@ -50,7 +76,7 @@ describe("runtime-loader", () => {
 
     expect(config.environment).toBe("prod");
     expect(config.authUrl).toBe(
-      "https://prod-accounts-1004637461064.asia-northeast1.run.app",
+      "https://prod-accounts-b7wzzanztq-de.a.run.app",
     );
   });
 });

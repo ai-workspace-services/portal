@@ -401,7 +401,12 @@ export function readRuntimeEnvSettings(hostname?: string): RuntimeEnvSettings {
 function splitEnvironmentOverrides(
   environment: RuntimeEnvironment,
   region: RuntimeRegion,
-): { environmentOverrides: Record<string, unknown>; regionOverrides?: Record<string, unknown> } {
+  hostname?: string,
+): {
+  environmentOverrides: Record<string, unknown>
+  regionOverrides?: Record<string, unknown>
+  deploymentOverrides?: Record<string, unknown>
+} {
   // 每个环境映射到同名配置源, 不再是"非 prod 即 sit"。
   //
   // 那个三元表达式让 uat 与 dev 静默使用 SIT 的端点 —— UAT 会去连
@@ -431,7 +436,19 @@ function splitEnvironmentOverrides(
 
   delete environmentOverrides['regions']
 
-  return { environmentOverrides, regionOverrides }
+  // Serverless and Selfhost UAT share the UAT build, but they must not share
+  // service endpoints. A deployment hostname selects the explicit Selfhost
+  // service map; ordinary UAT hosts keep the Cloudflare/Cloud Run map above.
+  let deploymentOverrides: Record<string, unknown> | undefined
+  if (hostname?.includes('selfhost')) {
+    const selfhost = environmentOverrides['selfhost']
+    if (isPlainRecord(selfhost)) {
+      deploymentOverrides = mergeConfigs({}, selfhost)
+    }
+  }
+  delete environmentOverrides['selfhost']
+
+  return { environmentOverrides, regionOverrides, deploymentOverrides }
 }
 
 function buildCacheKey(
@@ -453,9 +470,14 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
   }
 
   const baseConfig = parseYamlSource('base')
-  const { environmentOverrides, regionOverrides } = splitEnvironmentOverrides(environment, region)
+  const { environmentOverrides, regionOverrides, deploymentOverrides } = splitEnvironmentOverrides(
+    environment,
+    region,
+    hostname,
+  )
   const merged = mergeConfigs(baseConfig, environmentOverrides)
-  const finalConfig = regionOverrides ? mergeConfigs(merged, regionOverrides) : merged
+  const regionalConfig = regionOverrides ? mergeConfigs(merged, regionOverrides) : merged
+  const finalConfig = deploymentOverrides ? mergeConfigs(regionalConfig, deploymentOverrides) : regionalConfig
 
   const detectionLabel = hostname
     ? `${envDetectedBy}|hostname:${hostnameDetectedBy}`
