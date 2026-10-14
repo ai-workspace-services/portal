@@ -1,34 +1,50 @@
 type Cta = { label: string; href: string };
 
-export type XConnectLocale = {
-  team?: Record<
-    | "title"
-    | "description"
-    | "nodesLabel"
-    | "membersLabel"
-    | "validityLabel"
-    | "contactLabel"
-    | "contactHref"
-    | "unavailable"
-    | "manageTitle"
-    | "idLabel"
-    | "nameLabel"
-    | "fromLabel"
-    | "untilLabel"
-    | "activeLabel"
-    | "reasonLabel"
-    | "saveTeamLabel"
-    | "userLabel"
-    | "modeLabel"
-    | "personalLabel"
-    | "dedicatedLabel"
-    | "removedLabel"
-    | "saveMemberLabel"
-    | "selectLabel"
-    | "newTeamLabel"
-    | "statusLabel",
-    string
+type XConnectTeamCopy = Record<
+  | "title"
+  | "description"
+  | "nodesLabel"
+  | "membersLabel"
+  | "validityLabel"
+  | "contactLabel"
+  | "contactHref"
+  | "unavailable"
+  | "manageTitle"
+  | "idLabel"
+  | "nameLabel"
+  | "fromLabel"
+  | "untilLabel"
+  | "activeLabel"
+  | "reasonLabel"
+  | "saveTeamLabel"
+  | "userLabel"
+  | "modeLabel"
+  | "personalLabel"
+  | "dedicatedLabel"
+  | "removedLabel"
+  | "saveMemberLabel"
+  | "selectLabel"
+  | "newTeamLabel"
+  | "statusLabel",
+  string
+> &
+  Partial<
+    Record<
+      | "statsTitle"
+      | "statsDescription"
+      | "teamCountLabel"
+      | "activeTeamsLabel"
+      | "teamMembersCountLabel"
+      | "unassignedMembersLabel"
+      | "membersUnknownLabel"
+      | "loadingLabel"
+      | "emptyLabel",
+      string
+    >
   >;
+
+export type XConnectLocale = {
+  team?: XConnectTeamCopy;
   navigation: { label: string; links: Cta[]; cta: Cta; copyright: string };
   hero: {
     badge: string;

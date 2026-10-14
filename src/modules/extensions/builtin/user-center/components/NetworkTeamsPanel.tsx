@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -31,6 +31,10 @@ type Access = {
   role?: "admin" | "member";
 };
 type User = { id: string; name?: string; email?: string };
+type TeamMembershipSummary = {
+  teamId: string;
+  memberCount: number;
+};
 async function request<T>(url: string, body?: unknown): Promise<T> {
   const response = await fetch(url, {
     credentials: "include",
@@ -67,6 +71,22 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
   const teams = useSWR<{ teams: Team[] }>(users ? "network-teams" : null, () =>
     request<{ teams: Team[] }>("/api/admin/network-teams"),
   );
+  const teamMemberships = useSWR<Array<Access | null>>(
+    users ? ["network-team-memberships", users.map((user) => user.id)] : null,
+    async () =>
+      Promise.all(
+        (users ?? []).map(async (user) => {
+          try {
+            return await request<Access>(
+              `/api/admin/users/${encodeURIComponent(user.id)}/network-access`,
+            );
+          } catch {
+            return null;
+          }
+        }),
+      ),
+    { revalidateOnFocus: false },
+  );
   const [team, setTeam] = useState<Team>({
     id: "",
     name: "",
@@ -92,6 +112,33 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
     (member.data?.mode === "dedicated"
       ? member.data.teamId || "@removed"
       : "@personal");
+  const membershipSummary = useMemo<TeamMembershipSummary[]>(() => {
+    const counts = new Map<string, number>();
+    for (const membership of teamMemberships.data ?? []) {
+      if (!membership) continue;
+      if (membership.mode === "dedicated" && membership.teamId) {
+        counts.set(membership.teamId, (counts.get(membership.teamId) ?? 0) + 1);
+      }
+    }
+    return (teams.data?.teams ?? []).map((team) => ({
+      teamId: team.id,
+      memberCount: counts.get(team.id) ?? 0,
+    }));
+  }, [teamMemberships.data, teams.data?.teams]);
+  const membershipsComplete =
+    teamMemberships.data?.length === (users?.length ?? 0) &&
+    teamMemberships.data.every((membership) => membership !== null);
+  const teamMemberCount = membershipsComplete
+    ? teamMemberships.data?.filter(
+        (membership): membership is Access =>
+          membership !== null &&
+          membership.mode === "dedicated" &&
+          Boolean(membership.teamId),
+      ).length
+    : undefined;
+  const activeTeamCount = teams.data?.teams.filter(
+    (team) => team.active,
+  ).length;
   const save = async (url: string, body: unknown): Promise<void> => {
     setSaving(true);
     setError("");
@@ -108,6 +155,30 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
   };
 
   if (!copy) return null;
+  const statsCopy = {
+    statsTitle:
+      copy.statsTitle ??
+      (language === "en" ? "Team group statistics" : "团队分组统计"),
+    statsDescription:
+      copy.statsDescription ??
+      (language === "en"
+        ? "Counts dedicated network memberships without changing user group tags."
+        : "按专属网络授权统计团队成员，不改变用户分组标签。"),
+    teamCountLabel:
+      copy.teamCountLabel ?? (language === "en" ? "Teams" : "团队"),
+    activeTeamsLabel:
+      copy.activeTeamsLabel ?? (language === "en" ? "Active teams" : "启用团队"),
+    teamMembersCountLabel:
+      copy.teamMembersCountLabel ??
+      (language === "en" ? "Team members" : "团队成员"),
+    unassignedMembersLabel:
+      copy.unassignedMembersLabel ??
+      (language === "en" ? "Personal / unassigned" : "个人/未分配"),
+    membersUnknownLabel:
+      copy.membersUnknownLabel ?? (language === "en" ? "Members —" : "成员数 —"),
+    loadingLabel: copy.loadingLabel ?? (language === "en" ? "Loading…" : "加载中…"),
+    emptyLabel: copy.emptyLabel ?? (language === "en" ? "No team groups" : "暂无团队分组"),
+  };
   return (
     <section className="xds-card p-5 space-y-4">
       <h2 className="text-lg font-semibold">
@@ -148,6 +219,86 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
       {users ? (
         <>
           {teams.error ? <p role="alert">{teams.error.message}</p> : null}
+          <section
+            aria-label="团队分组统计"
+            className="rounded-md border border-[color:var(--color-surface-border)] bg-slate-50 p-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-[var(--color-heading)]">
+                  {statsCopy.statsTitle}
+                </h3>
+                <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                  {statsCopy.statsDescription}
+                </p>
+              </div>
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-500">
+                {teams.isLoading
+                  ? statsCopy.loadingLabel
+                  : `${statsCopy.teamCountLabel} ${teams.data?.teams.length ?? "—"}`}
+              </span>
+            </div>
+            <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div>
+                <dt className="text-xs text-[var(--color-text-muted)]">
+                  {statsCopy.activeTeamsLabel}
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-[var(--color-heading)]">
+                  {teams.isLoading ? "—" : (activeTeamCount ?? "—")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[var(--color-text-muted)]">
+                  {statsCopy.teamMembersCountLabel}
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-[var(--color-heading)]">
+                  {teamMemberships.isLoading ? "—" : (teamMemberCount ?? "—")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[var(--color-text-muted)]">
+                  {statsCopy.unassignedMembersLabel}
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-[var(--color-heading)]">
+                  {teamMemberships.isLoading || teamMemberCount === undefined
+                    ? "—"
+                    : Math.max(users.length - teamMemberCount, 0)}
+                </dd>
+              </div>
+            </dl>
+            {teams.data?.teams.length ? (
+              <div className="mt-4 space-y-2">
+                {teams.data.teams.map((item) => {
+                  const summary = membershipSummary.find(
+                    (entry) => entry.teamId === item.id,
+                  );
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm"
+                    >
+                      <span className="font-medium text-[var(--color-heading)]">
+                        {item.name}
+                      </span>
+                      <span className="text-xs text-[var(--color-text-muted)]">
+                        {teamMemberships.isLoading || !membershipsComplete
+                          ? statsCopy.membersUnknownLabel
+                          : `${statsCopy.teamMembersCountLabel} ${summary?.memberCount ?? 0} / ${item.memberLimit}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : teams.isLoading ? (
+              <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                {statsCopy.loadingLabel}
+              </p>
+            ) : (
+              <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+                {statsCopy.emptyLabel}
+              </p>
+            )}
+          </section>
           <label>
             {copy.selectLabel}
             <select
