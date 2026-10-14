@@ -100,7 +100,7 @@ export default function TeamManagementWorkspace() {
     { revalidateOnFocus: false },
   );
   const nodes = useSWR<VlessNode[]>(
-    account && space === "team" ? ["team-nodes", account.id] : null,
+    account && space === "team" && team.data?.canManage ? ["team-nodes", account.id] : null,
     fetchAgentNodes,
     { refreshInterval: 30_000, revalidateOnFocus: false },
   );
@@ -176,7 +176,7 @@ export default function TeamManagementWorkspace() {
           <p className="text-sm font-medium text-slate-500">个人共享空间</p>
           <h1 className="text-2xl font-semibold text-slate-950">个人资源</h1>
           <p className="max-w-2xl text-sm leading-6 text-slate-600">
-            个人共享版订阅与团队版订阅相互独立。切换到团队空间后，只会加载当前团队的专属节点和成员。
+            此处可查看个人订阅。当前页面切换不会变更连接所用的授权空间；团队账号仍仅能使用团队专属节点。
           </p>
           <a className="xds-btn xds-btn-secondary inline-flex" href="/panel/subscription">
             查看订阅
