@@ -32,6 +32,7 @@ export type User = {
   isUser: boolean
   isOperator: boolean
   isAdmin: boolean
+  isRoot?: boolean
   isReadOnly: boolean
   tenantId?: string
   tenants?: TenantMembership[]
@@ -113,6 +114,7 @@ async function fetchSessionUser(): Promise<SessionResolution> {
     const payload = (await response.json()) as {
       error?: string | null
       user?: {
+        isRoot?: boolean
         id?: string
         uuid?: string
         proxyUuid?: string
@@ -266,6 +268,7 @@ async function fetchSessionUser(): Promise<SessionResolution> {
         isUser: normalizedRole === 'user',
         isOperator: normalizedRole === 'operator',
         isAdmin: normalizedRole === 'admin',
+        isRoot: sessionUser.isRoot === true,
         isReadOnly: normalizedReadOnly,
         tenantId: normalizedTenantId,
         tenants: normalizedTenants,

@@ -28,6 +28,7 @@ type Access = {
   teamId?: string;
   team?: Team;
   allowed: boolean;
+  role?: "admin" | "member";
 };
 type User = { id: string; name?: string; email?: string };
 async function request<T>(url: string, body?: unknown): Promise<T> {
@@ -76,6 +77,7 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
   });
   const [userId, setUserId] = useState("");
   const [membership, setMembership] = useState<string | null>(null);
+  const [memberRole, setMemberRole] = useState<"admin" | "member" | null>(null);
   const member = useSWR<Access>(
     userId
       ? `/api/admin/users/${encodeURIComponent(userId)}/network-access`
@@ -272,6 +274,7 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
               onChange={(e) => {
                 setUserId(e.target.value);
                 setMembership(null);
+                setMemberRole(null);
               }}
             >
               <option value="">—</option>
@@ -302,6 +305,19 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
             </label>
           ) : null}
           {member.error ? <p role="alert">{member.error.message}</p> : null}
+          {userId && chosen !== "@personal" && chosen !== "@removed" ? (
+            <select
+              className="xds-input"
+              aria-label="team role"
+              value={memberRole ?? member.data?.role ?? "member"}
+              onChange={(e) =>
+                setMemberRole(e.target.value as "admin" | "member")
+              }
+            >
+              <option value="admin">team-admin</option>
+              <option value="member">member</option>
+            </select>
+          ) : null}
           <button
             className="xds-btn xds-btn-secondary"
             disabled={
@@ -320,6 +336,10 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
                     chosen === "@personal" || chosen === "@removed"
                       ? ""
                       : chosen,
+                  role:
+                    chosen === "@personal" || chosen === "@removed"
+                      ? "member"
+                      : (memberRole ?? member.data?.role ?? "member"),
                   reason,
                 },
               )

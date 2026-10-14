@@ -220,10 +220,9 @@ export async function GET(request: NextRequest) {
             role?: string;
             groups?: string[];
             permissions?: string[];
-          } =
-            {
-              id: identifier,
-            };
+          } = {
+            id: identifier,
+          };
 
           if (
             typeof tenant.name === "string" &&
@@ -268,8 +267,7 @@ export async function GET(request: NextRequest) {
             role?: string;
             groups?: string[];
             permissions?: string[];
-          } =>
-            Boolean(tenant),
+          } => Boolean(tenant),
         )
     : undefined;
 
@@ -290,9 +288,7 @@ export async function GET(request: NextRequest) {
         id: identifier,
         uuid: identifier,
         proxyUuid:
-          typeof rawUser.proxyUuid === "string"
-            ? rawUser.proxyUuid.trim()
-            : "",
+          typeof rawUser.proxyUuid === "string" ? rawUser.proxyUuid.trim() : "",
       }
     : rawUser;
   const publicEmail = resolvePublicUserEmail({
@@ -312,6 +308,9 @@ export async function GET(request: NextRequest) {
       passwordSet: Boolean(rawUser.passwordSet),
       ...(serviceReadiness ? { serviceReadiness } : {}),
       role: normalizedRole,
+      isRoot: ["root", "super_admin"].includes(
+        rawUser.role?.trim().toLowerCase() ?? "",
+      ),
       groups: normalizedGroups,
       permissions: normalizedPermissions,
       readOnly: normalizedReadOnly,
