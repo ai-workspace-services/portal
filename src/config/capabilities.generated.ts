@@ -781,7 +781,11 @@ export const capabilities = {
         "/panel/operations/*"
       ],
       "api_prefixes": [
-        "/api/platform-operations"
+        "/api/platform-operations",
+        "/api/operations/catalog",
+        "/api/operations/plans",
+        "/api/operations/mcp",
+        "/api/operations/releases"
       ],
       "tables": [],
       "depends_on": [
@@ -791,7 +795,7 @@ export const capabilities = {
         {
           "id": "platformOperations",
           "path": "/panel/operations",
-          "label": "Overview",
+          "label": "Operations",
           "description": "平台运行与操作总览",
           "guard": {
             "require_login": true,
@@ -809,7 +813,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "management",
+            "section": "platform-operations",
             "order": 24
           }
         },
@@ -834,7 +838,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "management",
+            "section": "platform-operations",
             "order": 25
           }
         },
@@ -859,7 +863,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "management",
+            "section": "platform-operations",
             "order": 26
           }
         },
@@ -884,7 +888,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "management",
+            "section": "platform-operations",
             "order": 27
           }
         },
@@ -909,7 +913,7 @@ export const capabilities = {
             "tenant_scoped": true
           },
           "sidebar": {
-            "section": "management",
+            "section": "platform-operations",
             "order": 28
           }
         }
@@ -1508,7 +1512,7 @@ export const capabilities = {
       {
         "id": "platformOperations",
         "path": "/panel/operations",
-        "label": "Overview",
+        "label": "Operations",
         "description": "平台运行与操作总览",
         "guard": {
           "requireLogin": true,
@@ -1526,7 +1530,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "management",
+          "section": "platform-operations",
           "order": 24
         }
       },
@@ -1551,7 +1555,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "management",
+          "section": "platform-operations",
           "order": 25
         }
       },
@@ -1576,7 +1580,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "management",
+          "section": "platform-operations",
           "order": 26
         }
       },
@@ -1601,7 +1605,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "management",
+          "section": "platform-operations",
           "order": 27
         }
       },
@@ -1626,7 +1630,7 @@ export const capabilities = {
           "tenantScoped": true
         },
         "sidebar": {
-          "section": "management",
+          "section": "platform-operations",
           "order": 28
         }
       }
