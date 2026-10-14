@@ -48,9 +48,8 @@ jobs:
       ACCOUNT_SERVICE_URL: https://accounts-serverless-uat.onwalk.net
       REQUIRE_EXTERNAL_WEBSITE_CONTENT: 'true'
       WEBSITE_CONTENT_REPOSITORY: https://github.com/ai-workspace-services/knowledge.git
-      # Pin the latest Knowledge main revision containing the required website
-      # discovery manifest used by the console build.
-      WEBSITE_CONTENT_REF: c0d32da210dce99ab09f4b1adc19a51e05835b99
+      # Resolved to the latest Knowledge main commit before the build.
+      WEBSITE_CONTENT_REF: main
       WEBSITE_CONTENT_SUBDIR: content/website
       WRANGLER_SEND_METRICS: 'false'
       CI: 'true'
@@ -85,6 +84,18 @@ jobs:
         with:
           ref: ${{ steps.source.outputs.sha }}
           persist-credentials: false
+
+      - name: Resolve latest website content revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          website_sha=$(gh api repos/ai-workspace-services/knowledge/commits/main --jq .sha)
+          [[ "$website_sha" =~ ^[0-9a-f]{40}$ ]]
+          gh api "repos/ai-workspace-services/knowledge/contents/content/website/discovery.json?ref=$website_sha" >/dev/null
+          printf 'WEBSITE_CONTENT_REF=%s\n' "$website_sha" >> "$GITHUB_ENV"
+          echo "Resolved website content revision: ${website_sha}"
 
       - name: Checkout fixed GitOps configuration
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
