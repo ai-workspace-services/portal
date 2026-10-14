@@ -26,7 +26,16 @@ export type XConnectLocale = {
     | "saveMemberLabel"
     | "selectLabel"
     | "newTeamLabel"
-    | "statusLabel",
+    | "statusLabel"
+    | "statsTitle"
+    | "statsDescription"
+    | "teamCountLabel"
+    | "activeTeamsLabel"
+    | "teamMembersCountLabel"
+    | "unassignedMembersLabel"
+    | "membersUnknownLabel"
+    | "loadingLabel"
+    | "emptyLabel",
     string
   >;
   navigation: { label: string; links: Cta[]; cta: Cta; copyright: string };
@@ -116,6 +125,15 @@ export function validateXConnectLocale(
       "selectLabel",
       "newTeamLabel",
       "statusLabel",
+      "statsTitle",
+      "statsDescription",
+      "teamCountLabel",
+      "activeTeamsLabel",
+      "teamMembersCountLabel",
+      "unassignedMembersLabel",
+      "membersUnknownLabel",
+      "loadingLabel",
+      "emptyLabel",
     ],
     navigation: ["label", "copyright"],
     hero: [

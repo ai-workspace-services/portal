@@ -160,7 +160,16 @@
       "saveMemberLabel": "保存成员授权",
       "selectLabel": "选择团队",
       "newTeamLabel": "新建团队",
-      "statusLabel": "授权状态"
+      "statusLabel": "授权状态",
+      "statsTitle": "团队分组统计",
+      "statsDescription": "按专属网络授权统计团队成员，不改变用户分组标签。",
+      "teamCountLabel": "团队",
+      "activeTeamsLabel": "启用团队",
+      "teamMembersCountLabel": "团队成员",
+      "unassignedMembersLabel": "个人/未分配",
+      "membersUnknownLabel": "成员数 —",
+      "loadingLabel": "加载中…",
+      "emptyLabel": "暂无团队分组"
     }
   },
   "en": {
@@ -324,7 +333,16 @@
       "saveMemberLabel": "Save membership",
       "selectLabel": "Select team",
       "newTeamLabel": "New team",
-      "statusLabel": "Access status"
+      "statusLabel": "Access status",
+      "statsTitle": "Team group statistics",
+      "statsDescription": "Counts dedicated network memberships without changing user group tags.",
+      "teamCountLabel": "Teams",
+      "activeTeamsLabel": "Active teams",
+      "teamMembersCountLabel": "Team members",
+      "unassignedMembersLabel": "Personal / unassigned",
+      "membersUnknownLabel": "Members —",
+      "loadingLabel": "Loading…",
+      "emptyLabel": "No team groups"
     }
   }
 }
