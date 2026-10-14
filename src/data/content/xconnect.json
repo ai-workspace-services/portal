@@ -12,6 +12,10 @@
           "href": "https://github.com/ai-workspace-services/knowledge/blob/main/docs/zh/overseas-ai-service-access-guide.md"
         },
         {
+          "label": "好友推荐活动",
+          "href": "/products/xconnect/referral"
+        },
+        {
           "label": "GitHub",
           "href": "https://github.com/ai-workspace-xstream/xconnect-app"
         }
@@ -170,6 +174,10 @@
         {
           "label": "Guide",
           "href": "https://github.com/ai-workspace-services/knowledge/blob/main/docs/zh/overseas-ai-service-access-guide.md"
+        },
+        {
+          "label": "Referral program",
+          "href": "/products/xconnect/referral"
         },
         {
           "label": "GitHub",

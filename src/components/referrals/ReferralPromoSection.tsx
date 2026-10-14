@@ -42,7 +42,7 @@ export default function ReferralPromoSection({
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <BoundaryLink
-                href={copy.hero.primaryCta.href}
+                href="/products/xconnect/referral"
                 className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700"
               >
                 {copy.hero.primaryCta.label}
