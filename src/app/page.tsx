@@ -11,6 +11,11 @@ import ProofSection from "@/components/marketing/ProofSection";
 import PricingTeaser from "@/components/marketing/PricingTeaser";
 import FinalCta from "@/components/marketing/FinalCta";
 import BuiltByBadge from "@/components/marketing/BuiltByBadge";
+import ReferralPromoSection from "@/components/referrals/ReferralPromoSection";
+import referralContent from "@/data/content/referral.json";
+import type { ReferralContent } from "@/lib/referral-content";
+
+const referralCopy = referralContent as ReferralContent;
 
 export default function HomePage() {
   return (
@@ -27,6 +32,7 @@ export default function HomePage() {
         <WorkflowSection />
         <ControlPlaneSection />
         <PricingTeaser />
+        <ReferralPromoSection content={referralCopy} />
         <FinalCta />
         <BuiltByBadge />
       </main>
