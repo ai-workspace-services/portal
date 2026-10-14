@@ -5,7 +5,7 @@ import ReferralLanding from "@/components/referrals/ReferralLanding";
 import type { ReferralContent } from "@/lib/referral-content";
 import type { XConnectContent } from "@/lib/xconnectContent";
 const copy = content as ReferralContent;
-const url = "https://xworktech.com/referral";
+const url = "https://xworktech.com/products/xconnect/referral";
 export const metadata: Metadata = {
   title: copy.zh.seo.title,
   description: copy.zh.seo.description,
