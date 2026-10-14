@@ -17,11 +17,12 @@ vi.mock("../../resources.server", () => ({
   getDocVersion: vi.fn(),
 }));
 
-import { dynamicParams, generateStaticParams, revalidate } from "./page";
+import { dynamic, dynamicParams, generateStaticParams, revalidate } from "./page";
 
 describe("documentation detail route prerendering", () => {
   it("leaves documentation pages for runtime rendering", async () => {
     await expect(generateStaticParams()).resolves.toEqual([]);
+    expect(dynamic).toBe("force-dynamic");
     expect(dynamicParams).toBe(true);
     expect(revalidate).toBe(300);
   });

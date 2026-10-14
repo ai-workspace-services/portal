@@ -1,4 +1,6 @@
 export const revalidate = 300;
+// The rendered language is negotiated from request headers at runtime.
+export const dynamic = "force-dynamic";
 // Documents added between two builds still render on first request.
 export const dynamicParams = true;
 
