@@ -17,6 +17,8 @@ import { Github } from "@/components/icons/brand";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { XConnectContent } from "@/lib/xconnectContent";
 import styles from "./XConnectProductView.module.css";
+import ReferralPromoSection from "@/components/referrals/ReferralPromoSection";
+import type { ReferralContent } from "@/lib/referral-content";
 
 const serviceImages = [
   "openai.svg",
@@ -29,8 +31,10 @@ const diagnosticIcons = [Activity, Network, Check];
 
 export default function XConnectProductView({
   content,
+  referralContent,
 }: {
   content: XConnectContent;
+  referralContent?: ReferralContent;
 }) {
   const { language } = useLanguage();
   const c = content[language];
@@ -251,6 +255,7 @@ export default function XConnectProductView({
             </BoundaryLink>
           </section>
         ) : null}
+        {referralContent ? <ReferralPromoSection content={referralContent} compact /> : null}
       </main>
       <footer className={styles.footer}>
         <div>

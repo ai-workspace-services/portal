@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import content from "@/data/content/xconnect.json";
 import XConnectProductView from "@/components/products/XConnectProductView";
 import type { XConnectContent } from "@/lib/xconnectContent";
+import referralContent from "@/data/content/referral.json";
+import type { ReferralContent } from "@/lib/referral-content";
 
 const copy = content as XConnectContent;
 const url = "https://xworktech.com/products/xconnect";
@@ -31,5 +33,5 @@ export const metadata: Metadata = {
 };
 
 export default function XConnectPage() {
-  return <XConnectProductView content={copy} />;
+  return <XConnectProductView content={copy} referralContent={referralContent as ReferralContent} />;
 }
