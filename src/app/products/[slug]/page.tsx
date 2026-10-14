@@ -4,7 +4,10 @@ export const revalidate = 900;
 export const dynamicParams = true;
 
 import { notFound } from "next/navigation";
-import { getProduct, type WebsiteProductPayload } from "@/lib/docsServiceClient";
+import {
+  getProduct,
+  type WebsiteProductPayload,
+} from "@/lib/docsServiceClient";
 import ProductPageTemplate from "@/components/products/ProductPageTemplate";
 
 import xconnectData from "@/data/content/xconnect.json";
@@ -31,7 +34,9 @@ interface ProductSlugPageProps {
 
 import XWorkmateProductView from "@/components/products/XWorkmateProductView";
 
-export default async function ProductDynamicPage({ params }: ProductSlugPageProps) {
+export default async function ProductDynamicPage({
+  params,
+}: ProductSlugPageProps) {
   const { slug } = await params;
 
   if (slug === "xworkmate") {
@@ -59,5 +64,10 @@ export default async function ProductDynamicPage({ params }: ProductSlugPageProp
     notFound();
   }
 
-  return <ProductPageTemplate product={product} language={product.language || "zh"} />;
+  return (
+    <ProductPageTemplate
+      product={product}
+      language={product.language || "zh"}
+    />
+  );
 }

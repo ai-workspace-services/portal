@@ -100,7 +100,7 @@ export default function Homepage() {
           : 'The connector for AI workspaces with AI acceleration and secure access.',
       action: language === 'zh' ? '查看' : 'View',
       icon: '↯',
-      link: '/xconnect',
+      link: '/products/xconnect',
     },
     {
       name: 'XControl',
