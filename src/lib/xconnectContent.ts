@@ -188,7 +188,7 @@ export function validateXConnectLocale(
   }
   if (record.team) href(record.team.contactHref, "team.contactHref");
   const links = record.navigation.links;
-  if (!Array.isArray(links) || links.length !== 3) fail("navigation.links");
+  if (!Array.isArray(links) || links.length !== 4) fail("navigation.links");
   (links as Cta[]).forEach((link) => {
     string(link.label, "navigation.links.label");
     href(link.href, "navigation.links.href");
