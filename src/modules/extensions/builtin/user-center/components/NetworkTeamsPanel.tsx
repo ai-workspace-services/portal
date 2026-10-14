@@ -155,6 +155,30 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
   };
 
   if (!copy) return null;
+  const statsCopy = {
+    statsTitle:
+      copy.statsTitle ??
+      (language === "en" ? "Team group statistics" : "团队分组统计"),
+    statsDescription:
+      copy.statsDescription ??
+      (language === "en"
+        ? "Counts dedicated network memberships without changing user group tags."
+        : "按专属网络授权统计团队成员，不改变用户分组标签。"),
+    teamCountLabel:
+      copy.teamCountLabel ?? (language === "en" ? "Teams" : "团队"),
+    activeTeamsLabel:
+      copy.activeTeamsLabel ?? (language === "en" ? "Active teams" : "启用团队"),
+    teamMembersCountLabel:
+      copy.teamMembersCountLabel ??
+      (language === "en" ? "Team members" : "团队成员"),
+    unassignedMembersLabel:
+      copy.unassignedMembersLabel ??
+      (language === "en" ? "Personal / unassigned" : "个人/未分配"),
+    membersUnknownLabel:
+      copy.membersUnknownLabel ?? (language === "en" ? "Members —" : "成员数 —"),
+    loadingLabel: copy.loadingLabel ?? (language === "en" ? "Loading…" : "加载中…"),
+    emptyLabel: copy.emptyLabel ?? (language === "en" ? "No team groups" : "暂无团队分组"),
+  };
   return (
     <section className="xds-card p-5 space-y-4">
       <h2 className="text-lg font-semibold">
@@ -202,22 +226,22 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-heading)]">
-                  {copy.statsTitle}
+                  {statsCopy.statsTitle}
                 </h3>
                 <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                  {copy.statsDescription}
+                  {statsCopy.statsDescription}
                 </p>
               </div>
               <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-500">
                 {teams.isLoading
-                  ? copy.loadingLabel
-                  : `${copy.teamCountLabel} ${teams.data?.teams.length ?? "—"}`}
+                  ? statsCopy.loadingLabel
+                  : `${statsCopy.teamCountLabel} ${teams.data?.teams.length ?? "—"}`}
               </span>
             </div>
             <dl className="mt-4 grid gap-3 sm:grid-cols-3">
               <div>
                 <dt className="text-xs text-[var(--color-text-muted)]">
-                  {copy.activeTeamsLabel}
+                  {statsCopy.activeTeamsLabel}
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-[var(--color-heading)]">
                   {teams.isLoading ? "—" : (activeTeamCount ?? "—")}
@@ -225,7 +249,7 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
               </div>
               <div>
                 <dt className="text-xs text-[var(--color-text-muted)]">
-                  {copy.teamMembersCountLabel}
+                  {statsCopy.teamMembersCountLabel}
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-[var(--color-heading)]">
                   {teamMemberships.isLoading ? "—" : (teamMemberCount ?? "—")}
@@ -233,7 +257,7 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
               </div>
               <div>
                 <dt className="text-xs text-[var(--color-text-muted)]">
-                  {copy.unassignedMembersLabel}
+                  {statsCopy.unassignedMembersLabel}
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-[var(--color-heading)]">
                   {teamMemberships.isLoading || teamMemberCount === undefined
@@ -258,8 +282,8 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
                       </span>
                       <span className="text-xs text-[var(--color-text-muted)]">
                         {teamMemberships.isLoading || !membershipsComplete
-                          ? copy.membersUnknownLabel
-                          : `${copy.teamMembersCountLabel} ${summary?.memberCount ?? 0} / ${item.memberLimit}`}
+                          ? statsCopy.membersUnknownLabel
+                          : `${statsCopy.teamMembersCountLabel} ${summary?.memberCount ?? 0} / ${item.memberLimit}`}
                       </span>
                     </div>
                   );
@@ -267,11 +291,11 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
               </div>
             ) : teams.isLoading ? (
               <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-                {copy.loadingLabel}
+                {statsCopy.loadingLabel}
               </p>
             ) : (
               <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-                {copy.emptyLabel}
+                {statsCopy.emptyLabel}
               </p>
             )}
           </section>
