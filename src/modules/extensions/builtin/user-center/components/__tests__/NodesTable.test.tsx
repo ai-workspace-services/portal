@@ -37,6 +37,24 @@ describe("NodesTable", () => {
     );
     expect(screen.getByText("显示 0 个区域 pool")).toBeInTheDocument();
   });
+  it("shows multiple runtime closure reasons in both languages", () => {
+    const closed: RegionalPool = {
+      ...pool,
+      closedReasons: ["unhealthy", "xray_not_running"],
+    };
+    const { rerender } = render(<NodesTable zh pools={[closed]} />);
+    expect(
+      screen.getByText("配置同步异常；Xray 同步状态未就绪"),
+    ).toBeInTheDocument();
+    rerender(<NodesTable zh={false} pools={[closed]} />);
+    expect(
+      screen.getByText(
+        "Configuration sync unhealthy；Xray sync state not ready",
+      ),
+    ).toBeInTheDocument();
+    rerender(<NodesTable zh pools={[pool]} />);
+    expect(screen.getByText("服务端未提供原因")).toBeInTheDocument();
+  });
   it("distinguishes errors from empty data", () => {
     render(<NodesTable zh pools={[]} error={new Error("503")} />);
     expect(screen.getByRole("alert")).toHaveTextContent("区域入口加载失败");

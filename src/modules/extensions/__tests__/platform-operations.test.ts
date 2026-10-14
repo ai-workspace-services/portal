@@ -17,6 +17,20 @@ describe("Platform Operations extension", () => {
 
     expect(registry.getRoute("/panel/operations")?.enabled).toBe(true);
     expect(registry.getRoute("/panel/operations/releases")?.enabled).toBe(true);
+    const operationsMenu = registry.sidebar.find(
+      (section) => section.id === "platform-operations",
+    );
+    expect(operationsMenu?.items.map((item) => item.route.path)).toContain(
+      "/panel/operations",
+    );
+    expect(operationsMenu?.items.map((item) => item.route.path)).toContain(
+      "/panel/operations/releases",
+    );
+    expect(
+      registry.sidebar
+        .find((section) => section.id === "management")
+        ?.items.some((item) => item.route.path.startsWith("/panel/operations")),
+    ).toBe(false);
     expect(registry.getRoute("/panel/operations/vault-access")?.guard).toEqual({
       requireLogin: true,
       tenantScoped: true,

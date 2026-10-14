@@ -12,6 +12,41 @@ import UserGroupManagement, {
 } from "../components/UserGroupManagement";
 
 describe("Management dashboard components", () => {
+  it("renders real counts including zero without replacing them with placeholders", () => {
+    const { container } = render(
+      <OverviewCards
+        overview={{
+          totalUsers: 24,
+          subscribedUsers: 0,
+          activeUsers: 23,
+          newUsersLast24h: 0,
+        }}
+      />,
+    );
+    expect(
+      Array.from(
+        container.querySelectorAll("dd"),
+        (element) => element.textContent,
+      ),
+    ).toEqual(["24", "0", "23", "0"]);
+  });
+
+  it("shows a statistics error and lets the user retry without inventing counts", () => {
+    const retry = vi.fn();
+    const { container } = render(
+      <OverviewCards errorMessage="请求失败" onRetry={retry} />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("用户统计加载失败");
+    expect(
+      Array.from(
+        container.querySelectorAll("dd"),
+        (element) => element.textContent,
+      ),
+    ).toEqual(["—", "—", "—", "—"]);
+    fireEvent.click(screen.getByRole("button", { name: "重试" }));
+    expect(retry).toHaveBeenCalledOnce();
+  });
+
   it("renders loading state for overview cards", () => {
     const { container } = render(<OverviewCards isLoading />);
     expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();

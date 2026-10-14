@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import BoundaryLink from "@/components/common/BoundaryLink";
 
 import {
@@ -25,7 +25,28 @@ export default function AccountRecoveryContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [hasRequested, setHasRequested] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecovered, setIsRecovered] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const submitting = useRef(false);
   const [alert, setAlert] = useState<AlertState | null>(null);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return;
+    const timer = window.setTimeout(
+      () => setResendSeconds(resendSeconds - 1),
+      1000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [resendSeconds]);
+
+  useEffect(() => {
+    if (!isRecovered) return;
+    const timer = window.setTimeout(
+      () => window.location.assign("/login"),
+      900,
+    );
+    return () => window.clearTimeout(timer);
+  }, [isRecovered]);
 
   const copy = zh
     ? {
@@ -54,6 +75,7 @@ export default function AccountRecoveryContent() {
         genericError: "暂时无法发起账号恢复，请稍后再试。",
         resetError: "暂时无法重置密码，请检查验证码后重试。",
         expiredCode: "验证码已过期，请重新获取验证码。",
+        rateLimited: "请求过于频繁，请稍后再试。",
         resend: "重新获取验证码",
         back: "返回登录",
         switchText: "想起密码了？",
@@ -87,6 +109,7 @@ export default function AccountRecoveryContent() {
         resetError:
           "We could not reset your password. Check the code and try again.",
         expiredCode: "This code has expired. Request a new code to continue.",
+        rateLimited: "Too many attempts. Please try again later.",
         resend: "Request a new code",
         back: "Back to sign in",
         switchText: "Remember your password?",
@@ -96,12 +119,14 @@ export default function AccountRecoveryContent() {
 
   const submitRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting.current || resendSeconds > 0 || isRecovered) return;
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail || !normalizedEmail.includes("@")) {
       setAlert({ type: "error", message: copy.invalidEmail });
       return;
     }
 
+    submitting.current = true;
     setIsSubmitting(true);
     setAlert(null);
     try {
@@ -111,25 +136,33 @@ export default function AccountRecoveryContent() {
         body: JSON.stringify({ email: normalizedEmail }),
       });
       if (!response.ok) {
+        if (response.status === 429) {
+          setAlert({ type: "error", message: copy.rateLimited });
+          return;
+        }
         throw new Error("recovery_request_failed");
       }
       setEmail(normalizedEmail);
       setHasRequested(true);
+      setResendSeconds(60);
       setAlert({ type: "success", message: copy.sent });
     } catch {
       setAlert({ type: "error", message: copy.genericError });
     } finally {
+      submitting.current = false;
       setIsSubmitting(false);
     }
   };
 
   const submitReset = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting.current || isRecovered) return;
+    const normalizedPassword = password.trim();
     if (!/^\d{6}$/.test(code.trim())) {
       setAlert({ type: "error", message: copy.missingCode });
       return;
     }
-    if (password.length < 8) {
+    if (normalizedPassword.length < 8) {
       setAlert({ type: "error", message: copy.shortPassword });
       return;
     }
@@ -138,6 +171,7 @@ export default function AccountRecoveryContent() {
       return;
     }
 
+    submitting.current = true;
     setIsSubmitting(true);
     setAlert(null);
     try {
@@ -147,10 +181,14 @@ export default function AccountRecoveryContent() {
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           code: code.trim(),
-          password,
+          password: normalizedPassword,
         }),
       });
       if (!response.ok) {
+        if (response.status === 429) {
+          setAlert({ type: "error", message: copy.rateLimited });
+          return;
+        }
         const data = (await response.json().catch(() => ({}))) as {
           error?: string;
         };
@@ -160,11 +198,15 @@ export default function AccountRecoveryContent() {
         }
         throw new Error("recovery_confirm_failed");
       }
+      setIsRecovered(true);
+      setCode("");
+      setPassword("");
+      setConfirmPassword("");
       setAlert({ type: "success", message: copy.success });
-      setTimeout(() => window.location.assign("/login"), 900);
     } catch {
       setAlert({ type: "error", message: copy.resetError });
     } finally {
+      submitting.current = false;
       setIsSubmitting(false);
     }
   };
@@ -207,7 +249,7 @@ export default function AccountRecoveryContent() {
           </div>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || resendSeconds > 0}
             aria-busy={isSubmitting}
             className={`w-full ${AUTH_PRIMARY_BUTTON_CLASS}`}
           >
@@ -216,6 +258,9 @@ export default function AccountRecoveryContent() {
         </form>
       ) : (
         <div className="space-y-5">
+          <p className="text-sm text-slate-600">
+            {copy.email}: {email}
+          </p>
           <form className="space-y-5" onSubmit={submitReset} noValidate>
             <div className="space-y-2">
               <label
@@ -232,6 +277,7 @@ export default function AccountRecoveryContent() {
                 inputMode="numeric"
                 pattern="[0-9]{6}"
                 maxLength={6}
+                disabled={isSubmitting || isRecovered}
                 value={code}
                 onChange={(event) =>
                   setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
@@ -254,6 +300,7 @@ export default function AccountRecoveryContent() {
                 type="password"
                 autoComplete="new-password"
                 minLength={8}
+                disabled={isSubmitting || isRecovered}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder={copy.newPasswordPlaceholder}
@@ -274,6 +321,7 @@ export default function AccountRecoveryContent() {
                 type="password"
                 autoComplete="new-password"
                 minLength={8}
+                disabled={isSubmitting || isRecovered}
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
                 placeholder={copy.confirmPasswordPlaceholder}
@@ -283,7 +331,7 @@ export default function AccountRecoveryContent() {
             </div>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isRecovered}
               aria-busy={isSubmitting}
               className={`w-full ${AUTH_PRIMARY_BUTTON_CLASS}`}
             >
@@ -293,7 +341,8 @@ export default function AccountRecoveryContent() {
           <div className="flex items-center justify-between gap-4 text-sm">
             <button
               type="button"
-              className={AUTH_TEXT_LINK_CLASS}
+              disabled={isSubmitting || isRecovered || resendSeconds > 0}
+              className={`${AUTH_TEXT_LINK_CLASS} disabled:cursor-not-allowed disabled:opacity-50`}
               onClick={() => {
                 setHasRequested(false);
                 setCode("");
@@ -303,6 +352,7 @@ export default function AccountRecoveryContent() {
               }}
             >
               {copy.resend}
+              {resendSeconds > 0 ? ` (${resendSeconds}s)` : ""}
             </button>
             <BoundaryLink href="/login" className={AUTH_TEXT_LINK_CLASS}>
               {copy.back}

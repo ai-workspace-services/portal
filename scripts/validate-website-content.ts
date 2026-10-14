@@ -3,6 +3,7 @@ import path from "node:path";
 
 import yaml from "js-yaml";
 import { validateDiscovery } from "../src/lib/public-discovery";
+import { validateReferralLocale } from "../src/lib/referral-content";
 import { validateXConnectLocale } from "../src/lib/xconnectContent";
 
 type ContentManifest = {
@@ -169,7 +170,39 @@ async function main(): Promise<void> {
   await validateManifest();
   validateDiscovery(JSON.parse(await readFile("discovery.json")));
 
+  const manifest = yaml.load(
+    await readFile("content-manifest.yaml"),
+  ) as ContentManifest;
+  const declaredReferral = Boolean(manifest.spec?.entrypoints?.referral);
   for (const locale of locales) {
+    const referralFile = `campaign/referral/${locale}.json`;
+    const referralExists = await fs
+      .access(path.join(contentRoot, referralFile))
+      .then(() => true)
+      .catch(() => false);
+    if (declaredReferral || referralExists)
+      validateReferralLocale(
+        JSON.parse(await readFile(referralFile)),
+        `referral/${locale}`,
+      );
+    const operationsPath = `operations/${locale}/hero.md`;
+    const operations = parseFrontMatter(
+      await readFile(operationsPath),
+      operationsPath,
+    );
+    const operationsUI = operations.ui as Record<string, unknown> | undefined;
+    for (const field of [
+      "title",
+      "environment",
+      "previewNotice",
+      "plan",
+      "createPlan",
+      "executionUnavailable",
+      "prodUnavailable",
+      "mcpScope",
+    ]) {
+      requireString(operationsUI?.[field], `ui.${field}`, operationsPath);
+    }
     const marketingPath = `homepage/${locale}/marketing.md`;
     const heroPath = `homepage/${locale}/hero.md`;
     const marketing = parseFrontMatter(
@@ -178,11 +211,30 @@ async function main(): Promise<void> {
     );
     parseFrontMatter(await readFile(heroPath), heroPath);
     validateMarketingContent(marketingPath, marketing as MarketingContent);
-    const productPath = `product/xconnect/${locale}/hero.md`;
+    const xconnectPath = `product/xconnect/${locale}/hero.md`;
     validateXConnectLocale(
-      parseFrontMatter(await readFile(productPath), productPath),
-      productPath,
+      parseFrontMatter(await readFile(xconnectPath), xconnectPath),
+      xconnectPath,
     );
+    const productPath = `product/global-mesh/${locale}/hero.md`;
+    const product = parseFrontMatter(await readFile(productPath), productPath);
+    const ui = product.ui as Record<string, unknown> | undefined;
+    for (const field of [
+      "name",
+      "productTitle",
+      "navTopology",
+      "navProduct",
+      "computeTopology",
+      "dualTopology",
+      "finopsTitle",
+      "mixedMonthly",
+      "aggregationAdvantage",
+      "aggregationValue",
+      "mapTitle",
+      "llmsHeading",
+    ]) {
+      requireString(ui?.[field], `ui.${field}`, productPath);
+    }
   }
 
   console.log(`Website content is valid: ${contentRoot}`);

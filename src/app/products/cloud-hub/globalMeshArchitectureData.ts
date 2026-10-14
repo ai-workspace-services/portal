@@ -1,3 +1,4 @@
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
 export interface TopologyLayer {
   level: string;
   name: string;
@@ -230,7 +231,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "采用『GitHub 为主源，VPS Gitea 为私网镜像』双轨模式。开发者向 GitHub 提交触发 GitOps，VPS 节点通过 WireGuard 私网自动同步，保障 GitHub 故障或跨国出口抖动时，生产部署与内网拉取毫秒级容灾。",
       recommendation: "推荐：GitHub 主代码仓 + Hetzner VPS Gitea 私有镜像双轨方案",
     },
@@ -273,7 +274,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "利用 VPS 算力地图获得全球五大机房的真实硬件性价比底线，配合 SaaS 免费层规划，将传统大厂上云每月 300~800 USD 的基础架构开销直降至 25 USD/月以内。",
       recommendation: "推荐：轻量弹性归 Serverless + 重态存储与向量归 VPS 裸金属",
     },
@@ -316,7 +317,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "日常 PR 静态检查走 GitHub Actions 快速验证；重量级全量测试与 Docker 镜像交叉编译自动分流至内网 Contabo/Hetzner act_runner，构建时长缩短 60%，且永不耗尽每月 CI 配额。",
       recommendation: "推荐：轻型 Lint 走云端 Actions + 镜像构建走 VPS 自建 Runner",
     },
@@ -359,7 +360,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "GitOps 仓库作为唯一决策平面，通过 GitHub Actions OIDC + Vault KV 自动签发临时凭据，跨云发布到 Cloudflare Pages、Cloud Run 与全球五大 VPS 节点，全流程无需人工敲键盘登录服务器。",
       recommendation: "推荐：GitOps 自动化声明 + Cloudflare/Cloud Run 无感原子切换",
     },
@@ -402,7 +403,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "采用『Vault 自建为主库，云端 KMS / Secret Manager 边缘中继』架构。跨云 API Key、数据库连接串与 TLS 证书存放在 VPS 自建 Vault 内，通过私网 mTLS 分发短效 Token，确保全网 0 明文秘钥提交 Git 仓库。",
       recommendation: "推荐：VPS 自建 Vault Raft 集群 + GitHub OIDC 临时动态凭据换取",
     },
@@ -445,7 +446,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "将边缘分发、弹性微服务与低成本硬件裸金属融为一体：用户流量由 Cloudflare 接住，突发请求由 Cloud Run 消化，核心数据存储在 VPS 内部集群，完美平衡超低延迟、无限弹性与极限成本。",
       recommendation: "推荐：CDN 迎客 + Serverless 削峰 + VPS 驻守核心",
     },
@@ -488,7 +489,7 @@ export const LIFECYCLE_STAGES: LifecycleStage[] = [
       },
     ],
     meshValue: {
-      title: "Global Mesh 聚合价值",
+      title: cloudHubCopy.zh.aggregationValue,
       desc: "内网全量遥测走 Victoria 全家桶与 ClickHouse（零带宽与数据存储溢价）；外网探测走 Grafana Cloud 外部探针（防止本地机房割接导致告警失灵）。全链路 APM 与日志可查，告警从不漏发。",
       recommendation: "推荐：内部 Victoria+ClickHouse 主力 + 外部 Grafana Cloud 独立哨兵",
     },

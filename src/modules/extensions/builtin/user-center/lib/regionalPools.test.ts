@@ -53,25 +53,25 @@ describe("registered regional pools", () => {
     ).toHaveLength(2);
   });
   it("loads counts and closed state from the authenticated discovery endpoint", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue({
-        ok: true,
-        json: async () => [
-          {
-            code: "de-fra",
-            entry: "custom.entry.example",
-            poolCount: 3,
-            openToUsers: false,
-          },
-        ],
-      });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          code: "de-fra",
+          entry: "custom.entry.example",
+          poolCount: 3,
+          openToUsers: false,
+          closedReasons: ["unhealthy", "xray_not_running"],
+        },
+      ],
+    });
     vi.stubGlobal("fetch", fetchMock);
     expect(await fetchRegionalPools()).toEqual([
       expect.objectContaining({
         code: "de-fra",
         poolCount: 3,
         openToUsers: false,
+        closedReasons: ["unhealthy", "xray_not_running"],
       }),
     ]);
     expect(fetchMock).toHaveBeenCalledWith(

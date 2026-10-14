@@ -3,6 +3,15 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { bffBoundaryForRoute } from "./ssr-bff-boundaries.mjs";
 
+test("Operations catalog, plan and MCP share the console boundary", () => {
+  for (const route of [
+    "api/operations/catalog/route.ts",
+    "api/operations/plans/route.ts",
+    "api/operations/mcp/route.ts",
+  ])
+    assert.equal(bffBoundaryForRoute(route), "console");
+});
+
 test("Zero catch-all is bundled in Console, not auth/public or excluded", async () => {
   const route = "api/xconnect-zero/[...segments]/route.ts";
   assert.equal(bffBoundaryForRoute(route), "console");
@@ -74,4 +83,27 @@ test("no generic API or similar prefix gains a BFF handler", () => {
   ]) {
     assert.equal(bffBoundaryForRoute(path), undefined);
   }
+});
+
+test("release status is bundled in Console with a fixed read-only route", () => {
+  assert.equal(
+    bffBoundaryForRoute("api/operations/releases/route.ts"),
+    "console",
+  );
+  assert.equal(
+    bffBoundaryForRoute("api/operations/releases/dispatch/route.ts"),
+    undefined,
+  );
+});
+
+
+test("Referral self-service BFF routes stay in console, campaign stays public", async () => {
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/settlements/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/unknown/route.ts"), undefined);
+  const { buildBoundaryRoutes, resolveBoundaryForPath } = await import("./ssr-boundary-routes.mjs");
+  const config = JSON.parse(await readFile(new URL("../config/cloudflare-boundaries.json", import.meta.url), "utf8"));
+  const routes = buildBoundaryRoutes(config.boundaries);
+  assert.equal(resolveBoundaryForPath("/referral", routes), "public");
+  assert.equal(resolveBoundaryForPath("/referrals", routes), "console");
 });

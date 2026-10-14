@@ -1,5 +1,11 @@
 import type { VlessNode } from "./vless";
 
+export type RegionalClosureReason =
+  | "explicit_disabled"
+  | "stale"
+  | "unhealthy"
+  | "xray_not_running";
+
 export type RegionalPool = {
   key: string;
   code: string;
@@ -9,12 +15,26 @@ export type RegionalPool = {
   entry: string;
   poolCount: number;
   openToUsers: boolean;
+  closedReasons?: RegionalClosureReason[];
 };
 
 type RegionalPoolReport = Pick<
   RegionalPool,
-  "code" | "entry" | "poolCount" | "openToUsers"
+  "code" | "entry" | "poolCount" | "openToUsers" | "closedReasons"
 >;
+
+export function regionalClosureReasonLabel(
+  reason: RegionalClosureReason,
+  zh: boolean,
+): string {
+  const labels: Record<RegionalClosureReason, [string, string]> = {
+    explicit_disabled: ["配置已关闭", "Disabled in configuration"],
+    stale: ["状态上报已过期", "Status report expired"],
+    unhealthy: ["配置同步异常", "Configuration sync unhealthy"],
+    xray_not_running: ["Xray 同步状态未就绪", "Xray sync state not ready"],
+  };
+  return labels[reason][zh ? 0 : 1];
+}
 
 function describePool(report: RegionalPoolReport): RegionalPool {
   const prefix = report.code.split("-")[0].toUpperCase();
@@ -60,7 +80,17 @@ function isRegionalPoolReport(value: unknown): value is RegionalPoolReport {
     !!pool.entry.trim() &&
     Number.isInteger(pool.poolCount) &&
     pool.poolCount > 0 &&
-    typeof pool.openToUsers === "boolean"
+    typeof pool.openToUsers === "boolean" &&
+    (pool.closedReasons === undefined ||
+      (Array.isArray(pool.closedReasons) &&
+        pool.closedReasons.every((reason) =>
+          [
+            "explicit_disabled",
+            "stale",
+            "unhealthy",
+            "xray_not_running",
+          ].includes(reason),
+        )))
   );
 }
 

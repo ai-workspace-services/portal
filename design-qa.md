@@ -1,3 +1,65 @@
+# Referral Program 2026 — design QA
+
+## Reference and comparison
+
+The user selected Product Design option **1**. Original generated reference: `exec-1c34d3b5-9b43-46e3-ba6c-f13779e4149b.png`, 1024 × 1536. The comparison below clips its top 1024 × 720 region and pairs it with the implementation captured at 1024 × 720, both displayed at 0.5×. Browser screenshots are unretouched.
+
+![Selected option and implemented desktop](docs/assets/referral-2026/design-comparison.png)
+
+## Review and iterations
+
+| Area | Observed issue | Correction / final evidence |
+| --- | --- | --- |
+| Layout | Initial desktop reward cards were wider and taller than the reference; the mobile primary CTA fell below the first viewport. | Compact 700px reward grid, reduced card padding, smaller mobile assets and shorter canonical copy. At 390 × 844 the primary CTA is visible. |
+| Typography | Existing styles did not consistently use Portal typography tokens. | Geist and existing size/weight tokens; strong headline and numerical reward hierarchy retained. |
+| Color | Reference uses white, pale blue and a saturated blue CTA. | Existing brand blues and pale cards retained; focus outline visible in the mobile screenshot. |
+| Assets | The mockup presented a generic device arrangement. | Reused the accurate existing XConnect multi-device asset; generated two transparent decorative reward illustrations, no currency-specific coin markings. |
+| Copy | Reference implied rewards to both friends; annual eligibility required precise explanation. | Canonical Chinese/English Knowledge copy explicitly awards the inviter, with an active subscription at the friend's payment time. |
+| Narrow English | A line clamp hid the annual eligibility sentence at 320px. | Removed the clamp; full eligibility sentence visible with no horizontal overflow. |
+| Navigation | Download and product links required real destinations. | Existing product and download routes, terms anchor and FAQ disclosure verified. |
+
+Intentional differences from the illustrative reference: actual product asset, accurate inviter-only rules, full eligibility language, existing brand typography and real campaign period. No financial reward displayed on the public calculator is treated as an account reward.
+
+## Responsive and interaction evidence
+
+- Desktop: 1024 × 720 and 1280 × 720.
+- Chinese mobile: 390 × 844; English narrow mobile: 320 × 844. DOM viewport and document scroll width both measured 320px for the narrow view.
+- Calculator: 6 invitations × CNY 200 annual with active inviter → CNY 120 cashback estimate and 180 days; monthly or inactive inviter → zero extra days. Inputs and checkbox remain labeled estimates.
+- FAQ disclosure, language switch, terms anchor, SEO description and Open Graph metadata inspected.
+- Public page console inspection found no application errors. Screenshot Next.js development indicator is a local-preview control.
+
+![Desktop](docs/assets/referral-2026/referral-desktop-final.png)
+![Chinese mobile](docs/assets/referral-2026/referral-mobile-final.png)
+![English 320px](docs/assets/referral-2026/referral-mobile-en-320.png)
+![Calculator](docs/assets/referral-2026/referral-mobile-calculator.png)
+
+## Authenticated center evidence
+
+The uncommitted local test harness used the real Accounts router, TokenService and PostgreSQL 17 Store in an isolated disposable database. All accounts and invoice facts were synthetic fixtures. Some dates were deliberately seeded before campaign start to exercise the seven-day display; this is layout/API evidence, not proof of production eligibility or a signed Stripe payment.
+
+- Masked monthly/annual records and currency-separated totals came from Accounts, not client mock responses.
+- A real Store reward operation inserted the 30-day extension ledger; the UI displayed April 11 → May 11, 2027.
+- A local test-account settlement request reserved USD 1.29, changed available balance to zero and displayed `Under review`; no payout occurred.
+- Copy action success feedback, QR visibility, refresh and bilingual layouts were exercised. Browser bridge clipboard readback was empty, so system clipboard delivery remains a manual UAT check. Native share-sheet behavior remains device-dependent; the implemented fallback uses copy.
+- Fixed the account-navigation label and 320px header overlap by reusing the existing account translation and wrapping the header. Both 390px Chinese and 320px English measured no document-level horizontal overflow; record tables scroll within their container.
+
+![Local PostgreSQL center](docs/assets/referral-2026/referrals-desktop-final.png)
+![Center Chinese mobile](docs/assets/referral-2026/referrals-mobile-final.png)
+![Center English 320px](docs/assets/referral-2026/referrals-mobile-en-320.png)
+![Local QR interaction](docs/assets/referral-2026/referrals-qr.png)
+![Local settlement](docs/assets/referral-2026/referrals-settlement.png)
+![Actual Store extension ledger](docs/assets/referral-2026/referrals-extension-ledger.png)
+
+## Final result
+
+**Passed for local visual, responsive and authenticated API integration QA.** UAT/production acceptance remains pending. All previous unrelated QA records below are preserved.
+
+## Runtime scope
+
+Captures are from the isolated local Portal preview. They establish local layout and interaction behavior, not UAT or production acceptance. Live host routing, Stripe test-mode delivery, production-like database migration and payment approval remain in the UAT checklist in `docs/referral-2026.md`.
+
+---
+
 # AI Workspace Web parity design QA
 
 ## XConnect Zero three-page redesign — 2026-09-08
@@ -334,3 +396,68 @@ The browser subsequently redirected to the existing `/login` gate because no loc
 final result: blocked
 
 Blocker: an authenticated local Portal session is required to capture and compare the protected FinOps route in the selected design state.
+
+---
+
+# Release overview design QA
+
+final result: passed
+
+The user selected the supplied blue square matrix as a style reference and then requested a concise three-part release overview. This is an adaptation to Portal's existing tokens, not a pixel clone of the unrelated VPS capability screen. Source and implementation were opened in the same comparison input; desktop and narrow layouts were captured. Desktop capture used 1091 CSS pixels; the narrow test was additionally checked at 296 CSS pixels. Viewport density differs from the 2226-pixel source; comparisons concern component hierarchy and style, not identical unrelated copy or page dimensions.
+
+## Findings and repairs
+
+- P2: A sparse matrix stretched a single tag across the full card. Replaced the table's full-width sizing with content-sized columns and fixed minimum tracks.
+- P2: Narrow container sizing let wide tables determine the page width. Added full-width/min-width-zero containers and isolated horizontal scrolling inside the matrix and history.
+- P2: Build successes could obscure failed environment releases. Added a dedicated environment-result row and separate build/deployment selector. Unknown evidence stays a dashed neutral cell.
+- P2: Compact labels could wrap inside history status badges. Added no-wrap badges and a scrollable minimum-width history table.
+- Post-fix captures show bounded containers, readable square cells, visible status distinctions, and no clipped environment cards. History and matrix overflow remains inside their own scrolling regions.
+
+## Required fidelity surfaces
+
+Typography uses existing Portal system fonts, with monospace immutable tags and SHAs. Headings, labels and values keep a readable hierarchy. Light surface tokens, rounded bordered cards, blue success cells and neutral empty evidence retain the reference's matrix language. Red failures and amber pending states add release semantics. Spacing follows the existing card system, with compact matrix rows and collapsed details. There are no raster illustrations in the source; data cells are actual controls and existing Lucide icons are reused.
+
+## Interaction evidence
+
+Verified day/week/year selectors (including Monday week starts), environment filtering, TAG search, build/deployment switch, selectable repository evidence, historical pagination, and empty PROD coverage. Fixture data is sanitized evidence collected from real Actions runs over seven days: 92 attempts, 55 environment/tag pairs and 76 evidence gaps. Unknown production history is shown as unavailable, never synthetic success. Unit verification covers daily/week/year deduplication, timezone boundaries, later failed retries, full UAT authority and unsafe URL/ref rejection. Proxy checks cover authentication and role denial. Production APIs are not bypassed by the preview.
+
+The preview route is local verification scaffolding and is excluded from the change. Live authenticated UAT acceptance remains a rollout gate after merge and a fresh immutable deployment. Optional P3 follow-up: adjust matrix column density for very long version tags.
+
+
+## 2026-10-04 responsive follow-up
+
+Source: user supplied authenticated UAT screenshots show the page overflowing horizontally, the PROD card and controls offscreen, and old count dates appearing first.
+
+Changes: constrain every shared Panel flex ancestor with min-width: 0; preserve the desktop sidebar width; keep matrix and counts scrolling within their sections; stack environment summaries on mobile; use mobile history cards and 44px matrix targets; show newest count periods first. Wide screens retain fluid available space.
+
+Local verification uses the real ReleaseStatusPage with a captured catalog and a geometry-equivalent Panel shell, not an authenticated production session. At measured CSS widths 389, 1035, 1363, and 2557, document.scrollWidth equals viewport width. Phone summaries stack; laptop summaries share the row; matrix remains independently scrollable. Screenshots: /tmp/release-responsive-qa/mobile.png, laptop.png, wide.png. Browser viewport overrides are scaled by the app. Full-page screenshot capture may crop at the displayed app panel; DOM bounds were checked separately. Live logged-in Chrome automation was unavailable because its request-header policy failed to load; production visual acceptance remains pending deployment.
+
+Validation: 8 release schema/count/proxy tests pass, TypeScript and changed-file ESLint pass, console SSR/OpenNext Worker build passes. Full-repository ESLint retains 6 pre-existing no-html-link-for-pages errors in Header, PanelSidebarContent, and ai-aggregator.
+
+---
+
+# XConnect landing design QA
+
+Status: passed for implementation handoff, with visual differences noted below.
+
+## Scope
+
+Selected blue-and-white XConnect reference: global AI connectivity hero, five-device showcase, register/download/sign-in steps, Android diagnostics, guide, open source, compact header/footer. Bilingual editorial content remains owned by knowledge; Portal renders its validated generated content.
+
+## Evidence
+
+- Desktop and 375/390px mobile browser checks: images loaded, no horizontal overflow, Chinese/English switching works.
+- Registration opens the existing registration route; no account was submitted.
+- Download CTA opens `/download?product=xconnect` with XConnect selected.
+- Clean main-based production Webpack build passed; production page checked on localhost:3108, including loaded images and mobile width.
+- Eight focused content/download tests, TypeScript check, focused ESLint, content validation, boundary links and diff whitespace checks passed.
+- Full lint remains blocked by six existing anchor-link errors in Header, PanelSidebarContent and ai-aggregator; these unrelated files were not changed.
+- Default Turbopack cannot follow the temporary external node_modules symlink in the clean verification worktree. Webpack production verification passed without changing repository build configuration.
+
+## Known visual differences
+
+Illustrative device, diagnostic and guide assets are generated visualizations rather than literal product screenshots; UI numbers are labelled demonstration data. The page follows the selected composition but is not pixel-identical: section spacing/page height, the shared language dropdown and existing service icons differ from the supplied image. The diagnosis illustration is cropped on desktop and stacked on mobile.
+
+## Release boundary
+
+This verifies source, tests, build and local rendering only. No production deployment or authenticated end-to-end connectivity claim is made.

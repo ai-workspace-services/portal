@@ -38,9 +38,26 @@ TMP_DIR=$(mktemp -d)
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
 clone_repo() {
-  git clone --depth=1 --branch "${REMOTE_BRANCH}" "${REMOTE_REPO}" "${TMP_DIR}/repo" >/dev/null 2>&1 || \
-    git clone --depth=1 "${REMOTE_REPO}" "${TMP_DIR}/repo"
-  (cd "${TMP_DIR}/repo" && git checkout "${REMOTE_BRANCH}" >/dev/null 2>&1 || git checkout -b "${REMOTE_BRANCH}")
+  # Fetch the requested branch/tag/SHA directly. A shallow default-branch clone
+  # cannot resolve an older SHA, and creating a branch with that SHA as its name
+  # silently publishes the wrong content instead of failing.
+  [[ -n "${REMOTE_BRANCH}" && "${REMOTE_BRANCH}" != -* ]] || {
+    echo "WEBSITE_CONTENT_REF must be a non-empty branch, tag, or commit ref" >&2
+    return 1
+  }
+  git init -q "${TMP_DIR}/repo"
+  git -C "${TMP_DIR}/repo" remote add origin "${REMOTE_REPO}"
+  git -C "${TMP_DIR}/repo" fetch --depth=1 origin "${REMOTE_BRANCH}" >/dev/null 2>&1 || {
+    echo "Cannot fetch requested WEBSITE_CONTENT_REF" >&2
+    return 1
+  }
+  git -C "${TMP_DIR}/repo" checkout --detach FETCH_HEAD >/dev/null 2>&1
+  if [[ "${REMOTE_BRANCH}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    [[ "$(git -C "${TMP_DIR}/repo" rev-parse HEAD)" == "$(printf '%s' "${REMOTE_BRANCH}" | tr '[:upper:]' '[:lower:]')" ]] || {
+      echo "Fetched website content SHA does not match WEBSITE_CONTENT_REF" >&2
+      return 1
+    }
+  fi
 }
 
 sync_pull() {

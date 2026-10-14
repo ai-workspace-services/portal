@@ -178,5 +178,120 @@ describe("account recovery email-code flow", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Password reset. Sign in with your new password.",
     );
+    expect(screen.getByLabelText("Six-digit code")).toHaveValue("");
+    expect(screen.getByLabelText("New password")).toHaveValue("");
+    expect(screen.getByLabelText("Confirm new password")).toHaveValue("");
+    expect(
+      screen.getByRole("button", { name: "Complete recovery" }),
+    ).toBeDisabled();
+    fireEvent.submit(screen.getByLabelText("New password").closest("form")!);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("holds resending for 60 seconds and shows the destination email", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("{}", { status: 202 }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.useFakeTimers();
+    render(<AccountRecoveryContent />);
+    fireEvent.change(screen.getByLabelText("Login email"), {
+      target: { value: "person@example.com" },
+    });
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "Send verification code" }),
+      );
+    });
+    expect(screen.getByText("Login email: person@example.com")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Request a new code (60s)" }),
+    ).toBeDisabled();
+    for (let second = 0; second < 60; second++) {
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+    }
+    const resend = screen.getByRole("button", { name: "Request a new code" });
+    expect(resend).toBeEnabled();
+    fireEvent.click(resend);
+    expect(screen.getByLabelText("Login email")).toHaveValue(
+      "person@example.com",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("prevents duplicate in-flight requests", async () => {
+    const fetchMock = vi.fn().mockReturnValue(new Promise(() => {}));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AccountRecoveryContent />);
+    const email = screen.getByLabelText("Login email");
+    fireEvent.change(email, { target: { value: "person@example.com" } });
+    const form = email.closest("form")!;
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("explains rate limits when requesting a code", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("{}", { status: 429 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await requestCode(fetchMock);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Too many attempts. Please try again later.",
+    );
+    expect(screen.getByLabelText("Login email")).toBeTruthy();
+  });
+
+  it("validates the password using the Accounts whitespace policy", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("{}", { status: 202 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await requestCode(fetchMock);
+    fireEvent.change(screen.getByLabelText("Six-digit code"), {
+      target: { value: "012345" },
+    });
+    fireEvent.change(screen.getByLabelText("New password"), {
+      target: { value: "        " },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm new password"), {
+      target: { value: "        " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Complete recovery" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The new password must be at least 8 characters.",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("explains rate limits during confirmation without claiming success", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("{}", { status: 202 }))
+      .mockResolvedValueOnce(new Response("{}", { status: 429 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await requestCode(fetchMock);
+    fireEvent.change(screen.getByLabelText("Six-digit code"), {
+      target: { value: "012345" },
+    });
+    fireEvent.change(screen.getByLabelText("New password"), {
+      target: { value: "newPassword123" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm new password"), {
+      target: { value: "newPassword123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Complete recovery" }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Too many attempts. Please try again later.",
+      ),
+    );
+    expect(screen.getByLabelText("New password")).toHaveValue("newPassword123");
+    expect(
+      screen.getByRole("button", { name: "Complete recovery" }),
+    ).toBeEnabled();
   });
 });

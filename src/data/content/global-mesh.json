@@ -1,52 +1,144 @@
 {
   "zh": {
     "hero": {
-      "badge": "全球非业务管理专网",
-      "title": "Global Mesh",
-      "subtitle": "一朵不是云的虚拟云 · 基于全球 5 大 VPS 运营商交叉覆盖与 Xconec 零信任体系构筑的多云去中心化带外管理专网。",
+      "badge": "全球云中立基础设施架构中枢",
+      "title": "Cloud hub",
+      "subtitle": "Cloud-Neutral Global Service Mesh · 5 大核心 VPS 异构算力 · 48+ 全球 PoP · 0 端口公网入站暴露 · 成本节约 90%+",
       "cta": {
-        "label": "查看全球拓扑看板",
-        "href": "/products/cloud-hub"
+        "label": "进入产品控制台",
+        "href": "https://console.onwalk.net/products/cloud-hub"
       },
-      "downloadUrl": "https://github.com/ai-workspace-infra/global-mesh/releases",
-      "supportedPlatforms": "Linode · Hetzner · UCloud · Contabo · Vultr (全网 0 入站端口暴露)"
+      "downloadUrl": "https://console.onwalk.net/products/cloud-hub",
+      "supportedPlatforms": "macOS · Windows · Linux · iOS · Android · Web WASM"
     },
     "wizard": {
-      "title": "3 步组建全球虚拟带外管理网",
-      "description": "通过 Xconec Gateway 极简部署，打通多云异构节点，实现业务与运维彻底隔离。",
+      "title": "3 步接入 Cloud hub 云中立服务网格",
+      "description": "快速将异构计算节点、Serverless BFF 与边缘存储融入零信任自治网格。",
       "steps": [
         {
           "step": 1,
-          "title": "执行安全基线",
-          "description": "运行 cloud-init 脚本，封禁所有外部公网入站端口，启用 BBR 拥塞控制。",
-          "link": "https://github.com/ai-workspace-infra/global-mesh#readme",
-          "platforms": "Ubuntu 22.04/24.04 · Debian 12"
+          "title": "生成节点密钥与网络配置",
+          "description": "在控制台生成受信 WireGuard 覆盖网密钥，分配专用内网 IP (10.240.0.0/16)。",
+          "link": "https://console.onwalk.net/products/cloud-hub",
+          "platforms": "Linux · Docker · macOS · Windows · ARM64"
         },
         {
           "step": 2,
-          "title": "启动 Gateway 容器",
-          "description": "通过 Docker Compose 启动 xconec-gateway，主动发起出站长连接加入全球 Mesh 网络。"
+          "title": "配置边缘 Ingress 与 0 端口安全策略",
+          "description": "挂载 Cloudflare Anycast WAF 与 R2 零出网费存储，关闭宿主机所有非 WG 公网入站端口。"
         },
         {
           "step": 3,
-          "title": "无感动态容灾",
-          "description": "节点间实施 500ms 实时 RTT 探针探测，单云或单机房光缆中断自动毫秒级切换。"
+          "title": "启用双轨数据与全栈无盲区遥测",
+          "description": "接入 Supabase PG (RLS) 与 VictoriaMetrics APM，启动跨云独立看门狗哨兵探针。"
         }
       ]
     },
     "showcases": [
       {
-        "title": "五大异构 VPS 交叉覆盖",
-        "description": "聚合 Akamai、Hetzner、UCloud、Contabo、Vultr 全球 48+ PoP 节点，100% 骨干区域双活容灾。"
+        "title": "异构算力池与 177 国高精内联矢量地图",
+        "description": "集成 Vultr、Linode、Hetzner、Contabo、UCloud 5 大运营商 48+ PoPs，支持 GPU/CPU 异构调度与毫秒级 RTT 遥测。",
+        "icon": "server",
+        "image": "/assets/images/global-mesh/02-vps-pop-map.png"
       },
       {
-        "title": "0 公网入站端口暴露",
-        "description": "所有管理流量收敛至 10.240.0.0/16 虚拟网段，SRE 配合短效证书动态访问，公网完全隐身。"
+        "title": "SaaS 零信任服务网格拓扑",
+        "description": "Cloudflare Ingress + Cloud Run Scale-to-Zero BFF + WireGuard 0 端口专网 + 双轨存储，综合成本节约 90%+。",
+        "icon": "shield-check",
+        "image": "/assets/images/global-mesh/03-saas-mesh.png",
+        "reverse": true
       },
       {
-        "title": "极低企业级构建成本",
-        "description": "整套横跨五大洲、包含 55,000GB+ 月流量的带外网络，总预算低至 $20 ~ $23 / 月。"
+        "title": "应用架构五层流动与 360° 生命周期闭环",
+        "description": "端-边-控-算-数五层流动模型，配合 Trunk-Based 有状态分支与发布 Tag 闭环，实现告警自动回写 Issue 证据链。",
+        "icon": "workflow",
+        "image": "/assets/images/global-mesh/05-lifecycle.png"
       }
-    ]
+    ],
+    "ui": {
+      "name": "Cloud hub",
+      "productTitle": "Cloud hub — 一朵不是云的虚拟云",
+      "navTopology": "Cloud hub 拓扑",
+      "navProduct": "Cloud hub 产品页",
+      "computeTopology": "Cloud hub 全球算力拓扑",
+      "dualTopology": "Cloud hub 全球双网拓扑",
+      "finopsTitle": "FinOps 多云混合对账表：AWS/GCP 纯巨头模式 vs Cloud hub 混合方案",
+      "mixedMonthly": "Cloud hub 混合方案单月",
+      "aggregationAdvantage": "Cloud hub 聚合协同优势",
+      "aggregationValue": "Cloud hub 聚合价值",
+      "mapTitle": "Cloud hub Vector Map",
+      "llmsHeading": "Open Platform & Cloud hub"
+    }
+  },
+  "en": {
+    "hero": {
+      "badge": "Cloud-Neutral Global Infrastructure Nerve Center",
+      "title": "Cloud hub",
+      "subtitle": "Cloud-Neutral Global Service Mesh · Heterogeneous Compute Across 5 Core VPS Providers · 48+ Global PoPs · 0 Ingress Ports Exposed · 90%+ Cost Reduction",
+      "cta": {
+        "label": "Open Console",
+        "href": "https://console.onwalk.net/products/cloud-hub"
+      },
+      "downloadUrl": "https://console.onwalk.net/products/cloud-hub",
+      "supportedPlatforms": "macOS · Windows · Linux · iOS · Android · Web WASM"
+    },
+    "wizard": {
+      "title": "Connect to Cloud hub in 3 Steps",
+      "description": "Seamlessly blend heterogeneous compute nodes, Serverless BFFs, and edge storage into an autonomous zero-trust mesh.",
+      "steps": [
+        {
+          "step": 1,
+          "title": "Generate Node Keys & Network Configuration",
+          "description": "Generate trusted WireGuard overlay mesh keys in the console and assign dedicated overlay IPs (10.240.0.0/16).",
+          "link": "https://console.onwalk.net/products/cloud-hub",
+          "platforms": "Linux · Docker · macOS · Windows · ARM64"
+        },
+        {
+          "step": 2,
+          "title": "Configure Edge Ingress & 0-Port Security Policies",
+          "description": "Mount Cloudflare Anycast WAF and R2 zero-egress storage; close all public inbound ports on host nodes."
+        },
+        {
+          "step": 3,
+          "title": "Enable Dual-Track Data & Blind-Spot-Free Telemetry",
+          "description": "Integrate Supabase PG (RLS) with VictoriaMetrics APM; activate independent cross-cloud watchdog sentinel probes."
+        }
+      ]
+    },
+    "showcases": [
+      {
+        "title": "Heterogeneous Compute Pools & 177-Country Precision Vector Map",
+        "description": "Integrating 48+ PoPs across Vultr, Linode, Hetzner, Contabo, and UCloud with GPU/CPU dynamic scheduling and live RTT telemetry.",
+        "icon": "server",
+        "image": "/assets/images/global-mesh/02-vps-pop-map.png"
+      },
+      {
+        "title": "SaaS Zero-Trust Service Mesh Topology",
+        "description": "Cloudflare Ingress + Cloud Run Scale-to-Zero BFF + WireGuard 0-port mesh + dual-track storage, slashing total costs by 90%+.",
+        "icon": "shield-check",
+        "image": "/assets/images/global-mesh/03-saas-mesh.png",
+        "reverse": true
+      },
+      {
+        "title": "5-Tier Application Flow & 360° Lifecycle Closed Loop",
+        "description": "Client-to-Data 5-layer flow paired with Trunk-Based stateful branches and immutable release tags that automatically feed alerts back into Issues.",
+        "icon": "workflow",
+        "image": "/assets/images/global-mesh/05-lifecycle.png"
+      }
+    ],
+    "ui": {
+      "name": "Cloud hub",
+      "productTitle": "Cloud hub — A Virtual Cloud That Isn't Just a Cloud",
+      "navTopology": "Cloud hub",
+      "navProduct": "Cloud hub Showcase",
+      "computeTopology": "Cloud hub Compute Topology",
+      "dualTopology": "Cloud hub Dual-Mesh Topology",
+      "finopsTitle": "FinOps multi-cloud comparison: AWS/GCP vs Cloud hub",
+      "mixedMonthly": "Cloud hub hybrid monthly cost",
+      "aggregationAdvantage": "Cloud hub aggregation advantages",
+      "aggregationValue": "Cloud hub aggregation value",
+      "mapTitle": "Cloud hub Vector Map",
+      "llmsHeading": "Open Platform & Cloud hub"
+    }
   }
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
+
+
 import React, { useState, useRef } from "react";
 import {
   Cloud,
@@ -1371,7 +1374,7 @@ export default function GlobalMeshMap() {
                 <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <Zap className="h-3.5 w-3.5 text-amber-500" />
-                    FinOps 多云混合对账表：AWS/GCP 纯巨头模式 vs Global Mesh 混合方案
+                    {cloudHubCopy.zh.finopsTitle}
                   </span>
                   <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
                     节约 90%+ 成本
@@ -1383,7 +1386,7 @@ export default function GlobalMeshMap() {
                       <tr className="bg-slate-100/60 dark:bg-slate-800/30 text-slate-500 font-mono border-b border-slate-200 dark:border-slate-800">
                         <th className="py-2 px-3 font-semibold">基础设施层级与能力</th>
                         <th className="py-2 px-3 font-semibold">AWS / GCP 传统公有云单月</th>
-                        <th className="py-2 px-3 font-semibold">Global Mesh 混合方案单月</th>
+                        <th className="py-2 px-3 font-semibold">{cloudHubCopy.zh.mixedMonthly}</th>
                         <th className="py-2 px-3 font-semibold">成本节约与架构弹性</th>
                       </tr>
                     </thead>
@@ -1788,7 +1791,7 @@ export default function GlobalMeshMap() {
                     <th className="py-2 px-3 font-semibold">架构对比维度</th>
                     <th className="py-2 px-3 font-semibold">C/S 原生多端生态</th>
                     <th className="py-2 px-3 font-semibold">B/S 现代浏览器生态</th>
-                    <th className="py-2 px-3 font-semibold">Global Mesh 聚合协同优势</th>
+                    <th className="py-2 px-3 font-semibold">{cloudHubCopy.zh.aggregationAdvantage}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800/60 text-slate-600 dark:text-slate-400 font-sans">
@@ -2183,7 +2186,7 @@ export default function GlobalMeshMap() {
                   <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                       <Zap className="h-3.5 w-3.5 text-amber-500" />
-                      FinOps 多云混合对账表：AWS/GCP 纯巨头模式 vs Global Mesh 混合方案
+                      {cloudHubCopy.zh.finopsTitle}
                     </span>
                     <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
                       节约 90%+ 成本
@@ -2195,7 +2198,7 @@ export default function GlobalMeshMap() {
                         <tr className="bg-slate-100/60 dark:bg-slate-800/30 text-slate-500 font-mono border-b border-slate-200 dark:border-slate-800">
                           <th className="py-2 px-3 font-semibold">基础设施层级与能力</th>
                           <th className="py-2 px-3 font-semibold">AWS / GCP 传统公有云单月</th>
-                          <th className="py-2 px-3 font-semibold">Global Mesh 混合方案单月</th>
+                          <th className="py-2 px-3 font-semibold">{cloudHubCopy.zh.mixedMonthly}</th>
                           <th className="py-2 px-3 font-semibold">成本节约与架构弹性</th>
                         </tr>
                       </thead>

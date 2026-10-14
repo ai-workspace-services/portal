@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/xds";
 import { buildVlessUri, type VlessNode } from "../../lib/vless";
 import {
+  regionalClosureReasonLabel,
   regionalNodeOptions,
   type RegionalPool,
 } from "../../lib/regionalPools";
@@ -867,6 +868,7 @@ export function NodesTable({
               <th>{zh ? "区域代码" : "Region code"}</th>
               <th>{zh ? "区域入口" : "Regional entry point"}</th>
               <th>{zh ? "是否向用户开放" : "Open to users"}</th>
+              <th>{zh ? "关闭原因" : "Closure reasons"}</th>
               <th style={{ textAlign: "right" }}>
                 {zh ? "Pool 数量" : "Pools"}
               </th>
@@ -875,7 +877,7 @@ export function NodesTable({
           <tbody>
             {(isLoading || error || pools.length === 0) && (
               <tr>
-                <td colSpan={5} role={error ? "alert" : "status"}>
+                <td colSpan={6} role={error ? "alert" : "status"}>
                   {isLoading
                     ? zh
                       ? "加载中…"
@@ -907,6 +909,19 @@ export function NodesTable({
                         ? "未开放"
                         : "Closed"}
                   </XdsBadge>
+                </td>
+                <td className="xds-subtle">
+                  {pool.openToUsers
+                    ? DASH
+                    : pool.closedReasons?.length
+                      ? pool.closedReasons
+                          .map((reason) =>
+                            regionalClosureReasonLabel(reason, zh),
+                          )
+                          .join("；")
+                      : zh
+                        ? "服务端未提供原因"
+                        : "Reason not provided by server"}
                 </td>
                 <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
               </tr>
