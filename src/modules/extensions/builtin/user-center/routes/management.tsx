@@ -103,7 +103,7 @@ export default function UserCenterManagementRoute() {
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
   const canCreateCustomUser = Boolean(
-    user?.isAdmin && user?.email?.trim().toLowerCase() === "admin@svc.plus",
+    user?.isRoot,
   );
 
   const [matrixDraft, setMatrixDraft] = useState<PermissionMatrix>({});
@@ -706,7 +706,7 @@ export default function UserCenterManagementRoute() {
               {groupsUpdateMessage}
             </p>
           ) : null}
-          {canEditRoles ? (
+          {user?.isRoot ? (
             <NetworkTeamsPanel users={usersSWR.data ?? []} />
           ) : null}
           <UserGroupManagement
