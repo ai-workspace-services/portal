@@ -8,6 +8,8 @@ describe("serviceConfig", () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...ORIGINAL_ENV };
+    delete process.env.RUNTIME_ENV;
+    delete process.env.RUNTIME_HOSTNAME;
     delete process.env.ACCOUNT_SERVICE_URL;
     delete process.env.NEXT_PUBLIC_ACCOUNT_SERVICE_URL;
   });
@@ -55,5 +57,16 @@ describe("serviceConfig", () => {
         "console-cloudflare-uat.onwalk.net",
       ),
     ).toBe("https://accounts-cloudflare-uat.onwalk.net");
+  });
+
+  it("routes Selfhost UAT BFF dependencies through the local Compose network", async () => {
+    process.env.RUNTIME_ENV = "uat";
+    process.env.RUNTIME_HOSTNAME = "console-selfhost-uat.onwalk.net";
+    const serviceConfig = await import("./serviceConfig");
+
+    expect(serviceConfig.getXConnectZeroServiceBaseUrl()).toBe(
+      "http://accounts:8080",
+    );
+    expect(serviceConfig.getDocsServiceBaseUrl()).toBe("http://content:8084");
   });
 });

@@ -1,5 +1,5 @@
-# UAT。OAuth/console 入口以 GitOps 环境声明为唯一来源:
-# console-cloudflare-uat / accounts-cloudflare-uat + TARGET_DOMAIN_BASE(onwalk.net)。
+# Serverless UAT 保留独立 Cloudflare / Cloud Run 入口。
+# Selfhost UAT 通过部署域名选择 selfhost 覆盖，内部 BFF 只走 Compose 服务。
 #
 # 这个文件原先不存在, 而 loader 的 source 选择是
 # `environment === 'prod' ? 'prod' : 'sit'` —— UAT 会静默使用 SIT 的端点
@@ -13,3 +13,10 @@ xconnectZeroUrl: https://accounts-cloudflare-uat.onwalk.net
 dashboardUrl: https://console.onwalk.net
 docsServiceUrl: https://uat-content-service-4ueoyqlpbq-de.a.run.app
 logLevel: info
+
+selfhost:
+  apiBaseUrl: https://accounts-selfhost-uat.onwalk.net/api
+  authUrl: https://accounts-selfhost-uat.onwalk.net
+  xconnectZeroUrl: http://accounts:8080
+  dashboardUrl: https://console-selfhost-uat.onwalk.net
+  docsServiceUrl: http://content:8084
