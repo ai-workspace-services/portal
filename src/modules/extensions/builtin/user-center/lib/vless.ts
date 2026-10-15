@@ -97,6 +97,10 @@ export type VlessTransport = 'tcp' | 'xhttp'
 
 export type VlessNode = {
   name: string
+  region?: string
+  resource_class?: 'free' | 'plus' | 'team' | string
+  pool_count?: number
+  open_to_users?: boolean
   address: string
   port: number
   server_name?: string

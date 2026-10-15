@@ -126,6 +126,18 @@ export default function AccountConnectionsPanel({
                     {node.transport || "—"}
                   </span>
                 </div>
+                <div className="mt-2 flex flex-wrap gap-2 text-eyebrow">
+                  {node.region ? (
+                    <span className="rounded-full bg-[var(--color-surface-muted)] px-2 py-1 text-[var(--color-text-subtle)]">
+                      {node.region.toUpperCase()}
+                    </span>
+                  ) : null}
+                  {node.resource_class ? (
+                    <span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-1 font-semibold text-[var(--color-primary)]">
+                      {node.resource_class}
+                    </span>
+                  ) : null}
+                </div>
                 <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   <div>
                     <dt className="text-[var(--color-text-subtle)]">

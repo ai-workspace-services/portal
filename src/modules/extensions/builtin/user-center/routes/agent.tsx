@@ -11,6 +11,10 @@ import { fetchAgentNodes } from '../lib/fetchAgentNodes'
 
 interface VlessNode {
   name: string
+  region?: string
+  resource_class?: 'free' | 'plus' | 'team' | string
+  pool_count?: number
+  open_to_users?: boolean
   address: string
   port?: number
   transport?: string
@@ -19,6 +23,26 @@ interface VlessNode {
   security?: string
   uri_scheme_xhttp?: string
   uri_scheme_tcp?: string
+}
+
+const RESOURCE_CLASS_LABELS: Record<string, { zh: string; en: string }> = {
+  free: { zh: 'Free', en: 'Free' },
+  plus: { zh: 'Plus', en: 'Plus' },
+  team: { zh: 'Team', en: 'Team' },
+}
+
+function nodeRegion(node: VlessNode): string {
+  const reported = (node.region || '').trim()
+  if (reported) return reported.toUpperCase()
+  const source = `${node.name} ${node.address}`.toLowerCase()
+  if (/\b(jp|jpn|tokyo|日本)\b/.test(source)) return 'JP'
+  if (/\b(hk|hongkong|香港)\b/.test(source)) return 'HK'
+  if (/\b(us|usa|美国)\b/.test(source)) return 'US'
+  return 'OTHER'
+}
+
+function resourceLabel(resourceClass: string, language: 'zh' | 'en'): string {
+  return RESOURCE_CLASS_LABELS[resourceClass]?.[language] || resourceClass || (language === 'zh' ? '未分类' : 'Unclassified')
 }
 
 function isDisplayableNode(node: VlessNode): boolean {
@@ -46,21 +70,13 @@ export default function UserCenterAgentRoute() {
   }, [visibleNodes])
 
   const groupedNodes = useMemo(() => {
-    const groups: Record<string, VlessNode[]> = {
-      HK: [],
-      JP: [],
-      US: [],
-      Other: [],
-    }
-
-    if (!effectiveNodes.length) return groups
-
+    const groups: Record<string, Record<string, VlessNode[]>> = {}
     effectiveNodes.forEach((node) => {
-      const name = node.name.toLowerCase()
-      if (name.includes('hk')) groups.HK.push(node)
-      else if (name.includes('jp')) groups.JP.push(node)
-      else if (name.includes('us')) groups.US.push(node)
-      else groups.Other.push(node)
+      const region = nodeRegion(node)
+      const resourceClass = (node.resource_class || 'unclassified').trim().toLowerCase()
+      groups[region] ||= {}
+      groups[region][resourceClass] ||= []
+      groups[region][resourceClass].push(node)
     })
 
     return groups
@@ -100,21 +116,30 @@ export default function UserCenterAgentRoute() {
           </div>
         )}
 
-        {Object.entries(groupedNodes).map(([region, regionNodes]) => (
-          regionNodes.length > 0 && (
+        {Object.entries(groupedNodes).map(([region, pools]) => (
+          Object.values(pools).some((poolNodes) => poolNodes.length > 0) && (
             <section key={region} className="space-y-4">
               <div className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-[var(--color-primary)]" />
                 <h2 className="text-lg font-semibold text-[var(--color-heading)]">
-                  {region === 'Other' ? (language === 'zh' ? '其他地区' : 'Other Regions') : `${region} Region`}
+                  {region === 'OTHER' ? (language === 'zh' ? '其他地区' : 'Other Regions') : `${region} ${language === 'zh' ? '区域' : 'Region'}`}
                 </h2>
                 <span className="rounded-full bg-[var(--color-surface-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-subtle)]">
-                  {regionNodes.length}
+                  {Object.values(pools).reduce((sum, poolNodes) => sum + poolNodes.length, 0)}
                 </span>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {regionNodes.map((node) => (
+              <div className="space-y-4">
+                {Object.entries(pools).map(([resourceClass, poolNodes]) => (
+                  <div key={`${region}-${resourceClass}`} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-[var(--color-primary-muted)] px-2.5 py-1 text-xs font-semibold text-[var(--color-primary)]">
+                        {resourceLabel(resourceClass, language)}
+                      </span>
+                      <span className="text-xs text-[var(--color-text-subtle)]">{poolNodes.length}</span>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {poolNodes.map((node) => (
                   <div
                     key={node.address}
                     className="group relative rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 transition-all hover:border-[color:var(--color-primary-border)] hover:shadow-md"
@@ -141,6 +166,9 @@ export default function UserCenterAgentRoute() {
                       <button className="text-[var(--color-primary)] transition-transform hover:scale-110">
                         <ExternalLink className="h-4 w-4" />
                       </button>
+                    </div>
+                  </div>
+                ))}
                     </div>
                   </div>
                 ))}
