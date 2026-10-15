@@ -4,6 +4,7 @@ import { Bot, Loader2, LogIn, RefreshCw, Send } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import BoundaryLink from "@/components/common/BoundaryLink";
 import {
   formatRelativeTime,
   sessionStatusLabel,
@@ -173,13 +174,13 @@ export function BotTeamPage() {
             {needsLogin ? (
               <div className="rounded-xl border border-dashed border-[#d7dde6] bg-white px-6 py-8 text-center">
                 <p className="text-sm text-[#3d4553]">登录账号后使用 Bot 团队</p>
-                <Link
+                <BoundaryLink
                   href="/login?returnTo=%2Fai-workspace%2Fbot-team"
                   className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d7dde6] px-3 text-sm text-[#3d4553] hover:bg-[#f6f8fb]"
                 >
                   <LogIn className="size-4" />
                   登录 / 注册
-                </Link>
+                </BoundaryLink>
               </div>
             ) : loadError ? (
               <button

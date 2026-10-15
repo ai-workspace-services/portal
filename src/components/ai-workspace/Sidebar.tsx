@@ -46,6 +46,7 @@ import {
   listTaskSessions,
   type TaskSessionSnapshot,
 } from "@/lib/ai-workspace/sessionApi";
+import { toConsoleHref } from "@/lib/consoleNavigation";
 import { useUserStore } from "@/lib/userStore";
 import { cn } from "@/lib/utils";
 
@@ -488,6 +489,14 @@ function TaskRow({
   );
 }
 
+/**
+ * Settings, appearance and sign-in live in the console and auth boundaries,
+ * outside the workspace build, so they are full-page navigations.
+ */
+function openPage(href: string) {
+  window.location.assign(toConsoleHref(href));
+}
+
 function SidebarFooter() {
   const user = useUserStore((state) => state.user);
   const accountName = user?.name || user?.username || "访客";
@@ -514,32 +523,27 @@ function SidebarFooter() {
             sideOffset={6}
             className="z-50 w-[240px] rounded-xl border border-[#e4e8ef] bg-white p-1 shadow-[0_12px_32px_rgba(15,23,42,0.12)]"
           >
-            <DropdownMenu.Item asChild className={itemClass}>
-              <Link href="/panel/account">
-                <Settings className="size-4 text-[#697386]" />
-                设置
-              </Link>
+            <DropdownMenu.Item className={itemClass} onSelect={() => openPage("/panel/account")}>
+              <Settings className="size-4 text-[#697386]" />
+              设置
             </DropdownMenu.Item>
-            <DropdownMenu.Item asChild className={itemClass}>
-              <Link href="/panel/appearance">
-                <Palette className="size-4 text-[#697386]" />
-                外观
-              </Link>
+            <DropdownMenu.Item className={itemClass} onSelect={() => openPage("/panel/appearance")}>
+              <Palette className="size-4 text-[#697386]" />
+              外观
             </DropdownMenu.Item>
             <DropdownMenu.Separator className="my-1 h-px bg-[#eef1f5]" />
             {user ? (
-              <DropdownMenu.Item asChild className={itemClass}>
-                <Link href="/panel/account">
-                  <UserRound className="size-4 text-[#697386]" />
-                  <span className="truncate">{accountName}</span>
-                </Link>
+              <DropdownMenu.Item className={itemClass} onSelect={() => openPage("/panel/account")}>
+                <UserRound className="size-4 text-[#697386]" />
+                <span className="truncate">{accountName}</span>
               </DropdownMenu.Item>
             ) : (
-              <DropdownMenu.Item asChild className={itemClass}>
-                <Link href="/login?returnTo=%2Fai-workspace">
-                  <LogIn className="size-4 text-[#697386]" />
-                  登录 / 注册
-                </Link>
+              <DropdownMenu.Item
+                className={itemClass}
+                onSelect={() => openPage("/login?returnTo=%2Fai-workspace")}
+              >
+                <LogIn className="size-4 text-[#697386]" />
+                登录 / 注册
               </DropdownMenu.Item>
             )}
           </DropdownMenu.Content>
