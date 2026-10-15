@@ -397,7 +397,7 @@ export default function UserCenterManagementRoute() {
             requestId: crypto.randomUUID(),
             reason,
             csv,
-            reconcile: false,
+            reconcile: true,
           }),
         },
       );

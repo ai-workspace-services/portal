@@ -241,7 +241,11 @@ const nameOf = (user: ManagedUser): string =>
   user.username?.trim() || user.name?.trim() || user.email?.trim() || "—";
 const hasSegment = (user: ManagedUser, segment: Segment): boolean => {
   const record = user.subscriptionRecord;
-  if (record && ["paid", "已付费", "已支付"].includes(record.paymentStatus)) {
+  if (
+    record &&
+    (user.groups ?? []).includes("segment:subscription:listed") &&
+    ["paid", "已付费", "已支付"].includes(record.paymentStatus)
+  ) {
     if (segment.id === "monthly") return record.subscriptionType === "month";
     if (segment.id === "yearly") return record.subscriptionType === "year";
     if (segment.id === "subscribed")
@@ -651,7 +655,8 @@ export function UserGroupManagement({
     event.target.value = "";
     if (!file || !onSubscriptionRecordsImport || !canEditRoles) return;
     try {
-      const reason = "按邮箱导入订阅清单，仅更新匹配行，保留表外用户及空白字段";
+      const reason =
+        "按完整订阅清单对齐：清单外个人用户归 Free，保留历史商业记录及空白字段";
       const preview = await onSubscriptionRecordsImport(
         await file.text(),
         reason,
