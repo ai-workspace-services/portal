@@ -615,6 +615,10 @@ export function UserGroupManagement({
     const rows = sourceText.split(/\r?\n/).filter((line) => line.trim()).map(parseRow);
     const headers = rows.shift()?.map((value) => value.toLowerCase()) ?? [];
     const index = (name: string) => headers.indexOf(name);
+    const normalizeDate = (value?: string) => {
+      const match = value?.trim().match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
+      return match ? `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}` : undefined;
+    };
     const imported = new Map<string, { planId: AdminPlanGroupUpdate["planId"]; validFrom?: string; validUntil?: string }>();
     for (const row of rows) {
       const emailValue = row[index("邮箱") >= 0 ? index("邮箱") : index("email")]?.toLowerCase();
@@ -625,8 +629,8 @@ export function UserGroupManagement({
       const planId: AdminPlanGroupUpdate["planId"] = status.includes("已付费") || status.includes("paid") ? "PLUS" : "FREE";
       imported.set(key, {
         planId,
-        validFrom: row[index("订阅开始") >= 0 ? index("订阅开始") : index("subscription start")] || undefined,
-        validUntil: row[index("订阅结束") >= 0 ? index("订阅结束") : index("subscription end")] || undefined,
+        validFrom: normalizeDate(row[index("订阅开始") >= 0 ? index("订阅开始") : index("subscription start")]),
+        validUntil: normalizeDate(row[index("订阅结束") >= 0 ? index("订阅结束") : index("subscription end")]),
       });
     }
     const updates = data.map((user) => {
