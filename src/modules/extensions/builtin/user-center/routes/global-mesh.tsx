@@ -25,6 +25,7 @@ import {
   XdsCardHead,
 } from "@/components/ui/xds";
 import GlobalMeshMap from "@/app/products/cloud-hub/GlobalMeshMap";
+import IaasComparison from "@/modules/extensions/builtin/user-center/components/IaasComparison";
 
 interface VpsProviderSummary {
   name: string;
@@ -335,6 +336,8 @@ export default function UserCenterGlobalMeshRoute() {
               ))}
         </div>
       </section>
+
+      <IaasComparison />
 
       {/* ── 底部架构与协议指标 ── */}
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
