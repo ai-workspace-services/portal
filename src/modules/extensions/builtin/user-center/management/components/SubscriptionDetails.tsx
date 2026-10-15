@@ -59,14 +59,26 @@ export function BillingFacts({ snapshot }: { snapshot: BillingSnapshot }) {
     quotaState: quota,
     subscriptionRecord: record,
   } = snapshot;
+  const unlimited = profile?.pricingRuleVersion === "plan:UNLIMITED-BETA";
   return (
     <dl className="grid grid-cols-[86px_1fr] gap-x-3 gap-y-2 text-sm">
       <dt>套餐</dt>
       <dd>{profile?.packageName || "未配置"}</dd>
       <dt>月总额度</dt>
-      <dd>{quotaBytes(profile?.includedQuotaBytes)}</dd>
+      <dd>{unlimited ? "不限额" : quotaBytes(profile?.includedQuotaBytes)}</dd>
       <dt>剩余额度</dt>
-      <dd>{quotaBytes(quota?.remainingIncludedQuota)}</dd>
+      <dd>
+        {unlimited ? "不限额" : quotaBytes(quota?.remainingIncludedQuota)}
+      </dd>
+      {profile &&
+      quota &&
+      profile.includedQuotaBytes > 0 &&
+      quota.remainingIncludedQuota <= 0 ? (
+        <>
+          <dt>流量状态</dt>
+          <dd>额度已耗尽</dd>
+        </>
+      ) : null}
       <dt>订阅有效期</dt>
       <dd>
         {date(snapshot.subscriptionValidFrom ?? record?.validFrom)} —{" "}
@@ -76,7 +88,7 @@ export function BillingFacts({ snapshot }: { snapshot: BillingSnapshot }) {
       <dd>
         {date(quota?.periodStart)} — {date(quota?.periodEnd)}
       </dd>
-      <dt>网络状态</dt>
+      <dt>访问开关</dt>
       <dd>
         {quota
           ? `${quota.proxyAccessState || "未配置"} / ${quota.suspendState || "未配置"}`
