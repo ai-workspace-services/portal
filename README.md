@@ -1,171 +1,150 @@
-# console.svc.plus
+# Portal
 
-Cloud Neutral Toolkit 的开放云控制面板 (Open Cloud Control Panel).
-
-面向 **Ops / Infra / AI** 的统一前端仪表盘，强调技术自由与可迁移性。
+Cloud Neutral Toolkit 的开放云控制面板。一个 Next.js 前端，把官网、文档、账户与控制台、AI Workspace 放在同一套源码里；
+面向 Ops / Infra / AI，强调技术自由与可迁移性。
 
 > A unified dashboard for Ops / Infra / AI, built for technical freedom and portability.
 
-## 部署要求 (Deployment Requirements)
+Portal 只负责 UI、交互、路由与服务端代理：账户、会话与订阅数据由 Accounts 提供，
+模型与工具由 XWorkmate Bridge 提供，网站文案与文档由内容服务提供，运行时配置由 GitOps 下发。
 
-| 维度        | 要求 / 规格        | 说明                                  |
-| ----------- | ------------------ | ------------------------------------- |
-| Node.js     | `>=18.17 <25`      | 推荐使用 `.nvmrc`                     |
-| 包管理      | Yarn (推荐) 或 npm | Yarn 推荐配合 Corepack                |
-| Git         | 必需               | 用于拉取仓库                          |
-| 部署 (可选) | Cloudflare Workers / 自建 | 部署方式见 `docs/usage/deployment.md` |
+## 架构
 
-## 快速开始 (Quickstart)
-
-### 一键初始化 (Setup Script)
-
-```bash
-curl -fsSL "https://raw.githubusercontent.com/x-evor/console.svc.plus/main/scripts/setup.sh?$(date +%s)" \
-  | bash -s -- console.svc.plus
+```text
+浏览器 → Cloudflare / Caddy → frontend-router（按路径前缀分发）
+                              ├→ public     /*                       官网、产品页、价格
+                              ├→ content    /docs /blogs /download   文档、博客、下载
+                              ├→ auth       /login /register ...     登录、注册、邮箱验证
+                              ├→ console    /panel /dashboard ...    账户、团队、订阅、集成
+                              └→ workspace  /ai-workspace /xworkmate /cloud_iac /support
+                                              │
+                                              ├→ /api/xworkmate、/api/ai-workspace/*  → XWorkmate Bridge、Accounts 任务会话
+                                              └→ /api/auth、/api/account … → Accounts
 ```
 
-### 本地运行 (Local Dev)
+同一份源码按 boundary 构建成多个独立 worker（public / content / auth / console / workspace），
+本地开发与 all-in-one 镜像则是单体构建。路径前缀表来自 GitOps 的 EdgeRoutingConfig，
+本仓库的 `config/cloudflare-boundaries.json` 只是本地 fixture。
+
+跨 boundary 的目标页不在当前构建里，站内跳转必须用 `BoundaryLink`（同界为 `next/link`，跨界自动退回整页跳转），
+`yarn check:boundary-links` 会拦截违规写法。
+
+## 主要入口
+
+| 路径 | 内容 |
+|---|---|
+| `/` | 首页：对话到交付的主视觉，可由 CDN 资源覆盖文案与图片 |
+| `/products/*` | XWorkmate、AI Workspace、Cloud Hub、XConnect、开放平台等产品页 |
+| `/prices` | 套餐与价格，套餐目录来自 Accounts |
+| `/docs`、`/blogs` | 文档与博客，内容由内容服务提供 |
+| `/services` | 服务导航页 |
+| `/panel/*` | 控制台：账户、团队、订阅、AI Aggregator、Cloud Hub |
+| `/panel/api` | 集成设置：OpenClaw Gateway、Vault、APISIX AI Gateway 的配置与探测（对应变量见 `.env.example`） |
+| `/ai-workspace` | AI Workspace，见下节 |
+| `/xworkmate` | 独立的 XWorkmate 在线工作区，与 `/ai-workspace` 共用同一个外壳 |
+| `/cloud_iac/[provider]` | 云 IaC 目录 |
+
+## AI Workspace
+
+`/ai-workspace` 是 XWorkmate App 首页的 Web 版本：一个外壳、一个边栏，页面只渲染自己的内容区。
+
+- **边栏**：应用标识与收起按钮、任务搜索、工作台 / 新对话 / Bot 团队、任务分组
+  （Gateway、云端会话、置顶任务、共享工程）、底部齿轮菜单。收起后，展开按钮出现在各页面顶部工具栏。
+- **对话**：顶部工具栏有对话工作流、渲染、Bridge 连接状态和右侧制品面板开关；
+  Bridge 不可达时显示「先连接 Bridge」。
+- **输入框**：附件、内置插件，以及 6 档角色
+  `Chat ⟶ Worker ⟶ Engineer ⟶ Architect ⟷ Researcher ⟶ Specialist`。
+  - **Chat** 直连 Bridge，立即得到回答。
+  - **其余角色**交给 DS Bot 团队执行：「立即执行」等待结果并回到当前对话，
+    「交给 Bot 团队」立即返回，任务在后台运行，可在会话或 Bot 团队页跟进。
+  - 访客只能使用 Chat；Bot 角色在确认账号身份后才可选。
+- **Bot 团队**（`/ai-workspace/bot-team`）：派发后台任务，查看账号下的任务会话。
+- **任务中枢**（`/ai-workspace/tasks`）：跨 Agent 的任务与共享记忆视图。
+
+请求流向：Chat 经 `/api/xworkmate/bridge`（访客为 `/api/ai-workspace/free`）到 Bridge；
+Bot 团队任务经 `/api/ai-workspace/sessions/*` 到 Accounts 的任务会话 API，
+消息携带 `routing: {roleMode: "auto", role}`，事件按序号折叠成每次运行的状态。
+角色名与 XWorkmate App 一致，改动时两端需同步。
+
+## 快速开始
 
 ```bash
-yarn dev
+corepack enable          # 仓库使用 Yarn 4（packageManager 字段）
+yarn install --immutable
+cp .env.example .env     # 按需填写，见下节
+yarn dev                 # 默认 http://localhost:3000
 ```
 
-如果需要环境变量：
+要求 Node.js `>=18.17 <25`（`.nvmrc` 为 20）。
+`yarn dev` 会先运行 `scripts/Dev-MCP-Server.sh`（启动带远程调试端口的 Chrome，路径为 macOS 的 Google Chrome，并预热 `chrome-devtools-mcp`），再执行 `next dev --turbo`；
+没有 macOS Chrome 的环境直接运行 `yarn next dev --turbo`。`/docs`、`/blogs` 的内容由内容服务提供。
+
+仓库提供 `scripts/setup.sh` 作为初始化脚本（只复制 `.env.example`，不写入密钥），运行前请先阅读内容。
+生产部署应使用已审核的 tag / commit 和 CI 产出的镜像，不要在目标主机上构建。
+
+## 环境变量
+
+只列常用项，完整清单和默认值见 [`.env.example`](.env.example) 与
+[`docs/getting-started/installation.md`](docs/getting-started/installation.md)。
+带 `NEXT_PUBLIC_` 前缀的变量会打进浏览器端，只能放公开值。
+
+| 变量 | 用途 |
+|---|---|
+| `ACCOUNT_SERVICE_URL` | Accounts 服务地址：登录、会话、订阅、任务会话 |
+| `BRIDGE_SERVER_URL` | XWorkmate Bridge 服务根地址，服务端代理使用 |
+| `BRIDGE_AUTH_TOKEN` | Bridge bearer token，仅服务端 |
+| `AI_WORKSPACE_AUTH_TOKEN` | 任务会话代理的服务端回退令牌，仅服务端；请求没有账号会话时使用 |
+| `DOCS_SERVICE_URL` | 文档与博客内容服务 |
+| `NEXT_PUBLIC_HOME_HERO_*` | 首页主视觉的内容 JSON、图片根地址与版本号，见 [首页资源](docs/integrations/homepage-hero-assets.md) |
+| `NEXT_PUBLIC_STRIPE_PRICE_*` | 公开的 Stripe `price_...` 标识 |
+
+Stripe Secret Key 与 Webhook Secret 不进入 Portal：Portal 只把用户选中的套餐提交给 Accounts，
+联调见 [Stripe 配置](docs/integrations/stripe-billing.md)。
+
+## 构建与部署
+
+| 目标 | 命令 |
+|---|---|
+| Node 服务 | `yarn build` → `yarn start` |
+| 静态仪表盘 | `yarn build:static-dashboard` |
+| Cloudflare Workers（单体） | `yarn build:workers` |
+| 按 boundary 构建 | `yarn build:ssr:public`、`build:ssr:content`、`build:ssr:auth`、`build:ssr:console`、`build:ssr:workspace` |
+
+镜像由 GitHub Actions 构建并推送，目标主机只拉取镜像，不在本机构建。
+`Dockerfile`（all-in-one）、`Dockerfile.frontend-server`、`Dockerfile.static-dashboard` 分别对应三种运行形态，
+单节点编排见 [`deploy/single-node`](deploy/single-node)。
+发布链路和 `/api/ping` 的版本信息遵循 [`skills/release-traceability`](skills/release-traceability/SKILL.md)。
+
+## 开发与验证
 
 ```bash
-cp .env.example .env
-```
-
-如果你的工作区同时包含 `openclaw-deploy-example`，建议参考 `../openclaw-deploy-example/.env` 填写 AI 助手联调配置，并同时查看 `docs/getting-started/installation.md`。
-
-## 主要入口 (Key Routes)
-
-- `/services`：服务导航页，保留现有控制台布局。
-- `/xworkmate`：原生 Next.js 的 XWorkmate 在线工作区，底层通过 `xworkmate-bridge` 的 `/acp/rpc` 接入。
-- `/panel/api`：融合设置与集成页，用于配置和探测 OpenClaw Gateway、Vault Server、APISIX AI Gateway。
-
-## AI 助手与集成能力 (Assistant & Integrations)
-
-当前主页 AI 辅助功能已经基于本仓库原生实现，核心行为如下：
-
-- 侧栏助手模式保留现有交互方式，但 `/xworkmate` 主工作区直接对接 `xworkmate-bridge`。
-- 最大化助手页面统一收敛到 `/xworkmate`，旧的 `/services/openclaw` 只保留兼容跳转，不再继续使用旧的 control UI 套壳。
-- 页面截图通过 assistant chat 附件模式发送，而不是单独的浏览器控制壳。
-- `/panel/api` 仍保留旧集成配置入口；`/xworkmate` 主路径不依赖它。
-- bridge 地址与令牌从服务端环境变量读取，前端组件不硬编码敏感配置。
-
-## 环境变量 (Environment Variables)
-
-以下变量用于 `/xworkmate` 主工作区的服务端 bridge 代理：
-
-| 变量                | 用途                                  |
-| ------------------- | ------------------------------------- |
-| `BRIDGE_SERVER_URL` | XWorkmate bridge 服务根地址           |
-| `BRIDGE_AUTH_TOKEN` | XWorkmate bridge bearer token，服务端 |
-
-以下变量用于旧助手和集成页的服务端默认值预填：
-
-| 变量                          | 用途                                 |
-| ----------------------------- | ------------------------------------ |
-| `OPENCLAW_GATEWAY_REMOTE_URL` | OpenClaw gateway 远端 WebSocket 地址 |
-| `OPENCLAW_GATEWAY_TOKEN`      | OpenClaw gateway 访问令牌            |
-| `VAULT_SERVER_URL`            | Vault 服务地址                       |
-| `VAULT_NAMESPACE`             | Vault namespace，可选                |
-| `VAULT_TOKEN`                 | Vault 探测令牌                       |
-| `APISIX_AI_GATEWAY_URL`       | APISIX AI Gateway 地址               |
-| `AI_GATEWAY_ACCESS_TOKEN`     | APISIX AI Gateway 探测令牌           |
-
-更多说明见 `docs/getting-started/installation.md` 和 `.env.example`。
-
-### 首页主视觉远程资源 TL;DR
-
-首页布局和默认文案保留在代码内，可通过公开的 S3/CDN 资源动态覆盖主视觉图片与卡片文案：
-
-```dotenv
-NEXT_PUBLIC_HOME_HERO_CONTENT_URL=https://assets.svc.plus/marketing/home-hero/content.json
-NEXT_PUBLIC_HOME_HERO_MEDIA_BASE_URL=https://assets.svc.plus
-NEXT_PUBLIC_HOME_HERO_ASSET_VERSION=2026-07-11.1
-```
-
-- `CONTENT_URL` 指向中英文 JSON 配置；加载失败时自动使用代码内默认内容。
-- `MEDIA_BASE_URL` 是图片根地址，默认图片对象为 `marketing/home-hero.png`。
-- `ASSET_VERSION` 作为 `?v=` 查询参数追加到 JSON 和图片 URL，用于切换发布版本及刷新 CDN 缓存。
-- 三项均为 `NEXT_PUBLIC_*`，只能放公开地址和公开版本号，不能包含 S3 密钥或签名凭据。
-
-完整 JSON 格式、S3 CORS 和发布示例见 [`docs/integrations/homepage-hero-assets.md`](docs/integrations/homepage-hero-assets.md)。
-
-## Stripe 配置 (Stripe Billing Setup)
-
-`/prices`、产品页和账户中心统一从 Accounts 的套餐目录读取可售计划和公开
-`price_...` 标识。Portal 只将用户选中的计划提交给 Accounts；Stripe Secret Key 和
-Webhook Secret 都不进入 Portal 构建或运行时环境。
-
-联调步骤见 `docs/integrations/stripe-billing.md`。
-
-## 核心特性 & 技术栈 (Features & Tech Stack)
-
-核心特性：
-
-- 统一控制面：汇聚 Cloud Neutral Toolkit 各微服务入口
-- 原生 AI 助手工作区：OpenClaw gateway 驱动的聊天、截图附件与会话体验
-- 融合集成设置：在 `/panel/api` 统一管理 OpenClaw、Vault、APISIX AI Gateway
-- 文档与内容系统：Contentlayer 驱动的 docs/content pipeline
-- 可扩展集成：OIDC、Cloudflare Web Analytics 等
-
-技术栈：
-
-- Next.js + TypeScript
-- Tailwind CSS + Radix UI
-- Zustand
-- Contentlayer
-
-## 开发命令 (Useful Commands)
-
-```bash
-yarn dev
-yarn build
 yarn typecheck
+yarn test                       # Vitest 单元测试
+yarn test:e2e                   # Playwright
+yarn check:boundary-links       # 跨 boundary 软导航守卫
+yarn check:type-scale           # 字号阶梯守卫，规范见 skills/ui-typography
 ./node_modules/.bin/eslint . --no-eslintrc --config .eslintrc.json --resolve-plugins-relative-to .
 ```
 
-## 说明文档 (Docs)
+改动 UI 文字请遵守字号阶梯，不要新增任意值字号。
 
-入口：
+技术栈：Next.js（App Router）、TypeScript、Tailwind CSS、Radix UI、Zustand、Contentlayer。
 
-- EN: `docs/README.md`
-- ZH: `docs/zh/README.md`
+## 文档导航
 
-常用链接：
+| 文档 | 内容 |
+|---|---|
+| [docs/README.md](docs/README.md) | 文档总入口，含中英文规范页 |
+| [架构概览](docs/architecture/overview.md) | 组件、设计决策与路线图 |
+| [安装与配置](docs/getting-started/installation.md) | 环境变量与本地联调 |
+| [部署指南](docs/usage/deployment.md) | 单节点部署与交付模型 |
+| [OIDC 登录](docs/integrations/oidc-auth.md) | 身份认证集成 |
+| [Stripe 配置](docs/integrations/stripe-billing.md) | 计费联调 |
+| [Cloudflare Web Analytics](docs/integrations/cloudflare-web-analytics.md) | 访问统计 |
+| [Vault 与 GitHub Actions](docs/operations/vault-github-actions.md) | CI 无密钥取密与角色约束，含 403 排障 |
+| [发布流程](docs/governance/release-process.md) | 版本与发布记录 |
+| [AGENTS.md](AGENTS.md) | 给人和 AI Agent 的仓库边界与改动规则 |
 
-- OIDC: `docs/integrations/oidc-auth.md`
-- Cloudflare Web Analytics: `docs/integrations/cloudflare-web-analytics.md`
-- Stripe billing: `docs/integrations/stripe-billing.md`
-- Assistant / Integrations env setup: `docs/getting-started/installation.md`
-- Chinese installation guide: `docs/zh/getting-started/installation.md`
-
-其他：
-
-- Agent rules: `AGENTS.md`
-
-## CI/CD 与 Vault 鉴权 (Vault OIDC Role)
-
-本仓库的持续集成流水线 (`.github/workflows/ci-pipeline.yml`) 使用 GitHub Actions OIDC 机制与 HashiCorp Vault (`vault.svc.plus`) 进行无密钥身份认证。
-
-为了遵循最小权限原则（Least Privilege）和环境隔离，本仓库的 CI 拥有独立的 Vault Policy 和 Role，具体安全约束如下：
-
-1. **凭据访问范围（路径隔离）**
-   - CI 流水线仅拥有 `kv/data/CICD` 的**只读**权限。
-   - 该路径仅包含基础的公共服务凭据（例如 GHCR_USERNAME 和 GHCR_TOKEN），用于构建完成后推送镜像。
-   - CI 无法读取任何环境特有的底层云资源凭据、Terraform State 或主机 SSH 部署私钥。
-
-2. **身份铸造限制（绑定收紧）**
-   - 本服务在 Vault 中对应 3 个独立环境的 Role（`sit`、`uat`、`prod`）。
-   - **`job_workflow_ref` 白名单钉死**：Vault 强制校验调用方的流水线文件。只有本仓库白名单内的流水线（即 `ci-pipeline.yml`）发起的请求才能成功换取 Token。
-   - 仓库内任何人**新增**或**重命名**未经授权的 workflow 文件，皆无法绕过限制获取凭据。
-
-> **⚠️ 排障指南 (403 Forbidden)**
-> 如果 CI 流水线在 `Fetch Vault Secrets` 步骤报 `403` 权限拒绝，请确认：
-> 1. 请求的凭据路径是否超出了 `kv/data/CICD` 层的范围。
-> 2. 流水线文件名称或仓库名称是否发生了变更。
-> 
-> 如果确需修改流水线名称，必须由管理员在 `platform-ops-toolkit` 仓的 `docs/tasks/vault_service_repo_roles.sh` 中更新白名单，并重新对 Vault 服务端执行该脚本。
+网站文案、产品文档与技术博客的权威来源是 `haitaopanhq/knowledge`，Portal 不再新增静态文案；
+运行时配置由 `ai-workspace-infra/gitops` 管理。
+本项目使用 [Apache-2.0](LICENSE) 许可证。
