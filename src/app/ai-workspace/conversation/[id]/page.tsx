@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ChevronsLeft,
   Cloud,
   Menu,
   PlayCircle,
@@ -13,6 +12,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ChatInputArea from "@/components/ai-workspace/ChatInputArea";
 import RightContextPanel from "@/components/ai-workspace/RightContextPanel";
+import { PaneToggleIcon } from "@/components/ai-workspace/shell/PaneToggleIcon";
+import { SidebarRevealButton } from "@/components/ai-workspace/shell/SidebarRevealButton";
 import {
   getTaskSessionEvents,
   loadTaskSession,
@@ -134,7 +135,8 @@ export default function ConversationPage() {
   return (
     <div className="relative flex min-w-0 flex-1 overflow-hidden bg-white">
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-[60px] shrink-0 items-center border-b border-[#e8ebf0] bg-white px-3 pl-14 sm:px-5 sm:pl-16 md:pl-5">
+        <header className="flex min-h-[60px] shrink-0 items-center gap-2 border-b border-[#e8ebf0] bg-white px-3 sm:px-5">
+          <SidebarRevealButton />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-sm font-bold sm:text-base">
               {sessionId ? sessionTitle(snapshot) : "新对话"}
@@ -175,7 +177,7 @@ export default function ConversationPage() {
             className="ml-2 inline-flex items-center gap-1 rounded-lg border border-[#dfe4eb] px-2.5 py-2 text-xs font-semibold text-[#566174] hover:bg-[#f6f8fb]"
             aria-label="切换任务上下文"
           >
-            <ChevronsLeft className="size-4" />
+            <PaneToggleIcon side="right" className="size-4" />
             <span className="hidden sm:inline">上下文</span>
           </button>
         </header>

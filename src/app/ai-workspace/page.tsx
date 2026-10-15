@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default function AiWorkspacePage() {
   return (
-    <div className="h-[calc(100vh-var(--app-shell-nav-offset))] w-full">
+    <div className="h-full w-full">
       <Suspense fallback={<XWorkmateLoading />}>
         <AiWorkspaceEntryRoute />
       </Suspense>
