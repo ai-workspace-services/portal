@@ -1,14 +1,37 @@
-# Portal
+<h1 align="center">Portal</h1>
+<p align="center"><strong>Cloud Neutral Toolkit 的开放云控制面板 | Open Cloud Control Panel for Ops / Infra / AI</strong></p>
 
-Cloud Neutral Toolkit 的开放云控制面板。一个 Next.js 前端，把官网、文档、账户与控制台、AI Workspace 放在同一套源码里；
+<p align="center">
+  <a href="https://console.svc.plus"><img src="https://img.shields.io/badge/Console-console.svc.plus-0B5C7A?style=for-the-badge" alt="Console" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-2F855A?style=for-the-badge" alt="Apache-2.0" /></a>
+  <img src="https://img.shields.io/badge/Next.js-App%20Router-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Node.js-%E2%89%A518.17%20%3C25-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+</p>
+
+<p align="center">
+  <strong>🇨🇳 简体中文</strong> ｜ <a href="README_EN.md">🌐 English Version</a>
+</p>
+
+---
+
+## 🇨🇳 项目概览
+
+Portal 是一个 Next.js 前端，把官网、文档、账户与控制台、AI Workspace 放在同一套源码里；
 面向 Ops / Infra / AI，强调技术自由与可迁移性。
-
-> A unified dashboard for Ops / Infra / AI, built for technical freedom and portability.
 
 Portal 只负责 UI、交互、路由与服务端代理：账户、会话与订阅数据由 Accounts 提供，
 模型与工具由 XWorkmate Bridge 提供，网站文案与文档由内容服务提供，运行时配置由 GitOps 下发。
 
-## 架构
+### 工程准则
+
+- **边界清晰**：同一份源码按 boundary 构建成独立 worker，跨界跳转由守卫脚本拦截。
+- **不存机密**：Stripe Secret Key、Webhook Secret 等不进入 Portal；服务端令牌只从环境变量读取。
+- **内容外置**：网站文案、产品文档与博客不再新增到 Portal，权威来源是 `haitaopanhq/knowledge`。
+- **可追溯发布**：镜像由 CI 构建，目标主机只拉取镜像；版本信息经 `/api/ping` 与 `validate` 对齐。
+
+---
+
+## 🏛️ 架构 (Architecture)
 
 ```text
 浏览器 → Cloudflare / Caddy → frontend-router（按路径前缀分发）
@@ -29,7 +52,7 @@ Portal 只负责 UI、交互、路由与服务端代理：账户、会话与订�
 跨 boundary 的目标页不在当前构建里，站内跳转必须用 `BoundaryLink`（同界为 `next/link`，跨界自动退回整页跳转），
 `yarn check:boundary-links` 会拦截违规写法。
 
-## 主要入口
+## 🧭 主要入口
 
 | 路径 | 内容 |
 |---|---|
@@ -44,7 +67,7 @@ Portal 只负责 UI、交互、路由与服务端代理：账户、会话与订�
 | `/xworkmate` | 独立的 XWorkmate 在线工作区，与 `/ai-workspace` 共用同一个外壳 |
 | `/cloud_iac/[provider]` | 云 IaC 目录 |
 
-## AI Workspace
+## 🤖 AI Workspace
 
 `/ai-workspace` 是 XWorkmate App 首页的 Web 版本：一个外壳、一个边栏，页面只渲染自己的内容区。
 
@@ -66,7 +89,7 @@ Bot 团队任务经 `/api/ai-workspace/sessions/*` 到 Accounts 的任务会话 
 消息携带 `routing: {roleMode: "auto", role}`，事件按序号折叠成每次运行的状态。
 角色名与 XWorkmate App 一致，改动时两端需同步。
 
-## 快速开始
+## 🚀 快速开始
 
 ```bash
 corepack enable          # 仓库使用 Yarn 4（packageManager 字段）
@@ -82,7 +105,7 @@ yarn dev                 # 默认 http://localhost:3000
 仓库提供 `scripts/setup.sh` 作为初始化脚本（只复制 `.env.example`，不写入密钥），运行前请先阅读内容。
 生产部署应使用已审核的 tag / commit 和 CI 产出的镜像，不要在目标主机上构建。
 
-## 环境变量
+## 🔧 环境变量
 
 只列常用项，完整清单和默认值见 [`.env.example`](.env.example) 与
 [`docs/getting-started/installation.md`](docs/getting-started/installation.md)。
@@ -101,7 +124,7 @@ yarn dev                 # 默认 http://localhost:3000
 Stripe Secret Key 与 Webhook Secret 不进入 Portal：Portal 只把用户选中的套餐提交给 Accounts，
 联调见 [Stripe 配置](docs/integrations/stripe-billing.md)。
 
-## 构建与部署
+## 📦 构建与部署
 
 | 目标 | 命令 |
 |---|---|
@@ -115,7 +138,7 @@ Stripe Secret Key 与 Webhook Secret 不进入 Portal：Portal 只把用户选�
 单节点编排见 [`deploy/single-node`](deploy/single-node)。
 发布链路和 `/api/ping` 的版本信息遵循 [`skills/release-traceability`](skills/release-traceability/SKILL.md)。
 
-## 开发与验证
+## ✅ 开发与验证
 
 ```bash
 yarn typecheck
@@ -130,7 +153,7 @@ yarn check:type-scale           # 字号阶梯守卫，规范见 skills/ui-typog
 
 技术栈：Next.js（App Router）、TypeScript、Tailwind CSS、Radix UI、Zustand、Contentlayer。
 
-## 文档导航
+## 📚 文档导航
 
 | 文档 | 内容 |
 |---|---|
@@ -148,3 +171,10 @@ yarn check:type-scale           # 字号阶梯守卫，规范见 skills/ui-typog
 网站文案、产品文档与技术博客的权威来源是 `haitaopanhq/knowledge`，Portal 不再新增静态文案；
 运行时配置由 `ai-workspace-infra/gitops` 管理。
 本项目使用 [Apache-2.0](LICENSE) 许可证。
+
+---
+
+<p align="center">
+  <strong>开放 · 可迁移 · 可观测 · AI 驱动</strong><br/>
+  <sub>Open · Portable · Observable · AI-Powered</sub>
+</p>
