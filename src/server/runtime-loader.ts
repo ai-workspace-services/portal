@@ -483,8 +483,30 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
     ? `${envDetectedBy}|hostname:${hostnameDetectedBy}`
     : envDetectedBy
 
+  // Deployment-owned endpoints override embedded environment defaults. This
+  // lets an immutable image serve an isolated stack without inheriting the
+  // production Serverless service map.
+  const endpointOverrides: Record<string, string> = {}
+  const endpointEnv = {
+    apiBaseUrl: 'RUNTIME_API_BASE_URL',
+    authUrl: 'RUNTIME_AUTH_URL',
+    dashboardUrl: 'RUNTIME_DASHBOARD_URL',
+    docsServiceUrl: 'RUNTIME_DOCS_SERVICE_URL',
+    xconnectZeroUrl: 'RUNTIME_XCONNECT_ZERO_URL',
+  }
+  for (const [key, envName] of Object.entries(endpointEnv)) {
+    const value = process.env[envName]?.trim()
+    if (!value) continue
+    const endpoint = new URL(value)
+    if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) {
+      throw new Error(`Invalid deployment service endpoint: ${envName}`)
+    }
+    endpointOverrides[key] = value
+  }
+
   const result: RuntimeConfig = {
     ...(finalConfig as RuntimeConfig),
+    ...endpointOverrides,
     environment,
     region,
     // 与上面 splitEnvironmentOverrides 实际选用的源保持一致。
