@@ -643,6 +643,7 @@ export function UserGroupManagement({
     const rows = sourceText.split(/\r?\n/).filter((line) => line.trim()).map(parseRow);
     const headers = rows.shift()?.map((value) => value.toLowerCase()) ?? [];
     const index = (name: string) => headers.indexOf(name);
+    const indexAny = (...names: string[]) => names.map(index).find((position) => position >= 0) ?? -1;
     const normalizeDate = (value?: string) => {
       const match = value?.trim().match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
       return match ? `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}` : undefined;
@@ -657,22 +658,23 @@ export function UserGroupManagement({
     };
     const parseFeeMinor = (value?: string) => Math.round(Number((value ?? "").replace(/[^\d.]/g, "")) * 100) || 0;
     for (const row of rows) {
-      const emailValue = row[index("邮箱") >= 0 ? index("邮箱") : index("email")]?.toLowerCase();
-      const usernameValue = row[index("用户名") >= 0 ? index("用户名") : index("username")]?.toLowerCase();
+      const emailValue = row[indexAny("邮箱", "email")]?.toLowerCase();
+      const usernameValue = row[indexAny("用户名", "username")]?.toLowerCase();
       const key = emailValue || usernameValue;
       if (!key) continue;
-      const status = row[index("付费状态") >= 0 ? index("付费状态") : index("paid status")]?.toLowerCase() ?? "";
-      const planId: AdminPlanGroupUpdate["planId"] = status.includes("已付费") || status.includes("paid") ? "PLUS" : "FREE";
-      const validFrom = normalizeDate(row[index("订阅开始") >= 0 ? index("订阅开始") : index("subscription start")]);
-      const validUntil = normalizeDate(row[index("订阅结束") >= 0 ? index("订阅结束") : index("subscription end")]);
-      const monthly = row[index("月配额") >= 0 ? index("月配额") : index("monthly quota")];
-      const annual = row[index("年配额") >= 0 ? index("年配额") : index("annual quota")];
-      const fee = row[index("费用") >= 0 ? index("费用") : index("fee")];
+      const status = row[indexAny("付费状态", "paid status", "payment_status")]?.toLowerCase() ?? "";
+      const plan = row[indexAny("plan")]?.toLowerCase() ?? "";
+      const planId: AdminPlanGroupUpdate["planId"] = status.includes("已付费") || status.includes("paid") || plan === "plus" ? "PLUS" : "FREE";
+      const validFrom = normalizeDate(row[indexAny("订阅开始", "subscription start", "valid_from")]);
+      const validUntil = normalizeDate(row[indexAny("订阅结束", "subscription end", "valid_until")]);
+      const monthly = row[indexAny("月配额", "monthly quota", "monthly_quota_bytes")];
+      const annual = row[indexAny("年配额", "annual quota", "annual_quota_bytes")];
+      const fee = row[indexAny("费用", "fee", "fee_minor")];
       imported.set(key, {
         planId,
         validFrom,
         validUntil,
-        record: { userId: "", subscriptionType: row[index("订阅类型") >= 0 ? index("订阅类型") : index("subscription type")] ?? "", monthlyQuotaBytes: parseBytes(monthly), annualQuotaBytes: parseBytes(annual), feeMinor: parseFeeMinor(fee), paymentStatus: row[index("付费状态") >= 0 ? index("付费状态") : index("paid status")] ?? "", note: row[index("备注") >= 0 ? index("备注") : index("note")] ?? "", validFrom, validUntil },
+        record: { userId: "", subscriptionType: row[indexAny("订阅类型", "subscription type", "subscription_type")] ?? "", monthlyQuotaBytes: parseBytes(monthly), annualQuotaBytes: parseBytes(annual), feeMinor: headers[indexAny("费用", "fee", "fee_minor")] === "fee_minor" ? Number(fee) || 0 : parseFeeMinor(fee), paymentStatus: row[indexAny("付费状态", "paid status", "payment_status")] ?? "", note: row[indexAny("备注", "note")] ?? "", validFrom, validUntil },
       });
     }
     const updates = data.map((user) => {
