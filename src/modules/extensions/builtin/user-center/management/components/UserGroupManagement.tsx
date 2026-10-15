@@ -103,12 +103,12 @@ type Segment = {
   description: string;
 };
 
-export const MONTHLY_FREE_QUOTA_LIMIT_GROUP = "segment:quota:free-5gb";
+export const MONTHLY_FREE_QUOTA_LIMIT_GROUP = "segment:quota:free-3gb";
 export const MONTHLY_PLUS_QUOTA_LIMIT_GROUP = "segment:quota:plus-20gb";
 export const MONTHLY_UNLIMITED_BETA_GROUP = "segment:quota:unlimited-beta";
 const MONTHLY_QUOTA_GROUP_OPTIONS = [
   { value: "", label: "不参与月度限流" },
-  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 5GB" },
+  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 3GB" },
   { value: MONTHLY_PLUS_QUOTA_LIMIT_GROUP, label: "Plus 20GB" },
   { value: MONTHLY_UNLIMITED_BETA_GROUP, label: "无限制（内测分组）" },
 ] as const;
@@ -125,7 +125,7 @@ const PLAN_LABEL_BY_ID: Record<
   NonNullable<AdminPlanGroupUpdate["planId"]>,
   string
 > = {
-  FREE: "Free 5GB",
+  FREE: "Free 3GB",
   PLUS: "Plus 20GB",
   "UNLIMITED-BETA": "Unlimited Beta",
 };
@@ -566,10 +566,12 @@ export function UserGroupManagement({
   };
 
   const exportMembers = () => {
-    const header = ["email", "name", "group", "source", "created_at"];
+    const header = ["email", "username", "name", "plan", "group", "source", "created_at"];
     const rows = visibleUsers.map((user) => [
       user.email,
+      user.username ?? "",
       nameOf(user),
+      primarySegment(user).id === "subscribed" ? "PLUS" : "FREE",
       primarySegment(user).label,
       (user.groups ?? []).some((group) => group.startsWith("segment:"))
         ? "manual"
@@ -594,34 +596,52 @@ export function UserGroupManagement({
   const importMembers = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file || !onGroupsChange || !canEditRoles) return;
+    if (!file || !onPlanGroupPreview || !onPlanGroupApply || !canEditRoles) return;
     const sourceText = await file.text();
-    const importedEmails = sourceText
-      .split(/\r?\n/)
-      .map((line) =>
-        line.split(",")[0]?.replace(/^"|"$/g, "").trim().toLowerCase(),
-      )
-      .filter((value): value is string => Boolean(value) && value !== "email");
-    const matchingUsers = data.filter((user) =>
-      importedEmails.includes(user.email.toLowerCase()),
-    );
-    matchingUsers.forEach((user) => {
-      const base = (user.groups ?? []).filter(
-        (group) => !group.startsWith("segment:"),
-      );
-      const parent = SEGMENTS.find((item) => item.id === "subscribed")!;
-      onGroupsChange(
-        user.id,
-        segment.parent === "subscribed"
-          ? [...base, parent.value, segment.value]
-          : [...base, segment.value],
-      );
+    const parseRow = (line: string) => {
+      const cells: string[] = [];
+      let value = "";
+      let quoted = false;
+      for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+        if (char === '"' && line[i + 1] === '"') { value += '"'; i += 1; continue; }
+        if (char === '"') { quoted = !quoted; continue; }
+        if (char === "," && !quoted) { cells.push(value.trim()); value = ""; continue; }
+        value += char;
+      }
+      cells.push(value.trim());
+      return cells;
+    };
+    const rows = sourceText.split(/\r?\n/).filter((line) => line.trim()).map(parseRow);
+    const headers = rows.shift()?.map((value) => value.toLowerCase()) ?? [];
+    const index = (name: string) => headers.indexOf(name);
+    const imported = new Map<string, { planId: AdminPlanGroupUpdate["planId"]; validFrom?: string; validUntil?: string }>();
+    for (const row of rows) {
+      const emailValue = row[index("邮箱") >= 0 ? index("邮箱") : index("email")]?.toLowerCase();
+      const usernameValue = row[index("用户名") >= 0 ? index("用户名") : index("username")]?.toLowerCase();
+      const key = emailValue || usernameValue;
+      if (!key) continue;
+      const status = row[index("付费状态") >= 0 ? index("付费状态") : index("paid status")]?.toLowerCase() ?? "";
+      const planId: AdminPlanGroupUpdate["planId"] = status.includes("已付费") || status.includes("paid") ? "PLUS" : "FREE";
+      imported.set(key, {
+        planId,
+        validFrom: row[index("订阅开始") >= 0 ? index("订阅开始") : index("subscription start")] || undefined,
+        validUntil: row[index("订阅结束") >= 0 ? index("订阅结束") : index("subscription end")] || undefined,
+      });
+    }
+    const updates = data.map((user) => {
+      const match = imported.get(user.email.toLowerCase()) ?? (user.username ? imported.get(user.username.toLowerCase()) : undefined);
+      return { userId: user.id, planId: match?.planId ?? "FREE", validFrom: match?.validFrom ?? null, validUntil: match?.validUntil ?? null };
     });
-    setNotice(
-      matchingUsers.length
-        ? `已开始更新 ${matchingUsers.length} 名现有成员`
-        : "没有找到可匹配的现有用户",
-    );
+    if (!updates.length) { setNotice("没有可导入的现有用户"); return; }
+    try {
+      const reason = "从订阅用户统计 CSV 对齐套餐分组；表外用户归入 Free";
+      const preview = await onPlanGroupPreview("batch", updates, reason);
+      await onPlanGroupApply("batch", updates, preview.requestId, preview.previewToken, reason);
+      setNotice(`已对齐 ${updates.length} 名用户：订阅表匹配用户进入 Plus，其余用户进入 Free 3GB`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "导入失败");
+    }
   };
 
   return (
