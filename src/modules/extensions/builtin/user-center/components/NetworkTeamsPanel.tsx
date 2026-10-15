@@ -7,6 +7,7 @@ import { useLanguage } from "@i18n/LanguageProvider";
 import { useUserStore } from "@lib/userStore";
 import content from "@/data/content/xconnect.json";
 import type { XConnectContent } from "@/lib/xconnectContent";
+import { TeamSubscriptionDetails } from "../management/components/SubscriptionDetails";
 import { fetchAgentNodes } from "../lib/fetchAgentNodes";
 
 type Team = {
@@ -167,7 +168,8 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
     teamCountLabel:
       copy.teamCountLabel ?? (language === "en" ? "Teams" : "团队"),
     activeTeamsLabel:
-      copy.activeTeamsLabel ?? (language === "en" ? "Active teams" : "启用团队"),
+      copy.activeTeamsLabel ??
+      (language === "en" ? "Active teams" : "启用团队"),
     teamMembersCountLabel:
       copy.teamMembersCountLabel ??
       (language === "en" ? "Team members" : "团队成员"),
@@ -175,9 +177,13 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
       copy.unassignedMembersLabel ??
       (language === "en" ? "Personal / unassigned" : "个人/未分配"),
     membersUnknownLabel:
-      copy.membersUnknownLabel ?? (language === "en" ? "Members —" : "成员数 —"),
-    loadingLabel: copy.loadingLabel ?? (language === "en" ? "Loading…" : "加载中…"),
-    emptyLabel: copy.emptyLabel ?? (language === "en" ? "No team groups" : "暂无团队分组"),
+      copy.membersUnknownLabel ??
+      (language === "en" ? "Members —" : "成员数 —"),
+    loadingLabel:
+      copy.loadingLabel ?? (language === "en" ? "Loading…" : "加载中…"),
+    emptyLabel:
+      copy.emptyLabel ??
+      (language === "en" ? "No team groups" : "暂无团队分组"),
   };
   return (
     <section className="xds-card p-5 space-y-4">
@@ -299,6 +305,7 @@ export default function NetworkTeamsPanel({ users }: { users?: User[] }) {
               </p>
             )}
           </section>
+          <TeamSubscriptionDetails teamId={team.id} />
           <label>
             {copy.selectLabel}
             <select

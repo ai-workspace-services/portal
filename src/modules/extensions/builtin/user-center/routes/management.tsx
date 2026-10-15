@@ -20,7 +20,6 @@ import UserGroupManagement, {
   type AdminPlanGroupUpdate,
   type ManagedUser,
   type CreateManagedUserInput,
-  type SubscriptionRecord,
 } from "../management/components/UserGroupManagement";
 import HomepageVideoSettingsPanel from "../management/components/HomepageVideoSettingsPanel";
 import { EmailBlacklist } from "../management/components/EmailBlacklist";
@@ -103,9 +102,7 @@ export default function UserCenterManagementRoute() {
   const canAccess = accessDecision.allowed;
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
-  const canCreateCustomUser = Boolean(
-    user?.isRoot,
-  );
+  const canCreateCustomUser = Boolean(user?.isRoot);
 
   const [matrixDraft, setMatrixDraft] = useState<PermissionMatrix>({});
   const [matrixVersion, setMatrixVersion] = useState<number>(0);
@@ -388,19 +385,35 @@ export default function UserCenterManagementRoute() {
     [canEditRoles, markGroupsPending, usersSWR],
   );
 
-  const handleSubscriptionRecordsImport = useCallback(async (records: SubscriptionRecord[]) => {
-    if (!canEditRoles || records.length === 0) return;
-    await jsonFetcher(`${ADMIN_API_BASE}/users/subscription-records`, {
-      method: "PUT",
-      body: JSON.stringify({ records }),
-    });
-  }, [canEditRoles]);
+  const handleSubscriptionRecordsImport = useCallback(
+    async (csv: string, reason: string): Promise<AdminPlanGroupPreview> => {
+      if (!canEditRoles) throw new Error("没有导入权限");
+      return jsonFetcher<AdminPlanGroupPreview>(
+        `${ADMIN_API_BASE}/users/plan-groups/batch`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            mode: "preview",
+            requestId: crypto.randomUUID(),
+            reason,
+            csv,
+            reconcile: true,
+          }),
+        },
+      );
+    },
+    [canEditRoles],
+  );
 
-  const handleSubscriptionRecordsExport = useCallback(async (): Promise<SubscriptionRecord[]> => {
-    if (!canEditRoles) return [];
-    const response = await jsonFetcher<{ records: SubscriptionRecord[] }>(`${ADMIN_API_BASE}/users/subscription-records`);
-    return response.records ?? [];
-  }, [canEditRoles]);
+  const handleSubscriptionRecordsExport =
+    useCallback(async (): Promise<string> => {
+      const response = await fetch(
+        `${ADMIN_API_BASE}/users/subscription-records?format=csv`,
+        { credentials: "include", cache: "no-store" },
+      );
+      if (!response.ok) throw new Error(`导出失败（HTTP ${response.status}）`);
+      return response.text();
+    }, []);
 
   const handleRoleChange = useCallback(
     async (userId: string, role: string) => {
@@ -740,8 +753,12 @@ export default function UserCenterManagementRoute() {
             onGroupsChange={handleGroupsChange}
             onPlanGroupPreview={handlePlanGroupPreview}
             onPlanGroupApply={handlePlanGroupApply}
-            onSubscriptionRecordsImport={handleSubscriptionRecordsImport}
-            onSubscriptionRecordsExport={handleSubscriptionRecordsExport}
+            onSubscriptionRecordsImport={
+              user?.isRoot ? handleSubscriptionRecordsImport : undefined
+            }
+            onSubscriptionRecordsExport={
+              user?.isRoot ? handleSubscriptionRecordsExport : undefined
+            }
             pendingGroupUserIds={pendingGroupUpdates}
           />
         </div>
