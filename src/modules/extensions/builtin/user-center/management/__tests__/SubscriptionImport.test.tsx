@@ -5,6 +5,62 @@ import UserGroupManagement from "../components/UserGroupManagement";
 import { BillingFacts } from "../components/SubscriptionDetails";
 
 describe("subscription management", () => {
+  it("derives annual membership from persisted subscription facts and restores only the temporary marker", async () => {
+    const groups = [
+      "User",
+      "segment:yearly",
+      "segment:quota:plus-20gb",
+      "segment:subscription:unlimited",
+    ];
+    const preview = vi.fn(async () => ({
+      requestId: "restore",
+      previewToken: "reviewed",
+      expiresAt: "2030-01-01",
+      changes: [],
+    }));
+    render(
+      <UserGroupManagement
+        users={[
+          {
+            id: "annual",
+            email: "annual@example.invalid",
+            groups,
+            temporaryUnlimited: true,
+            subscriptionRecord: {
+              userId: "annual",
+              subscriptionType: "year",
+              monthlyQuotaBytes: 20 * 1024 ** 3,
+              annualQuotaBytes: 240 * 1024 ** 3,
+              feeMinor: 20000,
+              paymentStatus: "paid",
+              note: "gift",
+            },
+          },
+        ]}
+        canEditRoles
+        onPlanGroupPreview={preview}
+        onPlanGroupApply={async () => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /年付/ }));
+    expect(screen.getAllByText("annual@example.invalid").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: /撤销临时不限量/ }));
+    fireEvent.click(screen.getByRole("button", { name: /生成预览|预览变更/ }));
+    await waitFor(() =>
+      expect(preview).toHaveBeenCalledWith(
+        "single",
+        [
+          {
+            userId: "annual",
+            groups: groups.filter(
+              (group) => group !== "segment:subscription:unlimited",
+            ),
+          },
+        ],
+        expect.any(String),
+      ),
+    );
+  });
   it("submits the original CSV to Accounts and applies only after confirmation", async () => {
     const source = "邮箱,费用\nmember@example.invalid,200元";
     const preview = {

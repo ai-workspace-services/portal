@@ -33,6 +33,8 @@ export type ManagedUser = {
   created_at?: string;
   subscriptionValidFrom?: string | null;
   subscriptionValidUntil?: string | null;
+  subscriptionRecord?: SubscriptionRecord;
+  temporaryUnlimited?: boolean;
 };
 export type CreateManagedUserInput = {
   email: string;
@@ -116,6 +118,7 @@ type SegmentId =
   | "payg"
   | "monthly"
   | "yearly"
+  | "unlimited"
   | "internal";
 type Segment = {
   id: SegmentId;
@@ -128,6 +131,8 @@ type Segment = {
 export const MONTHLY_FREE_QUOTA_LIMIT_GROUP = "segment:quota:free-3gb";
 export const MONTHLY_PLUS_QUOTA_LIMIT_GROUP = "segment:quota:plus-20gb";
 export const MONTHLY_UNLIMITED_BETA_GROUP = "segment:quota:unlimited-beta";
+export const SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP =
+  "segment:subscription:unlimited";
 const MONTHLY_QUOTA_GROUP_OPTIONS = [
   { value: "", label: "不参与月度限流" },
   { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 3GB" },
@@ -200,6 +205,13 @@ const SEGMENTS: Segment[] = [
     description: "年度订阅用户",
   },
   {
+    id: "unlimited",
+    label: "不限量",
+    value: SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP,
+    parent: "subscribed",
+    description: "临时人工不限量覆盖；月付/年付、原配额及有效期保持不变",
+  },
+  {
     id: "internal",
     label: "内部用户",
     value: "segment:internal",
@@ -212,6 +224,7 @@ const LEGACY: Record<SegmentId, string[]> = {
   payg: ["segment:payg"],
   monthly: ["segment:monthly"],
   yearly: ["segment:yearly"],
+  unlimited: [],
   internal: ["segment:operations", "segment:beta"],
 };
 
@@ -226,9 +239,24 @@ const parseGroupList = (input: string): string[] =>
   );
 const nameOf = (user: ManagedUser): string =>
   user.username?.trim() || user.name?.trim() || user.email?.trim() || "—";
-const hasSegment = (user: ManagedUser, segment: Segment): boolean =>
-  (user.groups ?? []).includes(segment.value) ||
-  LEGACY[segment.id].some((value) => (user.groups ?? []).includes(value));
+const hasSegment = (user: ManagedUser, segment: Segment): boolean => {
+  const record = user.subscriptionRecord;
+  if (
+    record &&
+    (user.groups ?? []).includes("segment:subscription:listed") &&
+    ["paid", "已付费", "已支付"].includes(record.paymentStatus)
+  ) {
+    if (segment.id === "monthly") return record.subscriptionType === "month";
+    if (segment.id === "yearly") return record.subscriptionType === "year";
+    if (segment.id === "subscribed")
+      return ["month", "year"].includes(record.subscriptionType);
+  }
+  if (segment.id === "unlimited") return user.temporaryUnlimited === true;
+  return (
+    (user.groups ?? []).includes(segment.value) ||
+    LEGACY[segment.id].some((value) => (user.groups ?? []).includes(value))
+  );
+};
 const monthlyQuotaGroupOf = (user: ManagedUser): MonthlyQuotaGroup =>
   (
     [
@@ -376,8 +404,23 @@ export function UserGroupManagement({
 
   const changeGroup = (nextSegment: Segment) => {
     if (!selectedUser || !onGroupsChange || !canEditRoles) return;
+    if (nextSegment.id === "unlimited") {
+      onGroupsChange(
+        selectedUser.id,
+        Array.from(
+          new Set([
+            ...(selectedUser.groups ?? []),
+            SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP,
+          ]),
+        ),
+      );
+      return;
+    }
     const base = (selectedUser.groups ?? []).filter(
-      (group) => !group.startsWith("segment:"),
+      (group) =>
+        !group.startsWith("segment:") ||
+        group === SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP ||
+        group.startsWith("segment:quota:"),
     );
     const parent = SEGMENTS.find((item) => item.id === "subscribed")!;
     onGroupsChange(
@@ -612,7 +655,8 @@ export function UserGroupManagement({
     event.target.value = "";
     if (!file || !onSubscriptionRecordsImport || !canEditRoles) return;
     try {
-      const reason = "从订阅 CSV 按邮箱对齐：表外个人用户归入 Free";
+      const reason =
+        "按完整订阅清单对齐：清单外个人用户归 Free，保留历史商业记录及空白字段";
       const preview = await onSubscriptionRecordsImport(
         await file.text(),
         reason,
@@ -669,7 +713,7 @@ export function UserGroupManagement({
               className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50"
             >
               <FileUp className="h-4 w-4" />
-              导入成员
+              导入订阅清单
             </button>
             <button
               type="button"
@@ -678,7 +722,7 @@ export function UserGroupManagement({
               className="inline-flex items-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
             >
               <Download className="h-4 w-4" />
-              导出成员
+              导出订阅清单
             </button>
           </div>
         </header>
@@ -831,6 +875,7 @@ export function UserGroupManagement({
                     />
                     <span className="min-w-0 truncate text-[var(--color-text)]">
                       {nameOf(user)}
+                      {user.temporaryUnlimited ? " · 临时不限量" : ""}
                     </span>
                   </label>
                   <select
@@ -1058,6 +1103,39 @@ export function UserGroupManagement({
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-2 top-2.5 h-4 w-4 text-slate-400" />
                   </label>
+                  {(selectedUser.groups ?? []).includes(
+                    SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP,
+                  ) ? (
+                    <button
+                      type="button"
+                      disabled={
+                        !canEditRoles ||
+                        !onPlanGroupPreview ||
+                        !onPlanGroupApply
+                      }
+                      className="mt-2 text-sm text-blue-700 disabled:opacity-50"
+                      onClick={() =>
+                        setPlanGroupDialog({
+                          scope: "single",
+                          updates: [
+                            {
+                              userId: selectedUser.id,
+                              groups: (selectedUser.groups ?? []).filter(
+                                (group) =>
+                                  group !==
+                                  SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP,
+                              ),
+                            },
+                          ],
+                          reason: "撤销临时不限量，恢复原配额执行",
+                          validFrom: "",
+                          validUntil: "",
+                        })
+                      }
+                    >
+                      撤销临时不限量（恢复原配额）
+                    </button>
+                  ) : null}
                 </section>
                 <section className="rounded-md border border-[color:var(--color-surface-border)] p-3">
                   <div className="flex items-start justify-between gap-2">
