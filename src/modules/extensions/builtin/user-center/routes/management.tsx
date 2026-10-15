@@ -72,7 +72,7 @@ async function jsonFetcher<T>(
     } catch (error) {
       // Ignore JSON parse errors; fall back to status text below.
     }
-    const message = payload?.error ?? payload?.message ?? response.statusText;
+    const message = payload?.message ?? payload?.error ?? response.statusText;
     throw new Error(message || "请求失败");
   }
 
@@ -397,7 +397,7 @@ export default function UserCenterManagementRoute() {
             requestId: crypto.randomUUID(),
             reason,
             csv,
-            reconcile: true,
+            reconcile: false,
           }),
         },
       );

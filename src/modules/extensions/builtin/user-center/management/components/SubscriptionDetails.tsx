@@ -60,8 +60,22 @@ export function BillingFacts({ snapshot }: { snapshot: BillingSnapshot }) {
     subscriptionRecord: record,
   } = snapshot;
   const unlimited = profile?.pricingRuleVersion === "plan:UNLIMITED-BETA";
+  const temporaryUnlimited =
+    (snapshot.groups ?? []).includes("segment:subscription:unlimited") &&
+    (!snapshot.subscriptionValidFrom ||
+      snapshot.subscriptionValidFrom.slice(0, 10) <=
+        new Date().toISOString().slice(0, 10)) &&
+    (!snapshot.subscriptionValidUntil ||
+      snapshot.subscriptionValidUntil.slice(0, 10) >=
+        new Date().toISOString().slice(0, 10));
   return (
     <dl className="grid grid-cols-[86px_1fr] gap-x-3 gap-y-2 text-sm">
+      {temporaryUnlimited ? (
+        <>
+          <dt>生效权益</dt>
+          <dd>临时人工不限量（原配额与有效期保留）</dd>
+        </>
+      ) : null}
       <dt>套餐</dt>
       <dd>{profile?.packageName || "未配置"}</dd>
       <dt>月总额度</dt>
@@ -70,7 +84,8 @@ export function BillingFacts({ snapshot }: { snapshot: BillingSnapshot }) {
       <dd>
         {unlimited ? "不限额" : quotaBytes(quota?.remainingIncludedQuota)}
       </dd>
-      {profile &&
+      {!temporaryUnlimited &&
+      profile &&
       quota &&
       profile.includedQuotaBytes > 0 &&
       quota.remainingIncludedQuota <= 0 ? (
