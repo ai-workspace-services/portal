@@ -19,6 +19,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { SidebarRevealButton } from "@/components/ai-workspace/shell/SidebarRevealButton";
 import {
   CatalogUnavailableError,
   fetchSharedTaskCatalog,
@@ -103,6 +104,7 @@ export function TaskCoordinationHub() {
       {/* Header */}
       <header className="flex min-h-[72px] shrink-0 items-center justify-between border-b border-[#e4e8ef] px-6 py-4">
         <div className="flex items-center space-x-3">
+          <SidebarRevealButton />
           <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#075ecc] to-[#4338ca] text-white shadow-sm">
             <Share2 className="size-5" />
           </div>

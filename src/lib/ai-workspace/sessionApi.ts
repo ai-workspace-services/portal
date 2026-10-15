@@ -140,6 +140,8 @@ export async function appendTaskMessage(
     clientRequestId: string;
     text: string;
     run?: { priority: number; notBefore?: string };
+    /** Orchestrator hints (role, roleMode); the gateway validates them. */
+    routing?: { roleMode: "auto"; role?: string };
   },
   fetcher: Fetcher = fetch,
 ): Promise<SubmitTaskMessageResult> {
