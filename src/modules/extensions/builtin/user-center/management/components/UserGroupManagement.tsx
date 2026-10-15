@@ -46,6 +46,17 @@ export type AdminPlanGroupUpdate = {
   validFrom?: string | null;
   validUntil?: string | null;
 };
+export type SubscriptionRecord = {
+  userId: string;
+  subscriptionType: string;
+  monthlyQuotaBytes: number;
+  annualQuotaBytes: number;
+  feeMinor: number;
+  paymentStatus: string;
+  note: string;
+  validFrom?: string | null;
+  validUntil?: string | null;
+};
 export type AdminPlanGroupPreview = {
   requestId: string;
   previewToken: string;
@@ -86,6 +97,8 @@ type Props = {
     previewToken: string,
     reason: string,
   ) => Promise<void>;
+  onSubscriptionRecordsImport?: (records: SubscriptionRecord[]) => Promise<void>;
+  onSubscriptionRecordsExport?: () => Promise<SubscriptionRecord[]>;
   pendingGroupUserIds?: Set<string>;
 };
 type SegmentId =
@@ -269,6 +282,8 @@ export function UserGroupManagement({
   onGroupsChange,
   onPlanGroupPreview,
   onPlanGroupApply,
+  onSubscriptionRecordsImport,
+  onSubscriptionRecordsExport,
   pendingGroupUserIds,
 }: Props) {
   const data = useMemo(() => users ?? [], [users]);
@@ -565,9 +580,13 @@ export function UserGroupManagement({
     }
   };
 
-  const exportMembers = () => {
-    const header = ["email", "username", "name", "plan", "group", "source", "created_at"];
-    const rows = visibleUsers.map((user) => [
+  const exportMembers = async () => {
+    const records = onSubscriptionRecordsExport ? await onSubscriptionRecordsExport() : [];
+    const recordByUser = new Map(records.map((record) => [record.userId, record]));
+    const header = ["email", "username", "name", "plan", "group", "source", "created_at", "subscription_type", "monthly_quota_bytes", "annual_quota_bytes", "fee_minor", "payment_status", "valid_from", "valid_until", "note"];
+    const rows = visibleUsers.map((user) => {
+      const record = recordByUser.get(user.id);
+      return [
       user.email,
       user.username ?? "",
       nameOf(user),
@@ -577,7 +596,16 @@ export function UserGroupManagement({
         ? "manual"
         : "automatic",
       user.created_at ?? "",
-    ]);
+      record?.subscriptionType ?? "",
+      String(record?.monthlyQuotaBytes ?? ""),
+      String(record?.annualQuotaBytes ?? ""),
+      String(record?.feeMinor ?? ""),
+      record?.paymentStatus ?? "",
+      record?.validFrom ?? "",
+      record?.validUntil ?? "",
+      record?.note ?? "",
+    ];
+    });
     const csv = [header, ...rows]
       .map((row) =>
         row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
@@ -619,7 +647,15 @@ export function UserGroupManagement({
       const match = value?.trim().match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
       return match ? `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}` : undefined;
     };
-    const imported = new Map<string, { planId: AdminPlanGroupUpdate["planId"]; validFrom?: string; validUntil?: string }>();
+    const imported = new Map<string, { planId: AdminPlanGroupUpdate["planId"]; validFrom?: string; validUntil?: string; record: SubscriptionRecord }>();
+    const parseBytes = (value?: string) => {
+      const match = value?.trim().match(/^(\d+(?:\.\d+)?)\s*(GB|GiB|MB|MiB)?$/i);
+      if (!match) return 0;
+      const unit = (match[2] ?? "B").toLowerCase();
+      const multiplier = unit === "gb" || unit === "gib" ? 1024 ** 3 : unit === "mb" || unit === "mib" ? 1024 ** 2 : 1;
+      return Math.round(Number(match[1]) * multiplier);
+    };
+    const parseFeeMinor = (value?: string) => Math.round(Number((value ?? "").replace(/[^\d.]/g, "")) * 100) || 0;
     for (const row of rows) {
       const emailValue = row[index("邮箱") >= 0 ? index("邮箱") : index("email")]?.toLowerCase();
       const usernameValue = row[index("用户名") >= 0 ? index("用户名") : index("username")]?.toLowerCase();
@@ -627,14 +663,21 @@ export function UserGroupManagement({
       if (!key) continue;
       const status = row[index("付费状态") >= 0 ? index("付费状态") : index("paid status")]?.toLowerCase() ?? "";
       const planId: AdminPlanGroupUpdate["planId"] = status.includes("已付费") || status.includes("paid") ? "PLUS" : "FREE";
+      const validFrom = normalizeDate(row[index("订阅开始") >= 0 ? index("订阅开始") : index("subscription start")]);
+      const validUntil = normalizeDate(row[index("订阅结束") >= 0 ? index("订阅结束") : index("subscription end")]);
+      const monthly = row[index("月配额") >= 0 ? index("月配额") : index("monthly quota")];
+      const annual = row[index("年配额") >= 0 ? index("年配额") : index("annual quota")];
+      const fee = row[index("费用") >= 0 ? index("费用") : index("fee")];
       imported.set(key, {
         planId,
-        validFrom: normalizeDate(row[index("订阅开始") >= 0 ? index("订阅开始") : index("subscription start")]),
-        validUntil: normalizeDate(row[index("订阅结束") >= 0 ? index("订阅结束") : index("subscription end")]),
+        validFrom,
+        validUntil,
+        record: { userId: "", subscriptionType: row[index("订阅类型") >= 0 ? index("订阅类型") : index("subscription type")] ?? "", monthlyQuotaBytes: parseBytes(monthly), annualQuotaBytes: parseBytes(annual), feeMinor: parseFeeMinor(fee), paymentStatus: row[index("付费状态") >= 0 ? index("付费状态") : index("paid status")] ?? "", note: row[index("备注") >= 0 ? index("备注") : index("note")] ?? "", validFrom, validUntil },
       });
     }
     const updates = data.map((user) => {
       const match = imported.get(user.email.toLowerCase()) ?? (user.username ? imported.get(user.username.toLowerCase()) : undefined);
+      if (match) match.record.userId = user.id;
       return { userId: user.id, planId: match?.planId ?? "FREE", validFrom: match?.validFrom ?? null, validUntil: match?.validUntil ?? null };
     });
     if (!updates.length) { setNotice("没有可导入的现有用户"); return; }
@@ -642,6 +685,7 @@ export function UserGroupManagement({
       const reason = "从订阅用户统计 CSV 对齐套餐分组；表外用户归入 Free";
       const preview = await onPlanGroupPreview("batch", updates, reason);
       await onPlanGroupApply("batch", updates, preview.requestId, preview.previewToken, reason);
+      if (onSubscriptionRecordsImport) await onSubscriptionRecordsImport([...imported.values()].map(({ record }) => record).filter((record) => record.userId));
       setNotice(`已对齐 ${updates.length} 名用户：订阅表匹配用户进入 Plus，其余用户进入 Free 3GB`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "导入失败");

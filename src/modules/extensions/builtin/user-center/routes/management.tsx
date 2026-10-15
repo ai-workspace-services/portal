@@ -20,6 +20,7 @@ import UserGroupManagement, {
   type AdminPlanGroupUpdate,
   type ManagedUser,
   type CreateManagedUserInput,
+  type SubscriptionRecord,
 } from "../management/components/UserGroupManagement";
 import HomepageVideoSettingsPanel from "../management/components/HomepageVideoSettingsPanel";
 import { EmailBlacklist } from "../management/components/EmailBlacklist";
@@ -387,6 +388,20 @@ export default function UserCenterManagementRoute() {
     [canEditRoles, markGroupsPending, usersSWR],
   );
 
+  const handleSubscriptionRecordsImport = useCallback(async (records: SubscriptionRecord[]) => {
+    if (!canEditRoles || records.length === 0) return;
+    await jsonFetcher(`${ADMIN_API_BASE}/users/subscription-records`, {
+      method: "PUT",
+      body: JSON.stringify({ records }),
+    });
+  }, [canEditRoles]);
+
+  const handleSubscriptionRecordsExport = useCallback(async (): Promise<SubscriptionRecord[]> => {
+    if (!canEditRoles) return [];
+    const response = await jsonFetcher<{ records: SubscriptionRecord[] }>(`${ADMIN_API_BASE}/users/subscription-records`);
+    return response.records ?? [];
+  }, [canEditRoles]);
+
   const handleRoleChange = useCallback(
     async (userId: string, role: string) => {
       if (!canEditRoles) {
@@ -725,6 +740,8 @@ export default function UserCenterManagementRoute() {
             onGroupsChange={handleGroupsChange}
             onPlanGroupPreview={handlePlanGroupPreview}
             onPlanGroupApply={handlePlanGroupApply}
+            onSubscriptionRecordsImport={handleSubscriptionRecordsImport}
+            onSubscriptionRecordsExport={handleSubscriptionRecordsExport}
             pendingGroupUserIds={pendingGroupUpdates}
           />
         </div>
