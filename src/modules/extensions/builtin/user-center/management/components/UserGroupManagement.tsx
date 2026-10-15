@@ -46,6 +46,17 @@ export type AdminPlanGroupUpdate = {
   validFrom?: string | null;
   validUntil?: string | null;
 };
+export type SubscriptionRecord = {
+  userId: string;
+  subscriptionType: string;
+  monthlyQuotaBytes: number;
+  annualQuotaBytes: number;
+  feeMinor: number;
+  paymentStatus: string;
+  note: string;
+  validFrom?: string | null;
+  validUntil?: string | null;
+};
 export type AdminPlanGroupPreview = {
   requestId: string;
   previewToken: string;
@@ -56,6 +67,12 @@ export type AdminPlanGroupPreview = {
     usedBytesPreserved: number;
     remainingIncludedQuota: number;
     configurationSyncWillPause: boolean;
+    after?: {
+      validFrom?: string | null;
+      validUntil?: string | null;
+      includedQuotaBytes?: number;
+      subscriptionRecord?: SubscriptionRecord;
+    };
   }>;
 };
 type PlanGroupChangeScope = "single" | "batch";
@@ -86,6 +103,11 @@ type Props = {
     previewToken: string,
     reason: string,
   ) => Promise<void>;
+  onSubscriptionRecordsImport?: (
+    csv: string,
+    reason: string,
+  ) => Promise<AdminPlanGroupPreview>;
+  onSubscriptionRecordsExport?: () => Promise<string>;
   pendingGroupUserIds?: Set<string>;
 };
 type SegmentId =
@@ -103,12 +125,12 @@ type Segment = {
   description: string;
 };
 
-export const MONTHLY_FREE_QUOTA_LIMIT_GROUP = "segment:quota:free-5gb";
+export const MONTHLY_FREE_QUOTA_LIMIT_GROUP = "segment:quota:free-3gb";
 export const MONTHLY_PLUS_QUOTA_LIMIT_GROUP = "segment:quota:plus-20gb";
 export const MONTHLY_UNLIMITED_BETA_GROUP = "segment:quota:unlimited-beta";
 const MONTHLY_QUOTA_GROUP_OPTIONS = [
   { value: "", label: "不参与月度限流" },
-  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 5GB" },
+  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 3GB" },
   { value: MONTHLY_PLUS_QUOTA_LIMIT_GROUP, label: "Plus 20GB" },
   { value: MONTHLY_UNLIMITED_BETA_GROUP, label: "无限制（内测分组）" },
 ] as const;
@@ -125,7 +147,7 @@ const PLAN_LABEL_BY_ID: Record<
   NonNullable<AdminPlanGroupUpdate["planId"]>,
   string
 > = {
-  FREE: "Free 5GB",
+  FREE: "Free 3GB",
   PLUS: "Plus 20GB",
   "UNLIMITED-BETA": "Unlimited Beta",
 };
@@ -136,6 +158,7 @@ type PlanGroupDialogState = {
   reason: string;
   validFrom: string;
   validUntil: string;
+  importedCSV?: boolean;
   clearEmptyDates?: boolean;
   preview?: AdminPlanGroupPreview;
   busy?: boolean;
@@ -269,6 +292,8 @@ export function UserGroupManagement({
   onGroupsChange,
   onPlanGroupPreview,
   onPlanGroupApply,
+  onSubscriptionRecordsImport,
+  onSubscriptionRecordsExport,
   pendingGroupUserIds,
 }: Props) {
   const data = useMemo(() => users ?? [], [users]);
@@ -565,63 +590,48 @@ export function UserGroupManagement({
     }
   };
 
-  const exportMembers = () => {
-    const header = ["email", "name", "group", "source", "created_at"];
-    const rows = visibleUsers.map((user) => [
-      user.email,
-      nameOf(user),
-      primarySegment(user).label,
-      (user.groups ?? []).some((group) => group.startsWith("segment:"))
-        ? "manual"
-        : "automatic",
-      user.created_at ?? "",
-    ]);
-    const csv = [header, ...rows]
-      .map((row) =>
-        row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
-      )
-      .join("\n");
-    const downloadUrl = URL.createObjectURL(
-      new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }),
-    );
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = `${segment.id}-members.csv`;
-    link.click();
-    URL.revokeObjectURL(downloadUrl);
+  const exportMembers = async () => {
+    if (!onSubscriptionRecordsExport) return;
+    try {
+      const csv = await onSubscriptionRecordsExport();
+      const downloadUrl = URL.createObjectURL(
+        new Blob([csv], { type: "text/csv;charset=utf-8" }),
+      );
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "subscription-records.csv";
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "导出失败");
+    }
   };
 
   const importMembers = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file || !onGroupsChange || !canEditRoles) return;
-    const sourceText = await file.text();
-    const importedEmails = sourceText
-      .split(/\r?\n/)
-      .map((line) =>
-        line.split(",")[0]?.replace(/^"|"$/g, "").trim().toLowerCase(),
-      )
-      .filter((value): value is string => Boolean(value) && value !== "email");
-    const matchingUsers = data.filter((user) =>
-      importedEmails.includes(user.email.toLowerCase()),
-    );
-    matchingUsers.forEach((user) => {
-      const base = (user.groups ?? []).filter(
-        (group) => !group.startsWith("segment:"),
+    if (!file || !onSubscriptionRecordsImport || !canEditRoles) return;
+    try {
+      const reason = "从订阅 CSV 按邮箱对齐：表外个人用户归入 Free";
+      const preview = await onSubscriptionRecordsImport(
+        await file.text(),
+        reason,
       );
-      const parent = SEGMENTS.find((item) => item.id === "subscribed")!;
-      onGroupsChange(
-        user.id,
-        segment.parent === "subscribed"
-          ? [...base, parent.value, segment.value]
-          : [...base, segment.value],
-      );
-    });
-    setNotice(
-      matchingUsers.length
-        ? `已开始更新 ${matchingUsers.length} 名现有成员`
-        : "没有找到可匹配的现有用户",
-    );
+      setPlanGroupDialog({
+        scope: "batch",
+        reason,
+        validFrom: "",
+        validUntil: "",
+        importedCSV: true,
+        updates: preview.changes.map((change) => ({
+          userId: change.userId,
+          planId: change.planId as AdminPlanGroupUpdate["planId"],
+        })),
+        preview,
+      });
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "导入失败");
+    }
   };
 
   return (
@@ -649,11 +659,13 @@ export function UserGroupManagement({
               type="file"
               accept=".csv,text/csv"
               onChange={importMembers}
+              disabled={!onSubscriptionRecordsImport || !canEditRoles}
               className="hidden"
             />
             <button
               type="button"
               onClick={() => importInputRef.current?.click()}
+              disabled={!onSubscriptionRecordsImport || !canEditRoles}
               className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50"
             >
               <FileUp className="h-4 w-4" />
@@ -662,6 +674,7 @@ export function UserGroupManagement({
             <button
               type="button"
               onClick={exportMembers}
+              disabled={!onSubscriptionRecordsExport}
               className="inline-flex items-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
             >
               <Download className="h-4 w-4" />
@@ -669,6 +682,11 @@ export function UserGroupManagement({
             </button>
           </div>
         </header>
+        {notice ? (
+          <p role="status" className="text-sm">
+            {notice}
+          </p>
+        ) : null}
         <section
           aria-label="月度限流开关"
           className="rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface-subtle)] p-4"
@@ -1182,9 +1200,6 @@ export function UserGroupManagement({
               >
                 {creating ? "创建中…" : "创建用户"}
               </button>
-              {notice ? (
-                <p className="text-sm text-emerald-700">{notice}</p>
-              ) : null}
               {createError ? (
                 <p className="text-sm text-red-600">{createError}</p>
               ) : null}
@@ -1214,17 +1229,21 @@ export function UserGroupManagement({
                   id="plan-group-dialog-title"
                   className="text-lg font-semibold text-[var(--color-heading)]"
                 >
-                  {planGroupDialog.scope === "single"
-                    ? planGroupDialog.updates[0].planId
-                      ? "修改用户套餐"
-                      : "调整订阅有效期"
-                    : "批量修改套餐"}
+                  {planGroupDialog.importedCSV
+                    ? "导入订阅预览"
+                    : planGroupDialog.scope === "single"
+                      ? planGroupDialog.updates[0].planId
+                        ? "修改用户套餐"
+                        : "调整订阅有效期"
+                      : "批量修改套餐"}
                 </h3>
                 <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                   {planGroupDialog.updates.length} 名用户 ·{" "}
-                  {planGroupDialog.updates[0].planId
-                    ? PLAN_LABEL_BY_ID[planGroupDialog.updates[0].planId]
-                    : "仅更新有效期，套餐和额度保持不变"}
+                  {planGroupDialog.importedCSV
+                    ? "按邮箱更新订阅记录和套餐"
+                    : planGroupDialog.updates[0].planId
+                      ? PLAN_LABEL_BY_ID[planGroupDialog.updates[0].planId]
+                      : "仅更新有效期，套餐和额度保持不变"}
                   。预览确认后才会应用
                   {planGroupDialog.updates[0].planId
                     ? "；本期已用流量保留，不会因重复切换重置。"
@@ -1241,77 +1260,79 @@ export function UserGroupManagement({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <label className="text-xs text-[var(--color-text-muted)] sm:col-span-3">
-                变更理由（必填）
-                <textarea
-                  value={planGroupDialog.reason}
-                  onChange={(event) =>
-                    setPlanGroupDialog((current) =>
-                      current
-                        ? {
-                            ...current,
-                            reason: event.target.value,
-                            preview: undefined,
-                            error: undefined,
-                          }
-                        : current,
-                    )
-                  }
-                  maxLength={500}
-                  rows={2}
-                  disabled={planGroupDialog.busy}
-                  className="mt-1 w-full resize-y rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text)]"
-                  placeholder="例如：客服工单 #1234"
-                />
-              </label>
-              <label className="text-xs text-[var(--color-text-muted)]">
-                有效期开始（可选）
-                <input
-                  type="date"
-                  value={planGroupDialog.validFrom}
-                  onChange={(event) =>
-                    setPlanGroupDialog((current) =>
-                      current
-                        ? {
-                            ...current,
-                            validFrom: event.target.value,
-                            preview: undefined,
-                            error: undefined,
-                          }
-                        : current,
-                    )
-                  }
-                  disabled={planGroupDialog.busy}
-                  className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm"
-                />
-              </label>
-              <label className="text-xs text-[var(--color-text-muted)]">
-                有效期结束（可选）
-                <input
-                  type="date"
-                  value={planGroupDialog.validUntil}
-                  min={planGroupDialog.validFrom || undefined}
-                  onChange={(event) =>
-                    setPlanGroupDialog((current) =>
-                      current
-                        ? {
-                            ...current,
-                            validUntil: event.target.value,
-                            preview: undefined,
-                            error: undefined,
-                          }
-                        : current,
-                    )
-                  }
-                  disabled={planGroupDialog.busy}
-                  className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm"
-                />
-              </label>
-              <p className="self-end text-xs text-[var(--color-text-muted)]">
-                留空表示不修改对应日期。
-              </p>
-            </div>
+            {!planGroupDialog.importedCSV ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <label className="text-xs text-[var(--color-text-muted)] sm:col-span-3">
+                  变更理由（必填）
+                  <textarea
+                    value={planGroupDialog.reason}
+                    onChange={(event) =>
+                      setPlanGroupDialog((current) =>
+                        current
+                          ? {
+                              ...current,
+                              reason: event.target.value,
+                              preview: undefined,
+                              error: undefined,
+                            }
+                          : current,
+                      )
+                    }
+                    maxLength={500}
+                    rows={2}
+                    disabled={planGroupDialog.busy}
+                    className="mt-1 w-full resize-y rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text)]"
+                    placeholder="例如：客服工单 #1234"
+                  />
+                </label>
+                <label className="text-xs text-[var(--color-text-muted)]">
+                  有效期开始（可选）
+                  <input
+                    type="date"
+                    value={planGroupDialog.validFrom}
+                    onChange={(event) =>
+                      setPlanGroupDialog((current) =>
+                        current
+                          ? {
+                              ...current,
+                              validFrom: event.target.value,
+                              preview: undefined,
+                              error: undefined,
+                            }
+                          : current,
+                      )
+                    }
+                    disabled={planGroupDialog.busy}
+                    className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs text-[var(--color-text-muted)]">
+                  有效期结束（可选）
+                  <input
+                    type="date"
+                    value={planGroupDialog.validUntil}
+                    min={planGroupDialog.validFrom || undefined}
+                    onChange={(event) =>
+                      setPlanGroupDialog((current) =>
+                        current
+                          ? {
+                              ...current,
+                              validUntil: event.target.value,
+                              preview: undefined,
+                              error: undefined,
+                            }
+                          : current,
+                      )
+                    }
+                    disabled={planGroupDialog.busy}
+                    className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] px-2 py-2 text-sm"
+                  />
+                </label>
+                <p className="self-end text-xs text-[var(--color-text-muted)]">
+                  留空表示不修改对应日期。
+                </p>
+              </div>
+            ) : null}
             {planGroupDialog.error ? (
               <p
                 role="alert"
@@ -1352,16 +1373,28 @@ export function UserGroupManagement({
                         </p>
                         <p className="text-xs text-[var(--color-text-muted)]">
                           有效期：
-                          {planGroupDialog.validFrom ||
-                          planGroupDialog.clearEmptyDates
-                            ? planGroupDialog.validFrom || "清除开始日期"
-                            : "开始日期不变"}
-                          {" — "}
-                          {planGroupDialog.validUntil ||
-                          planGroupDialog.clearEmptyDates
-                            ? planGroupDialog.validUntil || "清除结束日期"
-                            : "结束日期不变"}
+                          {planGroupDialog.importedCSV
+                            ? `${change.after?.validFrom || "未配置"} — ${change.after?.validUntil || "未配置"}`
+                            : `${planGroupDialog.validFrom || "开始日期不变"} — ${planGroupDialog.validUntil || "结束日期不变"}`}
                         </p>
+                        {change.after?.subscriptionRecord ? (
+                          <p className="text-xs text-[var(--color-text-muted)]">
+                            订阅：
+                            {change.after.subscriptionRecord.subscriptionType ||
+                              "未配置"}{" "}
+                            · 月配额{" "}
+                            {formatQuotaBytes(
+                              change.after.subscriptionRecord.monthlyQuotaBytes,
+                            )}{" "}
+                            · 费用 ¥
+                            {(
+                              change.after.subscriptionRecord.feeMinor / 100
+                            ).toFixed(2)}{" "}
+                            ·{" "}
+                            {change.after.subscriptionRecord.paymentStatus ||
+                              "未配置"}
+                          </p>
+                        ) : null}
                         {isPlanChange ? (
                           <>
                             <p className="text-xs text-[var(--color-text-muted)]">
