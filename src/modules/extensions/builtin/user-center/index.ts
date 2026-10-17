@@ -78,7 +78,7 @@ export const userCenterExtension: DashboardExtension = {
       description: "查看区域入口与 pool 数量",
       icon: Server,
       loader: () => import("./routes/agent"),
-      guard: { requireLogin: true, roles: ["admin"] },
+      guard: { requireLogin: true, roles: ["admin", "operator"] },
       redirect: { unauthenticated: "/login", forbidden: "/panel" },
       sidebar: { section: "admin", order: 9 },
       featureFlag: {

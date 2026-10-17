@@ -1,9 +1,9 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { QuotaCard } from "./AccountPanels";
-import { VlessConnectionCard } from "./AccountPanels";
+import { NodesTable, QuotaCard, VlessConnectionCard } from "./AccountPanels";
+import type { RegionalPool } from "../../lib/regionalPools";
 import type { VlessNode } from "../../lib/vless";
 
 const { toDataURLMock } = vi.hoisted(() => ({
@@ -83,6 +83,7 @@ describe("QuotaCard", () => {
             displayName: "Free",
             packageName: "free",
             maxTrafficBytes: 5 * 1024 * 1024 * 1024,
+            quotaCycle: "natural_month",
             unlimited: false,
             assigned: false,
             source: "local_catalog_default",
@@ -92,7 +93,7 @@ describe("QuotaCard", () => {
     );
 
     expect(
-      screen.getByText("套餐 Free（默认参考） · 最大流量 5 GB / 月"),
+      screen.getByText("套餐 Free（默认参考） · 最大流量 5 GB / 月 · 自然月"),
     ).toBeInTheDocument();
     expect(screen.getByText("未分配 · 5 GB 默认额度参考")).toBeInTheDocument();
     expect(screen.queryByText("0 B / 5 GB")).not.toBeInTheDocument();
@@ -126,7 +127,7 @@ describe("QuotaCard", () => {
     );
 
     expect(
-      screen.getByText("套餐 Plus · 最大流量 20 GB / 月"),
+      screen.getByText("套餐 Plus · 最大流量 20 GB / 月 · 自然月"),
     ).toBeInTheDocument();
     expect(screen.getByText("1 GB / 20 GB")).toBeInTheDocument();
   });
@@ -193,6 +194,47 @@ describe("QuotaCard", () => {
   });
 });
 
+describe("NodesTable resource groups", () => {
+  it("separates shared public pools from team-only pools", () => {
+    const pool = (entry: string): RegionalPool => ({
+      key: entry,
+      code: "tw",
+      shortCode: "TW",
+      zhName: "台湾",
+      enName: "Taiwan",
+      entry,
+      poolCount: 1,
+      openToUsers: false,
+    });
+
+    render(
+      <NodesTable
+        zh
+        pools={[
+          {
+            ...pool("agent-team-selfhost-uat.onwalk.net"),
+            resourceClass: "team",
+            teamId: "alpha",
+          },
+          {
+            ...pool("agent-shared-selfhost-uat.onwalk.net"),
+            resourceClass: "shared",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("shared · Free + Plus")).toBeInTheDocument();
+    expect(screen.getByText("team · Team · alpha")).toBeInTheDocument();
+    expect(
+      screen.getByText("agent-shared-selfhost-uat.onwalk.net"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("agent-team-selfhost-uat.onwalk.net"),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("VlessConnectionCard region selector", () => {
   const regionalNode = (shortCode: string): VlessNode => ({
     name: `${shortCode}-XHTTP`,
@@ -222,9 +264,47 @@ describe("VlessConnectionCard region selector", () => {
     expect(select).toBeInTheDocument();
     expect(
       screen.getAllByRole("option").map((option) => option.textContent),
-    ).toEqual(["HK 区域", "JP 区域", "PH 区域", "US 区域"]);
+    ).toEqual([
+      "HK · hk.entry.example",
+      "JP · jp.entry.example",
+      "PH · ph.entry.example",
+      "US · us.entry.example",
+    ]);
     // The pills and the select are alternatives, never both at once.
     expect(screen.queryByRole("button", { name: "HK 区域" })).toBeNull();
+  });
+
+  it("distinguishes nodes in the same region and updates the selected URI", async () => {
+    const first = regionalNode("JP");
+    const second = { ...first, address: "jp-second.entry.example" };
+    render(
+      <VlessConnectionCard
+        proxyUuid="11111111-1111-4111-8111-111111111111"
+        nodes={[first, second]}
+        zh
+      />,
+    );
+    const select = screen.getByRole("combobox", { name: "选择节点区域" });
+    expect(screen.getByRole("group", { name: "日本" })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent),
+    ).toEqual(["JP · jp-second.entry.example", "JP · jp.entry.example"]);
+    fireEvent.change(select, {
+      target: {
+        value: (
+          screen.getByRole("option", {
+            name: "JP · jp.entry.example",
+          }) as HTMLOptionElement
+        ).value,
+      },
+    });
+    await waitFor(() =>
+      expect(toDataURLMock).toHaveBeenLastCalledWith(
+        expect.stringContaining("@jp.entry.example:443"),
+        expect.anything(),
+      ),
+    );
+    expect(screen.getByText("jp.entry.example")).toBeInTheDocument();
   });
 
   it("keeps pills while the regions still fit on one row", () => {

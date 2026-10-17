@@ -253,25 +253,25 @@ export default function GlobalMeshPage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800 py-4 px-2 sm:px-4 text-center">
             <div className="py-2 px-3 flex flex-col items-center justify-center">
-              <div className="text-2xl md:text-[28px] font-bold tracking-tight">5 大</div>
+              <div className="text-2xl md:text-3xl font-bold tracking-tight">5 大</div>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">核心 VPS 运营商</div>
             </div>
             <div className="py-2 px-3 flex flex-col items-center justify-center">
-              <div className="text-2xl md:text-[28px] font-bold tracking-tight">48 个</div>
+              <div className="text-2xl md:text-3xl font-bold tracking-tight">48 个</div>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">全球实时活跃 PoP</div>
             </div>
             <div className="py-2 px-3 flex flex-col items-center justify-center">
-              <div className="text-2xl md:text-[28px] font-bold tracking-tight text-blue-600 dark:text-blue-400">
+              <div className="text-2xl md:text-3xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
                 {currentRtt}
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">多云最优接入延时</div>
             </div>
             <div className="py-2 px-3 flex flex-col items-center justify-center">
-              <div className="text-2xl md:text-[28px] font-bold tracking-tight">0 端口</div>
+              <div className="text-2xl md:text-3xl font-bold tracking-tight">0 端口</div>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">公网入站暴露 (ZTNA)</div>
             </div>
             <div className="py-2 px-3 flex flex-col items-center justify-center col-span-2 sm:col-span-1">
-              <div className="text-2xl md:text-[28px] font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+              <div className="text-2xl md:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                 100%
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">骨干区域交叉容灾</div>
@@ -311,7 +311,7 @@ export default function GlobalMeshPage() {
         </div>
 
         {showLogs && (
-          <div className="p-3 rounded-xl bg-slate-900 text-emerald-400 font-mono text-[11px] leading-relaxed overflow-x-auto space-y-1 shadow-inner">
+          <div className="p-3 rounded-xl bg-slate-900 text-emerald-400 font-mono text-eyebrow leading-relaxed overflow-x-auto space-y-1 shadow-inner">
             <div className="text-slate-400 border-b border-slate-800 pb-1 flex justify-between">
               <span>[LIVE LOG DUMP] 全球 VPS 节点与 API 实时对账数据流</span>
               <span className="text-emerald-500">STATUS: 200 OK</span>
@@ -365,7 +365,7 @@ export default function GlobalMeshPage() {
           <div className="overflow-x-auto pb-3 pt-2">
             <div className="min-w-[720px]">
               <div className="flex items-start">
-                <div className="w-44 shrink-0 flex flex-col justify-between pr-3 select-none text-[11px] font-medium text-slate-500 h-[140px]">
+                <div className="w-44 shrink-0 flex flex-col justify-between pr-3 select-none text-eyebrow font-medium text-slate-500 h-[140px]">
                   {Y_DIMENSIONS.map((dim) => (
                     <div
                       key={dim.id}
@@ -409,7 +409,7 @@ export default function GlobalMeshPage() {
               </div>
 
               {/* Bottom Axis Labels */}
-              <div className="flex mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 select-none">
+              <div className="flex mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-800 text-eyebrow text-slate-500 select-none">
                 <div className="w-44 shrink-0 font-medium">横轴：VPS 厂商与骨干划分</div>
                 <div className="flex-1 flex justify-between px-1 text-center font-mono">
                   <span className="text-blue-600 dark:text-blue-400 font-semibold">Linode (Akamai)</span>
@@ -565,28 +565,28 @@ export default function GlobalMeshPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-800 text-left">
             <div className="pt-2 md:pt-0 px-3">
-              <span className="text-[11px] text-slate-500 font-medium">加密请求数</span>
+              <span className="text-eyebrow text-slate-500 font-medium">加密请求数</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
                 <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedRequests}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">↗ 28.9%</span>
               </div>
             </div>
             <div className="pt-2 md:pt-0 px-3">
-              <span className="text-[11px] text-slate-500 font-medium">加密请求率</span>
+              <span className="text-eyebrow text-slate-500 font-medium">加密请求率</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
                 <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedRate}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">↗ 2.2%</span>
               </div>
             </div>
             <div className="pt-2 md:pt-0 px-3">
-              <span className="text-[11px] text-slate-500 font-medium">加密带宽</span>
+              <span className="text-eyebrow text-slate-500 font-medium">加密带宽</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
                 <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedBandwidth}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">↗ 9.3%</span>
               </div>
             </div>
             <div className="pt-2 md:pt-0 px-3">
-              <span className="text-[11px] text-slate-500 font-medium">加密带宽率</span>
+              <span className="text-eyebrow text-slate-500 font-medium">加密带宽率</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
                 <span className="text-xl md:text-2xl font-bold">{apiMetrics.encryptedBandwidthRate}</span>
                 <span className="text-xs font-semibold text-rose-500">↘ 1.6%</span>

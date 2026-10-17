@@ -13,14 +13,72 @@ export type RegionalPool = {
   zhName: string;
   enName: string;
   entry: string;
+  resourceClass?: "shared" | "free" | "plus" | "team";
+  teamId?: string;
   poolCount: number;
   openToUsers: boolean;
   closedReasons?: RegionalClosureReason[];
 };
 
+export type RegionalPoolResourceGroup =
+  | NonNullable<RegionalPool["resourceClass"]>
+  | "unknown";
+
+export function regionalPoolResourceGroup(
+  pool: Pick<RegionalPool, "resourceClass">,
+): RegionalPoolResourceGroup {
+  return pool.resourceClass ?? "unknown";
+}
+
+export function groupRegionalPools(
+  pools: RegionalPool[],
+): Array<{
+  group: RegionalPoolResourceGroup;
+  teamId?: string;
+  pools: RegionalPool[];
+}> {
+  const order: RegionalPoolResourceGroup[] = [
+    "shared",
+    "free",
+    "plus",
+    "team",
+    "unknown",
+  ];
+  const groups = new Map<
+    string,
+    { group: RegionalPoolResourceGroup; teamId?: string; pools: RegionalPool[] }
+  >();
+  for (const pool of pools) {
+    const group = regionalPoolResourceGroup(pool);
+    const teamId = group === "team" ? pool.teamId : undefined;
+    const key = `${group}:${teamId ?? ""}`;
+    if (!groups.has(key)) groups.set(key, { group, teamId, pools: [] });
+    groups.get(key)!.pools.push(pool);
+  }
+  return [...groups.values()]
+    .sort(
+      (a, b) =>
+        order.indexOf(a.group) - order.indexOf(b.group) ||
+        (a.teamId ?? "").localeCompare(b.teamId ?? ""),
+    )
+    .map((group) => ({
+      ...group,
+      pools: [...group.pools].sort(
+        (a, b) =>
+          a.code.localeCompare(b.code) || a.entry.localeCompare(b.entry),
+      ),
+    }));
+}
+
 type RegionalPoolReport = Pick<
   RegionalPool,
-  "code" | "entry" | "poolCount" | "openToUsers" | "closedReasons"
+  | "code"
+  | "entry"
+  | "poolCount"
+  | "openToUsers"
+  | "closedReasons"
+  | "resourceClass"
+  | "teamId"
 >;
 
 export function regionalClosureReasonLabel(
@@ -48,7 +106,7 @@ function describePool(report: RegionalPoolReport): RegionalPool {
   };
   return {
     ...report,
-    key: `${report.code}:${report.entry}`,
+    key: `${report.resourceClass ?? "unknown"}:${report.teamId ?? ""}:${report.code}:${report.entry}`,
     shortCode: country,
     zhName: name("zh"),
     enName: name("en"),
@@ -81,6 +139,9 @@ function isRegionalPoolReport(value: unknown): value is RegionalPoolReport {
     Number.isInteger(pool.poolCount) &&
     pool.poolCount > 0 &&
     typeof pool.openToUsers === "boolean" &&
+    (pool.resourceClass === undefined ||
+      ["shared", "free", "plus", "team"].includes(pool.resourceClass)) &&
+    (pool.teamId === undefined || typeof pool.teamId === "string") &&
     (pool.closedReasons === undefined ||
       (Array.isArray(pool.closedReasons) &&
         pool.closedReasons.every((reason) =>

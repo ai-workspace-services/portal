@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchRegionalPools, regionalNodeOptions } from "./regionalPools";
+import {
+  fetchRegionalPools,
+  groupRegionalPools,
+  regionalNodeOptions,
+} from "./regionalPools";
 import type { VlessNode } from "./vless";
 
 const node: VlessNode = {
@@ -17,6 +21,47 @@ const node: VlessNode = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("registered regional pools", () => {
+  it("groups by reported class, separates teams, and never infers class from a hostname", () => {
+    const pool = (
+      entry: string,
+      resourceClass?: "shared" | "free" | "plus" | "team",
+      teamId?: string,
+    ) => ({
+      key: entry + (teamId ?? ""),
+      code: "jp",
+      shortCode: "JP",
+      zhName: "日本",
+      enName: "Japan",
+      entry,
+      poolCount: 1,
+      openToUsers: true,
+      resourceClass,
+      teamId,
+    });
+    const input = [
+      pool("team.example", "team", "b"),
+      pool("z-free.example", "shared"),
+      pool("plus.example", "plus"),
+      pool("team.example", "team", "a"),
+      pool("free.example", "free"),
+      pool("a.example", "shared"),
+      pool("shared.example"),
+    ];
+    const groups = groupRegionalPools(input);
+    expect(groups.map(({ group, teamId }) => [group, teamId])).toEqual([
+      ["shared", undefined],
+      ["free", undefined],
+      ["plus", undefined],
+      ["team", "a"],
+      ["team", "b"],
+      ["unknown", undefined],
+    ]);
+    expect(groups[0].pools.map((pool) => pool.entry)).toEqual([
+      "a.example",
+      "z-free.example",
+    ]);
+    expect(input[0].teamId).toBe("b");
+  });
   it("offers a new reported region without rewriting its transport metadata", () => {
     const options = regionalNodeOptions([node]);
     expect(options).toHaveLength(1);
@@ -59,6 +104,8 @@ describe("registered regional pools", () => {
         {
           code: "de-fra",
           entry: "custom.entry.example",
+          resourceClass: "team",
+          teamId: "alpha",
           poolCount: 3,
           openToUsers: false,
           closedReasons: ["unhealthy", "xray_not_running"],
@@ -69,6 +116,8 @@ describe("registered regional pools", () => {
     expect(await fetchRegionalPools()).toEqual([
       expect.objectContaining({
         code: "de-fra",
+        resourceClass: "team",
+        teamId: "alpha",
         poolCount: 3,
         openToUsers: false,
         closedReasons: ["unhealthy", "xray_not_running"],

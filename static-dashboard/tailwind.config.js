@@ -1,9 +1,11 @@
-import portalTailwindConfig from "../tailwind.config.js"
+import portalTailwindConfig from "../tailwind.config.js";
 
-export default {
+const staticDashboardTailwindConfig = {
   ...portalTailwindConfig,
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "../src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-}
+};
+
+export default staticDashboardTailwindConfig;

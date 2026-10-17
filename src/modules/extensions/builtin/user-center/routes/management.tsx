@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { BarChart3, ShieldCheck, UsersRound, Video } from "lucide-react";
+import { BarChart3, Mail, ShieldCheck, UsersRound, Video } from "lucide-react";
 
 import Card from "../components/Card";
+import EmailManagementPanel from "../management/components/EmailManagementPanel";
+import { emailCopy } from "@/lib/email-preferences";
 import TrendChart, {
   type MetricsSeries,
 } from "../management/components/TrendChart";
@@ -131,7 +133,7 @@ export default function UserCenterManagementRoute() {
     string | undefined
   >();
   const [activeTab, setActiveTab] = useState<
-    "users" | "permissions" | "groups" | "homepage"
+    "users" | "permissions" | "groups" | "homepage" | "email"
   >("users");
 
   const metricsSWR = useSWR<UserMetricsResponse>(
@@ -620,6 +622,9 @@ export default function UserCenterManagementRoute() {
     { id: "permissions" as const, label: "角色与权限", Icon: ShieldCheck },
     { id: "groups" as const, label: "用户组", Icon: BarChart3 },
     { id: "homepage" as const, label: "首页视频配置", Icon: Video },
+    ...(user?.isRoot
+      ? [{ id: "email" as const, label: emailCopy(language).tab, Icon: Mail }]
+      : []),
   ];
 
   return (
@@ -775,6 +780,12 @@ export default function UserCenterManagementRoute() {
             errorMessage={homepageVideoError}
             onSave={handleSaveHomepageVideo}
           />
+        </div>
+      ) : null}
+
+      {activeTab === "email" && user?.isRoot ? (
+        <div className="p-4 sm:p-5">
+          <EmailManagementPanel />
         </div>
       ) : null}
 

@@ -316,13 +316,13 @@ export default function FinOpsRoute() {
                       <h3 className="text-sm font-semibold text-[var(--color-text)]">
                         {provider.provider}
                       </h3>
-                      <p className="text-[11px] text-[var(--color-text-subtle)]">
+                      <p className="text-eyebrow text-[var(--color-text-subtle)]">
                         {provider.account}
                       </p>
                     </div>
                   </div>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${provider.daysLeft <= 30 ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}`}
+                    className={`rounded-full px-2 py-0.5 text-eyebrow font-semibold ${provider.daysLeft <= 30 ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}`}
                   >
                     {provider.daysLeft} 天
                   </span>
@@ -424,13 +424,13 @@ export default function FinOpsRoute() {
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  tick={{ fill: "#64748b", fontSize: "var(--fs-eyebrow)" }}
                   dy={10}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  tick={{ fill: "#64748b", fontSize: "var(--fs-eyebrow)" }}
                   tickFormatter={(value) => `$${value}`}
                 />
                 <Tooltip
@@ -438,7 +438,7 @@ export default function FinOpsRoute() {
                   contentStyle={{
                     borderRadius: 10,
                     border: "1px solid #e2e8f0",
-                    fontSize: 12,
+                    fontSize: "var(--fs-micro)",
                   }}
                   formatter={(value) => [
                     `$${Number(value).toFixed(1)}/day`,
@@ -448,7 +448,7 @@ export default function FinOpsRoute() {
                 <Legend
                   iconType="circle"
                   iconSize={8}
-                  wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                  wrapperStyle={{ fontSize: "var(--fs-micro)", paddingTop: 8 }}
                 />
                 <Area
                   type="monotone"
@@ -576,7 +576,7 @@ export default function FinOpsRoute() {
                   <div className="mt-2 text-xs font-semibold text-[var(--color-text)]">
                     {label as string}
                   </div>
-                  <div className="mt-1 text-[10px] leading-4 text-[var(--color-text-subtle)]">
+                  <div className="mt-1 text-eyebrow leading-4 text-[var(--color-text-subtle)]">
                     {detail as string}
                   </div>
                 </div>

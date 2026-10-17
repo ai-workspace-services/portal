@@ -908,11 +908,11 @@ export default function GlobalMeshMap() {
             >
               <div className="flex items-center justify-between border-b border-slate-700/80 pb-1 mb-1.5">
                 <span className="font-bold text-xs text-white">{tooltip.name}</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30 font-mono">
+                <span className="text-eyebrow px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30 font-mono">
                   {tooltip.popsCount}
                 </span>
               </div>
-              <div className="space-y-1 text-[11px]">
+              <div className="space-y-1 text-eyebrow">
                 <div>
                   <span className="text-slate-400">{activeLayer === "vps" ? "映射运营商:" : "核心服务栈:"}</span>{" "}
                   <span className="text-blue-300 font-semibold">{tooltip.providers}</span>
@@ -925,7 +925,7 @@ export default function GlobalMeshMap() {
                   <span className="text-slate-400">{tooltip.field2Label || "GPU 加速"}:</span>{" "}
                   <span className="text-amber-300 font-medium">{tooltip.field2Value}</span>
                 </div>
-                <div className="text-slate-400 pt-1 border-t border-slate-700/50 flex justify-between text-[10px] font-mono">
+                <div className="text-slate-400 pt-1 border-t border-slate-700/50 flex justify-between text-eyebrow font-mono">
                   <span>实测 RTT: <strong className="text-slate-200">{tooltip.rtt}</strong></span>
                   <span>流量: <strong className="text-slate-200">{tooltip.req}</strong></span>
                 </div>
@@ -937,31 +937,31 @@ export default function GlobalMeshMap() {
           <div className="absolute bottom-2 left-2 z-10 hidden sm:flex items-center gap-1.5 pointer-events-none opacity-90">
             {activeLayer === "vps" ? (
               <>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-white font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-white font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   48+ 核心 PoP
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   512+ vCPU
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   H100/Ada/A100 GPU
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   0 端口暴露 (mTLS)
                 </span>
               </>
             ) : (
               <>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-orange-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-orange-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   300+ Edge PoPs
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-emerald-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   0元出网 (R2)
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-blue-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   Scale-to-Zero (Cloud Run)
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-[10px] backdrop-blur-xs border border-slate-700/50">
+                <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-purple-400 font-mono text-eyebrow backdrop-blur-xs border border-slate-700/50">
                   全栈遥测 (Victoria+ClickHouse)
                 </span>
               </>
@@ -977,7 +977,7 @@ export default function GlobalMeshMap() {
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               5 大核心 VPS 运营商
             </span>
-            <span className="text-[10px] font-mono text-slate-400">悬浮联动地图</span>
+            <span className="text-eyebrow font-mono text-slate-400">悬浮联动地图</span>
           </div>
 
           <div className="space-y-1.5 flex-1 flex flex-col justify-between">
@@ -1003,23 +1003,23 @@ export default function GlobalMeshMap() {
                       <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {vps.name}
                       </span>
-                      <span className="text-[10px] text-slate-400 hidden sm:inline">
+                      <span className="text-eyebrow text-slate-400 hidden sm:inline">
                         {vps.subName}
                       </span>
                     </div>
                     <span
-                      className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full border ${vps.badgeBg}`}
+                      className={`text-eyebrow font-mono px-1.5 py-0.2 rounded-full border ${vps.badgeBg}`}
                     >
                       {vps.tag}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                  <div className="text-eyebrow text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
                     <strong>CPU:</strong> {vps.cpu}
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                  <div className="text-eyebrow text-slate-500 dark:text-slate-400 line-clamp-1">
                     <strong>GPU:</strong> {vps.gpu}
                   </div>
-                  <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium mt-0.5 line-clamp-1">
+                  <div className="text-eyebrow text-blue-600 dark:text-blue-400 font-medium mt-0.5 line-clamp-1">
                     {vps.role} · {vps.regions}
                   </div>
                 </div>
@@ -1259,7 +1259,7 @@ export default function GlobalMeshMap() {
                 <text x="523" y="333" fill="#94a3b8" fontSize="10">• 毫秒级流日志检索 · SLO 告警闭环</text>
               </g>
             </svg>
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 px-2 pt-2 border-t border-slate-800/80 mt-1">
+                <div className="flex items-center justify-between text-eyebrow font-mono text-slate-400 px-2 pt-2 border-t border-slate-800/80 mt-1">
                   <span>SaaS 零信任服务网格拓扑 · 全网 0 端口入站暴露</span>
                   <span className="text-purple-400">Cloudflare R2 0元出网 · WireGuard 虚拟专网</span>
                 </div>
@@ -1272,7 +1272,7 @@ export default function GlobalMeshMap() {
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               5 大云原生 SaaS 基础设施
             </span>
-            <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+            <span className="text-eyebrow font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
               0元出网 · 悬浮联动
             </span>
           </div>
@@ -1306,23 +1306,23 @@ export default function GlobalMeshMap() {
                       <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {saas.name}
                       </span>
-                      <span className="text-[10px] text-slate-400 hidden sm:inline">
+                      <span className="text-eyebrow text-slate-400 hidden sm:inline">
                         {saas.subName}
                       </span>
                     </div>
                     <span
-                      className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full border ${saas.badgeBg}`}
+                      className={`text-eyebrow font-mono px-1.5 py-0.2 rounded-full border ${saas.badgeBg}`}
                     >
                       {saas.tag}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                  <div className="text-eyebrow text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
                     <strong>技术体系:</strong> {saas.techStack}
                   </div>
-                  <div className="mt-0.5 text-[10px] text-purple-600 dark:text-purple-400 font-medium line-clamp-1">
+                  <div className="mt-0.5 text-eyebrow text-purple-600 dark:text-purple-400 font-medium line-clamp-1">
                     <strong>价值配额:</strong> {saas.quota}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">
+                  <div className="text-eyebrow text-slate-400 mt-0.5 line-clamp-1">
                     {saas.role} · {saas.regions}
                   </div>
                 </div>
@@ -1343,7 +1343,7 @@ export default function GlobalMeshMap() {
                       SaaS 零信任四大防御基线
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                  <span className="text-eyebrow font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
                     4-Dimensional Zero-Trust Defense
                   </span>
                 </div>
@@ -1357,11 +1357,11 @@ export default function GlobalMeshMap() {
                         <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                           {item.title}
                         </span>
-                        <span className="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-1.5 py-0.2 rounded border border-purple-500/20">
+                        <span className="text-eyebrow font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-1.5 py-0.2 rounded border border-purple-500/20">
                           {item.metric}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                      <p className="text-eyebrow text-slate-500 leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -1376,12 +1376,12 @@ export default function GlobalMeshMap() {
                     <Zap className="h-3.5 w-3.5 text-amber-500" />
                     {cloudHubCopy.zh.finopsTitle}
                   </span>
-                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
+                  <span className="text-eyebrow font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
                     节约 90%+ 成本
                   </span>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-[11px] text-left border-collapse">
+                  <table className="w-full text-eyebrow text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-100/60 dark:bg-slate-800/30 text-slate-500 font-mono border-b border-slate-200 dark:border-slate-800">
                         <th className="py-2 px-3 font-semibold">基础设施层级与能力</th>
@@ -1477,7 +1477,7 @@ export default function GlobalMeshMap() {
                 B/S 现代浏览器流 (Next.js · WASM)
               </button>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2 text-eyebrow font-mono text-emerald-600 dark:text-emerald-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               端到端 5 层矢量拓扑 · 0 端口入站暴露
             </div>
@@ -1599,7 +1599,7 @@ export default function GlobalMeshMap() {
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               5 层架构能力与端到端权限管控
             </span>
-            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            <span className="text-eyebrow font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
               0 端口暴露 · 动态验签
             </span>
           </div>
@@ -1625,21 +1625,21 @@ export default function GlobalMeshMap() {
                         className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: tier.color }}
                       />
-                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                      <span className="text-eyebrow font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                         {tier.level}
                       </span>
                       <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {tier.name}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
+                    <span className="text-eyebrow font-mono px-1.5 py-0.2 rounded-full border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5">
                       {tier.badge}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-mono line-clamp-1">
+                  <div className="text-eyebrow text-slate-500 dark:text-slate-400 mt-1 font-mono line-clamp-1">
                     {tier.keyTech}
                   </div>
-                  <div className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                  <div className="mt-0.5 text-eyebrow text-slate-600 dark:text-slate-300 flex items-center gap-1">
                     <Lock className="h-3 w-3 text-emerald-500 shrink-0" />
                     <span className="line-clamp-1 font-medium">{tier.authMechanism}</span>
                   </div>
@@ -1659,7 +1659,7 @@ export default function GlobalMeshMap() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800/60 gap-1.5">
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${layer.badgeColor}`}>
+                    <span className={`px-2 py-0.5 rounded-md text-eyebrow font-mono font-bold border ${layer.badgeColor}`}>
                       {layer.level}
                     </span>
                     <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -1688,7 +1688,7 @@ export default function GlobalMeshMap() {
                           <Laptop className="h-3.5 w-3.5" />
                           {layer.csDetails.title}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-eyebrow font-mono text-slate-400">
                           {layer.csDetails.env}
                         </span>
                       </div>
@@ -1700,10 +1700,10 @@ export default function GlobalMeshMap() {
                           </li>
                         ))}
                       </ul>
-                      <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                      <div className="text-eyebrow font-mono text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                         <strong>数据流向:</strong> {layer.csDetails.flow}
                       </div>
-                      <div className="mt-1.5 p-1.5 rounded bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200/50 dark:border-blue-900/50 text-[10.5px] text-blue-700 dark:text-blue-300 flex items-start gap-1.5">
+                      <div className="mt-1.5 p-1.5 rounded bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200/50 dark:border-blue-900/50 text-eyebrow text-blue-700 dark:text-blue-300 flex items-start gap-1.5">
                         <Lock className="h-3 w-3 shrink-0 mt-0.5" />
                         <span><strong>安全与权限:</strong> {layer.csDetails.auth}</span>
                       </div>
@@ -1721,7 +1721,7 @@ export default function GlobalMeshMap() {
                           <Monitor className="h-3.5 w-3.5" />
                           {layer.bsDetails.title}
                         </span>
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-eyebrow font-mono text-slate-400">
                           {layer.bsDetails.env}
                         </span>
                       </div>
@@ -1733,10 +1733,10 @@ export default function GlobalMeshMap() {
                           </li>
                         ))}
                       </ul>
-                      <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                      <div className="text-eyebrow font-mono text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                         <strong>数据流向:</strong> {layer.bsDetails.flow}
                       </div>
-                      <div className="mt-1.5 p-1.5 rounded bg-cyan-50/50 dark:bg-cyan-950/40 border border-cyan-200/50 dark:border-cyan-900/50 text-[10.5px] text-cyan-700 dark:text-cyan-300 flex items-start gap-1.5">
+                      <div className="mt-1.5 p-1.5 rounded bg-cyan-50/50 dark:bg-cyan-950/40 border border-cyan-200/50 dark:border-cyan-900/50 text-eyebrow text-cyan-700 dark:text-cyan-300 flex items-start gap-1.5">
                         <Lock className="h-3 w-3 shrink-0 mt-0.5" />
                         <span><strong>安全与权限:</strong> {layer.bsDetails.auth}</span>
                       </div>
@@ -1755,14 +1755,14 @@ export default function GlobalMeshMap() {
                           <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                             {comp.label}
                           </span>
-                          <p className="text-[11px] text-slate-500 leading-snug">
+                          <p className="text-eyebrow text-slate-500 leading-snug">
                             {comp.desc}
                           </p>
                         </div>
                       ))}
                     </div>
                     {layer.sharedDetails.authControl && (
-                      <div className="p-2 rounded bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
+                      <div className="p-2 rounded bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-eyebrow text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
                         <span><strong>鉴权与访问控制机制:</strong> {layer.sharedDetails.authControl}</span>
                       </div>
@@ -1780,12 +1780,12 @@ export default function GlobalMeshMap() {
                 <Workflow className="h-3.5 w-3.5 text-blue-500" />
                 C/S 原生多端 vs B/S 现代浏览器：6 维深度架构差异与协同全景
               </span>
-              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 font-bold">
+              <span className="text-eyebrow font-mono text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 font-bold">
                 深度对比
               </span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-[11px] text-left border-collapse">
+              <table className="w-full text-eyebrow text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-100/60 dark:bg-slate-800/30 text-slate-500 font-mono border-b border-slate-200 dark:border-slate-800">
                     <th className="py-2 px-3 font-semibold">架构对比维度</th>
@@ -1991,12 +1991,12 @@ export default function GlobalMeshMap() {
                         <span className="text-xs font-bold text-slate-900 dark:text-slate-100 mr-2">
                           {activeNode.label} ({activeNode.sub})
                         </span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                        <span className="text-eyebrow font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                           {activeNode.tag}
                         </span>
                       </div>
                     </div>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug flex-1 sm:text-right">
+                    <p className="text-eyebrow text-slate-600 dark:text-slate-300 leading-snug flex-1 sm:text-right">
                       {activeNode.description}
                     </p>
                   </div>
@@ -2010,7 +2010,7 @@ export default function GlobalMeshMap() {
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               7 维 IT 演进与发布门禁规范
             </span>
-            <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+            <span className="text-eyebrow font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
               Trunk-Based · 0 生产兜底
             </span>
           </div>
@@ -2034,21 +2034,21 @@ export default function GlobalMeshMap() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-4 h-4 rounded-full bg-indigo-600/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">
+                      <span className="w-4 h-4 rounded-full bg-indigo-600/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 text-eyebrow font-mono font-bold flex items-center justify-center shrink-0 border border-indigo-500/20">
                         {stg.no}
                       </span>
                       <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {stg.name}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500/5">
+                    <span className="text-eyebrow font-mono px-1.5 py-0.2 rounded-full border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500/5">
                       {stg.badge}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                  <div className="text-eyebrow text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
                     <strong>规范:</strong> {stg.standard}
                   </div>
-                  <div className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                  <div className="mt-0.5 text-eyebrow text-slate-600 dark:text-slate-300 flex items-center justify-between">
                     <span className="font-mono text-indigo-600 dark:text-indigo-400 truncate mr-2">
                       {stg.branchRule}
                     </span>
@@ -2083,7 +2083,7 @@ export default function GlobalMeshMap() {
                   >
                     {stg.name}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400 truncate max-w-full">
+                  <span className="text-eyebrow font-mono text-slate-400 truncate max-w-full">
                     {stg.enName}
                   </span>
                 </button>
@@ -2105,7 +2105,7 @@ export default function GlobalMeshMap() {
                         <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
                           {stage.name} · {stage.enName}
                         </h4>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                        <span className="px-2 py-0.5 rounded-full text-eyebrow font-mono font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                           {stage.badge}
                         </span>
                       </div>
@@ -2128,7 +2128,7 @@ export default function GlobalMeshMap() {
                               {opt.title}
                             </span>
                             <span
-                              className={`text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded border ${
+                              className={`text-eyebrow font-mono font-semibold px-1.5 py-0.2 rounded border ${
                                 opt.typeTone === "blue"
                                   ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
                                   : opt.typeTone === "emerald"
@@ -2139,11 +2139,11 @@ export default function GlobalMeshMap() {
                               {opt.type}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                          <p className="text-eyebrow text-slate-500 leading-relaxed">
                             {opt.description}
                           </p>
                         </div>
-                        <div className="space-y-1 pt-2 border-t border-slate-100 dark:border-slate-800 text-[10.5px]">
+                        <div className="space-y-1 pt-2 border-t border-slate-100 dark:border-slate-800 text-eyebrow">
                           <div className="text-slate-600 dark:text-slate-400 font-sans">
                             <strong className="text-slate-800 dark:text-slate-200">核心优势:</strong> {opt.pros}
                           </div>
@@ -2161,7 +2161,7 @@ export default function GlobalMeshMap() {
                       <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                         {stage.meshValue.title}
                       </span>
-                      <p className="text-[11px] text-indigo-900/80 dark:text-indigo-200/80">
+                      <p className="text-eyebrow text-indigo-900/80 dark:text-indigo-200/80">
                         {stage.meshValue.desc}
                       </p>
                     </div>
@@ -2174,7 +2174,7 @@ export default function GlobalMeshMap() {
                   <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
                     {stage.metrics.map((m, mIdx) => (
                       <div key={mIdx} className="text-center p-1.5 rounded bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-                        <span className="text-[10px] text-slate-400 block">{m.label}</span>
+                        <span className="text-eyebrow text-slate-400 block">{m.label}</span>
                         <span className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">{m.value}</span>
                       </div>
                     ))}
@@ -2188,12 +2188,12 @@ export default function GlobalMeshMap() {
                       <Zap className="h-3.5 w-3.5 text-amber-500" />
                       {cloudHubCopy.zh.finopsTitle}
                     </span>
-                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
+                    <span className="text-eyebrow font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
                       节约 90%+ 成本
                     </span>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-[11px] text-left border-collapse">
+                    <table className="w-full text-eyebrow text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-100/60 dark:bg-slate-800/30 text-slate-500 font-mono border-b border-slate-200 dark:border-slate-800">
                           <th className="py-2 px-3 font-semibold">基础设施层级与能力</th>

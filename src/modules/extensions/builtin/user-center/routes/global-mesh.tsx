@@ -234,11 +234,11 @@ export default function UserCenterGlobalMeshRoute() {
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                   {item.name}
                 </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+                <span className="text-eyebrow px-1.5 py-0.2 rounded font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
                   {item.tag}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-eyebrow text-slate-500 dark:text-slate-400 truncate">
                 {item.status}
               </p>
             </div>
@@ -298,14 +298,14 @@ export default function UserCenterGlobalMeshRoute() {
                         {provider.name}
                       </span>
                     </div>
-                    <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                    <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 text-eyebrow font-medium text-emerald-700 dark:text-emerald-400">
                       {provider.rtt}
                     </span>
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     {provider.pops}
                   </div>
-                  <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <p className="text-eyebrow leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
                     {provider.specs}
                   </p>
                 </div>
@@ -322,14 +322,14 @@ export default function UserCenterGlobalMeshRoute() {
                         {saas.name}
                       </span>
                     </div>
-                    <span className="rounded-md bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 dark:text-purple-400">
+                    <span className="rounded-md bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 text-eyebrow font-medium text-purple-700 dark:text-purple-400">
                       {saas.rtt}
                     </span>
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     {saas.pops}
                   </div>
-                  <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <p className="text-eyebrow leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-2">
                     {saas.specs}
                   </p>
                 </div>

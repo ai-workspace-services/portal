@@ -1,5 +1,7 @@
 'use client'
 
+import BoundaryLink from '@/components/common/BoundaryLink'
+
 import React, { useState, useEffect } from 'react'
 import {
   Activity,
@@ -100,9 +102,9 @@ export default function UserCenterAiAggregatorRoute() {
     <div className="space-y-6">
       {/* ── 面板导航面包屑 ── */}
       <nav className="flex items-center gap-2 text-xs text-slate-500">
-        <a href="/panel" className="hover:text-slate-800 transition">
+        <BoundaryLink href="/panel" className="hover:text-slate-800 transition">
           控制台
-        </a>
+        </BoundaryLink>
         <ChevronRight className="h-3.5 w-3.5" />
         <span className="font-medium text-slate-900">AI Aggregator 控制面</span>
       </nav>
@@ -220,7 +222,7 @@ export default function UserCenterAiAggregatorRoute() {
               <div className="mt-5 space-y-3">
                 <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 text-xs">
                   <span className="font-semibold text-slate-700">部署与编排链路</span>
-                  <p className="mt-1 font-mono text-[11px] text-slate-600">
+                  <p className="mt-1 font-mono text-eyebrow text-slate-600">
                     platform-ops-toolkit/.github/workflows/ai-aggregator-v1.yml
                   </p>
                 </div>
@@ -267,7 +269,7 @@ export default function UserCenterAiAggregatorRoute() {
               <div className="mt-5 space-y-3">
                 <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 text-xs">
                   <span className="font-semibold text-slate-700">Ansible 编排剧本</span>
-                  <p className="mt-1 font-mono text-[11px] text-slate-600">
+                  <p className="mt-1 font-mono text-eyebrow text-slate-600">
                     playbooks/deploy_ai_desktop.yml (group: ai_aggregator_cpa)
                   </p>
                 </div>
@@ -326,7 +328,7 @@ export default function UserCenterAiAggregatorRoute() {
                       <span className="h-2 w-2 rounded-full bg-emerald-500" />
                       <span className="font-bold text-sm text-slate-900">{node.name}</span>
                     </div>
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-eyebrow font-semibold text-slate-600">
                       {node.provider}
                     </span>
                   </div>
@@ -355,7 +357,7 @@ export default function UserCenterAiAggregatorRoute() {
                   {node.models.map((m) => (
                     <span
                       key={m}
-                      className="rounded bg-slate-50 border border-slate-200 px-1.5 py-0.5 text-[10px] font-mono text-slate-600"
+                      className="rounded bg-slate-50 border border-slate-200 px-1.5 py-0.5 text-eyebrow font-mono text-slate-600"
                     >
                       {m}
                     </span>
@@ -406,7 +408,7 @@ export default function UserCenterAiAggregatorRoute() {
                 <span>OpenAI / Cursor 配置示例</span>
                 <Terminal className="h-4 w-4" />
               </div>
-              <pre className="mt-4 overflow-x-auto text-[11px] leading-relaxed text-slate-300">
+              <pre className="mt-4 overflow-x-auto text-eyebrow leading-relaxed text-slate-300">
 {`export OPENAI_BASE_URL="https://${currentHost}/v1"
 export OPENAI_API_KEY="sk-aggregator-token"
 
@@ -424,7 +426,7 @@ client = OpenAI(
                 <span>Claude CodeAgent / CPA 直连示例</span>
                 <Terminal className="h-4 w-4" />
               </div>
-              <pre className="mt-4 overflow-x-auto text-[11px] leading-relaxed text-slate-300">
+              <pre className="mt-4 overflow-x-auto text-eyebrow leading-relaxed text-slate-300">
 {`export ANTHROPIC_BASE_URL="https://${currentHost}"
 export ANTHROPIC_API_KEY="sk-aggregator-token"
 

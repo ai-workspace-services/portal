@@ -81,6 +81,33 @@ const runtimeConfigCache = new Map<string, RuntimeConfig>()
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
 
+function runtimeEndpointOverrides(): Record<string, string> {
+  const fields: Record<string, string | undefined> = {
+    apiBaseUrl: process.env.RUNTIME_API_BASE_URL,
+    authUrl: process.env.RUNTIME_AUTH_URL,
+    dashboardUrl: process.env.RUNTIME_DASHBOARD_URL,
+    docsServiceUrl: process.env.RUNTIME_DOCS_SERVICE_URL,
+    xconnectZeroUrl: process.env.RUNTIME_XCONNECT_ZERO_URL,
+  }
+  return Object.fromEntries(
+    Object.entries(fields)
+      .filter((entry): entry is [string, string] => Boolean(entry[1]?.trim()))
+      .map(([key, value]) => {
+        const trimmed = value.trim()
+        let endpoint: URL
+        try {
+          endpoint = new URL(trimmed)
+        } catch {
+          throw new Error(`Invalid deployment service endpoint: ${key}`)
+        }
+        if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) {
+          throw new Error(`Invalid deployment service endpoint: ${key}`)
+        }
+        return [key, trimmed]
+      }),
+  )
+}
+
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -463,7 +490,8 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
   const { hostname, detectedBy: hostnameDetectedBy } = detectHostname(options?.hostname)
   const { environment, region, detectedBy: envDetectedBy } = readRuntimeEnvSettings(hostname)
 
-  const cacheKey = buildCacheKey(hostname, environment, region)
+  const endpointOverrides = runtimeEndpointOverrides()
+  const cacheKey = `${buildCacheKey(hostname, environment, region)}|${JSON.stringify(endpointOverrides)}`
   const cached = runtimeConfigCache.get(cacheKey)
   if (cached) {
     return cached
@@ -483,29 +511,10 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
     ? `${envDetectedBy}|hostname:${hostnameDetectedBy}`
     : envDetectedBy
 
-  // Deployment-owned endpoints override embedded environment defaults. This
-  // lets an immutable image serve an isolated stack without inheriting the
-  // production Serverless service map.
-  const endpointOverrides: Record<string, string> = {}
-  const endpointEnv = {
-    apiBaseUrl: 'RUNTIME_API_BASE_URL',
-    authUrl: 'RUNTIME_AUTH_URL',
-    dashboardUrl: 'RUNTIME_DASHBOARD_URL',
-    docsServiceUrl: 'RUNTIME_DOCS_SERVICE_URL',
-    xconnectZeroUrl: 'RUNTIME_XCONNECT_ZERO_URL',
-  }
-  for (const [key, envName] of Object.entries(endpointEnv)) {
-    const value = process.env[envName]?.trim()
-    if (!value) continue
-    const endpoint = new URL(value)
-    if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) {
-      throw new Error(`Invalid deployment service endpoint: ${envName}`)
-    }
-    endpointOverrides[key] = value
-  }
-
   const result: RuntimeConfig = {
     ...(finalConfig as RuntimeConfig),
+    // Deployment-owned endpoints take precedence even when a stable public
+    // hostname does not contain an environment or Selfhost marker.
     ...endpointOverrides,
     environment,
     region,

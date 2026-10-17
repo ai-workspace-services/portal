@@ -164,7 +164,7 @@ export function TaskCoordinationHub() {
             <Pin className="size-3.5" />
             置顶任务
             <span className={cn(
-              "ml-1 rounded-full px-1.5 py-0.2 text-[10px]",
+              "ml-1 rounded-full px-1.5 py-0.2 text-eyebrow",
               activeTab === "pinned" ? "bg-white/20 text-white" : "bg-[#edf1f6] text-[#7b8494]"
             )}>
               {pinnedTasks.length}
@@ -184,7 +184,7 @@ export function TaskCoordinationHub() {
             <FolderGit2 className="size-3.5" />
             共享工程
             <span className={cn(
-              "ml-1 rounded-full px-1.5 py-0.2 text-[10px]",
+              "ml-1 rounded-full px-1.5 py-0.2 text-eyebrow",
               activeTab === "projects" ? "bg-white/20 text-white" : "bg-[#edf1f6] text-[#7b8494]"
             )}>
               {sharedProjects.length}
@@ -204,7 +204,7 @@ export function TaskCoordinationHub() {
             <Lock className="size-3.5" />
             独占资源锁
             <span className={cn(
-              "ml-1 rounded-full px-1.5 py-0.2 text-[10px]",
+              "ml-1 rounded-full px-1.5 py-0.2 text-eyebrow",
               activeTab === "claims" ? "bg-white/20 text-white" : "bg-[#edf1f6] text-[#7b8494]"
             )}>
               {activeClaims.length}
@@ -245,7 +245,7 @@ export function TaskCoordinationHub() {
                     className="group flex items-start justify-between gap-4 rounded-xl border border-[#e4e8ef] bg-white p-3.5 shadow-xs transition hover:border-[#1260cc]/40 hover:shadow-sm"
                   >
                     <div className="flex min-w-0 items-start space-x-3">
-                      <span className="grid size-6 shrink-0 place-items-center rounded-lg border border-[#e4e8ef] bg-[#f8fafc] font-mono text-[11px] font-bold text-[#697386]">
+                      <span className="grid size-6 shrink-0 place-items-center rounded-lg border border-[#e4e8ef] bg-[#f8fafc] font-mono text-eyebrow font-bold text-[#697386]">
                         {idx + 1}
                       </span>
                       <div className="min-w-0">
@@ -254,16 +254,16 @@ export function TaskCoordinationHub() {
                             {task.title}
                           </span>
                           {task.projectName ? (
-                            <span className="rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[11px] font-medium text-[#075ecc]">
+                            <span className="rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-eyebrow font-medium text-[#075ecc]">
                               {task.projectName}
                             </span>
                           ) : (
-                            <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                            <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-eyebrow font-medium text-amber-700">
                               会话任务
                             </span>
                           )}
                           {task.gitBranch && (
-                            <span className="inline-flex items-center gap-1 rounded-md border border-[#e4e8ef] bg-[#f8fafc] px-2 py-0.5 font-mono text-[11px] text-[#697386]">
+                            <span className="inline-flex items-center gap-1 rounded-md border border-[#e4e8ef] bg-[#f8fafc] px-2 py-0.5 font-mono text-eyebrow text-[#697386]">
                               <GitBranch className="size-3" />
                               {task.gitBranch}
                             </span>
@@ -300,7 +300,7 @@ export function TaskCoordinationHub() {
                           </>
                         )}
                       </button>
-                      <span className="rounded bg-[#f0f3f7] px-2 py-0.5 font-mono text-[10px] text-[#7b8494]">
+                      <span className="rounded bg-[#f0f3f7] px-2 py-0.5 font-mono text-eyebrow text-[#7b8494]">
                         Codex
                       </span>
                     </div>
@@ -342,7 +342,7 @@ export function TaskCoordinationHub() {
                             <span
                               key={s}
                               className={cn(
-                                "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
+                                "rounded px-1.5 py-0.5 text-eyebrow font-semibold uppercase",
                                 s === "claude"
                                   ? "bg-amber-100 text-amber-800"
                                   : s === "codex"
@@ -414,7 +414,7 @@ export function TaskCoordinationHub() {
                       <span className="font-mono font-bold text-amber-900">{claim.resource}</span>
                       {claim.intent && <span className="text-amber-800">“{claim.intent}”</span>}
                     </div>
-                    <div className="flex items-center space-x-2 font-mono text-[11px] text-amber-700">
+                    <div className="flex items-center space-x-2 font-mono text-eyebrow text-amber-700">
                       <span>持有者: {claim.agentKind} ({claim.agentId})</span>
                       <span>·</span>
                       <span>到期: {claim.expiresAt}</span>

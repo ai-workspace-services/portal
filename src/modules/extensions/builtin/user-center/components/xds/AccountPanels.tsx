@@ -43,9 +43,11 @@ import {
 } from "@/components/ui/xds";
 import { buildVlessUri, type VlessNode } from "../../lib/vless";
 import {
+  groupRegionalPools,
   regionalClosureReasonLabel,
   regionalNodeOptions,
   type RegionalPool,
+  type RegionalPoolResourceGroup,
 } from "../../lib/regionalPools";
 import type {
   AccountPolicy,
@@ -55,6 +57,17 @@ import type {
 const DASH = "—";
 // Region pills stay on one row up to this many; beyond it the panel uses a select.
 const REGION_PILL_LIMIT = 3;
+
+function regionalResourceGroupLabel(group: RegionalPoolResourceGroup): string {
+  const labels: Record<RegionalPoolResourceGroup, string> = {
+    shared: "shared · Free + Plus",
+    free: "free · Free",
+    plus: "plus · Plus",
+    team: "team · Team",
+    unknown: DASH,
+  };
+  return labels[group];
+}
 
 function pct(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -351,7 +364,19 @@ export function VlessConnectionCard({
   // The pill row fits three regions on one line at the panel's width. A fourth
   // wraps onto a line of its own and reads as a stray control rather than part
   // of the group, so hand the choice to the select from four regions up.
-  const useCompactRegionSelect = regionOptions.length > REGION_PILL_LIMIT;
+  const useCompactRegionSelect =
+    regionOptions.length > REGION_PILL_LIMIT ||
+    new Set(regionOptions.map(({ pool }) => pool.code)).size <
+      regionOptions.length;
+  const regionGroups = useMemo(() => {
+    const groups = new Map<string, typeof regionOptions>();
+    for (const option of regionOptions) {
+      const group = groups.get(option.pool.code) ?? [];
+      group.push(option);
+      groups.set(option.pool.code, group);
+    }
+    return [...groups.values()];
+  }, [regionOptions]);
   const node = useMemo(() => {
     return (
       regionOptions.find(({ pool }) => pool.key === selectedRegionCode)?.node ??
@@ -436,10 +461,17 @@ export function VlessConnectionCard({
               value={selectedRegionCode ?? ""}
               onChange={(event) => setSelectedRegionCode(event.target.value)}
             >
-              {regionOptions.map((option) => (
-                <option key={option.pool.key} value={option.pool.key}>
-                  {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
-                </option>
+              {regionGroups.map((options) => (
+                <optgroup
+                  key={options[0].pool.code}
+                  label={zh ? options[0].pool.zhName : options[0].pool.enName}
+                >
+                  {options.map((option) => (
+                    <option key={option.pool.key} value={option.pool.key}>
+                      {`${option.pool.shortCode} · ${option.pool.entry}`}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           ) : (
@@ -460,6 +492,11 @@ export function VlessConnectionCard({
               })}
             </div>
           )}
+        </div>
+      ) : null}
+      {node ? (
+        <div className="xds-vless-selected-node" title={node.address}>
+          <code>{node.address}</code>
         </div>
       ) : null}
       <div className="xds-qr">
@@ -593,6 +630,8 @@ export function QuotaCard({
   const planName =
     assignedPlan?.displayName || defaultPlan?.displayName || "default";
   const isAssigned = Boolean(assignedPlan);
+  const isNaturalMonth =
+    (assignedPlan ?? defaultPlan)?.quotaCycle === "natural_month";
   const isUnlimited = assignedPlan?.unlimited === true;
   const planMaxQuota = currentPlanMaxQuota(usage);
   const quotaExhausted = usage?.quotaExhausted === true;
@@ -636,6 +675,7 @@ export function QuotaCard({
                 : "Unlimited"
               : bytesOrDash(planMaxQuota)}
             {zh ? " / 月" : " / month"}
+            {isNaturalMonth ? (zh ? " · 自然月" : " · Calendar month") : null}
           </XdsBadge>
         }
       />
@@ -845,6 +885,8 @@ export function NodesTable({
   isLoading?: boolean;
   error?: Error;
 }) {
+  const groupedPools = groupRegionalPools(pools);
+
   return (
     <XdsCard id="xds-nodes">
       <XdsCardHead
@@ -892,41 +934,56 @@ export function NodesTable({
                 </td>
               </tr>
             )}
-            {pools.map((pool) => (
-              <tr key={pool.key}>
-                <td style={{ fontWeight: 500 }}>
-                  {zh ? pool.zhName : pool.enName}
-                </td>
-                <td className="xds-t-mono xds-subtle">{pool.code}</td>
-                <td className="xds-t-mono xds-subtle">{pool.entry}</td>
-                <td>
-                  <XdsBadge tone={pool.openToUsers ? "success" : "neutral"}>
-                    {pool.openToUsers
-                      ? zh
-                        ? "已开放"
-                        : "Open"
-                      : zh
-                        ? "未开放"
-                        : "Closed"}
-                  </XdsBadge>
-                </td>
-                <td className="xds-subtle">
-                  {pool.openToUsers
-                    ? DASH
-                    : pool.closedReasons?.length
-                      ? pool.closedReasons
-                          .map((reason) =>
-                            regionalClosureReasonLabel(reason, zh),
-                          )
-                          .join("；")
-                      : zh
-                        ? "服务端未提供原因"
-                        : "Reason not provided by server"}
-                </td>
-                <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
-              </tr>
-            ))}
           </tbody>
+          {groupedPools.map(({ group, teamId, pools: groupPools }) => (
+            <tbody key={`${group}:${teamId ?? ""}`}>
+              <tr key={`group-${group}`}>
+                <th
+                  scope="rowgroup"
+                  colSpan={6}
+                  className="xds-subtle"
+                  style={{ textAlign: "left" }}
+                >
+                  {regionalResourceGroupLabel(group)}
+                  {teamId ? ` · ${teamId}` : ""}
+                </th>
+              </tr>
+              {groupPools.map((pool) => (
+                <tr key={pool.key}>
+                  <td style={{ fontWeight: 500 }}>
+                    {zh ? pool.zhName : pool.enName}
+                  </td>
+                  <td className="xds-t-mono xds-subtle">{pool.code}</td>
+                  <td className="xds-t-mono xds-subtle">{pool.entry}</td>
+                  <td>
+                    <XdsBadge tone={pool.openToUsers ? "success" : "neutral"}>
+                      {pool.openToUsers
+                        ? zh
+                          ? "已开放"
+                          : "Open"
+                        : zh
+                          ? "未开放"
+                          : "Closed"}
+                    </XdsBadge>
+                  </td>
+                  <td className="xds-subtle">
+                    {pool.openToUsers
+                      ? DASH
+                      : pool.closedReasons?.length
+                        ? pool.closedReasons
+                            .map((reason) =>
+                              regionalClosureReasonLabel(reason, zh),
+                            )
+                            .join("；")
+                        : zh
+                          ? "服务端未提供原因"
+                          : "Reason not provided by server"}
+                  </td>
+                  <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          ))}
         </table>
       </div>
 
