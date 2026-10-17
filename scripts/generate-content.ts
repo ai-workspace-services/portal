@@ -176,7 +176,30 @@ async function generateReferralContent() {
   );
 }
 
+async function generateEmailPreferencesContent() {
+  const locales = ["zh", "en"] as const;
+  const generatedPath = path.join(OUTPUT_ROOT, "email-preferences.json");
+  const files = locales.map((locale) => path.join(CONTENT_ROOT, "account", "email-preferences", `${locale}.json`));
+  const exists = await Promise.all(files.map((file) => fs.access(file).then(() => true).catch(() => false)));
+  if (!exists.some(Boolean)) {
+    const generated = JSON.parse(await fs.readFile(generatedPath, "utf8"));
+    if (!generated.zh?.tab || !generated.en?.tab) throw new Error("Missing reviewed email preferences content");
+    console.log("Email preferences source not present; retaining reviewed generated artifact.");
+    return;
+  }
+  if (!exists.every(Boolean)) throw new Error("Email preferences requires both locales");
+  const values = await Promise.all(files.map(async (file) => JSON.parse(await fs.readFile(file, "utf8")) as Record<string, string>));
+  const keys = Object.keys(values[0]).sort().join(",");
+  for (const value of values) {
+    if (Object.keys(value).sort().join(",") !== keys || Object.values(value).some((text) => typeof text !== "string" || !text.trim())) throw new Error("Invalid email preferences content");
+  }
+  await fs.mkdir(OUTPUT_ROOT, { recursive: true });
+  await fs.writeFile(generatedPath, JSON.stringify(Object.fromEntries(locales.map((locale, i) => [locale, values[i]])), null, 2) + "\n");
+}
+
 async function main() {
+  if (process.argv.includes("--account=email-preferences")) { await generateEmailPreferencesContent(); return; }
+  await generateEmailPreferencesContent();
   if (process.argv.includes("--campaign=referral")) { await generateReferralContent(); return; }
   // A scoped refresh must not overwrite unrelated locally edited products.
   if (process.argv.includes('--product=xconnect')) {

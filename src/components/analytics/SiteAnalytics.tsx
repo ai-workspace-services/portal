@@ -1,4 +1,5 @@
 import Script from "next/script";
+import EmailPrivacyBoundary from "./EmailPrivacyBoundary";
 
 import VercelWebAnalytics from "@/components/analytics/VercelWebAnalytics";
 import { resolveSiteAnalytics } from "@/lib/siteAnalytics";
@@ -12,7 +13,7 @@ export function SiteAnalyticsScripts() {
   const analytics = resolveSiteAnalytics();
 
   return (
-    <>
+    <EmailPrivacyBoundary>
       {analytics.googleId ? (
         <>
           <Script
@@ -37,8 +38,7 @@ export function SiteAnalyticsScripts() {
           strategy="afterInteractive"
         />
       ) : null}
-
-    </>
+    </EmailPrivacyBoundary>
   );
 }
 
@@ -46,5 +46,9 @@ export function SiteAnalyticsScripts() {
 export function SiteAnalyticsBody() {
   const analytics = resolveSiteAnalytics();
 
-  return analytics.vercel ? <VercelWebAnalytics /> : null;
+  return analytics.vercel ? (
+    <EmailPrivacyBoundary>
+      <VercelWebAnalytics />
+    </EmailPrivacyBoundary>
+  ) : null;
 }
