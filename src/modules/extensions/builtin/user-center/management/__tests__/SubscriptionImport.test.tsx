@@ -5,6 +5,26 @@ import UserGroupManagement from "../components/UserGroupManagement";
 import { BillingFacts } from "../components/SubscriptionDetails";
 
 describe("subscription management", () => {
+  it("counts persisted Free quota assignments without requiring a manual segment label", () => {
+    render(
+      <UserGroupManagement
+        users={[
+          {
+            id: "free-quota",
+            email: "free-quota@example.invalid",
+            groups: ["User", "segment:quota:free-3gb"],
+          },
+        ]}
+        canEditRoles={false}
+      />,
+    );
+    expect(screen.getByRole("button", { name: /Free 用户/ })).toHaveTextContent(
+      "1",
+    );
+    expect(
+      screen.getAllByText("free-quota@example.invalid").length,
+    ).toBeGreaterThan(0);
+  });
   it("derives annual membership from persisted subscription facts and restores only the temporary marker", async () => {
     const groups = [
       "User",
@@ -43,7 +63,9 @@ describe("subscription management", () => {
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: /年付/ }));
-    expect(screen.getAllByText("annual@example.invalid").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("annual@example.invalid").length,
+    ).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: /撤销临时不限量/ }));
     fireEvent.click(screen.getByRole("button", { name: /生成预览|预览变更/ }));
     await waitFor(() =>

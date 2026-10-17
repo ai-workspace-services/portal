@@ -240,6 +240,13 @@ const parseGroupList = (input: string): string[] =>
 const nameOf = (user: ManagedUser): string =>
   user.username?.trim() || user.name?.trim() || user.email?.trim() || "—";
 const hasSegment = (user: ManagedUser, segment: Segment): boolean => {
+  // Existing/newly registered Free users carry the managed quota tag rather
+  // than a manual label. Derive their segment from the persisted assignment.
+  if (
+    segment.id === "free" &&
+    (user.groups ?? []).includes(MONTHLY_FREE_QUOTA_LIMIT_GROUP)
+  )
+    return true;
   const record = user.subscriptionRecord;
   if (
     record &&

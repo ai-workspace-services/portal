@@ -7,6 +7,9 @@ const ORIGINAL_ENV = { ...process.env };
 describe("runtime-loader", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
+    for (const key of Object.keys(process.env)) {
+      if (key.startsWith("RUNTIME_") && key.endsWith("_URL")) delete process.env[key];
+    }
     delete process.env.RUNTIME_ENV;
     delete process.env.RUNTIME_HOSTNAME;
     delete process.env.REGION;
@@ -98,6 +101,29 @@ describe("runtime-loader", () => {
       "https://prod-accounts-b7wzzanztq-de.a.run.app",
     );
   });
+  it("uses deployment-owned endpoints for an isolated production stack", async () => {
+    process.env.RUNTIME_AUTH_URL = "https://accounts.isolated.example";
+    process.env.RUNTIME_API_BASE_URL = "https://accounts.isolated.example/api";
+    process.env.RUNTIME_DASHBOARD_URL = "https://console.isolated.example";
+    process.env.RUNTIME_DOCS_SERVICE_URL = "http://content:8084";
+    process.env.RUNTIME_XCONNECT_ZERO_URL = "http://accounts:8080";
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+    const config = loadRuntimeConfig({ hostname: "console-isolated-prod.example" });
+    expect(config.authUrl).toBe("https://accounts.isolated.example");
+    expect(config.apiBaseUrl).toBe("https://accounts.isolated.example/api");
+    expect(config.dashboardUrl).toBe("https://console.isolated.example");
+    expect(config.docsServiceUrl).toBe("http://content:8084");
+    expect(config.xconnectZeroUrl).toBe("http://accounts:8080");
+  });
+
+  it("rejects credential-bearing deployment endpoints", async () => {
+    process.env.RUNTIME_AUTH_URL = "https://user:secret@accounts.example";
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+    expect(() => loadRuntimeConfig({ hostname: "invalid-endpoint.example" })).toThrow(
+      "Invalid deployment service endpoint: authUrl",
+    );
+  });
+
 
   it("uses explicit Selfhost endpoints on stable public production aliases", async () => {
     process.env.RUNTIME_API_BASE_URL = "https://accounts.svc.plus/api";

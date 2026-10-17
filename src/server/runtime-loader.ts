@@ -92,7 +92,19 @@ function runtimeEndpointOverrides(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(fields)
       .filter((entry): entry is [string, string] => Boolean(entry[1]?.trim()))
-      .map(([key, value]) => [key, value.trim()]),
+      .map(([key, value]) => {
+        const trimmed = value.trim()
+        let endpoint: URL
+        try {
+          endpoint = new URL(trimmed)
+        } catch {
+          throw new Error(`Invalid deployment service endpoint: ${key}`)
+        }
+        if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) {
+          throw new Error(`Invalid deployment service endpoint: ${key}`)
+        }
+        return [key, trimmed]
+      }),
   )
 }
 
