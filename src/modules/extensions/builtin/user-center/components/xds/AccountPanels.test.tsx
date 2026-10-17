@@ -83,6 +83,7 @@ describe("QuotaCard", () => {
             displayName: "Free",
             packageName: "free",
             maxTrafficBytes: 5 * 1024 * 1024 * 1024,
+            quotaCycle: "natural_month",
             unlimited: false,
             assigned: false,
             source: "local_catalog_default",
@@ -92,7 +93,7 @@ describe("QuotaCard", () => {
     );
 
     expect(
-      screen.getByText("套餐 Free（默认参考） · 最大流量 5 GB / 月"),
+      screen.getByText("套餐 Free（默认参考） · 最大流量 5 GB / 月 · 自然月"),
     ).toBeInTheDocument();
     expect(screen.getByText("未分配 · 5 GB 默认额度参考")).toBeInTheDocument();
     expect(screen.queryByText("0 B / 5 GB")).not.toBeInTheDocument();
@@ -126,7 +127,7 @@ describe("QuotaCard", () => {
     );
 
     expect(
-      screen.getByText("套餐 Plus · 最大流量 20 GB / 月"),
+      screen.getByText("套餐 Plus · 最大流量 20 GB / 月 · 自然月"),
     ).toBeInTheDocument();
     expect(screen.getByText("1 GB / 20 GB")).toBeInTheDocument();
   });
