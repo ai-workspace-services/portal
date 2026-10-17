@@ -102,9 +102,6 @@ export type VlessNode = {
   pool_count?: number
   open_to_users?: boolean
   address: string
-  region?: string
-  pool_count?: number
-  open_to_users?: boolean
   port: number
   server_name?: string
   protocols?: string | string[]
