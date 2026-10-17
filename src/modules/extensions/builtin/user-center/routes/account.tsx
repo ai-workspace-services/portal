@@ -1,5 +1,7 @@
 "use client";
 
+import { emailCopy } from "@/lib/email-preferences";
+
 import { cloudHubCopy } from "@/lib/cloud-hub-copy";
 
 /**
@@ -467,6 +469,12 @@ export default function UserCenterAccountRoute() {
               {zh ? "策略与安全" : "Policy and security"}
             </h2>
           </div>
+          <BoundaryLink
+            href="/email/preferences"
+            className="inline-flex min-h-11 items-center rounded-md border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-medium"
+          >
+            {emailCopy(language).manageOwn}
+          </BoundaryLink>
           <AccountPolicySecurityPanel
             mfaEnabled={Boolean(user?.mfaEnabled)}
             mfaPending={Boolean(user?.mfaPending)}
