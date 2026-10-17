@@ -10,14 +10,23 @@
  */
 
 import BoundaryLink from "@/components/common/BoundaryLink";
+import AiResourceLinks from "@/components/marketing/AiResourceLinks";
 import { Zap } from "lucide-react";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { COMPANY_GITHUB_URL, COMPANY_LEGAL_NAME } from "@/lib/company";
+import { publicDiscovery } from "@/data/content/public-discovery";
 
 type FooterColumn = {
   title: string;
   items: Array<{ label: string; href: string }>;
 };
+
+const PLATFORM_LOGIN_ORIGIN = "https://svc.plus/login";
+
+function loginHref(path: string): string {
+  return `${PLATFORM_LOGIN_ORIGIN}?next=${encodeURIComponent(path)}`;
+}
 
 const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
   zh: [
@@ -41,17 +50,17 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
     {
       title: "账户",
       items: [
-        { label: "用户中心", href: "/panel" },
-        { label: "订阅与配额", href: "/panel/subscription" },
-        { label: "账单", href: "/panel/billing" },
-        { label: "安全设置", href: "/panel/account" },
+        { label: "用户中心", href: loginHref("/panel") },
+        { label: "订阅与配额", href: loginHref("/panel/subscription") },
+        { label: "账单", href: loginHref("/panel/billing") },
+        { label: "安全设置", href: loginHref("/panel/account") },
       ],
     },
     {
       title: "公司",
       items: [
         { label: "关于", href: "/about" },
-        { label: "联系我们", href: "/support" },
+        { label: "联系我们", href: "/contact" },
         { label: "隐私政策", href: "/privacy" },
         { label: "服务条款", href: "/terms" },
       ],
@@ -78,17 +87,17 @@ const COLUMNS: Record<"zh" | "en", FooterColumn[]> = {
     {
       title: "Account",
       items: [
-        { label: "User center", href: "/panel" },
-        { label: "Subscription", href: "/panel/subscription" },
-        { label: "Billing", href: "/panel/billing" },
-        { label: "Security", href: "/panel/account" },
+        { label: "User center", href: loginHref("/panel") },
+        { label: "Subscription", href: loginHref("/panel/subscription") },
+        { label: "Billing", href: loginHref("/panel/billing") },
+        { label: "Security", href: loginHref("/panel/account") },
       ],
     },
     {
       title: "Company",
       items: [
         { label: "About", href: "/about" },
-        { label: "Contact", href: "/support" },
+        { label: "Contact", href: "/contact" },
         { label: "Privacy", href: "/privacy" },
         { label: "Terms", href: "/terms" },
       ],
@@ -103,11 +112,39 @@ const TAGLINE = {
 
 interface XdsSiteFooterProps {
   brand?: string;
+  catalogMode?: boolean;
 }
 
-export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProps) {
+export default function XdsSiteFooter({
+  brand = "XWorkmate",
+  catalogMode = false,
+}: XdsSiteFooterProps) {
   const { language } = useLanguage();
   const lang = language === "en" ? "en" : "zh";
+  const columns = catalogMode
+    ? [
+        {
+          title: publicDiscovery.overview.productsLabel[lang],
+          items: ["xworkmate", "xconnect", "ai-workspace"].map((slug) => {
+            const product = publicDiscovery.products.find(
+              (item) => item.slug === slug,
+            )!;
+            return { label: product.name[lang], href: `/products/${slug}` };
+          }),
+        },
+        {
+          title: publicDiscovery.overview.solutionLabel[lang],
+          items: publicDiscovery.products
+            .filter((item) => item.kind === "solution")
+            .map((item) => ({
+              label: item.name[lang],
+              href: `/products/${item.slug}`,
+            })),
+        },
+        COLUMNS[lang][1],
+        COLUMNS[lang][3],
+      ]
+    : COLUMNS[lang];
 
   return (
     <footer className="xds-footer">
@@ -124,11 +161,13 @@ export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProp
               className="xds-t-caption"
               style={{ marginTop: "var(--sp-3)", maxWidth: "26ch" }}
             >
-              {TAGLINE[lang]}
+              {catalogMode
+                ? publicDiscovery.overview.footerTagline[lang]
+                : TAGLINE[lang]}
             </p>
           </div>
 
-          {COLUMNS[lang].map((column) => (
+          {columns.map((column) => (
             <div key={column.title}>
               <h5>{column.title}</h5>
               <ul>
@@ -146,10 +185,16 @@ export default function XdsSiteFooter({ brand = "XWorkmate" }: XdsSiteFooterProp
           className="xds-divider"
           style={{ margin: "var(--sp-8) 0 var(--sp-5)" }}
         />
+        <div style={{ marginBottom: "var(--sp-5)" }}>
+          <AiResourceLinks language={lang} />
+        </div>
         <div className="xds-row-between">
           <span className="xds-t-caption">
-            © {new Date().getFullYear()} onwalk.net
+            © {new Date().getFullYear()} {COMPANY_LEGAL_NAME}
           </span>
+          <a className="xds-t-caption" href={COMPANY_GITHUB_URL}>
+            GitHub
+          </a>
         </div>
       </div>
     </footer>

@@ -8,14 +8,14 @@ const xcloudflow: ProductConfig = {
   tagline_zh: "统一调度跨云资源，内置 AI 协作与合规审计。",
   tagline_en:
     "Coordinate multi-cloud workloads with AI assistance and governance built in.",
-  ogImage: "https://www.svc.plus/assets/og/xcloudflow.png",
+  ogImage: "https://xworktech.com/assets/og/xcloudflow.png",
   repoUrl: "https://github.com/Cloud-Neutral/XCloudFlow",
-  docsQuickstart: "https://www.svc.plus/xcloudflow/docs/quickstart",
-  docsApi: "https://www.svc.plus/xcloudflow/docs/api",
+  docsQuickstart: "https://xworktech.com/docs",
+  docsApi: "https://xworktech.com/docs",
   docsIssues: "https://github.com/Cloud-Neutral/XCloudFlow/issues",
-  blogUrl: "https://www.svc.plus/blogs/tags/xcloudflow",
-  videosUrl: "https://www.svc.plus/videos/xcloudflow",
-  downloadUrl: "https://www.svc.plus/xcloudflow/downloads",
+  blogUrl: "https://xworktech.com/blogs",
+  videosUrl: "https://xworktech.com/docs",
+  downloadUrl: "https://xworktech.com/download",
   editions: {
     selfhost: [
       {
@@ -25,29 +25,25 @@ const xcloudflow: ProductConfig = {
       },
       {
         label: "离线安装包",
-        href: "https://www.svc.plus/xcloudflow/downloads",
-        external: true,
+        href: "/download",
       },
     ],
     managed: [
       {
         label: "专业托管",
-        href: "https://www.svc.plus/contact?product=xcloudflow",
-        external: true,
+        href: "/contact",
       },
     ],
     paygo: [
       {
         label: "按量计费",
-        href: "https://www.svc.plus/pricing/xcloudflow",
-        external: true,
+        href: "/prices",
       },
     ],
     saas: [
       {
         label: "团队订阅",
-        href: "https://www.svc.plus/xcloudflow/signup",
-        external: true,
+        href: "/panel/subscription",
       },
     ],
   },

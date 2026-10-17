@@ -72,4 +72,41 @@ describe("buildDownloadCatalog", () => {
       aiWorkspace?.platforms.find((platform) => platform.id === "windows"),
     ).toMatchObject({ supported: false, asset: undefined });
   });
+
+  it("prefers the direct GitHub Release asset over the mirror", () => {
+    const catalog = buildDownloadCatalog([
+      {
+        path: "github-release/xworkmate/v1.2.0-build.851/",
+        entries: [
+          {
+            name: "XWorkmate-1.2.0.dmg",
+            href: "https://github.com/ai-workspace-lab/xworkmate-app/releases/download/v1.2.0-build.851/XWorkmate-1.2.0.dmg",
+            type: "file",
+            lastModified: "2026-08-12T01:08:34.000Z",
+          },
+        ],
+      },
+      {
+        path: "releases/xworkmate/macos/",
+        entries: [
+          {
+            name: "XWorkmate-1.1.0.dmg",
+            href: "/releases/xworkmate/macos/XWorkmate-1.1.0.dmg",
+            type: "file",
+            lastModified: "2026-09-01T00:00:00.000Z",
+          },
+        ],
+      },
+    ]);
+
+    expect(
+      catalog
+        .find((product) => product.id === "xworkmate")
+        ?.platforms.find((platform) => platform.id === "macos")?.asset,
+    ).toMatchObject({
+      name: "XWorkmate-1.2.0.dmg",
+      href: "https://github.com/ai-workspace-lab/xworkmate-app/releases/download/v1.2.0-build.851/XWorkmate-1.2.0.dmg",
+      source: "github-release",
+    });
+  });
 });

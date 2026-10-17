@@ -72,7 +72,9 @@ describe("/api/auth/mfa/verify", () => {
     await expect(response.json()).resolves.toMatchObject({ success: true });
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://accounts.svc.plus/api/auth/mfa/totp/verify");
+    expect(url).toBe(
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app/api/auth/mfa/totp/verify",
+    );
     expect(JSON.parse(String(init.body))).toEqual({
       token: "challenge-token",
       code: "123456",

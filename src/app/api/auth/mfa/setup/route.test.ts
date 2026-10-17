@@ -65,7 +65,9 @@ describe("/api/auth/mfa/setup", () => {
 
     expect(response.status).toBe(200);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://accounts.svc.plus/api/auth/mfa/totp/provision");
+    expect(url).toBe(
+      "https://prod-accounts-1004637461064.asia-northeast1.run.app/api/auth/mfa/totp/provision",
+    );
     expect(init.headers).toMatchObject({
       Authorization: "Bearer session-token",
     });

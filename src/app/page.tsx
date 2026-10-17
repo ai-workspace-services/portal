@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "error";
-
 import Footer from "@/components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import HeroSection from "@/components/marketing/HeroSection";
@@ -12,20 +10,31 @@ import ControlPlaneSection from "@/components/marketing/ControlPlaneSection";
 import ProofSection from "@/components/marketing/ProofSection";
 import PricingTeaser from "@/components/marketing/PricingTeaser";
 import FinalCta from "@/components/marketing/FinalCta";
+import BuiltByBadge from "@/components/marketing/BuiltByBadge";
+import ReferralPromoSection from "@/components/referrals/ReferralPromoSection";
+import referralContent from "@/data/content/referral.json";
+import type { ReferralContent } from "@/lib/referral-content";
+
+const referralCopy = referralContent as ReferralContent;
 
 export default function HomePage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
       <MarketingNav />
       <main>
+        {/* Section order follows store-and-startup-homepage-spec: the product
+            matrix sits right under the hero so a reviewer reaches every
+            /products/* page within one scroll. */}
         <HeroSection />
-        <CoreCapabilitiesSection />
+        <ProofSection />
         <EditionsCarouselSection />
+        <CoreCapabilitiesSection />
         <WorkflowSection />
         <ControlPlaneSection />
-        <ProofSection />
         <PricingTeaser />
+        <ReferralPromoSection content={referralCopy} />
         <FinalCta />
+        <BuiltByBadge />
       </main>
       <div className="mx-auto w-full max-w-6xl px-6 pb-10 lg:px-8">
         <Footer />

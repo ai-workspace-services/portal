@@ -24,7 +24,7 @@ function resolveReleaseCommit(releaseImageTag: string | null): string | null {
 
 function resolveReleaseImageMetadata(frontendImage: string | undefined): TReleaseImageMetadata {
   const releaseImageRef = frontendImage?.trim() || null
-  const releaseImageTagMatch = releaseImageRef?.match(/:([^:@]+)$/)
+  const releaseImageTagMatch = releaseImageRef?.split('@')[0]?.match(/:([^:@]+)$/)
   const releaseImageTag = releaseImageTagMatch?.[1] ?? null
   const releaseCommit = resolveReleaseCommit(releaseImageTag)
 

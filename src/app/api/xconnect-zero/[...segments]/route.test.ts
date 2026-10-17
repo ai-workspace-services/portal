@@ -164,6 +164,89 @@ describe("/api/xconnect-zero/[...segments]", () => {
     );
   });
 
+  it("forwards confirmed network deletion with the manage permission", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { DELETE } = await import("./route");
+    const response = await DELETE(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net_shared_vault",
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirm_network_id: "net_shared_vault" }),
+        },
+      ),
+      {
+        params: Promise.resolve({ segments: ["networks", "net_shared_vault"] }),
+      },
+    );
+
+    expect(response.status).toBe(204);
+    expect(userHasRoleOrPermissionMock).toHaveBeenCalledWith(
+      { role: "admin" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.manage"],
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /\/api\/overlay\/v1\/admin\/networks\/net_shared_vault$/,
+      ),
+      expect.objectContaining({
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer account-session-token",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ confirm_network_id: "net_shared_vault" }),
+      }),
+    );
+  });
+
+  it("preserves a control-plane 404 for an absent owned network", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "resource_not_found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const { DELETE } = await import("./route");
+    const response = await DELETE(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/missing",
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirm_network_id: "missing" }),
+        },
+      ),
+      { params: Promise.resolve({ segments: ["networks", "missing"] }) },
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      error: "resource_not_found",
+    });
+  });
+
   it("derives controller_url when an invite request omits it", async () => {
     getAccountSessionMock.mockResolvedValue({
       token: "account-session-token",

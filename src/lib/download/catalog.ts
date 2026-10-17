@@ -13,6 +13,7 @@ export type DownloadAsset = {
   lastModified?: string;
   size?: number;
   sha256?: string;
+  source?: "github-release" | "mirror";
 };
 
 export type CatalogPlatform = {
@@ -266,12 +267,56 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
   },
 ];
 
+export type GithubReleaseTarget = {
+  productId: string;
+  releaseUrl: string;
+  apiUrl: string;
+};
+
+function githubReleaseTarget(
+  productId: string,
+  releaseUrl: string,
+): GithubReleaseTarget | undefined {
+  try {
+    const url = new URL(releaseUrl);
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (
+      url.hostname !== "github.com" ||
+      segments.length < 3 ||
+      segments[2] !== "releases"
+    ) {
+      return undefined;
+    }
+
+    const [owner, repository] = segments;
+    return {
+      productId,
+      releaseUrl,
+      apiUrl: `https://api.github.com/repos/${owner}/${repository}/releases/latest`,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Release pages are the source of truth for product downloads. The target list
+ * is derived from the public product links so release metadata is not copied
+ * into the download page or duplicated in a second configuration table.
+ */
+export function getGithubReleaseTargets(): GithubReleaseTarget[] {
+  return PRODUCT_DEFINITIONS.flatMap((product) => {
+    const target = githubReleaseTarget(product.id, product.releaseUrl);
+    return target ? [target] : [];
+  });
+}
+
 function toDownloadUrl(href: string): string {
   return href.startsWith("http") ? href : `https://dl.svc.plus${href}`;
 }
 
 function flattenFiles(listings: DirListing[]): DownloadAsset[] {
-  const files: Array<DownloadAsset & { source: string }> = [];
+  const files: Array<DownloadAsset & { sourcePath: string }> = [];
 
   for (const listing of listings) {
     for (const entry of listing.entries) {
@@ -282,7 +327,10 @@ function flattenFiles(listings: DirListing[]): DownloadAsset[] {
         lastModified: entry.lastModified,
         size: entry.size,
         sha256: entry.sha256,
-        source: `${listing.path}/${entry.name}`.replace(/\/+/g, "/"),
+        source: listing.path.startsWith("github-release/")
+          ? "github-release"
+          : "mirror",
+        sourcePath: `${listing.path}/${entry.name}`.replace(/\/+/g, "/"),
       });
     }
   }
@@ -293,7 +341,7 @@ function flattenFiles(listings: DirListing[]): DownloadAsset[] {
         new Date(right.lastModified || 0).getTime() -
         new Date(left.lastModified || 0).getTime(),
     )
-    .map(({ source: _source, ...asset }) => asset);
+    .map(({ sourcePath: _sourcePath, ...asset }) => asset);
 }
 
 function getLatestAsset(
@@ -303,13 +351,21 @@ function getLatestAsset(
 ): DownloadAsset | undefined {
   if (platformMatches.length === 0) return undefined;
 
-  return files.find((asset) => {
+  const matchingAssets = files.filter((asset) => {
     const haystack = `${asset.href}/${asset.name}`;
     return (
       productMatches.some((matcher) => matcher.test(haystack)) &&
       platformMatches.some((matcher) => matcher.test(haystack))
     );
   });
+
+  // Prefer the direct GitHub Release asset when both the release and the
+  // dl.svc.plus mirror contain the same product. The mirror remains the
+  // fallback for offline bundles and for releases that have not been fetched.
+  return (
+    matchingAssets.find((asset) => asset.source === "github-release") ??
+    matchingAssets[0]
+  );
 }
 
 /**

@@ -12,8 +12,6 @@ import {
 } from "@lib/authGateway";
 import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
-
 type VerifyPayload = {
   token?: string;
   code?: string;
@@ -40,6 +38,8 @@ function normalizeCode(value: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const requestHost = request.headers.get("host");
+  const accountApiBase = getAccountServiceApiBaseUrl(requestHost);
   const cookieStore = await cookies();
   let payload: VerifyPayload;
   try {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       upstreamHeaders.Authorization = `Bearer ${sessionToken}`;
     }
 
-    const response = await fetch(`${ACCOUNT_API_BASE}/mfa/totp/verify`, {
+    const response = await fetch(`${accountApiBase}/mfa/totp/verify`, {
       method: "POST",
       headers: upstreamHeaders,
       body: JSON.stringify({ token, code }),

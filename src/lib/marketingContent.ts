@@ -171,7 +171,7 @@ const CONTACT_PANEL: ContactPanelContent = {
       type: 'info',
       description: '了解使用反馈与社区支持',
       bodyHtml:
-        '<p>欢迎提交您的使用反馈或功能建议，我们会尽快回复。<br/>如需寻求技术帮助，可联系：<strong>manbuzhe2008@gmail.com</strong></p>',
+        '<p>欢迎提交您的使用反馈或功能建议，我们会尽快回复。<br/>如需寻求技术帮助，可联系：<strong>support@xworktech.com</strong></p>',
       icon: 'life-buoy',
       ctaLabel: '联系我们',
       ctaHref: 'https://github.com/svc-design/XControl/issues',
@@ -181,10 +181,10 @@ const CONTACT_PANEL: ContactPanelContent = {
       title: '欢迎支持',
       type: 'info',
       description: '欢迎支持关注 Star',
-      bodyHtml: '点击链接访问 CloudNativeSuite GitHub，欢迎支持关注 Star，获取更多项目动态。',
+      bodyHtml: '点击链接访问 XWork Technologies GitHub，欢迎支持关注 Star，获取更多项目动态。',
       icon: 'star',
       ctaLabel: '访问 GitHub',
-      ctaHref: 'https://github.com/x-evor',
+      ctaHref: 'https://github.com/ai-workspace-lab',
     },
   ],
 }

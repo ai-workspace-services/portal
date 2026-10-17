@@ -1,6 +1,11 @@
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
 import {
   Code,
+  ChartNoAxesCombined,
+  Cpu,
   CreditCard,
+  ExternalLink,
+  Globe,
   Home,
   LayoutDashboard,
   Palette,
@@ -8,6 +13,7 @@ import {
   Settings,
   Shield,
   User,
+  UsersRound,
 } from "lucide-react";
 
 import type { DashboardExtension } from "../../types";
@@ -35,19 +41,50 @@ export const userCenterExtension: DashboardExtension = {
       sidebar: { section: "workspace", order: 0 },
     },
     {
-      id: "agents",
-      path: "/panel/agent",
-      label: "Agents",
-      description: "管理运行节点",
-      icon: Server,
-      loader: () => import("./routes/agent"),
+      id: "finops",
+      path: "/panel/finops",
+      label: "FinOps",
+      description: "多云额度、成本归集与持续优化",
+      icon: ChartNoAxesCombined,
+      loader: () => import("./routes/finops"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
-      sidebar: { section: "productivity", order: 10 },
+      sidebar: { section: "workspace", order: 1 },
+    },
+    {
+      id: "globalMesh",
+      path: "/panel/cloud-hub",
+      label: cloudHubCopy.zh.navTopology,
+      description: "全球多云互联与算力 PoP 拓扑",
+      icon: Globe,
+      loader: () => import("./routes/global-mesh"),
+      guard: { requireLogin: true },
+      redirect: { unauthenticated: "/login" },
+      sidebar: { section: "workspace", order: 2 },
+    },
+    {
+      id: "productsGlobalMesh",
+      path: "/products/cloud-hub",
+      label: cloudHubCopy.zh.navProduct,
+      description: "全球多云互联与算力 PoP 产品全景",
+      icon: ExternalLink,
+      loader: () => import("./routes/global-mesh"),
+      sidebar: { section: "workspace", order: 3 },
+    },
+    {
+      id: "agents",
+      path: "/panel/agent",
+      label: "区域入口池",
+      description: "查看区域入口与 pool 数量",
+      icon: Server,
+      loader: () => import("./routes/agent"),
+      guard: { requireLogin: true, roles: ["admin", "operator"] },
+      redirect: { unauthenticated: "/login", forbidden: "/panel" },
+      sidebar: { section: "admin", order: 9 },
       featureFlag: {
         id: "user-center.agent",
-        title: "Agent 节点管理",
-        description: "启用运行节点管理页面。",
+        title: "区域入口池",
+        description: "启用管理员区域入口页面。",
         envVar: "NEXT_PUBLIC_FEATURE_AGENT_MODULE",
         defaultEnabled: true,
       },
@@ -68,6 +105,24 @@ export const userCenterExtension: DashboardExtension = {
         description: "启用 OpenClaw、Vault 与 APISIX AI Gateway 集成页面。",
         envVar: "NEXT_PUBLIC_FEATURE_API_MODULE",
         defaultEnabled: true,
+      },
+    },
+    {
+      id: "ai-aggregator",
+      path: "/panel/ai-aggregator",
+      label: "AI Aggregator",
+      description: "多模型算力汇聚与 API 网关调度控制台",
+      icon: Cpu,
+      loader: () => import("./routes/ai-aggregator"),
+      guard: { requireLogin: true },
+      redirect: { unauthenticated: "/login" },
+      sidebar: { section: "productivity", order: 12 },
+      featureFlag: {
+        id: "user-center.ai_aggregator",
+        title: "AI Aggregator 控制台",
+        description: "启用 AI Aggregator 调度控制台页面。",
+        envVar: "NEXT_PUBLIC_FEATURE_AI_AGGREGATOR",
+        defaultEnabled: false,
       },
     },
     {
@@ -100,6 +155,17 @@ export const userCenterExtension: DashboardExtension = {
       },
     },
     {
+      id: "team",
+      path: "/panel/team",
+      label: "Team management",
+      description: "Dedicated team resources and members",
+      icon: UsersRound,
+      loader: () => import("./routes/team"),
+      guard: { requireLogin: true },
+      redirect: { unauthenticated: "/login" },
+      sidebar: { section: "management", order: 22 },
+    },
+    {
       id: "ldp",
       path: "/panel/ldp",
       label: "LDP",
@@ -108,7 +174,7 @@ export const userCenterExtension: DashboardExtension = {
       loader: () => import("./routes/ldp"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
-      sidebar: { section: "management", order: 22 },
+      sidebar: { section: "management", order: 23 },
       featureFlag: {
         id: "user-center.ldp",
         title: "LDP 管理",
@@ -129,6 +195,7 @@ export const userCenterExtension: DashboardExtension = {
       sidebar: { section: "preferences", order: 30 },
     },
     {
+      id: "management",
       path: "/panel/management",
       label: "Management",
       description: "集中化的权限矩阵与用户编排",
@@ -186,7 +253,14 @@ export const userCenterExtension: DashboardExtension = {
     ...["billing/plans", "billing/ledger", "audit", "system"].map((suffix) => ({
       id: `ops-${suffix.replace("/", "-")}`,
       path: `/panel/ops/${suffix}`,
-      label: suffix === "audit" ? "审计与系统" : suffix === "system" ? "系统管理" : suffix === "billing/plans" ? "套餐与订阅" : "账单与对账",
+      label:
+        suffix === "audit"
+          ? "审计与系统"
+          : suffix === "system"
+            ? "系统管理"
+            : suffix === "billing/plans"
+              ? "套餐与订阅"
+              : "账单与对账",
       description: "运营工作台子模块",
       icon: LayoutDashboard,
       loader: () => import("./routes/ops"),

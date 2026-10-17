@@ -14,7 +14,9 @@ import MarketingNav from "@/components/marketing/MarketingNav";
 import ProductHero from "./ProductHero";
 import ProductWizard from "./ProductWizard";
 import ProductShowcases from "./ProductShowcases";
+import ProductSolutions from "./ProductSolutions";
 import ProductCtaBanner from "./ProductCtaBanner";
+import ProductSourceLinks from "./ProductSourceLinks";
 import type { WebsiteProductPayload } from "@/lib/docsServiceClient";
 
 interface ProductPageTemplateProps {
@@ -35,6 +37,8 @@ export default function ProductPageTemplate({
           <ProductWizard wizard={product.wizard} language={language} />
         ) : null}
         <ProductShowcases showcases={product.showcases} />
+        <ProductSolutions solutions={product.solutions} language={language} />
+        <ProductSourceLinks slug={product.slug} language={language} />
         <ProductCtaBanner hero={product.hero} language={language} />
       </main>
       <XdsSiteFooter />

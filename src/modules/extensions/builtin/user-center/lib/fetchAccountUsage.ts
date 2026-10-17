@@ -13,6 +13,9 @@ export type AccountUsageSummary = {
   currentBalance?: number;
   remainingIncludedQuota?: number;
   includedQuotaBytes?: number;
+  currentPlan?: AccountPlanSummary | null;
+  defaultPlan?: AccountPlanSummary | null;
+  planAssignmentStatus?: "assigned" | "unassigned";
   usedBytes?: number;
   usagePercent?: number;
   periodStart?: string | null;
@@ -20,6 +23,13 @@ export type AccountUsageSummary = {
   syncDelaySeconds?: number;
   suspendState?: string;
   throttleState?: string;
+  quotaExhausted?: boolean;
+  networkAccessState?: "active" | "paused" | "blocked";
+  networkAccessReason?:
+    | "quota_exhausted"
+    | "billing_suspended"
+    | "operator_paused"
+    | "";
   arrears?: boolean;
   billingProfile?: AccountBillingProfile;
 };
@@ -39,6 +49,23 @@ export type AccountBillingProfile = {
   regionMultiplier?: number;
   lineMultiplier?: number;
   pricingRuleVersion?: string;
+};
+
+export type AccountPlanSummary = {
+  planId?: string;
+  displayName: string;
+  packageName: string;
+  /** Effective limit for an assigned account, or the catalog limit for a reference plan. */
+  maxTrafficBytes: number;
+  /** Current catalog template limit, which can differ from a prior assignment snapshot. */
+  catalogMaxTrafficBytes?: number;
+  quotaCycle?: string;
+  unlimited: boolean;
+  assigned: boolean;
+  source:
+    | "account_entitlement"
+    | "account_billing_profile"
+    | "local_catalog_default";
 };
 
 export type AccountUsageBucket = {
@@ -81,6 +108,9 @@ export type AccountBillingSummary = {
     suspendState?: string;
   };
   billingProfile?: AccountBillingProfile;
+  currentPlan?: AccountPlanSummary | null;
+  defaultPlan?: AccountPlanSummary | null;
+  planAssignmentStatus?: "assigned" | "unassigned";
   ledger?: BillingLedgerEntry[];
 };
 

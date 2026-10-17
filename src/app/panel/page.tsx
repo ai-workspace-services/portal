@@ -1,4 +1,6 @@
-export const dynamic = 'error'
+// The panel is session- and tenant-scoped. Do not let the SSR boundary cache
+// a user-specific RSC payload as a static page across tenants or deployments.
+export const dynamic = 'force-dynamic'
 
 import { redirect } from 'next/navigation'
 

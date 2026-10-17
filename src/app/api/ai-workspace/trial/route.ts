@@ -124,7 +124,7 @@ export async function GET(request: NextRequest): Promise<Response> {
       canPersist: false,
       canDownload: false,
       trial: state,
-      registerHref: "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial",
+      registerHref: "/register?returnTo=%2Fai-workspace",
       message: "访客试用不保存会话，注册后可保存会话并下载制品。",
     }),
     { headers },

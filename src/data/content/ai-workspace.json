@@ -3,7 +3,7 @@
     "hero": {
       "badge": "开放 AI 工作空间",
       "title": "AI Workspace",
-      "subtitle": "XWorkmate 与 XConnect 协同工作，把对话、任务与连接整合进一个开放的 AI 工作空间，从想法到交付一步到位。",
+      "subtitle": "XWorkmate、XConnect 与 AI Aggregator 协同工作，把对话、任务、模型网关与全局连接整合进一个开放的 AI 工作空间，从想法到交付一步到位。",
       "cta": {
         "label": "进入控制台",
         "href": "/panel"
@@ -21,8 +21,8 @@
         },
         {
           "step": 2,
-          "title": "配置智能代理与模型",
-          "description": "接入主流模型与 Agent 工具链，按需调度多模型算力。"
+          "title": "配置智能代理与 AI 网关",
+          "description": "通过 AI Aggregator 接入主流模型与 Agent 工具链，按需调度多渠道算力与 Token 配额。"
         },
         {
           "step": 3,
@@ -39,6 +39,12 @@
         "image": "/marketing/xworkmate/已生成图像 2.png"
       },
       {
+        "title": "AI Aggregator 调度控制台",
+        "description": "集高性能模型网关、智能凭据轮转与多通道配额调度于一体。原生兼容 OpenAI、Claude、Gemini、DeepSeek 等主流推理协议，内置实时 Token 消耗洞察与高可用容灾路由，为团队与企业级 Agent 应用提供统一算力中枢。",
+        "icon": "cpu",
+        "image": "/marketing/home-hero/desktop-ai-delivery.png"
+      },
+      {
         "title": "无缝连接一切",
         "description": "由 XConnect 提供稳定、安全的连接能力，让你的 AI 工作空间随时访问全球 AI 服务与自建资源。",
         "icon": "network",
@@ -51,7 +57,7 @@
     "hero": {
       "badge": "Open AI Workspace",
       "title": "AI Workspace",
-      "subtitle": "XWorkmate and XConnect work together to bring conversations, tasks, and connectivity into one open AI workspace — from idea to delivery.",
+      "subtitle": "XWorkmate, XConnect, and AI Aggregator work together to unite conversations, tasks, model gateways, and secure connectivity into an open AI workspace — from idea to delivery.",
       "cta": {
         "label": "Enter Console",
         "href": "/panel"
@@ -69,8 +75,8 @@
         },
         {
           "step": 2,
-          "title": "Configure Models & Agents",
-          "description": "Connect mainstream model providers and agent toolchains on demand."
+          "title": "Configure Agents & AI Gateway",
+          "description": "Connect mainstream models and agent toolchains via AI Aggregator with flexible quota management."
         },
         {
           "step": 3,
@@ -85,6 +91,12 @@
         "description": "Powered by XWorkmate — bring conversations, tasks, and tools into one workbench, and keep producing real deliverable outputs instead of just chat history.",
         "icon": "bot",
         "image": "/marketing/xworkmate/已生成图像 2.png"
+      },
+      {
+        "title": "AI Aggregator Console",
+        "description": "Integrated high-performance model gateway, smart credential rotation, and multi-channel quota scheduling. Natively compatible with OpenAI, Claude, Gemini, and DeepSeek protocols, featuring real-time token telemetry and automatic failover routing.",
+        "icon": "cpu",
+        "image": "/marketing/home-hero/desktop-ai-delivery.png"
       },
       {
         "title": "Connected to everything",

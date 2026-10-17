@@ -1,4 +1,7 @@
-export const dynamic = 'error'
+// Extension routes are protected by the session and tenant-aware client guard.
+// Render the shell per request so Cloudflare cannot reuse a stale RSC payload
+// after a Worker rollout or between tenants.
+export const dynamic = 'force-dynamic'
 
 import { notFound, redirect } from 'next/navigation'
 

@@ -81,6 +81,21 @@ const runtimeConfigCache = new Map<string, RuntimeConfig>()
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
 
+function runtimeEndpointOverrides(): Record<string, string> {
+  const fields: Record<string, string | undefined> = {
+    apiBaseUrl: process.env.RUNTIME_API_BASE_URL,
+    authUrl: process.env.RUNTIME_AUTH_URL,
+    dashboardUrl: process.env.RUNTIME_DASHBOARD_URL,
+    docsServiceUrl: process.env.RUNTIME_DOCS_SERVICE_URL,
+    xconnectZeroUrl: process.env.RUNTIME_XCONNECT_ZERO_URL,
+  }
+  return Object.fromEntries(
+    Object.entries(fields)
+      .filter((entry): entry is [string, string] => Boolean(entry[1]?.trim()))
+      .map(([key, value]) => [key, value.trim()]),
+  )
+}
+
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -401,7 +416,12 @@ export function readRuntimeEnvSettings(hostname?: string): RuntimeEnvSettings {
 function splitEnvironmentOverrides(
   environment: RuntimeEnvironment,
   region: RuntimeRegion,
-): { environmentOverrides: Record<string, unknown>; regionOverrides?: Record<string, unknown> } {
+  hostname?: string,
+): {
+  environmentOverrides: Record<string, unknown>
+  regionOverrides?: Record<string, unknown>
+  deploymentOverrides?: Record<string, unknown>
+} {
   // 每个环境映射到同名配置源, 不再是"非 prod 即 sit"。
   //
   // 那个三元表达式让 uat 与 dev 静默使用 SIT 的端点 —— UAT 会去连
@@ -431,7 +451,19 @@ function splitEnvironmentOverrides(
 
   delete environmentOverrides['regions']
 
-  return { environmentOverrides, regionOverrides }
+  // Serverless and Selfhost UAT share the UAT build, but they must not share
+  // service endpoints. A deployment hostname selects the explicit Selfhost
+  // service map; ordinary UAT hosts keep the Cloudflare/Cloud Run map above.
+  let deploymentOverrides: Record<string, unknown> | undefined
+  if (hostname?.includes('selfhost')) {
+    const selfhost = environmentOverrides['selfhost']
+    if (isPlainRecord(selfhost)) {
+      deploymentOverrides = mergeConfigs({}, selfhost)
+    }
+  }
+  delete environmentOverrides['selfhost']
+
+  return { environmentOverrides, regionOverrides, deploymentOverrides }
 }
 
 function buildCacheKey(
@@ -446,16 +478,22 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
   const { hostname, detectedBy: hostnameDetectedBy } = detectHostname(options?.hostname)
   const { environment, region, detectedBy: envDetectedBy } = readRuntimeEnvSettings(hostname)
 
-  const cacheKey = buildCacheKey(hostname, environment, region)
+  const endpointOverrides = runtimeEndpointOverrides()
+  const cacheKey = `${buildCacheKey(hostname, environment, region)}|${JSON.stringify(endpointOverrides)}`
   const cached = runtimeConfigCache.get(cacheKey)
   if (cached) {
     return cached
   }
 
   const baseConfig = parseYamlSource('base')
-  const { environmentOverrides, regionOverrides } = splitEnvironmentOverrides(environment, region)
+  const { environmentOverrides, regionOverrides, deploymentOverrides } = splitEnvironmentOverrides(
+    environment,
+    region,
+    hostname,
+  )
   const merged = mergeConfigs(baseConfig, environmentOverrides)
-  const finalConfig = regionOverrides ? mergeConfigs(merged, regionOverrides) : merged
+  const regionalConfig = regionOverrides ? mergeConfigs(merged, regionOverrides) : merged
+  const finalConfig = deploymentOverrides ? mergeConfigs(regionalConfig, deploymentOverrides) : regionalConfig
 
   const detectionLabel = hostname
     ? `${envDetectedBy}|hostname:${hostnameDetectedBy}`
@@ -463,6 +501,9 @@ export function loadRuntimeConfig(options?: { hostname?: string }): RuntimeConfi
 
   const result: RuntimeConfig = {
     ...(finalConfig as RuntimeConfig),
+    // Deployment-owned endpoints take precedence even when a stable public
+    // hostname does not contain an environment or Selfhost marker.
+    ...endpointOverrides,
     environment,
     region,
     // 与上面 splitEnvironmentOverrides 实际选用的源保持一致。

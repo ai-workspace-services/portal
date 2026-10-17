@@ -91,7 +91,7 @@ type ClientProps = {
 export default function Client({ config }: ClientProps) {
   const [lang, setLang] = useState<Lang>('zh')
   const defaultQrUrl = useMemo(
-    () => `https://www.svc.plus/${config.slug}/`,
+    () => `https://xworktech.com/${config.slug}/`,
     [config.slug]
   )
   const [qrUrl, setQrUrl] = useState(defaultQrUrl)

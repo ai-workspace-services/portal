@@ -29,7 +29,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toDataURL } from "qrcode";
-import useSWR from "swr";
 
 import { formatBytes } from "@lib/format";
 import {
@@ -41,19 +40,34 @@ import {
   XdsCardHead,
   XdsEmpty,
   XdsMeter,
-  XdsTag,
 } from "@/components/ui/xds";
+import { buildVlessUri, type VlessNode } from "../../lib/vless";
 import {
-  buildVlessUri,
-  type VlessNode,
-} from "../../lib/vless";
-import { fetchAgentNodes } from "../../lib/fetchAgentNodes";
+  groupRegionalPools,
+  regionalClosureReasonLabel,
+  regionalNodeOptions,
+  type RegionalPool,
+  type RegionalPoolResourceGroup,
+} from "../../lib/regionalPools";
 import type {
   AccountPolicy,
   AccountUsageSummary,
 } from "../../lib/fetchAccountUsage";
 
 const DASH = "—";
+// Region pills stay on one row up to this many; beyond it the panel uses a select.
+const REGION_PILL_LIMIT = 3;
+
+function regionalResourceGroupLabel(group: RegionalPoolResourceGroup): string {
+  const labels: Record<RegionalPoolResourceGroup, string> = {
+    shared: "shared · Free + Plus",
+    free: "free · Free",
+    plus: "plus · Plus",
+    team: "team · Team",
+    unknown: DASH,
+  };
+  return labels[group];
+}
 
 function pct(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -65,6 +79,16 @@ function bytesOrDash(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value) && value >= 0
     ? formatBytes(value)
     : DASH;
+}
+
+function currentPlanMaxQuota(usage?: AccountUsageSummary): number | undefined {
+  if (
+    usage?.planAssignmentStatus === "assigned" &&
+    usage.currentPlan?.assigned
+  ) {
+    return usage.currentPlan.maxTrafficBytes;
+  }
+  return usage?.defaultPlan?.maxTrafficBytes;
 }
 
 function dateOrDash(value?: string | null): string {
@@ -99,7 +123,8 @@ export function OnboardingProgress({
   onSetupMfa: () => void;
   connectionContent?: ReactNode;
 }) {
-  const step1Done = state.emailVerified && state.mfaEnabled && !state.mfaPending;
+  const step1Done =
+    state.emailVerified && state.mfaEnabled && !state.mfaPending;
   const step2Done = state.credentialsReady;
   const step3Done = state.connectionVerified;
   const doneCount = [step1Done, step2Done, step3Done].filter(Boolean).length;
@@ -114,12 +139,19 @@ export function OnboardingProgress({
         ? "验证邮箱并绑定多因素认证，保护登录和计费操作。"
         : "Verify email and bind MFA to protect sign-in and billing actions.",
       checks: [
-        { ok: state.emailVerified, label: zh ? "邮箱已验证" : "Email verified" },
+        {
+          ok: state.emailVerified,
+          label: zh ? "邮箱已验证" : "Email verified",
+        },
         {
           ok: state.mfaEnabled && !state.mfaPending,
           label: state.mfaPending
-            ? zh ? "多因素认证待确认" : "MFA pending confirmation"
-            : zh ? "多因素认证已绑定" : "MFA bound",
+            ? zh
+              ? "多因素认证待确认"
+              : "MFA pending confirmation"
+            : zh
+              ? "多因素认证已绑定"
+              : "MFA bound",
         },
       ],
     },
@@ -160,14 +192,19 @@ export function OnboardingProgress({
           </div>
           <p className="xds-t-caption" style={{ marginTop: 3 }}>
             {doneCount >= 3
-              ? zh ? "全部完成，计费与订阅操作已解锁" : "All done — billing and subscription actions unlocked"
+              ? zh
+                ? "全部完成，计费与订阅操作已解锁"
+                : "All done — billing and subscription actions unlocked"
               : zh
                 ? `还差 ${3 - doneCount} 步即可解锁计费与订阅操作`
                 : `${3 - doneCount} step(s) left to unlock billing and subscription actions`}
           </p>
         </div>
         <div className="xds-prog">
-          <span className="xds-t-mono xds-t-caption" style={{ color: "var(--text-primary)" }}>
+          <span
+            className="xds-t-mono xds-t-caption"
+            style={{ color: "var(--text-primary)" }}
+          >
             {doneCount} / 3
           </span>
           <XdsMeter
@@ -189,13 +226,25 @@ export function OnboardingProgress({
                 className="xds-step-num"
                 style={
                   step.done
-                    ? { background: "var(--success)", borderColor: "var(--success)", color: "#fff" }
+                    ? {
+                        background: "var(--success)",
+                        borderColor: "var(--success)",
+                        color: "#fff",
+                      }
                     : i === activeIndex
-                      ? { background: "var(--blue-500)", borderColor: "var(--blue-500)", color: "#fff" }
+                      ? {
+                          background: "var(--blue-500)",
+                          borderColor: "var(--blue-500)",
+                          color: "#fff",
+                        }
                       : undefined
                 }
               >
-                {step.done ? <Check className="h-3 w-3" aria-hidden="true" /> : i + 1}
+                {step.done ? (
+                  <Check className="h-3 w-3" aria-hidden="true" />
+                ) : (
+                  i + 1
+                )}
               </span>
               <span className="xds-s3-title">{step.title}</span>
               {step.done ? (
@@ -242,8 +291,12 @@ export function OnboardingProgress({
                 >
                   <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                   {step.done
-                    ? zh ? "管理 MFA" : "Manage MFA"
-                    : zh ? "去绑定 MFA" : "Bind MFA"}
+                    ? zh
+                      ? "管理 MFA"
+                      : "Manage MFA"
+                    : zh
+                      ? "去绑定 MFA"
+                      : "Bind MFA"}
                 </XdsButton>
               ) : null}
               {i === 1 && !connectionContent ? (
@@ -256,10 +309,10 @@ export function OnboardingProgress({
               ) : null}
               {i === 2 ? (
                 <a
-                  href="#xds-nodes"
+                  href="#xds-vless"
                   className={`xds-btn xds-btn-sm ${i === activeIndex ? "xds-btn-primary" : "xds-btn-ghost"}`}
                 >
-                  {zh ? "查看运行节点" : "View nodes"}
+                  {zh ? "查看连接凭据" : "View credentials"}
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
               ) : null}
@@ -292,18 +345,6 @@ export function IdentityStrip({
 
 /* ═══════════════════════════════════ VLESS 连接卡 ═══════════════════════════════════ */
 
-function nodeKey(candidate?: VlessNode): string {
-  return candidate ? `${candidate.address}:${candidate.port}` : "";
-}
-
-function nodeRegion(candidate: VlessNode): string {
-  const identity = `${candidate.name} ${candidate.address}`.toLowerCase();
-  if (identity.includes("jp") || identity.includes("tokyo") || identity.includes("japan")) return "JP";
-  if (identity.includes("us") || identity.includes("oregon") || identity.includes("america")) return "US";
-  if (identity.includes("hk") || identity.includes("hong kong")) return "HK";
-  return "Other";
-}
-
 export function VlessConnectionCard({
   proxyUuid,
   nodes,
@@ -316,35 +357,43 @@ export function VlessConnectionCard({
   zh: boolean;
   embedded?: boolean;
 }) {
-  const [selectedNodeKey, setSelectedNodeKey] = useState<string | null>(null);
-  const regionOptions = useMemo(() => {
-    const seen = new Set<string>();
-    return nodes.reduce<Array<{ key: string; label: string; node: VlessNode }>>((options, candidate) => {
-      const key = nodeRegion(candidate);
-      if (!seen.has(key)) {
-        seen.add(key);
-        options.push({
-          key,
-          label: key === "Other" ? (zh ? "其他地区" : "Other") : `${key} ${zh ? "区域" : "Region"}`,
-          node: candidate,
-        });
-      }
-      return options;
-    }, []);
-  }, [nodes, zh]);
-  const useCompactRegionSelect = regionOptions.length > 4;
+  const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(
+    null,
+  );
+  const regionOptions = useMemo(() => regionalNodeOptions(nodes), [nodes]);
+  // The pill row fits three regions on one line at the panel's width. A fourth
+  // wraps onto a line of its own and reads as a stray control rather than part
+  // of the group, so hand the choice to the select from four regions up.
+  const useCompactRegionSelect =
+    regionOptions.length > REGION_PILL_LIMIT ||
+    new Set(regionOptions.map(({ pool }) => pool.code)).size <
+      regionOptions.length;
+  const regionGroups = useMemo(() => {
+    const groups = new Map<string, typeof regionOptions>();
+    for (const option of regionOptions) {
+      const group = groups.get(option.pool.code) ?? [];
+      group.push(option);
+      groups.set(option.pool.code, group);
+    }
+    return [...groups.values()];
+  }, [regionOptions]);
   const node = useMemo(() => {
-    if (!nodes.length) return undefined;
-    return nodes.find((candidate) => nodeKey(candidate) === selectedNodeKey) ?? regionOptions[0]?.node ?? nodes[0];
-  }, [nodes, regionOptions, selectedNodeKey]);
+    return (
+      regionOptions.find(({ pool }) => pool.key === selectedRegionCode)?.node ??
+      regionOptions[0]?.node
+    );
+  }, [regionOptions, selectedRegionCode]);
   useEffect(() => {
-    if (!node) {
-      setSelectedNodeKey(null);
+    const currentRegion = regionOptions.find(
+      ({ node: candidate }) => candidate === node,
+    )?.pool.key;
+    if (!currentRegion) {
+      setSelectedRegionCode(null);
       return;
     }
-    const currentKey = nodeKey(node);
-    if (selectedNodeKey !== currentKey) setSelectedNodeKey(currentKey);
-  }, [node, selectedNodeKey]);
+    if (selectedRegionCode !== currentRegion)
+      setSelectedRegionCode(currentRegion);
+  }, [node, regionOptions, selectedRegionCode]);
   const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -397,7 +446,10 @@ export function VlessConnectionCard({
   const cardBody = (
     <XdsCardBody className="xds-vless-body">
       {regionOptions.length > 1 ? (
-        <div className="xds-vless-regions" aria-label={zh ? "选择节点区域" : "Choose node region"}>
+        <div
+          className="xds-vless-regions"
+          aria-label={zh ? "选择节点区域" : "Choose node region"}
+        >
           <div className="xds-vless-regions-label">
             <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
             {zh ? "节点区域" : "Node region"}
@@ -406,33 +458,45 @@ export function VlessConnectionCard({
             <select
               className="xds-vless-region-select"
               aria-label={zh ? "选择节点区域" : "Choose node region"}
-              value={node ? nodeKey(node) : ""}
-              onChange={(event) => setSelectedNodeKey(event.target.value)}
+              value={selectedRegionCode ?? ""}
+              onChange={(event) => setSelectedRegionCode(event.target.value)}
             >
-              {regionOptions.map((option) => (
-                <option key={option.key} value={nodeKey(option.node)}>
-                  {option.label}
-                </option>
+              {regionGroups.map((options) => (
+                <optgroup
+                  key={options[0].pool.code}
+                  label={zh ? options[0].pool.zhName : options[0].pool.enName}
+                >
+                  {options.map((option) => (
+                    <option key={option.pool.key} value={option.pool.key}>
+                      {`${option.pool.shortCode} · ${option.pool.entry}`}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           ) : (
             <div className="xds-vless-region-list" role="list">
               {regionOptions.map((option) => {
-                const active = nodeKey(node) === nodeKey(option.node);
+                const active = selectedRegionCode === option.pool.key;
                 return (
                   <button
-                    key={option.key}
+                    key={option.pool.key}
                     type="button"
                     aria-pressed={active}
                     className={`xds-vless-region${active ? " xds-is-active" : ""}`}
-                    onClick={() => setSelectedNodeKey(nodeKey(option.node))}
+                    onClick={() => setSelectedRegionCode(option.pool.key)}
                   >
-                    {option.label}
+                    {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
                   </button>
                 );
               })}
             </div>
           )}
+        </div>
+      ) : null}
+      {node ? (
+        <div className="xds-vless-selected-node" title={node.address}>
+          <code>{node.address}</code>
         </div>
       ) : null}
       <div className="xds-qr">
@@ -455,22 +519,49 @@ export function VlessConnectionCard({
               color: "var(--text-tertiary)",
             }}
           >
-            {DASH}
+            {zh ? "二维码待生成" : "QR code pending"}
           </div>
         )}
       </div>
 
       <div style={{ minWidth: 0 }}>
+        {!uri ? (
+          <p
+            role="status"
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "var(--fs-caption)",
+              marginBottom: 8,
+            }}
+          >
+            {!proxyUuid
+              ? zh
+                ? "连接凭据尚未就绪，就绪后会显示二维码。"
+                : "Connection credentials are pending. The QR code will appear when ready."
+              : zh
+                ? "当前暂无已开放的区域入口。区域开放后会自动显示二维码和订阅链接。"
+                : "No regional entry is currently open. The QR code and subscription link will appear when a region opens."}
+          </p>
+        ) : null}
         <div className="xds-row" style={{ gap: 8, flexWrap: "wrap" }}>
-          <XdsButton variant="primary" size="sm" onClick={handleCopy} disabled={!uri}>
+          <XdsButton
+            variant="primary"
+            size="sm"
+            onClick={handleCopy}
+            disabled={!uri}
+          >
             {copied ? (
               <Check className="h-3.5 w-3.5" aria-hidden="true" />
             ) : (
               <Copy className="h-3.5 w-3.5" aria-hidden="true" />
             )}
             {copied
-              ? zh ? "已复制" : "Copied"
-              : zh ? "复制订阅链接" : "Copy subscription link"}
+              ? zh
+                ? "已复制"
+                : "Copied"
+              : zh
+                ? "复制订阅链接"
+                : "Copy subscription link"}
           </XdsButton>
           <XdsButton size="sm" onClick={handleDownload} disabled={!uri}>
             <Download className="h-3.5 w-3.5" aria-hidden="true" />
@@ -481,7 +572,12 @@ export function VlessConnectionCard({
     </XdsCardBody>
   );
 
-  if (embedded) return <div className="xds-vless-embedded">{cardBody}</div>;
+  if (embedded)
+    return (
+      <div id="xds-vless" className="xds-vless-embedded">
+        {cardBody}
+      </div>
+    );
 
   return (
     <XdsCard id="xds-vless">
@@ -496,7 +592,9 @@ export function VlessConnectionCard({
           uri ? (
             <XdsBadge tone="success">{zh ? "凭据已就绪" : "Ready"}</XdsBadge>
           ) : (
-            <XdsBadge tone="warning">{zh ? "凭据未就绪" : "Not ready"}</XdsBadge>
+            <XdsBadge tone="warning">
+              {zh ? "凭据未就绪" : "Not ready"}
+            </XdsBadge>
           )
         }
       />
@@ -524,39 +622,116 @@ export function QuotaCard({
   zh: boolean;
 }) {
   const percent = usage?.usagePercent;
+  const assignedPlan =
+    usage?.planAssignmentStatus === "assigned" && usage.currentPlan?.assigned
+      ? usage.currentPlan
+      : undefined;
+  const defaultPlan = usage?.defaultPlan;
+  const planName =
+    assignedPlan?.displayName || defaultPlan?.displayName || "default";
+  const isAssigned = Boolean(assignedPlan);
+  const isNaturalMonth =
+    (assignedPlan ?? defaultPlan)?.quotaCycle === "natural_month";
+  const isUnlimited = assignedPlan?.unlimited === true;
+  const planMaxQuota = currentPlanMaxQuota(usage);
+  const quotaExhausted = usage?.quotaExhausted === true;
+  const accessPaused =
+    usage?.networkAccessState === "paused" ||
+    usage?.networkAccessState === "blocked";
+  const accessLabel = (() => {
+    switch (usage?.networkAccessReason) {
+      case "quota_exhausted":
+        return zh ? "额度已用尽 · 已暂停" : "Quota exhausted · Paused";
+      case "billing_suspended":
+        return zh ? "账务暂停" : "Billing suspended";
+      case "operator_paused":
+        return zh ? "管理员暂停" : "Operator paused";
+      default:
+        return usage?.arrears
+          ? zh
+            ? "欠费"
+            : "Arrears"
+          : zh
+            ? "正常"
+            : "Normal";
+    }
+  })();
   return (
     <XdsCard>
       <XdsCardHead
         title={zh ? "月度配额" : "Monthly quota"}
         actions={
           <XdsBadge dot={false}>
-            {zh ? "套餐" : "Plan"} {usage?.billingProfile?.packageName || "default"}
+            {zh ? "套餐" : "Plan"} {planName}
+            {!isAssigned
+              ? zh
+                ? "（默认参考）"
+                : " (default reference)"
+              : null}{" "}
+            · {zh ? "最大流量" : "Max"}{" "}
+            {isUnlimited
+              ? zh
+                ? "无限制"
+                : "Unlimited"
+              : bytesOrDash(planMaxQuota)}
+            {zh ? " / 月" : " / month"}
+            {isNaturalMonth ? (zh ? " · 自然月" : " · Calendar month") : null}
           </XdsBadge>
         }
       />
       <XdsCardBody>
         <div className="xds-row-between" style={{ alignItems: "flex-end" }}>
           <div className="xds-stat-value" style={{ fontSize: "var(--fs-h1)" }}>
-            {pct(percent)}
-            <span className="xds-unit">%</span>
+            {isUnlimited ? "∞" : isAssigned ? pct(percent) : DASH}
+            {isAssigned && !isUnlimited ? (
+              <span className="xds-unit">%</span>
+            ) : null}
           </div>
           <span className="xds-t-caption xds-t-mono">
-            {bytesOrDash(usage?.usedBytes)} / {bytesOrDash(usage?.includedQuotaBytes)}
+            {isAssigned
+              ? `${bytesOrDash(usage?.usedBytes)} / ${isUnlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(planMaxQuota)}`
+              : `${zh ? "未分配" : "Unassigned"} · ${bytesOrDash(defaultPlan?.maxTrafficBytes)} ${zh ? "默认额度参考" : "default quota reference"}`}
           </span>
         </div>
         <XdsMeter
-          percent={percent}
+          percent={isAssigned && !isUnlimited ? percent : undefined}
           label={zh ? "月度配额" : "Monthly quota"}
           className="xds-mt-12"
         />
         <div className="xds-row-between" style={{ marginTop: 8 }}>
           <span className="xds-t-caption">
-            {zh ? "剩余" : "Remaining"} {bytesOrDash(usage?.remainingIncludedQuota)}
+            {zh ? "剩余" : "Remaining"}{" "}
+            {!isAssigned
+              ? DASH
+              : isUnlimited
+                ? zh
+                  ? "无限制"
+                  : "Unlimited"
+                : bytesOrDash(usage?.remainingIncludedQuota)}
           </span>
           <span className="xds-t-caption">
             {zh ? "本期重置" : "Resets"} {dateOrDash(usage?.periodEnd)}
           </span>
         </div>
+
+        {quotaExhausted ? (
+          <div
+            role="status"
+            className="xds-t-caption"
+            style={{
+              marginTop: 12,
+              padding: "10px 12px",
+              border: "1px solid var(--danger-border)",
+              borderRadius: "var(--r-md)",
+              background: "var(--danger-bg)",
+              color: "var(--danger)",
+            }}
+          >
+            {zh
+              ? "本月配额已用尽，用户配置同步已暂停。配额续期或调整后会自动恢复。"
+              : "This month’s quota is exhausted. User configuration sync is paused and restores automatically after renewal or adjustment."}
+          </div>
+        ) : null}
 
         <div className="xds-divider" style={{ margin: "20px 0" }} />
 
@@ -569,24 +744,31 @@ export function QuotaCard({
           </span>
         </div>
         <div className="xds-sec-row">
-          <span className="xds-t-caption">{zh ? "策略组" : "Policy groups"}</span>
+          <span className="xds-t-caption">
+            {zh ? "策略组" : "Policy groups"}
+          </span>
           <span className="xds-t-caption xds-subtle">
             {policy?.eligibleNodeGroups?.join(", ") || DASH}
           </span>
         </div>
         <div className="xds-sec-row">
-          <span className="xds-t-caption">{zh ? "同步状态" : "Sync state"}</span>
+          <span className="xds-t-caption">
+            {zh ? "同步状态" : "Sync state"}
+          </span>
           {usage ? (
-            <XdsBadge tone={usage.arrears ? "danger" : "success"}>
-              {usage.arrears ? (zh ? "欠费" : "Arrears") : zh ? "正常" : "Normal"}
-              {usage.throttleState ? ` · ${usage.throttleState}` : ""}
+            <XdsBadge
+              tone={accessPaused || usage.arrears ? "danger" : "success"}
+            >
+              {accessLabel}
             </XdsBadge>
           ) : (
             <span className="xds-t-caption xds-subtle">{DASH}</span>
           )}
         </div>
         <div className="xds-sec-row">
-          <span className="xds-t-caption">{zh ? "统计延迟" : "Sync delay"}</span>
+          <span className="xds-t-caption">
+            {zh ? "统计延迟" : "Sync delay"}
+          </span>
           <span className="xds-t-mono xds-t-caption">
             {typeof usage?.syncDelaySeconds === "number"
               ? `~${usage.syncDelaySeconds} s`
@@ -632,16 +814,28 @@ export function UsageCard({
       <XdsCardBody>
         <div className="xds-grid xds-g-3" style={{ gap: 20 }}>
           <div>
-            <div className="xds-stat-label">{zh ? "最近 1 小时" : "Last hour"}</div>
-            <div className="xds-stat-value">{formatBytes(breakdown.last1Hour)}</div>
+            <div className="xds-stat-label">
+              {zh ? "最近 1 小时" : "Last hour"}
+            </div>
+            <div className="xds-stat-value">
+              {formatBytes(breakdown.last1Hour)}
+            </div>
           </div>
           <div>
-            <div className="xds-stat-label">{zh ? "最近 24 小时" : "Last 24 hours"}</div>
-            <div className="xds-stat-value">{formatBytes(breakdown.last24Hours)}</div>
+            <div className="xds-stat-label">
+              {zh ? "最近 24 小时" : "Last 24 hours"}
+            </div>
+            <div className="xds-stat-value">
+              {formatBytes(breakdown.last24Hours)}
+            </div>
           </div>
           <div>
-            <div className="xds-stat-label">{zh ? "本月合计" : "Month to date"}</div>
-            <div className="xds-stat-value">{formatBytes(breakdown.monthToDate)}</div>
+            <div className="xds-stat-label">
+              {zh ? "本月合计" : "Month to date"}
+            </div>
+            <div className="xds-stat-value">
+              {formatBytes(breakdown.monthToDate)}
+            </div>
           </div>
         </div>
 
@@ -663,8 +857,11 @@ export function UsageCard({
                   : "Once step 3 is verified, per-minute usage shows up here."
               }
               action={
-                <a href="#xds-nodes" className="xds-btn xds-btn-secondary xds-btn-sm">
-                  {zh ? "查看运行节点" : "View nodes"}
+                <a
+                  href="#xds-vless"
+                  className="xds-btn xds-btn-secondary xds-btn-sm"
+                >
+                  {zh ? "查看连接凭据" : "View credentials"}
                 </a>
               }
             />
@@ -675,129 +872,130 @@ export function UsageCard({
   );
 }
 
-/* ═══════════════════════════════════ 运行节点表 ═══════════════════════════════════ */
+/* ═══════════════════════════════ 区域入口与 pool ═══════════════════════════════ */
 
-function formatProtocols(protocols?: string | string[]): string {
-  if (Array.isArray(protocols)) return protocols.join(" / ");
-  return protocols || DASH;
-}
-
-/** 过滤掉共享 token / 通配地址这类不该出现在用户视图里的内部条目 */
-function visibleNode(node: VlessNode): boolean {
-  const name = (node.name || "").toLowerCase();
-  const address = (node.address || "").trim();
-  return Boolean(
-    address &&
-      address !== "*" &&
-      !(name.includes("internal agents") && name.includes("shared token")),
-  );
-}
-
-export function NodesTable({ zh }: { zh: boolean }) {
-  const { data, error, isLoading, mutate } = useSWR<VlessNode[]>(
-    "user-center-agent-nodes",
-    fetchAgentNodes,
-  );
-  const nodes = (data ?? []).filter(visibleNode);
+export function NodesTable({
+  zh,
+  pools,
+  isLoading,
+  error,
+}: {
+  zh: boolean;
+  pools: RegionalPool[];
+  isLoading?: boolean;
+  error?: Error;
+}) {
+  const groupedPools = groupRegionalPools(pools);
 
   return (
     <XdsCard id="xds-nodes">
       <XdsCardHead
-        title={zh ? "运行节点" : "Runtime nodes"}
+        title={zh ? "区域入口" : "Regional entry points"}
         description={
           zh
-            ? "字段仅呈现 API 提供的值；服务端未返回的信息显示为 —，不做推断。"
-            : "Only fields the API returns are shown; anything absent renders as — rather than being inferred."
+            ? "仅展示区域入口域名、开放状态与 pool 数量，不展示具体运行节点。未开放的区域不会出现在用户的连接选择器中。"
+            : "Shows regional entry domains, whether each is open to users, and pool counts only; individual runtime nodes are not displayed. A closed region is not offered in the user connection selector."
         }
         actions={
-          <>
-            <XdsBadge dot={false}>{nodes.length}</XdsBadge>
-            <XdsButton size="sm" onClick={() => void mutate()}>
-              <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {zh ? "刷新" : "Refresh"}
-            </XdsButton>
-          </>
+          <XdsBadge dot={false}>
+            {isLoading || error ? DASH : pools.length}
+          </XdsBadge>
         }
       />
-
-      {isLoading ? (
-        <XdsCardBody>
-          <p className="xds-t-caption">{zh ? "加载中…" : "Loading…"}</p>
-        </XdsCardBody>
-      ) : error ? (
-        <XdsCardBody>
-          <XdsEmpty
-            icon={<Server className="h-9 w-9" />}
-            title={zh ? "节点列表暂时取不到" : "Node list unavailable"}
-            description={error instanceof Error ? error.message : String(error)}
-            action={
-              <XdsButton size="sm" onClick={() => void mutate()}>
-                {zh ? "重试" : "Retry"}
-              </XdsButton>
-            }
-          />
-        </XdsCardBody>
-      ) : nodes.length === 0 ? (
-        <XdsCardBody>
-          <XdsEmpty
-            icon={<Server className="h-9 w-9" />}
-            title={zh ? "还没有可用节点" : "No nodes yet"}
-            description={
-              zh
-                ? "节点由服务端按策略组下发，完成账户设置后会自动出现。"
-                : "Nodes are delivered server-side by policy group once account setup is complete."
-            }
-            action={
-              <BoundaryLink href="/docs" className="xds-btn xds-btn-secondary xds-btn-sm">
-                {zh ? "查看部署文档" : "Read the deployment guide"}
-              </BoundaryLink>
-            }
-          />
-        </XdsCardBody>
-      ) : (
-        <div className="xds-scroll-x">
-          <table className="xds-table">
-            <thead>
+      <div className="xds-scroll-x">
+        <table className="xds-table">
+          <thead>
+            <tr>
+              <th>{zh ? "区域" : "Region"}</th>
+              <th>{zh ? "区域代码" : "Region code"}</th>
+              <th>{zh ? "区域入口" : "Regional entry point"}</th>
+              <th>{zh ? "是否向用户开放" : "Open to users"}</th>
+              <th>{zh ? "关闭原因" : "Closure reasons"}</th>
+              <th style={{ textAlign: "right" }}>
+                {zh ? "Pool 数量" : "Pools"}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {(isLoading || error || pools.length === 0) && (
               <tr>
-                <th>{zh ? "节点" : "Node"}</th>
-                <th>{zh ? "地址" : "Address"}</th>
-                <th>SNI</th>
-                <th>{zh ? "端口" : "Port"}</th>
-                <th>{zh ? "协议" : "Protocols"}</th>
-                <th style={{ textAlign: "right" }}>{zh ? "配置" : "Config"}</th>
+                <td colSpan={6} role={error ? "alert" : "status"}>
+                  {isLoading
+                    ? zh
+                      ? "加载中…"
+                      : "Loading…"
+                    : error
+                      ? zh
+                        ? "区域入口加载失败"
+                        : "Unable to load regional entries"
+                      : zh
+                        ? "暂无已注册的区域入口"
+                        : "No registered regional entries"}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {nodes.map((node) => (
-                <tr key={`${node.name}-${node.address}-${node.port}`}>
-                  <td style={{ fontWeight: 500 }}>{node.name || DASH}</td>
-                  <td className="xds-t-mono xds-subtle">{node.address || DASH}</td>
-                  <td className="xds-t-mono xds-subtle">{node.server_name || DASH}</td>
-                  <td className="xds-t-mono xds-subtle">
-                    {[node.port, node.xhttp_port, node.tcp_port]
-                      .filter((p): p is number => typeof p === "number" && p > 0)
-                      .join(" · ") || DASH}
+            )}
+          </tbody>
+          {groupedPools.map(({ group, teamId, pools: groupPools }) => (
+            <tbody key={`${group}:${teamId ?? ""}`}>
+              <tr key={`group-${group}`}>
+                <th
+                  scope="rowgroup"
+                  colSpan={6}
+                  className="xds-subtle"
+                  style={{ textAlign: "left" }}
+                >
+                  {regionalResourceGroupLabel(group)}
+                  {teamId ? ` · ${teamId}` : ""}
+                </th>
+              </tr>
+              {groupPools.map((pool) => (
+                <tr key={pool.key}>
+                  <td style={{ fontWeight: 500 }}>
+                    {zh ? pool.zhName : pool.enName}
                   </td>
+                  <td className="xds-t-mono xds-subtle">{pool.code}</td>
+                  <td className="xds-t-mono xds-subtle">{pool.entry}</td>
                   <td>
-                    <XdsTag>{formatProtocols(node.protocols)}</XdsTag>
+                    <XdsBadge tone={pool.openToUsers ? "success" : "neutral"}>
+                      {pool.openToUsers
+                        ? zh
+                          ? "已开放"
+                          : "Open"
+                        : zh
+                          ? "未开放"
+                          : "Closed"}
+                    </XdsBadge>
                   </td>
-                  <td style={{ textAlign: "right" }}>
-                    <XdsBadge tone="info">{zh ? "已下发" : "Delivered"}</XdsBadge>
+                  <td className="xds-subtle">
+                    {pool.openToUsers
+                      ? DASH
+                      : pool.closedReasons?.length
+                        ? pool.closedReasons
+                            .map((reason) =>
+                              regionalClosureReasonLabel(reason, zh),
+                            )
+                            .join("；")
+                        : zh
+                          ? "服务端未提供原因"
+                          : "Reason not provided by server"}
                   </td>
+                  <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
-      )}
+          ))}
+        </table>
+      </div>
 
       <XdsCardFoot>
         <div className="xds-row-between">
           <span className="xds-t-caption">
-            {zh ? `显示 ${nodes.length} 个节点` : `${nodes.length} node(s)`}
+            {zh
+              ? `显示 ${pools.length} 个区域 pool`
+              : `${pools.length} regional pools`}
           </span>
           <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
-            {zh ? "节点与协议说明" : "Nodes and protocols"}
+            {zh ? "区域入口说明" : "Regional entry point guide"}
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </BoundaryLink>
         </div>

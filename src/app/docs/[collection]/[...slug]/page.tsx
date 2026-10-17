@@ -1,4 +1,6 @@
 export const revalidate = 300;
+// The rendered language is negotiated from request headers at runtime.
+export const dynamic = "force-dynamic";
 // Documents added between two builds still render on first request.
 export const dynamicParams = true;
 
@@ -14,10 +16,12 @@ import { getContentLanguage } from "@server/contentLanguage";
 
 import Feedback from "../../Feedback";
 import DocActions from "../../DocActions";
-import { getDocVersion, getDocVersionParams } from "../../resources.server";
+import { getDocVersion } from "../../resources.server";
 
 export async function generateStaticParams() {
-  return getDocVersionParams();
+  // Keep documentation pages on-demand so a growing content catalog cannot
+  // turn the SSR content build into an unbounded prerender job.
+  return [];
 }
 
 function DocsBreadcrumbs({

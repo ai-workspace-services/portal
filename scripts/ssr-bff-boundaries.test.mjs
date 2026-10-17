@@ -3,6 +3,15 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { bffBoundaryForRoute } from "./ssr-bff-boundaries.mjs";
 
+test("Operations catalog, plan and MCP share the console boundary", () => {
+  for (const route of [
+    "api/operations/catalog/route.ts",
+    "api/operations/plans/route.ts",
+    "api/operations/mcp/route.ts",
+  ])
+    assert.equal(bffBoundaryForRoute(route), "console");
+});
+
 test("Zero catch-all is bundled in Console, not auth/public or excluded", async () => {
   const route = "api/xconnect-zero/[...segments]/route.ts";
   assert.equal(bffBoundaryForRoute(route), "console");
@@ -30,9 +39,19 @@ test("Zero catch-all is bundled in Console, not auth/public or excluded", async 
 
 test("existing auth and Console BFF boundaries are preserved", () => {
   for (const path of [
+    "api/auth/login/route.ts",
+    "api/auth/register/route.ts",
+    "api/auth/register/send/route.ts",
+    "api/auth/register/verify/route.ts",
+    "api/auth/password/forgot/route.ts",
+    "api/auth/password/forgot/send-code/route.ts",
+    "api/auth/password/forgot/confirm-code/route.ts",
+    "api/auth/verify-email/route.ts",
+    "api/auth/verify-email/send/route.ts",
     "api/auth/session/route.ts",
     "api/auth/token/exchange/route.ts",
     "api/auth/mfa/verify/route.ts",
+    "api/auth/mfa/recovery-codes/route.ts",
   ]) {
     assert.equal(bffBoundaryForRoute(path), "auth");
   }
@@ -42,15 +61,49 @@ test("existing auth and Console BFF boundaries are preserved", () => {
       "console",
     );
   }
+  assert.equal(bffBoundaryForRoute("api/global-mesh/nodes/route.ts"), "public");
+});
+
+test("public workspace service APIs are bundled in the workspace boundary", () => {
+  for (const path of [
+    "api/ai-workspace/free/route.ts",
+    "api/ai-workspace/sessions/[...segments]/route.ts",
+    "api/ai-workspace/tasks/catalog/route.ts",
+    "api/xworkmate/bridge/route.ts",
+  ]) {
+    assert.equal(bffBoundaryForRoute(path), "workspace");
+  }
 });
 
 test("no generic API or similar prefix gains a BFF handler", () => {
   for (const path of [
     "api/xconnect-zero-evil/[...segments]/route.ts",
     "api/overlay/v1/route.ts",
-    "api/auth/login/route.ts",
     "panel/xconnect-zero/page.tsx",
   ]) {
     assert.equal(bffBoundaryForRoute(path), undefined);
   }
+});
+
+test("release status is bundled in Console with a fixed read-only route", () => {
+  assert.equal(
+    bffBoundaryForRoute("api/operations/releases/route.ts"),
+    "console",
+  );
+  assert.equal(
+    bffBoundaryForRoute("api/operations/releases/dispatch/route.ts"),
+    undefined,
+  );
+});
+
+
+test("Referral self-service BFF routes stay in console, campaign stays public", async () => {
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/settlements/route.ts"), "console");
+  assert.equal(bffBoundaryForRoute("api/auth/referrals/unknown/route.ts"), undefined);
+  const { buildBoundaryRoutes, resolveBoundaryForPath } = await import("./ssr-boundary-routes.mjs");
+  const config = JSON.parse(await readFile(new URL("../config/cloudflare-boundaries.json", import.meta.url), "utf8"));
+  const routes = buildBoundaryRoutes(config.boundaries);
+  assert.equal(resolveBoundaryForPath("/referral", routes), "public");
+  assert.equal(resolveBoundaryForPath("/referrals", routes), "console");
 });

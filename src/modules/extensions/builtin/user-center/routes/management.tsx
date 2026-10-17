@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { BarChart3, ShieldCheck, UsersRound, Video } from "lucide-react";
+import { BarChart3, Mail, ShieldCheck, UsersRound, Video } from "lucide-react";
 
 import Card from "../components/Card";
+import EmailManagementPanel from "../management/components/EmailManagementPanel";
+import { emailCopy } from "@/lib/email-preferences";
 import TrendChart, {
   type MetricsSeries,
 } from "../management/components/TrendChart";
@@ -14,7 +16,10 @@ import OverviewCards, {
 import PermissionMatrixEditor, {
   type PermissionMatrix,
 } from "../management/components/PermissionMatrixEditor";
+import NetworkTeamsPanel from "../components/NetworkTeamsPanel";
 import UserGroupManagement, {
+  type AdminPlanGroupPreview,
+  type AdminPlanGroupUpdate,
   type ManagedUser,
   type CreateManagedUserInput,
 } from "../management/components/UserGroupManagement";
@@ -32,7 +37,6 @@ type UserMetricsResponse = {
   overview: MetricsOverview;
   series: MetricsSeries;
 };
-
 
 type AdminSettingsResponse = {
   version: number;
@@ -70,7 +74,7 @@ async function jsonFetcher<T>(
     } catch (error) {
       // Ignore JSON parse errors; fall back to status text below.
     }
-    const message = payload?.error ?? payload?.message ?? response.statusText;
+    const message = payload?.message ?? payload?.error ?? response.statusText;
     throw new Error(message || "请求失败");
   }
 
@@ -100,9 +104,7 @@ export default function UserCenterManagementRoute() {
   const canAccess = accessDecision.allowed;
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
-  const canCreateCustomUser = Boolean(
-    user?.isAdmin && user?.email?.trim().toLowerCase() === "admin@svc.plus",
-  );
+  const canCreateCustomUser = Boolean(user?.isRoot);
 
   const [matrixDraft, setMatrixDraft] = useState<PermissionMatrix>({});
   const [matrixVersion, setMatrixVersion] = useState<number>(0);
@@ -131,7 +133,7 @@ export default function UserCenterManagementRoute() {
     string | undefined
   >();
   const [activeTab, setActiveTab] = useState<
-    "users" | "permissions" | "groups" | "homepage"
+    "users" | "permissions" | "groups" | "homepage" | "email"
   >("users");
 
   const metricsSWR = useSWR<UserMetricsResponse>(
@@ -319,6 +321,102 @@ export default function UserCenterManagementRoute() {
     [canEditRoles, markGroupsPending, usersSWR],
   );
 
+  const handlePlanGroupPreview = useCallback(
+    async (
+      scope: "single" | "batch",
+      updates: AdminPlanGroupUpdate[],
+      reason: string,
+    ): Promise<AdminPlanGroupPreview> => {
+      if (!canEditRoles || updates.length === 0) {
+        throw new Error("没有可修改的用户");
+      }
+      setGroupsUpdateMessage(undefined);
+      const endpoint =
+        scope === "single"
+          ? `${ADMIN_API_BASE}/users/${encodeURIComponent(updates[0].userId)}/plan-group`
+          : `${ADMIN_API_BASE}/users/plan-groups/batch`;
+      return jsonFetcher<AdminPlanGroupPreview>(endpoint, {
+        method: "PUT",
+        body: JSON.stringify({
+          mode: "preview",
+          requestId: crypto.randomUUID(),
+          reason,
+          updates,
+        }),
+      });
+    },
+    [canEditRoles],
+  );
+
+  const handlePlanGroupApply = useCallback(
+    async (
+      scope: "single" | "batch",
+      updates: AdminPlanGroupUpdate[],
+      requestId: string,
+      previewToken: string,
+      reason: string,
+    ) => {
+      if (!canEditRoles || updates.length === 0) return;
+      setGroupsUpdateMessage(undefined);
+      updates.forEach(({ userId }) => markGroupsPending(userId, true));
+      const endpoint =
+        scope === "single"
+          ? `${ADMIN_API_BASE}/users/${encodeURIComponent(updates[0].userId)}/plan-group`
+          : `${ADMIN_API_BASE}/users/plan-groups/batch`;
+      try {
+        await jsonFetcher(endpoint, {
+          method: "PUT",
+          body: JSON.stringify({
+            mode: "apply",
+            requestId,
+            previewToken,
+            reason,
+            updates,
+          }),
+        });
+        await usersSWR.mutate();
+      } catch (error) {
+        setGroupsUpdateMessage(
+          error instanceof Error ? error.message : "套餐变更失败",
+        );
+        throw error;
+      } finally {
+        updates.forEach(({ userId }) => markGroupsPending(userId, false));
+      }
+    },
+    [canEditRoles, markGroupsPending, usersSWR],
+  );
+
+  const handleSubscriptionRecordsImport = useCallback(
+    async (csv: string, reason: string): Promise<AdminPlanGroupPreview> => {
+      if (!canEditRoles) throw new Error("没有导入权限");
+      return jsonFetcher<AdminPlanGroupPreview>(
+        `${ADMIN_API_BASE}/users/plan-groups/batch`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            mode: "preview",
+            requestId: crypto.randomUUID(),
+            reason,
+            csv,
+            reconcile: true,
+          }),
+        },
+      );
+    },
+    [canEditRoles],
+  );
+
+  const handleSubscriptionRecordsExport =
+    useCallback(async (): Promise<string> => {
+      const response = await fetch(
+        `${ADMIN_API_BASE}/users/subscription-records?format=csv`,
+        { credentials: "include", cache: "no-store" },
+      );
+      if (!response.ok) throw new Error(`导出失败（HTTP ${response.status}）`);
+      return response.text();
+    }, []);
+
   const handleRoleChange = useCallback(
     async (userId: string, role: string) => {
       if (!canEditRoles) {
@@ -409,7 +507,9 @@ export default function UserCenterManagementRoute() {
   const handleDeleteUser = useCallback(
     async (userId: string) => {
       try {
-        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}`, { method: "DELETE" });
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}`, {
+          method: "DELETE",
+        });
         usersSWR.mutate();
       } catch (error) {
         alert(error instanceof Error ? error.message : "操作失败");
@@ -522,6 +622,9 @@ export default function UserCenterManagementRoute() {
     { id: "permissions" as const, label: "角色与权限", Icon: ShieldCheck },
     { id: "groups" as const, label: "用户组", Icon: BarChart3 },
     { id: "homepage" as const, label: "首页视频配置", Icon: Video },
+    ...(user?.isRoot
+      ? [{ id: "email" as const, label: emailCopy(language).tab, Icon: Mail }]
+      : []),
   ];
 
   return (
@@ -581,12 +684,18 @@ export default function UserCenterManagementRoute() {
               overview={metricsSWR.data?.overview}
               isLoading={metricsLoading}
               lastUpdatedLabel={lastUpdatedLabel}
+              errorMessage={metricsSWR.error?.message}
+              onRetry={() => {
+                void metricsSWR.mutate();
+              }}
             />
-            <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-subtle)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
-              系统运行正常
-              {lastUpdatedLabel ? <span>· {lastUpdatedLabel}</span> : null}
-            </div>
+            {metricsSWR.data && !metricsSWR.error ? (
+              <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-subtle)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
+                用户统计已更新
+                {lastUpdatedLabel ? <span>· {lastUpdatedLabel}</span> : null}
+              </div>
+            ) : null}
           </div>
           <UserManagementWorkspace
             users={usersSWR.data}
@@ -630,6 +739,9 @@ export default function UserCenterManagementRoute() {
               {groupsUpdateMessage}
             </p>
           ) : null}
+          {user?.isRoot ? (
+            <NetworkTeamsPanel users={usersSWR.data ?? []} />
+          ) : null}
           <UserGroupManagement
             users={usersSWR.data}
             isLoading={usersLoading}
@@ -644,6 +756,14 @@ export default function UserCenterManagementRoute() {
             onCreateCustomUser={handleCreateCustomUser}
             onManageBlacklist={() => setIsBlacklistOpen(true)}
             onGroupsChange={handleGroupsChange}
+            onPlanGroupPreview={handlePlanGroupPreview}
+            onPlanGroupApply={handlePlanGroupApply}
+            onSubscriptionRecordsImport={
+              user?.isRoot ? handleSubscriptionRecordsImport : undefined
+            }
+            onSubscriptionRecordsExport={
+              user?.isRoot ? handleSubscriptionRecordsExport : undefined
+            }
             pendingGroupUserIds={pendingGroupUpdates}
           />
         </div>
@@ -660,6 +780,12 @@ export default function UserCenterManagementRoute() {
             errorMessage={homepageVideoError}
             onSave={handleSaveHomepageVideo}
           />
+        </div>
+      ) : null}
+
+      {activeTab === "email" && user?.isRoot ? (
+        <div className="p-4 sm:p-5">
+          <EmailManagementPanel />
         </div>
       ) : null}
 

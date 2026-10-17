@@ -21,7 +21,42 @@ runtime:
     extension_flags: src/lib/featureFlags.ts
   notes:
     - "feature-toggles.json is the active runtime source for path-based gating."
-    - "This YAML is an inventory and planning file; it does not currently drive runtime behavior."
+    - "User Center features are organized into 4 categories: XWorkmate, XConnect, AI Workspace, Open Platform."
+    - "Environment policy: UAT opens all channels (stable, beta, develop); PROD opens only stable."
+    - "Homepage marketing (cmsExperience) is completely independent and unaffected."
+
+environments:
+  uat:
+    policy: all_open
+    allowed_channels: [stable, beta, develop]
+    description: UAT environment allows all channels (all features open).
+  prod:
+    policy: stable_only
+    allowed_channels: [stable]
+    description: PROD environment strictly restricts to stable channel only.
+
+userCenter:
+  categories:
+    xworkmate:
+      name: XWorkmate
+      description: "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中"
+      channel: stable
+      features: [assistant, agent, workspace]
+    xconnect:
+      name: XConnect
+      description: "AI Connectivity · 为 AI Workspace 提供稳定、安全的连接能力"
+      channel: stable
+      features: [ai_aggregator, token_quota, api, vless, regional_pools]
+    ai_workspace:
+      name: AI Workspace
+      description: "立即进入你的智能工作空间，开始对话、任务与交付"
+      channel: stable
+      features: [dashboard, subscription, editor, trial]
+    open_platform:
+      name: Open Platform
+      description: "开源、可控、可扩展的基础设施支撑，支持自建部署"
+      channel: stable
+      features: [cloud_iac, ldp, management, ops, observability]
 
 sections:
   globalNavigation:

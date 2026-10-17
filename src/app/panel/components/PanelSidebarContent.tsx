@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, type ComponentType } from "react";
 
-import { ChevronDown, Plus, Settings2, Zap, type LucideIcon } from "lucide-react";
+import {
+  ChevronDown,
+  Plus,
+  Settings2,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 
 import { getExtensionRegistry } from "@extensions/loader";
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -12,6 +19,7 @@ import { translations } from "@i18n/translations";
 import { resolveAccess } from "@lib/accessControl";
 import { cn } from "@lib/utils";
 import { useUserStore } from "@lib/userStore";
+import operationsContent from "@/data/content/operations";
 
 const registry = getExtensionRegistry();
 const PlaceholderIcon: ComponentType<{ className?: string }> = () => null;
@@ -32,7 +40,7 @@ interface NavSection {
 }
 
 function isActive(pathname: string, href: string) {
-  if (href === "/panel") {
+  if (href === "/panel" || href === "/panel/operations") {
     return pathname === "/panel";
   }
   return pathname.startsWith(href);
@@ -58,6 +66,14 @@ export function PanelSidebarContent({
   const user = useUserStore((state) => state.user);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const copy = translations[language].userCenter;
+  const operationsCopy: Record<string, string> = operationsContent[language].ui;
+  const operationsLabels: Record<string, string> = {
+    platformOperations: operationsCopy.menuOverview,
+    platformOperationsReleases: operationsCopy.menuReleases,
+    platformOperationsEnvironments: operationsCopy.menuEnvironments,
+    platformOperationsAudit: operationsCopy.menuAudit,
+    platformOperationsVault: operationsCopy.menuVault,
+  };
 
   const navSections = useMemo<NavSection[]>(() => {
     return registry.sidebar
@@ -116,11 +132,14 @@ export function PanelSidebarContent({
       : "Deployments, resources, keys, and observability";
 
   const sectionLabel = (section: NavSection) =>
-    copy.sections[section.id as keyof typeof copy.sections] || section.title;
+    section.id === "platform-operations"
+      ? operationsCopy.menuSection
+      : copy.sections[section.id as keyof typeof copy.sections] ||
+        section.title;
 
   const itemLabel = (item: NavItem) =>
-    (item.id &&
-      copy.items[item.id as keyof typeof copy.items]) ||
+    (item.id && operationsLabels[item.id]) ||
+    (item.id && copy.items[item.id as keyof typeof copy.items]) ||
     item.label;
 
   const renderItem = (item: NavItem) => {
@@ -170,7 +189,7 @@ export function PanelSidebarContent({
 
   return (
     <>
-      <a
+      <BoundaryLink
         href="/"
         className="xds-sidebar-brand block hover:opacity-85 transition-opacity"
         title={language === "zh" ? "返回主页" : "Back to homepage"}
@@ -179,12 +198,15 @@ export function PanelSidebarContent({
           <Zap className="xds-ico" aria-hidden="true" />
         </span>
         <div className="xds-sidebar-brand-text min-w-0">
-          <div className="xds-t-body-sm" style={{ fontWeight: "var(--fw-semibold)" }}>
+          <div
+            className="xds-t-body-sm"
+            style={{ fontWeight: "var(--fw-semibold)" }}
+          >
             XWorkmate
           </div>
           <div className="xds-t-caption">{copy.overview.heading}</div>
         </div>
-      </a>
+      </BoundaryLink>
 
       <nav className="xds-sidebar-nav">
         {primarySections.map(renderSection)}
@@ -200,15 +222,22 @@ export function PanelSidebarContent({
               className="xds-nav-item w-full"
             >
               <Settings2 className="xds-ico" aria-hidden="true" />
-              <span className="xds-nav-item-label truncate">{advancedLabel}</span>
+              <span className="xds-nav-item-label truncate">
+                {advancedLabel}
+              </span>
               <ChevronDown
-                className={cn("xds-ico xds-caret", advancedOpen && "xds-is-open")}
+                className={cn(
+                  "xds-ico xds-caret",
+                  advancedOpen && "xds-is-open",
+                )}
                 aria-hidden="true"
               />
             </button>
             {advancedOpen ? (
               <div id="panel-advanced-configuration" className="mt-1">
-                {resourceSections.flatMap((section) => section.items.map(renderItem))}
+                {resourceSections.flatMap((section) =>
+                  section.items.map(renderItem),
+                )}
               </div>
             ) : null}
           </div>

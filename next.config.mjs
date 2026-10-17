@@ -151,6 +151,13 @@ const nextConfig = {
         ],
       },
       {
+        source: "/products/:file(.*\\.md)",
+        headers: [
+          { key: "Content-Type", value: "text/markdown; charset=utf-8" },
+          { key: "Cache-Control", value: crawlerFile },
+        ],
+      },
+      {
         source: "/api/:path*",
         headers: [
           { key: "Access-Control-Allow-Credentials", value: "true" },

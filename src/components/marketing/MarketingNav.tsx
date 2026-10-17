@@ -141,11 +141,11 @@ export default function MarketingNav() {
         : "用户中心"
     : accountLabel;
 
-  const consoleHref = showRoleSelector
-    ? activeConsole === "admin" || activeConsole === "operator"
+  const consoleHref = isAuthenticated
+    ? showRoleSelector && (activeConsole === "admin" || activeConsole === "operator")
       ? "/panel/management"
       : "/panel"
-    : "/panel";
+    : "https://svc.plus/login?next=%2Fpanel";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

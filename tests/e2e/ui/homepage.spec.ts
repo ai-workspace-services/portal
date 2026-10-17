@@ -12,9 +12,18 @@ test.describe("Marketing homepage experience", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "开放的 AI 工作空间",
+        name: /XWorkmate\s*开放的 AI 工作空间/,
       }),
     ).toBeVisible();
+    // store-and-startup-homepage-spec: company attribution and a download
+    // path are visible in the hero, and product pages sit right below it.
+    await expect(page.getByTestId("hero-company-attribution")).toContainText(
+      "XWork Technologies LLC",
+    );
+    await expect(page.getByRole("link", { name: "下载客户端" })).toHaveAttribute(
+      "href",
+      "/products/xworkmate#source-and-downloads",
+    );
     await expect(
       page.locator("nav").getByRole("link", { name: "免费试用" }),
     ).toHaveCount(0);
@@ -68,7 +77,7 @@ test.describe("Marketing homepage experience", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "An open AI workspace",
+        name: /XWorkmate\s*An open AI workspace/,
       }),
     ).toBeVisible();
     await expect(

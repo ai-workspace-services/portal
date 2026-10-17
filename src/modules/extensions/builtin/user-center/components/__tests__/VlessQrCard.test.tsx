@@ -4,12 +4,16 @@ import { describe, expect, it, vi } from "vitest";
 
 import VlessQrCard, { type VlessQrCopy } from "../VlessQrCard";
 
+const { toDataURLMock } = vi.hoisted(() => ({
+  toDataURLMock: vi.fn(() => Promise.resolve("data:image/png;base64,test")),
+}));
+
 vi.mock("next/image", () => ({
   default: () => null,
 }));
 
 vi.mock("qrcode", () => ({
-  toDataURL: vi.fn(() => Promise.resolve("data:image/png;base64,test")),
+  toDataURL: toDataURLMock,
 }));
 
 vi.mock("swr", () => ({
@@ -17,6 +21,9 @@ vi.mock("swr", () => ({
     data: [
       {
         name: "JP-XHTTP.SVC.PLUS",
+        region: "jpn-tky",
+        pool_count: 1,
+        open_to_users: true,
         address: "jp-xhttp.svc.plus",
         port: 443,
         xhttp_port: 443,
@@ -64,5 +71,9 @@ describe("VlessQrCard", () => {
         screen.getByRole("button", { name: copy.downloadQr }),
       ).toBeEnabled();
     });
+    expect(toDataURLMock).toHaveBeenCalledWith(
+      expect.stringContaining("@jp-xhttp.svc.plus"),
+      expect.any(Object),
+    );
   });
 });

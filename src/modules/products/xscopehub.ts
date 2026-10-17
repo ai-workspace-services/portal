@@ -8,20 +8,19 @@ const xscopehub: ProductConfig = {
   tagline_zh: "统一指标、日志、链路追踪，一站式智能告警。",
   tagline_en:
     "Unified metrics, logs, and traces with intelligent alerting in one hub.",
-  ogImage: "https://www.svc.plus/assets/og/xscopehub.png",
+  ogImage: "https://xworktech.com/assets/og/xscopehub.png",
   repoUrl: "https://github.com/Cloud-Neutral/XScopeHub",
-  docsQuickstart: "https://www.svc.plus/xscopehub/docs/quickstart",
-  docsApi: "https://www.svc.plus/xscopehub/docs/api",
+  docsQuickstart: "https://xworktech.com/docs",
+  docsApi: "https://xworktech.com/docs",
   docsIssues: "https://github.com/Cloud-Neutral/XScopeHub/issues",
-  blogUrl: "https://www.svc.plus/blogs/tags/xscopehub",
-  videosUrl: "https://www.svc.plus/videos/xscopehub",
-  downloadUrl: "https://www.svc.plus/xscopehub/downloads",
+  blogUrl: "https://xworktech.com/blogs",
+  videosUrl: "https://xworktech.com/docs",
+  downloadUrl: "https://xworktech.com/download",
   editions: {
     selfhost: [
       {
         label: "部署包下载",
-        href: "https://www.svc.plus/xscopehub/downloads",
-        external: true,
+        href: "/download",
       },
       {
         label: "Helm Chart",
@@ -32,22 +31,19 @@ const xscopehub: ProductConfig = {
     managed: [
       {
         label: "预约演示",
-        href: "https://www.svc.plus/contact?product=xscopehub",
-        external: true,
+        href: "/contact",
       },
     ],
     paygo: [
       {
         label: "弹性计费",
-        href: "https://www.svc.plus/pricing/xscopehub",
-        external: true,
+        href: "/prices",
       },
     ],
     saas: [
       {
         label: "立即订阅",
-        href: "https://www.svc.plus/xscopehub/signup",
-        external: true,
+        href: "/panel/subscription",
       },
     ],
   },

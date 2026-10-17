@@ -9,7 +9,7 @@ export default function Contact() {
     t.contactDescription ??
     'Share your feedback or feature ideas and we will respond as soon as possible. For technical help, reach us via email.'
   const emailLabel = t.contactEmailLabel ?? 'Technical support email'
-  const email = t.contactEmail ?? 'manbuzhe2008@gmail.com'
+  const email = t.contactEmail ?? 'support@xworktech.com'
 
   return (
     <section id="contact" className="py-20 bg-gray-50 text-gray-900">

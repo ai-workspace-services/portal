@@ -140,6 +140,8 @@ export async function appendTaskMessage(
     clientRequestId: string;
     text: string;
     run?: { priority: number; notBefore?: string };
+    /** Orchestrator hints (role, roleMode); the gateway validates them. */
+    routing?: { roleMode: "auto"; role?: string };
   },
   fetcher: Fetcher = fetch,
 ): Promise<SubmitTaskMessageResult> {
@@ -161,7 +163,16 @@ async function request<T>(
     headers: init.body ? { "content-type": "application/json" } : undefined,
     body: init.body,
   });
-  const data = (await response.json()) as T | { error?: { message?: string } };
+  const text = await response.text();
+  let data: any;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    if (!response.ok) {
+      throw new Error(`会话网关不可用 (${response.status})`);
+    }
+    throw new Error("服务端返回非标准 JSON 数据");
+  }
   if (!response.ok) {
     const error = data as { error?: { message?: string } };
     throw new Error(

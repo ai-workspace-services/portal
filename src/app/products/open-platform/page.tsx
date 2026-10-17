@@ -1,23 +1,13 @@
-// Marketing copy changes with a content push, not with a request. Prerender it
-// and refresh in the background.
-export const revalidate = 900;
-
-import { getProduct } from "@/lib/docsServiceClient";
-import ProductPageTemplate from "@/components/products/ProductPageTemplate";
+import type { Metadata } from "next";
+import OpenPlatformSolutionView from "@/components/products/OpenPlatformSolutionView";
 import openPlatformData from "@/data/content/open-platform.json";
 
-export default async function OpenPlatformPage() {
-  let product = await getProduct("open-platform");
-  if (!product) {
-    const raw = (openPlatformData as any).zh || (openPlatformData as any).en || openPlatformData;
-    product = {
-      slug: "open-platform",
-      language: "zh",
-      hero: raw.hero,
-      wizard: raw.wizard,
-      showcases: raw.showcases || [],
-    };
-  }
+export const metadata: Metadata = {
+  title: openPlatformData.en.hero.badge,
+  description: openPlatformData.en.hero.subtitle,
+  alternates: { canonical: "https://xworktech.com/products/open-platform" },
+};
 
-  return <ProductPageTemplate product={product} language={product.language || "zh"} />;
+export default function OpenPlatformPage() {
+  return <OpenPlatformSolutionView />;
 }

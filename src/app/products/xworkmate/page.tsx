@@ -2,22 +2,17 @@
 // and refresh in the background.
 export const revalidate = 900;
 
-import { getProduct } from "@/lib/docsServiceClient";
-import ProductPageTemplate from "@/components/products/ProductPageTemplate";
-import xworkmateData from "@/data/content/xworkmate.json";
+import XWorkmateProductView from "@/components/products/XWorkmateProductView";
 
-export default async function XworkmatePage() {
-  let product = await getProduct("xworkmate");
-  if (!product) {
-    const raw = (xworkmateData as any).zh || (xworkmateData as any).en || xworkmateData;
-    product = {
-      slug: "xworkmate",
-      language: "zh",
-      hero: raw.hero,
-      wizard: raw.wizard,
-      showcases: raw.showcases || [],
-    };
-  }
+export const metadata = {
+  title: "XWorkmate — AI Workspace",
+  description:
+    "Connect AI models, autonomous agents, engineering tools, and business data to deliver real-world work.",
+  alternates: {
+    canonical: "https://xworktech.com/products/xworkmate",
+  },
+};
 
-  return <ProductPageTemplate product={product} language={product.language || "zh"} />;
+export default function XworkmatePage() {
+  return <XWorkmateProductView />;
 }

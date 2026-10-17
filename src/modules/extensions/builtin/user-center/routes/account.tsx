@@ -1,5 +1,9 @@
 "use client";
 
+import { emailCopy } from "@/lib/email-preferences";
+
+import { cloudHubCopy } from "@/lib/cloud-hub-copy";
+
 /**
  * 用户中心 —— Micro SaaS 模版第 2 页
  *
@@ -24,6 +28,9 @@ import {
   ArrowRight,
   BookOpen,
   Copy,
+  ExternalLink,
+  Globe,
+  Network,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
@@ -44,11 +51,11 @@ import {
 } from "@/components/ui/xds";
 
 import MfaSetupPanel from "../account/MfaSetupPanel";
+import SelfServiceSecurityPanel from "../account/SelfServiceSecurityPanel";
 import AccountPolicySecurityPanel from "../components/AccountPolicySecurityPanel";
 import ServiceReadinessCard from "../components/ServiceReadinessCard";
 import {
   IdentityStrip,
-  NodesTable,
   OnboardingProgress,
   QuotaCard,
   UsageCard,
@@ -95,18 +102,23 @@ export default function UserCenterAccountRoute() {
 
   const user = useUserStore((state) => state.user);
   const isReadOnlyRole = Boolean(user?.isReadOnly);
-  const canAccessOperations = resolveAccess(user, platformOperationsAccessRule).allowed;
+  const canAccessOperations = resolveAccess(
+    user,
+    platformOperationsAccessRule,
+  ).allowed;
   // VLESS 访问凭据用 proxyUuid，不是账户身份 uuid（见 #220）
   const proxyUuid = user?.proxyUuid || null;
 
   const { data: usageSummary, mutate: mutateUsage } = useSWR(
     "account-usage-summary",
     fetchAccountUsageSummary,
+    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
-  const { data: nodes } = useSWR<VlessNode[]>(
-    "user-center-agent-nodes",
+  const { data: nodes, error: nodesError } = useSWR<VlessNode[]>(
+    user ? ["user-center-agent-nodes", user.id, user.proxyUuid] : null,
     fetchAgentNodes,
+    { refreshInterval: 30_000 },
   );
 
   const monthStart = useMemo(() => {
@@ -126,7 +138,7 @@ export default function UserCenterAccountRoute() {
   const hasTraffic =
     breakdown.last1Hour + breakdown.last24Hours + breakdown.monthToDate > 0;
 
-  const nodeList = nodes ?? [];
+  const nodeList = nodesError ? [] : nodes ?? [];
   const credentialsReady = Boolean(proxyUuid);
   // 「验证连接」只有在服务端确实下发了节点、且已经出现过用量时才算完成。
   // 没有连通性接口，所以不假装知道单个节点通不通。
@@ -375,6 +387,63 @@ export default function UserCenterAccountRoute() {
           </XdsCard>
         </section>
 
+        {/* ── Cloud hub 全球算力网格 ── */}
+        <section className="xds-grid" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
+          <XdsCard className="overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-gradient-to-r from-blue-50/40 via-white to-indigo-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850">
+            <XdsCardHead
+              title={
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <span>{cloudHubCopy[language].computeTopology}</span>
+                  <XdsBadge tone="success">{zh ? "48+ PoPs 已联通" : "48+ PoPs Connected"}</XdsBadge>
+                </div>
+              }
+              actions={
+                <div className="flex items-center gap-2">
+                  <BoundaryLink
+                    href="/panel/cloud-hub"
+                    className="xds-btn xds-btn-primary xds-btn-sm inline-flex items-center gap-1.5"
+                  >
+                    <Network className="h-3.5 w-3.5" />
+                    <span>{zh ? "控制台拓扑" : "Console Topology"}</span>
+                  </BoundaryLink>
+                  <BoundaryLink
+                    href="/products/cloud-hub"
+                    className="xds-btn xds-btn-secondary xds-btn-sm inline-flex items-center gap-1.5"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>{zh ? "产品全景页" : "Product Showcase"}</span>
+                  </BoundaryLink>
+                </div>
+              }
+            />
+            <XdsCardBody>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-xl border border-slate-200/70 dark:border-slate-800 bg-white/70 dark:bg-slate-850/70 p-3.5">
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{zh ? "核心 PoP 节点" : "Core PoPs"}</div>
+                  <div className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">48+ 节点</div>
+                  <div className="mt-0.5 text-xs text-slate-500">亚太 (18) · 欧洲 (15) · 美洲 (15)</div>
+                </div>
+                <div className="rounded-xl border border-slate-200/70 dark:border-slate-800 bg-white/70 dark:bg-slate-850/70 p-3.5">
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{zh ? "算力规格池" : "Compute Pool"}</div>
+                  <div className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">512+ vCPU</div>
+                  <div className="mt-0.5 text-xs text-slate-500">AMD EPYC · Ampere ARM64</div>
+                </div>
+                <div className="rounded-xl border border-slate-200/70 dark:border-slate-800 bg-white/70 dark:bg-slate-850/70 p-3.5">
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{zh ? "AI 加速卡" : "AI Acceleration"}</div>
+                  <div className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">H100 / Ada / A100</div>
+                  <div className="mt-0.5 text-xs text-slate-500">Tensor Core · vLLM / Ollama</div>
+                </div>
+                <div className="rounded-xl border border-slate-200/70 dark:border-slate-800 bg-white/70 dark:bg-slate-850/70 p-3.5">
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400">{zh ? "多云 VPS 矩阵" : "VPS Matrix"}</div>
+                  <div className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">5 大主流厂商</div>
+                  <div className="mt-0.5 text-xs text-slate-500">Vultr · Linode · Hetzner · Contabo · UCloud</div>
+                </div>
+              </div>
+            </XdsCardBody>
+          </XdsCard>
+        </section>
+
         {/* ── 实时流量 + 配额 ── */}
         <section
           className="xds-grid"
@@ -392,9 +461,6 @@ export default function UserCenterAccountRoute() {
           <QuotaCard zh={zh} usage={usageSummary} policy={accountPolicy} />
         </section>
 
-        {/* ── 运行节点 ── */}
-        <NodesTable zh={zh} />
-
         {/* ── 策略与安全 ── */}
         <section className="xds-stack">
           <div className="xds-sec-head" style={{ maxWidth: "none" }}>
@@ -403,12 +469,19 @@ export default function UserCenterAccountRoute() {
               {zh ? "策略与安全" : "Policy and security"}
             </h2>
           </div>
+          <BoundaryLink
+            href="/email/preferences"
+            className="inline-flex min-h-11 items-center rounded-md border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-medium"
+          >
+            {emailCopy(language).manageOwn}
+          </BoundaryLink>
           <AccountPolicySecurityPanel
             mfaEnabled={Boolean(user?.mfaEnabled)}
             mfaPending={Boolean(user?.mfaPending)}
             canManageMfa={!isReadOnlyRole}
           />
           {!isReadOnlyRole ? <ServiceReadinessCard /> : null}
+          {!isReadOnlyRole ? <SelfServiceSecurityPanel /> : null}
           {!isReadOnlyRole ? <MfaSetupPanel showSummary={false} /> : null}
         </section>
       </div>

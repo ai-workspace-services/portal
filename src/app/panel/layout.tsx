@@ -36,6 +36,7 @@ export default function PanelLayout({
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
+  const sessionError = useUserStore((state) => state.sessionError);
 
   const routeGuards = useMemo<RouteGuard[]>(() => {
     return registry.routes
@@ -71,15 +72,23 @@ export default function PanelLayout({
           ? (redirect.unauthenticated ?? "/login")
           : (redirect.forbidden ?? redirect.unauthenticated ?? "/login");
       if (destination && destination !== pathname) {
-        router.replace(destination);
+        // Carry the reason when the session resolved to no user for a reason
+        // the service gave us -- a blocked account reads as "unauthenticated"
+        // here, and sending it to a bare /login asks the user to retry the
+        // credentials that just worked.
+        const target =
+          sessionError && destination.startsWith("/login")
+            ? `${destination}${destination.includes("?") ? "&" : "?"}error=${encodeURIComponent(sessionError)}`
+            : destination;
+        router.replace(target);
       }
     }
-  }, [isLoading, pathname, routeGuards, router, user]);
+  }, [isLoading, pathname, routeGuards, router, sessionError, user]);
 
   return (
-    <div className="relative flex min-h-screen bg-gradient-to-br from-[var(--gradient-app-from)] via-[var(--gradient-app-via)] to-[var(--gradient-app-to)] text-[var(--color-text)]">
+    <div className="relative flex min-h-screen w-full min-w-0 bg-gradient-to-br from-[var(--gradient-app-from)] via-[var(--gradient-app-via)] to-[var(--gradient-app-to)] text-[var(--color-text)]">
       <Sidebar
-        className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-in-out shrink-0 md:static md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
         onNavigate={() => setOpen(false)}
@@ -93,14 +102,14 @@ export default function PanelLayout({
         />
       )}
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <Header
           onMenu={() => setOpen((prev) => !prev)}
           onCollapse={() => setIsCollapsed((prev) => !prev)}
           isCollapsed={isCollapsed}
         />
-        <main className="flex flex-1 flex-col space-y-3 bg-transparent px-2 py-3 text-[var(--color-text)] transition-colors sm:px-3 md:px-4 lg:px-5">
-          <div className="flex w-full flex-1 flex-col gap-3 rounded-[6px] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)] p-3 text-[var(--color-text)] shadow-[var(--shadow-soft)] backdrop-blur md:gap-4 md:p-4">
+        <main className="flex min-w-0 flex-1 flex-col space-y-3 bg-transparent px-2 py-3 text-[var(--color-text)] transition-colors sm:px-3 md:px-4 lg:px-5">
+          <div className="flex w-full min-w-0 flex-1 flex-col gap-3 rounded-[6px] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)] p-3 text-[var(--color-text)] shadow-[var(--shadow-soft)] backdrop-blur md:gap-4 md:p-4">
             {children}
           </div>
         </main>

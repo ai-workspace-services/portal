@@ -1,93 +1,79 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fetchAgentNodes } from "./fetchAgentNodes";
 
-import { fetchAgentNodes } from './fetchAgentNodes'
+const node = {
+  name: "jp",
+  region: "jp",
+  address: "jp.entry.example",
+  port: 443,
+  pool_count: 1,
+  open_to_users: true,
+};
 
-describe('fetchAgentNodes', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
+describe("fetchAgentNodes", () => {
+  afterEach(() => vi.restoreAllMocks());
 
-  it('uses the primary endpoint when it returns a node array', async () => {
-    const fetchMock = vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify([{ name: 'JP', address: 'jp-xhttp.svc.plus' }]), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }),
-    )
-
-    await expect(fetchAgentNodes()).resolves.toEqual([{ name: 'JP', address: 'jp-xhttp.svc.plus' }])
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+  it("uses authenticated canonical discovery without changing metadata", async () => {
+    const fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([node]), { status: 200 }),
+      );
+    await expect(fetchAgentNodes()).resolves.toEqual([node]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/agent-server/v1/nodes',
-      expect.objectContaining({
-        cache: 'no-store',
-        credentials: 'include',
-      }),
-    )
-  })
+      "/api/agent-server/v1/nodes",
+      expect.objectContaining({ cache: "no-store", credentials: "include" }),
+    );
+  });
 
-  it('falls back to the legacy endpoint when the primary route is unavailable', async () => {
+  it.each([404, 405, 502])(
+    "surfaces %s without consulting a legacy host list",
+    async (status) => {
+      const fetchMock = vi
+        .spyOn(global, "fetch")
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ error: "canonical_unavailable" }), {
+            status,
+          }),
+        );
+      await expect(fetchAgentNodes()).rejects.toThrow("canonical_unavailable");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each([
+    [[{ name: "legacy", address: "legacy.entry.example" }]],
+    [[{ ...node, open_to_users: false }]],
+    [[{ ...node, pool_count: 0 }]],
+    [[null]],
+  ])("rejects incompatible or unfiltered node metadata", async (payload) => {
     const fetchMock = vi
-      .spyOn(global, 'fetch')
+      .spyOn(global, "fetch")
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: 'not_found' }), {
-          status: 404,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        new Response(JSON.stringify(payload), { status: 200 }),
+      );
+    await expect(fetchAgentNodes()).rejects.toThrow(
+      "unsupported_regional_discovery_payload",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves session errors and unexpected payload errors", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "invalid_session" }), {
+          status: 401,
         }),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify([{ name: 'US', address: 'us-xhttp.svc.plus' }]), {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }),
+        new Response(JSON.stringify({ ok: true }), { status: 200 }),
       )
-
-    await expect(fetchAgentNodes()).resolves.toEqual([{ name: 'US', address: 'us-xhttp.svc.plus' }])
-    expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/agent/nodes')
-  })
-
-  it('falls back when the primary route returns an unexpected success payload', async () => {
-    const fetchMock = vi
-      .spyOn(global, 'fetch')
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ ok: true }), {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ nodes: [{ name: 'HK', address: 'hk-xhttp.svc.plus' }] }), {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }),
-      )
-
-    await expect(fetchAgentNodes()).resolves.toEqual([{ name: 'HK', address: 'hk-xhttp.svc.plus' }])
-    expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/agent/nodes')
-  })
-
-  it('preserves non-fallback errors from the primary endpoint', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: 'invalid_session' }), {
-        status: 401,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }),
-    )
-
-    await expect(fetchAgentNodes()).rejects.toThrow('invalid_session')
-  })
-})
+      .mockResolvedValueOnce(new Response("[]", { status: 200 }));
+    await expect(fetchAgentNodes()).rejects.toThrow("invalid_session");
+    await expect(fetchAgentNodes()).rejects.toThrow(
+      "unexpected_agent_nodes_payload",
+    );
+    await expect(fetchAgentNodes()).resolves.toEqual([]);
+  });
+});

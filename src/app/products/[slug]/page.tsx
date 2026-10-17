@@ -4,19 +4,24 @@ export const revalidate = 900;
 export const dynamicParams = true;
 
 import { notFound } from "next/navigation";
-import { getProduct, type WebsiteProductPayload } from "@/lib/docsServiceClient";
+import {
+  getProduct,
+  type WebsiteProductPayload,
+} from "@/lib/docsServiceClient";
 import ProductPageTemplate from "@/components/products/ProductPageTemplate";
 
 import xconnectData from "@/data/content/xconnect.json";
 import xworkmateData from "@/data/content/xworkmate.json";
 import openPlatformData from "@/data/content/open-platform.json";
 import aiWorkspaceData from "@/data/content/ai-workspace.json";
+import globalMeshData from "@/data/content/global-mesh.json";
 
 const STATIC_FALLBACKS: Record<string, any> = {
   xconnect: xconnectData,
   xworkmate: xworkmateData,
   "open-platform": openPlatformData,
   "ai-workspace": aiWorkspaceData,
+  "cloud-hub": globalMeshData,
 };
 
 export function generateStaticParams() {
@@ -27,8 +32,16 @@ interface ProductSlugPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function ProductDynamicPage({ params }: ProductSlugPageProps) {
+import XWorkmateProductView from "@/components/products/XWorkmateProductView";
+
+export default async function ProductDynamicPage({
+  params,
+}: ProductSlugPageProps) {
   const { slug } = await params;
+
+  if (slug === "xworkmate") {
+    return <XWorkmateProductView />;
+  }
 
   // 1. Try to fetch dynamic content from content-service (Git backed)
   let product: WebsiteProductPayload | null = await getProduct(slug);
@@ -43,6 +56,7 @@ export default async function ProductDynamicPage({ params }: ProductSlugPageProp
       hero: localized.hero,
       wizard: localized.wizard,
       showcases: localized.showcases || [],
+      solutions: localized.solutions || [],
     };
   }
 
@@ -50,5 +64,10 @@ export default async function ProductDynamicPage({ params }: ProductSlugPageProp
     notFound();
   }
 
-  return <ProductPageTemplate product={product} language={product.language || "zh"} />;
+  return (
+    <ProductPageTemplate
+      product={product}
+      language={product.language || "zh"}
+    />
+  );
 }

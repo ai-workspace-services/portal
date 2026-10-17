@@ -1,5 +1,5 @@
-import PlatformOperationsPage from "../components/PlatformOperationsPage";
+import ReleaseStatusPage from "../components/ReleaseStatusPage";
 
 export default function PlatformOperationsReleasesRoute() {
-  return <PlatformOperationsPage view="releases" />;
+  return <ReleaseStatusPage />;
 }

@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
+import NetworkTeamsPanel from "../components/NetworkTeamsPanel";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import useSWR from "swr";
 import {
@@ -49,6 +50,7 @@ import {
 } from "@/components/ui/xds";
 
 import BillingOptionsPanel from "../account/BillingOptionsPanel";
+import SubscriptionStatusCard from "../account/SubscriptionStatusCard";
 import {
   fetchAccountBillingSummary,
   fetchAccountPolicy,
@@ -96,11 +98,14 @@ function bytesOrDash(value?: number | null): string {
 }
 
 /** 订阅状态到语义色的映射，颜色和文字同时表达，不靠色点区分 */
-function statusTone(status: string): "success" | "warning" | "danger" | "neutral" {
+function statusTone(
+  status: string,
+): "success" | "warning" | "danger" | "neutral" {
   const s = status.toLowerCase();
   if (s === "active" || s === "paid" || s === "succeeded") return "success";
   if (s === "cancelled" || s === "canceled" || s === "failed") return "danger";
-  if (s === "pending" || s === "processing" || s === "past_due") return "warning";
+  if (s === "pending" || s === "processing" || s === "past_due")
+    return "warning";
   return "neutral";
 }
 
@@ -123,6 +128,7 @@ export default function UserCenterSubscriptionRoute() {
   const { data: usageSummary } = useSWR(
     "account-usage-summary",
     fetchAccountUsageSummary,
+    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
   );
   const { data: billingSummary } = useSWR(
     "account-billing-summary",
@@ -130,7 +136,10 @@ export default function UserCenterSubscriptionRoute() {
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
 
-  const records = useMemo(() => data?.subscriptions ?? [], [data?.subscriptions]);
+  const records = useMemo(
+    () => data?.subscriptions ?? [],
+    [data?.subscriptions],
+  );
   const [activeTab, setActiveTab] = useState<"overview" | "usage" | "records">(
     "overview",
   );
@@ -196,14 +205,19 @@ export default function UserCenterSubscriptionRoute() {
             <XdsCardBody>
               <XdsEmpty
                 icon={<CreditCard className="h-9 w-9" />}
-                title={zh ? "只读账号无计费" : "No billing on read-only accounts"}
+                title={
+                  zh ? "只读账号无计费" : "No billing on read-only accounts"
+                }
                 description={
                   zh
                     ? "想要真实配额与节点，请注册一个标准账户。"
                     : "Register a standard account for real quota and nodes."
                 }
                 action={
-                  <BoundaryLink href="/register" className="xds-btn xds-btn-primary xds-btn-sm">
+                  <BoundaryLink
+                    href="/register"
+                    className="xds-btn xds-btn-primary xds-btn-sm"
+                  >
                     {zh ? "创建标准账户" : "Create an account"}
                   </BoundaryLink>
                 }
@@ -228,6 +242,8 @@ export default function UserCenterSubscriptionRoute() {
               : "Plans, usage, balance and ledger all come from the existing subscription and accounts.svc.plus APIs. Payments settle through Stripe."}
           </p>
         </header>
+
+        <NetworkTeamsPanel />
 
         {/* ── 安全门禁：只出现一处，且可行动 ── */}
         {mfaRequired ? (
@@ -268,6 +284,14 @@ export default function UserCenterSubscriptionRoute() {
           </XdsAlert>
         ) : null}
 
+        {usageSummary || data ? (
+          <SubscriptionStatusCard
+            records={records}
+            usageSummary={usageSummary}
+            zh={zh}
+          />
+        ) : null}
+
         {/* ── Tabs ── */}
         <div className="xds-tabs">
           {(
@@ -300,7 +324,10 @@ export default function UserCenterSubscriptionRoute() {
                 label={zh ? "权威用量" : "Authoritative usage"}
                 value={bytesOrDash(usageSummary?.totalBytes)}
                 aside={
-                  <span className="xds-tag xds-t-mono" style={{ fontSize: "var(--fs-eyebrow)" }}>
+                  <span
+                    className="xds-tag xds-t-mono"
+                    style={{ fontSize: "var(--fs-eyebrow)" }}
+                  >
                     {usageSummary?.sourceOfTruth || DASH}
                   </span>
                 }
@@ -314,15 +341,38 @@ export default function UserCenterSubscriptionRoute() {
               <XdsStat
                 label={zh ? "月度配额" : "Monthly quota"}
                 value={
-                  typeof usageSummary?.usagePercent === "number"
-                    ? Math.min(100, Math.max(0, usageSummary.usagePercent)).toFixed(1)
-                    : DASH
+                  usageSummary?.currentPlan?.unlimited &&
+                  usageSummary.currentPlan.assigned
+                    ? "∞"
+                    : usageSummary?.planAssignmentStatus !== "assigned"
+                      ? DASH
+                      : typeof usageSummary?.usagePercent === "number"
+                        ? Math.min(
+                            100,
+                            Math.max(0, usageSummary.usagePercent),
+                          ).toFixed(1)
+                        : DASH
                 }
-                unit={typeof usageSummary?.usagePercent === "number" ? "%" : undefined}
-                meta={`${zh ? "已用" : "Used"} ${bytesOrDash(usageSummary?.usedBytes)} / ${bytesOrDash(usageSummary?.includedQuotaBytes)} · ${zh ? "本期重置" : "resets"} ${formatDate(usageSummary?.periodEnd)}`}
+                unit={
+                  usageSummary?.planAssignmentStatus === "assigned" &&
+                  !usageSummary.currentPlan?.unlimited &&
+                  typeof usageSummary?.usagePercent === "number"
+                    ? "%"
+                    : undefined
+                }
+                meta={
+                  usageSummary?.planAssignmentStatus === "assigned"
+                    ? `${zh ? "已用" : "Used"} ${bytesOrDash(usageSummary?.usedBytes)} / ${usageSummary.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.includedQuotaBytes)} · ${zh ? "本期重置" : "resets"} ${formatDate(usageSummary?.periodEnd)}`
+                    : `${zh ? "未分配" : "Unassigned"} · ${usageSummary?.defaultPlan?.displayName || "default"} ${zh ? "默认额度参考" : "default quota reference"} ${bytesOrDash(usageSummary?.defaultPlan?.maxTrafficBytes)}`
+                }
               >
                 <XdsMeter
-                  percent={usageSummary?.usagePercent}
+                  percent={
+                    usageSummary?.planAssignmentStatus === "assigned" &&
+                    !usageSummary.currentPlan?.unlimited
+                      ? usageSummary?.usagePercent
+                      : undefined
+                  }
                   label={zh ? "月度配额" : "Monthly quota"}
                   className="xds-mt-12"
                 />
@@ -335,17 +385,42 @@ export default function UserCenterSubscriptionRoute() {
                     ? usageSummary.currentBalance.toFixed(2)
                     : DASH
                 }
-                meta={`${zh ? "套餐" : "Plan"} ${usageSummary?.billingProfile?.packageName || billingSummary?.billingProfile?.packageName || "default"} · ${zh ? "规则" : "rules"} ${usageSummary?.billingProfile?.pricingRuleVersion || DASH}`}
+                meta={`${zh ? "套餐" : "Plan"} ${usageSummary?.currentPlan?.displayName || billingSummary?.currentPlan?.displayName || usageSummary?.defaultPlan?.displayName || "default"} · ${zh ? "最大流量" : "Max"} ${usageSummary?.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.defaultPlan?.maxTrafficBytes)} · ${zh ? "规则" : "rules"} ${usageSummary?.billingProfile?.pricingRuleVersion || DASH}`}
               />
 
               <XdsStat
                 label={zh ? "策略 / 同步" : "Policy / sync"}
                 value={
-                  <XdsBadge tone={usageSummary?.arrears ? "danger" : "success"}>
-                    {usageSummary?.arrears
-                      ? zh ? "欠费" : "Arrears"
-                      : zh ? "正常" : "Normal"}
-                    {usageSummary?.throttleState ? ` · ${usageSummary.throttleState}` : ""}
+                  <XdsBadge
+                    tone={
+                      usageSummary?.networkAccessState === "paused" ||
+                      usageSummary?.networkAccessState === "blocked" ||
+                      usageSummary?.arrears
+                        ? "danger"
+                        : "success"
+                    }
+                  >
+                    {usageSummary?.networkAccessReason === "quota_exhausted"
+                      ? zh
+                        ? "额度已用尽 · 已暂停"
+                        : "Quota exhausted · Paused"
+                      : usageSummary?.networkAccessReason ===
+                          "billing_suspended"
+                        ? zh
+                          ? "账务暂停"
+                          : "Billing suspended"
+                        : usageSummary?.networkAccessReason ===
+                            "operator_paused"
+                          ? zh
+                            ? "管理员暂停"
+                            : "Operator paused"
+                          : usageSummary?.arrears
+                            ? zh
+                              ? "欠费"
+                              : "Arrears"
+                            : zh
+                              ? "正常"
+                              : "Normal"}
                   </XdsBadge>
                 }
                 meta={`${zh ? "统计延迟" : "Sync delay"} ~${usageSummary?.syncDelaySeconds ?? 0} s · ${zh ? "策略组" : "groups"} ${accountPolicy?.eligibleNodeGroups?.join(", ") || DASH}`}
@@ -363,7 +438,13 @@ export default function UserCenterSubscriptionRoute() {
                 }
               />
               <XdsCardBody>
-                <BillingOptionsPanel />
+                <BillingOptionsPanel
+                  currentPlanId={
+                    usageSummary?.currentPlan?.assigned
+                      ? usageSummary.currentPlan.planId
+                      : undefined
+                  }
+                />
                 <XdsAlert
                   tone="info"
                   icon={<Info className="h-4 w-4" />}
@@ -394,20 +475,30 @@ export default function UserCenterSubscriptionRoute() {
                       <th>{zh ? "类型" : "Type"}</th>
                       <th>{zh ? "计费周期" : "Period"}</th>
                       <th>{zh ? "规则版本" : "Rule version"}</th>
-                      <th style={{ textAlign: "right" }}>{zh ? "计费流量" : "Rated"}</th>
-                      <th style={{ textAlign: "right" }}>{zh ? "金额" : "Amount"}</th>
-                      <th style={{ textAlign: "right" }}>{zh ? "结余" : "Balance"}</th>
+                      <th style={{ textAlign: "right" }}>
+                        {zh ? "计费流量" : "Rated"}
+                      </th>
+                      <th style={{ textAlign: "right" }}>
+                        {zh ? "金额" : "Amount"}
+                      </th>
+                      <th style={{ textAlign: "right" }}>
+                        {zh ? "结余" : "Balance"}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {billingSummary.ledger.map((entry) => (
                       <tr key={entry.id}>
                         <td style={{ fontWeight: 500 }}>{entry.entryType}</td>
-                        <td className="xds-subtle">{formatDate(entry.bucketStart)}</td>
+                        <td className="xds-subtle">
+                          {formatDate(entry.bucketStart)}
+                        </td>
                         <td className="xds-t-mono xds-subtle">
                           {entry.pricingRuleVersion || DASH}
                         </td>
-                        <td className="xds-num">{bytesOrDash(entry.ratedBytes)}</td>
+                        <td className="xds-num">
+                          {bytesOrDash(entry.ratedBytes)}
+                        </td>
                         <td className="xds-num">
                           {typeof entry.amountDelta === "number"
                             ? entry.amountDelta.toFixed(2)
@@ -464,7 +555,9 @@ export default function UserCenterSubscriptionRoute() {
                   disabled={portalLoading || !mfaReady}
                   title={
                     !mfaReady
-                      ? zh ? "需先绑定 MFA" : "Requires MFA"
+                      ? zh
+                        ? "需先绑定 MFA"
+                        : "Requires MFA"
                       : undefined
                   }
                 >
@@ -489,7 +582,10 @@ export default function UserCenterSubscriptionRoute() {
                       : "After the first purchase, invoices are listed per period here and refunds can be requested."
                   }
                   action={
-                    <XdsButton size="sm" onClick={() => setActiveTab("overview")}>
+                    <XdsButton
+                      size="sm"
+                      onClick={() => setActiveTab("overview")}
+                    >
                       {zh ? "查看套餐" : "See plans"}
                     </XdsButton>
                   }
@@ -517,10 +613,14 @@ export default function UserCenterSubscriptionRoute() {
                       return (
                         <tr key={record.id}>
                           <td>
-                            <div style={{ fontWeight: 500 }}>{record.provider}</div>
+                            <div style={{ fontWeight: 500 }}>
+                              {record.provider}
+                            </div>
                             <div className="xds-t-caption">
                               {record.kind ?? "subscription"}
-                              {record.paymentMethod ? ` · ${record.paymentMethod}` : ""}
+                              {record.paymentMethod
+                                ? ` · ${record.paymentMethod}`
+                                : ""}
                             </div>
                           </td>
                           <td>{record.planId || DASH}</td>
@@ -530,7 +630,9 @@ export default function UserCenterSubscriptionRoute() {
                           >
                             {record.externalId}
                           </td>
-                          <td className="xds-subtle">{formatDate(record.createdAt)}</td>
+                          <td className="xds-subtle">
+                            {formatDate(record.createdAt)}
+                          </td>
                           <td>
                             <XdsBadge tone={statusTone(record.status)}>
                               {record.status}
@@ -565,9 +667,14 @@ export default function UserCenterSubscriptionRoute() {
             <XdsCardFoot>
               <div className="xds-row-between">
                 <span className="xds-t-caption">
-                  {zh ? `共 ${records.length} 条` : `${records.length} record(s)`}
+                  {zh
+                    ? `共 ${records.length} 条`
+                    : `${records.length} record(s)`}
                 </span>
-                <BoundaryLink href="/docs" className="xds-link-arrow xds-t-caption">
+                <BoundaryLink
+                  href="/docs"
+                  className="xds-link-arrow xds-t-caption"
+                >
                   {zh ? "计费与退款说明" : "Billing and refund policy"}
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </BoundaryLink>

@@ -1,0 +1,39 @@
+# XWork Technologies LLC
+
+> XWork Technologies LLC builds AI workspace software, secure connectivity, and open infrastructure for hosted and self-managed use.
+
+Website: https://xworktech.com
+Support: support@xworktech.com
+
+## Products
+
+- [XWorkmate](https://xworktech.com/products/xworkmate.en.md): Connect models, agents, tools, and data so AI can execute work and deliver durable results.
+  - [Official page](https://xworktech.com/products/xworkmate) · [中文](https://xworktech.com/products/xworkmate.md)
+- [XConnect](https://xworktech.com/products/xconnect.en.md): XConnect is an open-source AI connectivity accelerator for users worldwide, supporting iOS, Android, macOS, Windows, and Linux with real-time diagnostics and repair guidance.
+  - [Official page](https://xworktech.com/products/xconnect) · [中文](https://xworktech.com/products/xconnect.md)
+- [AI Workspace](https://xworktech.com/products/ai-workspace.en.md): Start conversations, tasks, tool calls, and delivery in the browser with no installation.
+  - [Official page](https://xworktech.com/products/ai-workspace) · [中文](https://xworktech.com/products/ai-workspace.md)
+- [Open-platform](https://xworktech.com/products/open-platform.en.md): Combine IaC, GitOps, security, identity, and observability with architecture and implementation paths for self-managed and multi-cloud platforms.
+  - [Official page](https://xworktech.com/products/open-platform) · [中文](https://xworktech.com/products/open-platform.md)
+- [Cloud Hub](https://xworktech.com/products/cloud-hub.en.md): Explore multi-cloud resources and global connectivity architecture for infrastructure selection and self-managed deployment.
+  - [Official page](https://xworktech.com/products/cloud-hub) · [中文](https://xworktech.com/products/cloud-hub.md)
+
+## Public resources
+
+- [Products](https://xworktech.com/products)
+- [Docs](https://xworktech.com/docs)
+- [Articles](https://xworktech.com/blogs)
+- [Pricing](https://xworktech.com/prices)
+- [Downloads](https://xworktech.com/download)
+- [About](https://xworktech.com/about)
+- [Company](https://xworktech.com/company)
+- [Contact](https://xworktech.com/contact)
+- [Support](https://xworktech.com/support)
+- [Privacy](https://xworktech.com/privacy)
+- [Terms](https://xworktech.com/terms)
+
+## Availability and pricing
+
+Public product information, documentation, and source code are accessible without signing in. Client platforms, versions, and installers are determined by the download center and repository release assets. Source code or a product description does not establish app-store approval.
+
+Start with free access rather than a separate trial plan. See the public pricing page for subscription, pay-as-you-go, and custom terms, quotas, and prices. Free access does not imply that upstream models or self-managed infrastructure have no cost.

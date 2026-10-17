@@ -1,4 +1,4 @@
-export const dynamic = 'error'
+export const dynamic = 'force-dynamic'
 
 import { redirect } from 'next/navigation'
 

@@ -18,6 +18,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { AccountSubscriptionDetails } from "./SubscriptionDetails";
+
 import type { ManagedUser } from "./UserGroupManagement";
 
 type UserManagementWorkspaceProps = {
@@ -460,14 +462,16 @@ export default function UserManagementWorkspace({
                         用户组
                       </dt>
                       <dd className="flex flex-wrap gap-1">
-                        {(selectedUser.groups ?? []).map((group) => (
-                          <span
-                            key={group}
-                            className="rounded-md border border-[color:var(--color-surface-border)] px-1.5 py-0.5 text-xs"
-                          >
-                            {group.replace("segment:", "")}
-                          </span>
-                        )) || "—"}
+                        {selectedUser.groups?.length
+                          ? selectedUser.groups.map((group) => (
+                              <span
+                                key={group}
+                                className="rounded-md border border-[color:var(--color-surface-border)] px-1.5 py-0.5 text-xs"
+                              >
+                                {group.replace("segment:", "")}
+                              </span>
+                            ))
+                          : "未分组"}
                       </dd>
                       <dt className="text-[var(--color-text-subtle)]">状态</dt>
                       <dd>
@@ -481,6 +485,7 @@ export default function UserManagementWorkspace({
                       <dd>—</dd>
                     </dl>
                   </section>
+                  <AccountSubscriptionDetails userId={selectedUser.id} />
                   <section className="rounded-md border border-[color:var(--color-surface-border)] p-3.5">
                     <h3 className="mb-3 font-semibold text-[var(--color-heading)]">
                       快捷操作

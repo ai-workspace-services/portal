@@ -1,37 +1,70 @@
 "use client";
 
-import {
-  type ChangeEvent,
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   ArrowUp,
+  Bot,
+  Check,
   ChevronDown,
-  ChevronLeft,
-  ChevronsRight,
   Cloud,
   Copy,
   File,
   Folder,
   Image as ImageIcon,
-  KeyRound,
-  Languages,
-  ListChecks,
   Loader2,
   Menu,
+  MessageCircle,
+  Paperclip,
   Pencil,
+  PlayCircle,
+  Plug,
   Plus,
+  Puzzle,
   RefreshCw,
-  Search,
-  Settings,
-  Sun,
+  Send,
   X,
   Zap,
 } from "lucide-react";
+import Link from "next/link";
+import {
+  type ButtonHTMLAttributes,
+  type ChangeEvent,
+  forwardRef,
+  type KeyboardEvent,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
+import { BUILTIN_PLUGIN_GROUPS } from "@/components/ai-workspace/builtinPlugins";
+import { AiWorkspaceShell } from "@/components/ai-workspace/shell/AiWorkspaceShell";
+import { PaneToggleIcon } from "@/components/ai-workspace/shell/PaneToggleIcon";
+import { SidebarRevealButton } from "@/components/ai-workspace/shell/SidebarRevealButton";
+import {
+  makeId,
+  newTask,
+  useOptionalWorkspaceShell,
+  useWorkspaceShell,
+  WorkspaceShellProvider,
+  type ConversationMessage,
+  type TaskItem,
+  type WorkspaceArtifact,
+} from "@/components/ai-workspace/shell/WorkspaceShellContext";
+import {
+  submitRoleTask,
+  waitForRoleTask,
+} from "@/lib/ai-workspace/roleTaskRunner";
+import {
+  ASSISTANT_ROLES,
+  BOT_TASK_PHASE_LABEL,
+  roleAnswerHeader,
+  roleOption,
+  runsOnBotTeam,
+  type AssistantRole,
+} from "@/lib/ai-workspace/roles";
 import { cn } from "@/lib/utils";
 
 type BridgeRpcResult = {
@@ -63,23 +96,6 @@ type PingResponse = {
   commit?: string;
 };
 
-type WorkspaceArtifact = {
-  name?: string;
-  path?: string;
-  url?: string;
-  mimeType?: string;
-  size?: number;
-};
-
-type TaskItem = {
-  id: string;
-  title: string;
-  preview: string;
-  updatedAt: number;
-  state: "idle" | "running" | "done" | "error";
-  files: WorkspaceArtifact[];
-};
-
 type ComposerFile = {
   id: string;
   name: string;
@@ -106,71 +122,34 @@ type TrialStatus = {
   message?: string;
 };
 
-const SEED_TASKS: TaskItem[] = [
-  {
-    id: "task-images",
-    title: "连续制作7张图片",
-    preview: "等待通过 bridge 重新提交任务。",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-new-1",
-    title: "新对话",
-    preview: "Bridge 响应读取中断，本轮结果未完成。请重新发送请求。",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-pdf",
-    title: "PDF制作",
-    preview: "完成了，PDF 已输出在任务工作区内。",
-    updatedAt: Date.now() - 65 * 60 * 1000,
-    state: "done",
-    files: [{ name: "result.pdf" }],
-  },
-  {
-    id: "task-video",
-    title: "视频制作",
-    preview: "等待通过 bridge 重新提交任务。",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-new-2",
-    title: "新对话",
-    preview: "invalid handshake: first request must be connect",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-  {
-    id: "task-current",
-    title: "新对话",
-    preview: "",
-    updatedAt: Date.now() - 55 * 60 * 1000,
-    state: "idle",
-    files: [],
-  },
-];
+const DEFAULT_REGISTER_HREF = "/register?returnTo=%2Fai-workspace";
 
-function formatRelativeTime(value: number): string {
-  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - value) / 60000));
-  if (elapsedMinutes < 1) {
-    return "刚刚";
-  }
-  if (elapsedMinutes < 60) {
-    return `${elapsedMinutes} 分钟前`;
-  }
-  const elapsedHours = Math.floor(elapsedMinutes / 60);
-  return `${elapsedHours} 小时前`;
-}
-
-function makeId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+function seedTasks(): TaskItem[] {
+  const ago = (minutes: number) => Date.now() - minutes * 60 * 1000;
+  const seed = (
+    id: string,
+    title: string,
+    preview: string,
+    minutes: number,
+    state: TaskItem["state"] = "idle",
+    files: WorkspaceArtifact[] = [],
+  ): TaskItem => ({
+    id,
+    title,
+    preview,
+    updatedAt: ago(minutes),
+    state,
+    files,
+    messages: [],
+  });
+  return [
+    seed("task-current", "新对话", "", 55),
+    seed("task-images", "连续制作7张图片", "等待通过 bridge 重新提交任务。", 55),
+    seed("task-pdf", "PDF制作", "完成了，PDF 已输出在任务工作区内。", 65, "done", [
+      { name: "result.pdf" },
+    ]),
+    seed("task-video", "视频制作", "等待通过 bridge 重新提交任务。", 55),
+  ];
 }
 
 function resultText(result: BridgeRpcResult | undefined): string {
@@ -228,28 +207,41 @@ async function pingBridge(
   return (await response.json()) as PingResponse;
 }
 
-export function XWorkmateWorkspacePage({
+/**
+ * The XWorkmate conversation workspace, laid out like the App home. Inside
+ * /ai-workspace the layout already renders the shell and its one sidebar, so
+ * this renders only the conversation and artifact panes. Standing alone
+ * (/xworkmate) it brings the same shell itself, never a second sidebar.
+ */
+export function XWorkmateWorkspacePage(
+  props: XWorkmateWorkspacePageProps,
+): ReactNode {
+  const shell = useOptionalWorkspaceShell();
+  if (shell) {
+    return <ConversationWorkspace {...props} />;
+  }
+  return (
+    <WorkspaceShellProvider
+      homeHref="/xworkmate"
+      initialTasks={() => (props.trialMode ? [newTask()] : seedTasks())}
+    >
+      <AiWorkspaceShell>
+        <ConversationWorkspace {...props} />
+      </AiWorkspaceShell>
+    </WorkspaceShellProvider>
+  );
+}
+
+function ConversationWorkspace({
   initialPrompt = "",
   initialSessionKey = "",
   trialMode = false,
-}: XWorkmateWorkspacePageProps): React.ReactNode {
-  const [tasks, setTasks] = useState<TaskItem[]>(() =>
-    trialMode
-      ? [
-          {
-            id: "task-current",
-            title: "新对话",
-            preview: "",
-            updatedAt: Date.now(),
-            state: "idle",
-            files: [],
-          },
-        ]
-      : SEED_TASKS,
-  );
-  const [activeTaskId, setActiveTaskId] = useState("task-current");
+}: XWorkmateWorkspacePageProps): ReactNode {
+  const shell = useWorkspaceShell();
   const [prompt, setPrompt] = useState(initialPrompt);
   const [files, setFiles] = useState<ComposerFile[]>([]);
+  const [plugins, setPlugins] = useState<string[]>([]);
+  const [role, setRole] = useState<AssistantRole>("chat");
   const [bridgeStatus, setBridgeStatus] = useState<
     "checking" | "connected" | "error"
   >("checking");
@@ -259,17 +251,24 @@ export function XWorkmateWorkspacePage({
   const [lastError, setLastError] = useState("");
   const [workingDirectory, setWorkingDirectory] = useState("");
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
   const bridgeEndpoint = trialMode
-    ? "/api/ai-workspace/trial"
+    ? "/api/ai-workspace/free"
     : "/api/xworkmate/bridge";
+  const isGuest = trialMode && trialStatus?.mode === "trial";
+  // Bot team tasks run under the signed-in account; until the free endpoint
+  // confirms one, the Bot roles stay locked.
+  const botRolesLocked = trialMode && trialStatus?.mode !== "account";
+  const registerHref = trialStatus?.registerHref ?? DEFAULT_REGISTER_HREF;
 
-  const refreshTrialStatus = async () => {
+  const refreshTrialStatus = useCallback(async () => {
     if (!trialMode) {
       return;
     }
     try {
-      const response = await fetch("/api/ai-workspace/trial", {
+      const response = await fetch("/api/ai-workspace/free", {
         credentials: "include",
         cache: "no-store",
       });
@@ -279,68 +278,73 @@ export function XWorkmateWorkspacePage({
     } catch {
       // The Bridge status remains the primary connectivity signal.
     }
-  };
+  }, [trialMode]);
 
   const activeTask = useMemo(
-    () => tasks.find((task) => task.id === activeTaskId) ?? tasks[0],
-    [activeTaskId, tasks],
+    () =>
+      shell.tasks.find((task) => task.id === shell.activeTaskId) ??
+      shell.tasks[0],
+    [shell.activeTaskId, shell.tasks],
   );
   const currentFiles = activeTask?.files ?? [];
-  const sessionId = initialSessionKey || activeTaskId;
+  const messages = activeTask?.messages ?? [];
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function checkBridge() {
+  const checkBridge = useCallback(
+    async (isCancelled: () => boolean = () => false) => {
+      setBridgeStatus("checking");
       try {
         const data = await pingBridge(bridgeEndpoint);
-        if (cancelled) {
+        if (isCancelled()) {
           return;
         }
         setBridgeStatus(data.status === "ok" ? "connected" : "error");
         setBridgeVersion(data.version ?? data.tag ?? data.commit ?? "");
+        setLastError("");
       } catch (error) {
-        if (!cancelled) {
+        if (!isCancelled()) {
           setBridgeStatus("error");
           setLastError(
             error instanceof Error ? error.message : "Bridge ping failed.",
           );
         }
       }
-    }
+    },
+    [bridgeEndpoint],
+  );
 
-    void checkBridge();
+  useEffect(() => {
+    let cancelled = false;
+    void checkBridge(() => cancelled);
     void refreshTrialStatus();
-
     return () => {
       cancelled = true;
     };
-  }, [bridgeEndpoint]);
+  }, [checkBridge, refreshTrialStatus]);
 
-  const updateActiveTask = (partial: Partial<TaskItem>) => {
-    setTasks((current) =>
-      current.map((task) =>
-        task.id === activeTaskId
-          ? { ...task, ...partial, updatedAt: Date.now() }
-          : task,
-      ),
-    );
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  useEffect(() => {
+    if (botRolesLocked && runsOnBotTeam(role)) setRole("chat");
+  }, [botRolesLocked, role]);
+
+  const appendMessage = (taskId: string, message: ConversationMessage) => {
+    shell.updateTask(taskId, (task) => ({
+      ...task,
+      messages: [...task.messages, message],
+    }));
   };
 
-  const createTask = () => {
-    const task: TaskItem = {
-      id: makeId("task"),
-      title: "新对话",
-      preview: "",
-      updatedAt: Date.now(),
-      state: "idle",
-      files: [],
-    };
-    setTasks((current) => [task, ...current]);
-    setActiveTaskId(task.id);
-    setPrompt("");
-    setLastError("");
-    setWorkingDirectory("");
+  const replaceMessage = (
+    taskId: string,
+    messageId: string,
+    update: Partial<ConversationMessage>,
+  ) => {
+    shell.updateTask(taskId, (task) => ({
+      ...task,
+      messages: task.messages.map((message) =>
+        message.id === messageId ? { ...message, ...update } : message,
+      ),
+    }));
   };
 
   const handleFileInput = (event: ChangeEvent<HTMLInputElement>) => {
@@ -354,36 +358,45 @@ export function XWorkmateWorkspacePage({
     event.target.value = "";
   };
 
-  const submitPrompt = async () => {
-    const trimmed = prompt.trim();
-    if (!trimmed && files.length === 0) {
-      return;
-    }
+  const composeTaskText = (trimmed: string): string => {
+    const lines = [trimmed];
+    if (plugins.length) lines.push(`使用内置插件：${plugins.join("、")}`);
+    if (files.length) lines.push(`附件：${files.map((file) => file.name).join("、")}`);
+    return lines.filter(Boolean).join("\n\n");
+  };
 
-    setIsSubmitting(true);
-    setLastError("");
-    updateActiveTask({
-      title: trimmed.slice(0, 24) || "附件任务",
-      preview: "Bridge 正在处理当前任务...",
-      state: "running",
+  const startTurn = (task: TaskItem, trimmed: string) => {
+    appendMessage(task.id, {
+      id: makeId("msg"),
+      role: "user",
+      text: composeTaskText(trimmed),
     });
+    shell.updateTask(task.id, (current) => ({
+      ...current,
+      title:
+        current.title === "新对话"
+          ? trimmed.slice(0, 24) || "附件任务"
+          : current.title,
+      state: "running",
+    }));
+    setPrompt("");
+    setFiles([]);
+    setPlugins([]);
+    setLastError("");
+  };
 
-    try {
-      const method =
-        activeTask?.state === "done" || activeTask?.state === "error"
-          ? "session.message"
-          : "session.start";
-      const attachmentContext = files.length
-        ? `\n\n附件：${files.map((file) => file.name).join("、")}`
-        : "";
-      const response = await callBridge({
+  const runChatTurn = async (task: TaskItem, taskText: string) => {
+    const sessionId = initialSessionKey || task.id;
+    const method = task.messages.length ? "session.message" : "session.start";
+    const response = await callBridge(
+      {
         jsonrpc: "2.0",
         id: makeId("rpc"),
         method,
         params: {
           sessionId,
           threadId: sessionId,
-          taskPrompt: `${trimmed}${attachmentContext}`.trim(),
+          taskPrompt: taskText,
           workingDirectory: workingDirectory || undefined,
           routing: {
             routingMode: "explicit",
@@ -391,382 +404,434 @@ export function XWorkmateWorkspacePage({
             preferredGatewayProviderId: "openclaw",
           },
         },
-      }, bridgeEndpoint);
+      },
+      bridgeEndpoint,
+    );
 
-      if (response.error) {
-        throw new Error(response.error.message || "Bridge returned an error.");
-      }
+    if (response.error) {
+      throw new Error(response.error.message || "Bridge returned an error.");
+    }
 
-      const text = resultText(response.result);
-      const artifacts = Array.isArray(response.result?.artifacts)
-        ? response.result.artifacts
-        : [];
-      const remoteWorkingDirectory =
-        typeof response.result?.remoteWorkingDirectory === "string"
-          ? response.result.remoteWorkingDirectory
-          : "";
+    const text = resultText(response.result);
+    const artifacts = Array.isArray(response.result?.artifacts)
+      ? response.result.artifacts
+      : [];
+    const remoteWorkingDirectory =
+      typeof response.result?.remoteWorkingDirectory === "string"
+        ? response.result.remoteWorkingDirectory
+        : "";
 
-      setWorkingDirectory(remoteWorkingDirectory || workingDirectory);
-      updateActiveTask({
-        preview: text || "任务已提交，bridge 返回了空结果。",
-        state: response.result?.success === false ? "error" : "done",
-        files: artifacts,
+    setWorkingDirectory(remoteWorkingDirectory || workingDirectory);
+    const failed = response.result?.success === false;
+    appendMessage(task.id, {
+      id: makeId("msg"),
+      role: "assistant",
+      text: text || "任务已提交，bridge 返回了空结果。",
+      error: failed,
+    });
+    shell.updateTask(task.id, (current) => ({
+      ...current,
+      preview: text || "任务已提交，bridge 返回了空结果。",
+      state: failed ? "error" : "done",
+      files: artifacts.length ? artifacts : current.files,
+    }));
+    void refreshTrialStatus();
+  };
+
+  /** 立即执行 with a Bot role: DS Bot runs it and the answer comes back here. */
+  const runRoleTurn = async (task: TaskItem, taskText: string) => {
+    const label = roleOption(role).label;
+    const pendingId = makeId("msg");
+    appendMessage(task.id, {
+      id: pendingId,
+      role: "assistant",
+      header: label,
+      text: BOT_TASK_PHASE_LABEL.queued,
+      pending: true,
+    });
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const receipt = await submitRoleTask(taskText, role);
+    const view = await waitForRoleTask(receipt, {
+      signal: controller.signal,
+      onProgress: (progress) =>
+        replaceMessage(task.id, pendingId, {
+          header: roleAnswerHeader(progress, label),
+          text: BOT_TASK_PHASE_LABEL[progress.phase],
+        }),
+    });
+    const conversationHref = `/ai-workspace/conversation/${encodeURIComponent(receipt.sessionId)}`;
+    if (view.phase === "completed") {
+      replaceMessage(task.id, pendingId, {
+        header: roleAnswerHeader(view, label),
+        text: view.answer || "Bot 团队已完成，但没有返回文本结果。",
+        pending: false,
       });
-      setPrompt("");
-      setFiles([]);
-      void refreshTrialStatus();
+    } else if (view.phase === "failed" || view.phase === "rejected" || view.phase === "cancelled") {
+      replaceMessage(task.id, pendingId, {
+        header: roleAnswerHeader(view, label),
+        text: view.error || BOT_TASK_PHASE_LABEL[view.phase],
+        pending: false,
+        error: true,
+      });
+    } else {
+      replaceMessage(task.id, pendingId, {
+        text: "任务仍在 Bot 团队运行，完成后可在会话中查看结果。",
+        pending: false,
+        link: { href: conversationHref, label: "查看进度" },
+      });
+    }
+    shell.updateTask(task.id, (current) => ({
+      ...current,
+      preview: view.answer || view.error || BOT_TASK_PHASE_LABEL[view.phase],
+      state: view.phase === "completed" ? "done" : view.phase === "failed" || view.phase === "rejected" ? "error" : "idle",
+    }));
+  };
+
+  /** 交给 Bot 团队: hand the task off to run in the background. */
+  const handOffTurn = async (task: TaskItem, taskText: string) => {
+    const label = roleOption(role).label;
+    const receipt = await submitRoleTask(taskText, role);
+    appendMessage(task.id, {
+      id: makeId("msg"),
+      role: "note",
+      text: `已交给 Bot 团队（${label}），任务会在后台执行。`,
+      link: {
+        href: `/ai-workspace/conversation/${encodeURIComponent(receipt.sessionId)}`,
+        label: "查看进度",
+      },
+    });
+    shell.updateTask(task.id, (current) => ({
+      ...current,
+      preview: `已交给 Bot 团队（${label}）`,
+      state: "idle",
+    }));
+  };
+
+  const submit = async (handOff: boolean) => {
+    const trimmed = prompt.trim();
+    if ((!trimmed && files.length === 0) || isSubmitting || !activeTask) {
+      return;
+    }
+    const task = activeTask;
+    const taskText = composeTaskText(trimmed);
+    setIsSubmitting(true);
+    startTurn(task, trimmed);
+    try {
+      if (handOff) {
+        await handOffTurn(task, taskText);
+      } else if (runsOnBotTeam(role)) {
+        await runRoleTurn(task, taskText);
+      } else {
+        await runChatTurn(task, taskText);
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Bridge request failed.";
       setLastError(message);
       if (trialMode && message.includes("额度已用尽")) {
         setTrialStatus((current) =>
-          current
-            ? { ...current, trial: { ...current.trial!, remaining: 0 } }
+          current?.trial
+            ? { ...current, trial: { ...current.trial, remaining: 0 } }
             : current,
         );
       }
-      updateActiveTask({
+      shell.updateTask(task.id, (current) => ({
+        ...current,
         preview: message,
         state: "error",
-      });
+        messages: current.messages.map((item) =>
+          item.pending ? { ...item, pending: false, error: true, text: message } : item,
+        ),
+      }));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const onComposerKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      void submit(false);
+    }
+  };
+
+  const canSend = Boolean(prompt.trim() || files.length) && !isSubmitting;
+
   return (
-    <main className="flex h-full min-h-0 w-full overflow-hidden bg-[#f7f8fa] text-[#1f2430]">
-      <aside className="flex w-[280px] shrink-0 flex-col border-r border-slate-200/80 bg-white">
-        <div className="flex h-full min-h-0 flex-col p-4">
-          <div className="mb-3 flex items-center gap-2.5 text-base font-bold text-slate-700">
-            <span className="h-3 w-3 rounded-full bg-red-400" />
-            <span className="h-3 w-3 rounded-full bg-amber-400" />
-            <span className="h-3 w-3 rounded-full bg-emerald-400" />
-            <span className="ml-2">XWorkmate</span>
-            {trialMode && trialStatus?.mode === "trial" ? (
-              <span className="ml-auto rounded-full bg-blue-50 px-2 py-1 text-eyebrow font-semibold text-blue-700">
-                访客试用 · 剩余 {trialStatus.trial?.remaining ?? "—"}/
-                {trialStatus.trial?.limit ?? "—"}
-              </span>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
-            <Search className="h-4 w-4 shrink-0 text-slate-400" />
-            <input
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-slate-400"
-              placeholder="搜索任务"
-              type="search"
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-white text-[#1f2430]">
+      <section className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-[#eef1f5] px-3">
+          <SidebarRevealButton />
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#17181c]">
+            <PlayCircle className="size-4 text-[#075ecc]" />
+            对话工作流
+          </span>
+          {isGuest ? (
+            <span className="hidden rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700 sm:inline">
+              访客试用 · 剩余 {trialStatus?.trial?.remaining ?? "—"}/
+              {trialStatus?.trial?.limit ?? "—"}
+            </span>
+          ) : null}
+          <div className="ml-auto flex items-center gap-2">
+            <span className="hidden h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] px-2.5 text-xs text-[#566174] sm:inline-flex">
+              <Menu className="size-3.5" />
+              渲染
+              <ChevronDown className="size-3.5" />
+            </span>
+            <ConnectionChip
+              status={bridgeStatus}
+              version={bridgeVersion}
+              onRetry={() => void checkBridge()}
             />
-            <ChevronLeft className="h-4 w-4 text-slate-400" />
-          </div>
-
-          <button
-            className="mt-3 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0d63c7] text-sm font-bold text-white shadow-[0_6px_14px_rgba(13,99,199,0.16)] transition hover:bg-[#0a56b0]"
-            type="button"
-            onClick={createTask}
-          >
-            <ListChecks className="h-4 w-4" />
-            新对话
-          </button>
-
-          <div className="mt-5 flex items-center justify-between text-sm font-bold">
-            <span>任务列表</span>
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-500">
-            <ChevronDown className="h-4 w-4" />
-            <Cloud className="h-4 w-4" />
-            <span>Gateway</span>
-            <span className="ml-auto">{tasks.length}</span>
-          </div>
-
-          <div className="mt-2 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-            {tasks.map((task) => (
-              <button
-                key={task.id}
-                className={cn(
-                  "grid w-full grid-cols-[30px_minmax(0,1fr)_54px] gap-2 rounded-xl px-2 py-2.5 text-left transition",
-                  activeTaskId === task.id
-                    ? "bg-slate-100"
-                    : "hover:bg-slate-50",
-                )}
-                type="button"
-                onClick={() => setActiveTaskId(task.id)}
-              >
-                <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
-                  <ListChecks className="h-4 w-4" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold">
-                    {task.title}
-                  </span>
-                  <span className="mt-0.5 line-clamp-2 block text-xs font-medium leading-snug text-slate-400">
-                    {task.preview}
-                  </span>
-                </span>
-                <span className="flex flex-col items-end gap-2 text-eyebrow font-semibold text-slate-400">
-                  {formatRelativeTime(task.updatedAt)}
-                  <span className="rounded-md bg-white p-1 shadow-sm">
-                    <Copy className="h-3 w-3" />
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-4 border-t border-slate-200 pt-4">
-            <SideMenuItem icon={Settings} label="设置" />
-            <SideMenuItem icon={Languages} label="语言" badge="中" />
-            <SideMenuItem icon={Sun} label="主题" badge="浅色" />
-            {trialMode && trialStatus?.mode === "trial" ? (
-              <a
-                className="mt-3 block rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-blue-700"
-                href={
-                  trialStatus.registerHref ??
-                  "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial"
-                }
-              >
-                注册后保存会话与下载制品 →
-              </a>
-            ) : null}
-          </div>
-        </div>
-      </aside>
-
-      <section className="flex min-w-0 flex-1 flex-col border-r border-slate-200/80 bg-[#f8fafc]">
-        <header className="flex h-[64px] shrink-0 items-center justify-end gap-2 border-b border-slate-200/80 bg-white px-4">
-          <ToolbarPill compact>
-            <Menu className="h-3.5 w-3.5" />
-            渲染
-            <ChevronDown className="h-3.5 w-3.5" />
-          </ToolbarPill>
-          <ToolbarPill strong compact>已连接 · xworkmate-bridge.svc.plus</ToolbarPill>
-              <button
-                className="ml-1 rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-            type="button"
-            onClick={() => setRightPanelOpen((open) => !open)}
-          >
-            <ChevronsRight className="h-6 w-6" />
-          </button>
-        </header>
-
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          <div className="mx-auto mt-10 w-[min(720px,calc(100%-48px))] rounded-2xl border border-slate-200/80 bg-white p-7 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
-            <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                <Pencil className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-slate-900">开始对话或运行任务</h1>
-                <p className="mt-2 text-body font-medium leading-6 text-slate-500">
-                  输入需求，连接模型与工具，让 XWorkmate 帮你把想法推进到结果。
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
-              <span className="rounded-full bg-slate-50 px-3 py-1.5">计划任务</span>
-              <span className="rounded-full bg-slate-50 px-3 py-1.5">连接工具</span>
-              <span className="rounded-full bg-slate-50 px-3 py-1.5">交付制品</span>
-            </div>
-            <p className="mt-4 text-xs font-medium text-slate-400">
-              结果会回到当前会话，并在可用时同步到任务页。
-            </p>
             <button
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0d63c7] px-4 py-2.5 text-sm font-bold text-white shadow-[0_6px_14px_rgba(13,99,199,0.2)] transition hover:bg-[#0a56b0]"
               type="button"
-              onClick={() =>
-                document.getElementById("xworkmate-composer")?.focus()
-              }
+              data-testid="artifact-pane-toggle"
+              onClick={() => setRightPanelOpen((open) => !open)}
+              aria-label={rightPanelOpen ? "收起制品面板" : "展开制品面板"}
+              aria-pressed={rightPanelOpen}
+              className="hidden size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] hover:text-[#17181c] lg:grid"
             >
-              <Pencil className="h-4 w-4" />
-              开始输入
+              <PaneToggleIcon side="right" />
             </button>
           </div>
+        </header>
 
-          {activeTask?.preview ? (
-            <div className="mx-auto mt-5 w-[min(820px,calc(100%-48px))] rounded-2xl border border-slate-200/80 bg-white p-5 text-body font-medium leading-7 text-slate-700 shadow-sm">
-              <div className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-400">
-                {activeTask.state === "running" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : null}
-                当前任务结果
-              </div>
-              <pre className="whitespace-pre-wrap break-words font-sans">
-                {activeTask.preview}
-              </pre>
-            </div>
-          ) : null}
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-4 py-6">
+          <div className="mx-auto flex w-full max-w-[760px] flex-col gap-4">
+            {messages.length === 0 ? (
+              bridgeStatus === "error" ? (
+                <ConnectBridgeCard
+                  error={lastError}
+                  onRetry={() => void checkBridge()}
+                />
+              ) : (
+                <StartCard onStart={() => composerRef.current?.focus()} />
+              )
+            ) : (
+              messages.map((message) => (
+                <MessageBubble key={message.id} message={message} />
+              ))
+            )}
+          </div>
         </div>
 
-        <div className="shrink-0 border-t border-slate-100 bg-[#f8fafc] px-4 pb-4 pt-3">
-          <div className="mx-auto max-w-[1000px]">
-            <div className="mb-2 flex items-center gap-2">
-              <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-blue-200 hover:text-blue-600">
-                <Plus className="h-4 w-4" />
-                <input
-                  className="hidden"
-                  multiple
-                  type="file"
-                  onChange={handleFileInput}
-                />
-              </label>
-              <ToolbarPill compact>
-                <Cloud className="h-4 w-4" />
-                Gateway
-                <ChevronDown className="h-4 w-4" />
-              </ToolbarPill>
-              <ToolbarPill compact>
-                <Zap className="h-4 w-4" />
-                OpenClaw
-                <ChevronDown className="h-4 w-4" />
-              </ToolbarPill>
-              <button
-                className="h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:border-blue-200 hover:text-blue-600"
-                type="button"
-              >
-                <Zap className="mx-auto h-4 w-4" />
-              </button>
-            </div>
-
-            {files.length > 0 ? (
-              <div className="mb-2 flex flex-wrap gap-2">
-                {files.map((file) => (
-                  <span
-                    key={file.id}
-                    className="inline-flex max-w-[320px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-500"
-                  >
-                    {file.type.startsWith("image/") ? (
-                      <ImageIcon className="h-5 w-5" />
-                    ) : (
-                      <File className="h-5 w-5" />
-                    )}
-                    <span className="truncate">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setFiles((current) =>
-                          current.filter((item) => item.id !== file.id),
-                        )
-                      }
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            ) : null}
-
-            <textarea
-              id="xworkmate-composer"
-              className="h-[104px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-body font-medium leading-6 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
-              placeholder="输入需求、补充上下文，XWorkmate 会沿用当前任务上下文持续处理。"
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-            />
-
-            {lastError ? (
-              <div className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">
+        <div className="shrink-0 bg-[#f8fafc] px-4 pb-4 pt-2">
+          <div className="mx-auto max-w-[860px]">
+            {lastError && messages.length > 0 ? (
+              <div className="mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
                 {lastError}
               </div>
             ) : null}
-
-            {trialMode && trialStatus?.mode === "trial" ? (
-              <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-blue-100 bg-blue-50/80 px-3 py-2 text-xs font-semibold text-blue-700">
+            {isGuest ? (
+              <div className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50/80 px-3 py-2 text-xs text-blue-700">
                 <span className="leading-5">
-                  访客任务临时执行，不保存会话和下载制品。注册后可开启 7 天 Free 使用。
+                  访客任务临时执行，不保存会话和下载制品。注册后可开启 7 天 Free 使用，并可交给 Bot 团队执行。
                 </span>
-                <a
-                  className="shrink-0 underline underline-offset-2"
-                  href={
-                    trialStatus.registerHref ??
-                    "/register?returnTo=%2Fai-workspace%3Fentry%3Dtrial"
-                  }
-                >
+                <a className="shrink-0 underline underline-offset-2" href={registerHref}>
                   去注册
                 </a>
               </div>
             ) : null}
 
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ToolbarPill compact>
-                  <KeyRound className="h-3.5 w-3.5" />
-                  <ChevronDown className="h-4 w-4" />
-                </ToolbarPill>
-                <ToolbarPill compact>
-                  <span className="text-lg">ⓘ</span>
-                  <ChevronDown className="h-4 w-4" />
-                </ToolbarPill>
-                <ToolbarPill compact>
-                  <span className="text-lg">?</span>
-                  <ChevronDown className="h-4 w-4" />
-                </ToolbarPill>
+            <div className="rounded-2xl border border-[#e1e6ed] bg-white p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition focus-within:border-[#9cc0ef]">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <ComposerIconButton label="添加">
+                      <Plus className="size-4" />
+                    </ComposerIconButton>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content align="start" sideOffset={6} className={menuClass}>
+                      <DropdownMenu.Item
+                        className={menuItemClass}
+                        onSelect={() => document.getElementById("xworkmate-file-input")?.click()}
+                      >
+                        <Paperclip className="size-4 text-[#697386]" />
+                        添加照片和文件
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+                <input
+                  id="xworkmate-file-input"
+                  data-testid="composer-file-input"
+                  className="hidden"
+                  multiple
+                  type="file"
+                  onChange={handleFileInput}
+                />
+
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <ComposerIconButton label="内置插件" active={plugins.length > 0}>
+                      <Puzzle className="size-4" />
+                    </ComposerIconButton>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content align="start" sideOffset={6} className={cn(menuClass, "w-[360px]")}>
+                      {BUILTIN_PLUGIN_GROUPS.map((group) => (
+                        <DropdownMenu.Group key={group.category}>
+                          <DropdownMenu.Label className="px-2.5 pb-1 pt-2 text-xs text-[#8a93a2]">
+                            {group.category}
+                          </DropdownMenu.Label>
+                          {group.items.map((plugin) => {
+                            const selected = plugins.includes(plugin.name);
+                            return (
+                              <DropdownMenu.CheckboxItem
+                                key={plugin.name}
+                                checked={selected}
+                                onCheckedChange={(checked) =>
+                                  setPlugins((current) =>
+                                    checked
+                                      ? [...current, plugin.name]
+                                      : current.filter((name) => name !== plugin.name),
+                                  )
+                                }
+                                onSelect={(event) => event.preventDefault()}
+                                className={menuItemClass}
+                              >
+                                <span className={cn("grid size-6 shrink-0 place-items-center rounded-md text-white", plugin.color)}>
+                                  <plugin.icon className="size-3.5" />
+                                </span>
+                                <span className="shrink-0 font-medium">{plugin.name}</span>
+                                <span className="min-w-0 flex-1 truncate text-xs text-[#8a93a2]">
+                                  {plugin.desc}
+                                </span>
+                                {selected ? <Check className="size-4 text-[#075ecc]" /> : null}
+                              </DropdownMenu.CheckboxItem>
+                            );
+                          })}
+                        </DropdownMenu.Group>
+                      ))}
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+
+                <RoleMenu role={role} onChange={setRole} locked={botRolesLocked} />
+
+                <span
+                  className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[#697386]"
+                  title="模型：由 Bridge 默认路由"
+                >
+                  <Zap className="size-4" />
+                </span>
               </div>
-              <button
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#0d63c7] px-4 text-sm font-bold text-white shadow-[0_6px_14px_rgba(13,99,199,0.18)] transition hover:bg-[#0a56b0] disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isSubmitting}
-                type="button"
-                onClick={submitPrompt}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <ArrowUp className="h-5 w-5" />
-                )}
-                提交
-              </button>
+
+              {files.length > 0 || plugins.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {plugins.map((name) => (
+                    <Chip
+                      key={name}
+                      icon={<Puzzle className="size-3.5" />}
+                      label={name}
+                      onRemove={() =>
+                        setPlugins((current) => current.filter((item) => item !== name))
+                      }
+                    />
+                  ))}
+                  {files.map((file) => (
+                    <Chip
+                      key={file.id}
+                      icon={
+                        file.type.startsWith("image/") ? (
+                          <ImageIcon className="size-3.5" />
+                        ) : (
+                          <File className="size-3.5" />
+                        )
+                      }
+                      label={file.name}
+                      onRemove={() =>
+                        setFiles((current) => current.filter((item) => item.id !== file.id))
+                      }
+                    />
+                  ))}
+                </div>
+              ) : null}
+
+              <textarea
+                id="xworkmate-composer"
+                ref={composerRef}
+                className="mt-2 h-[88px] w-full resize-none bg-transparent px-1 text-sm leading-6 outline-none placeholder:text-[#9aa3b2]"
+                placeholder="输入需求、补充上下文，XWorkmate 会沿用当前任务上下文持续处理。"
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                onKeyDown={onComposerKeyDown}
+              />
+
+              <div className="flex items-center justify-end gap-2">
+                {runsOnBotTeam(role) ? (
+                  <button
+                    type="button"
+                    data-testid="hand-off-button"
+                    disabled={!canSend}
+                    onClick={() => void submit(true)}
+                    title="放到后台由 Bot 团队执行，结果在会话中查看"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d7dde6] bg-white px-3 text-sm text-[#3d4553] transition hover:bg-[#f6f8fb] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Send className="size-3.5" />
+                    交给 Bot 团队
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  data-testid="send-button"
+                  disabled={!canSend}
+                  onClick={() => void submit(false)}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <ArrowUp className="size-4" />
+                  )}
+                  立即执行
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {rightPanelOpen ? (
-        <aside className="flex w-[340px] shrink-0 flex-col bg-white p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-base font-bold">
+        <aside className="hidden w-[320px] shrink-0 flex-col border-l border-[#eef1f5] bg-white p-3 lg:flex">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-medium text-[#17181c]">
                 {activeTask?.title || "未命名对话"}
               </h2>
-              <p className="text-xs font-semibold text-slate-500">
-                当前任务工作路径
-              </p>
+              <p className="text-xs text-[#8a93a2]">当前任务工作路径</p>
             </div>
-            <div className="flex gap-3 text-slate-500">
-              <button type="button" onClick={() => void pingBridge()}>
-                <RefreshCw className="h-5 w-5" />
-              </button>
-              <button type="button" onClick={() => setRightPanelOpen(false)}>
-                <ChevronsRight className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500">
-            <Cloud className="h-4 w-4" />
-            <span className="truncate">{workingDirectory || "未设置"}</span>
-            <Copy className="ml-auto h-5 w-5" />
-          </div>
-          <div className="mt-3 flex rounded-xl border border-slate-200 bg-slate-50 p-1.5 text-sm font-bold text-slate-500">
             <button
-              className="rounded-lg bg-white px-4 py-1.5 text-slate-900 shadow-sm"
               type="button"
+              onClick={() => void checkBridge()}
+              aria-label="刷新 Bridge 状态"
+              className="grid size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6]"
             >
-              全部文件
+              <RefreshCw className="size-4" />
             </button>
-            <button className="px-4 py-1.5" type="button">
-              预览
-            </button>
+          </div>
+          <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#e4e8ef] px-2.5 py-2 text-xs text-[#566174]">
+            <Cloud className="size-3.5 shrink-0" />
+            <span className="truncate">{workingDirectory || "未设置"}</span>
+            <Copy className="ml-auto size-3.5 shrink-0" />
+          </div>
+          <div className="mt-3 flex rounded-lg bg-[#f3f5f8] p-1 text-xs">
+            <span className="rounded-md bg-white px-3 py-1 text-[#17181c] shadow-sm">全部文件</span>
+            <span className="px-3 py-1 text-[#697386]">预览</span>
           </div>
 
           <div className="flex min-h-0 flex-1 items-center justify-center text-center">
             {currentFiles.length > 0 ? (
-              <div className="w-full space-y-2 self-start pt-6">
+              <div className="w-full space-y-1.5 self-start pt-4">
                 {currentFiles.map((file, index) => (
                   <div
                     key={`${file.name ?? file.path ?? "file"}-${index}`}
-                    className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-left"
+                    className="flex items-center gap-2 rounded-lg border border-[#e4e8ef] px-3 py-2 text-left"
                   >
-                    <File className="h-5 w-5 text-slate-500" />
-                    <span className="min-w-0 flex-1 truncate text-base font-semibold">
+                    <File className="size-4 text-[#697386]" />
+                    <span className="min-w-0 flex-1 truncate text-sm">
                       {file.name ?? file.path ?? file.url ?? "未命名文件"}
                     </span>
                   </div>
@@ -774,65 +839,260 @@ export function XWorkmateWorkspacePage({
               </div>
             ) : (
               <div>
-                <Folder className="mx-auto h-9 w-9 text-slate-300" />
-                <div className="mt-4 text-sm font-bold text-slate-700">暂无文件</div>
-                <p className="mt-2 text-xs font-medium text-slate-400">
-                  当前会话还没有可展示的制品。
-                </p>
+                <Folder className="mx-auto size-8 text-[#c5ccd6]" />
+                <div className="mt-3 text-sm text-[#3d4553]">暂无文件</div>
+                <p className="mt-1 text-xs text-[#8a93a2]">当前会话还没有可展示的制品。</p>
               </div>
             )}
           </div>
 
-          <div className="rounded-xl bg-slate-50 px-3 py-2 text-eyebrow font-semibold text-slate-500">
-            Bridge: {bridgeStatus === "connected" ? "connected" : bridgeStatus}
+          <div className="rounded-lg bg-[#f6f8fb] px-2.5 py-1.5 text-eyebrow text-[#697386]">
+            Bridge: {bridgeStatus}
             {bridgeVersion ? ` · ${bridgeVersion.slice(0, 12)}` : ""}
           </div>
         </aside>
-      ) : null}
-    </main>
-  );
-}
-
-function SideMenuItem({
-  icon: Icon,
-  label,
-  badge,
-}: {
-  icon: typeof Settings;
-  label: string;
-  badge?: string;
-}) {
-  return (
-    <div className="flex h-16 items-center gap-4 text-lg font-bold text-slate-500">
-      <Icon className="h-6 w-6" />
-      <span>{label}</span>
-      {badge ? (
-        <span className="ml-auto rounded-full border border-slate-200 bg-white px-3 py-1 text-base shadow-sm">
-          {badge}
-        </span>
       ) : null}
     </div>
   );
 }
 
-function ToolbarPill({
-  children,
-  strong = false,
-  compact = false,
+const menuClass =
+  "z-50 min-w-[220px] rounded-xl border border-[#e4e8ef] bg-white p-1 shadow-[0_12px_32px_rgba(15,23,42,0.12)]";
+const menuItemClass =
+  "flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-[#3d4553] outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[highlighted]:bg-[#f0f3f7]";
+
+function ConnectionChip({
+  status,
+  version,
+  onRetry,
 }: {
-  children: ReactNode;
-  strong?: boolean;
-  compact?: boolean;
+  status: "checking" | "connected" | "error";
+  version: string;
+  onRetry: () => void;
 }) {
+  const label =
+    status === "connected" ? "Bridge 已连接" : status === "checking" ? "连接中…" : "Bridge 未连接";
   return (
-    <span
+    <button
+      type="button"
+      onClick={onRetry}
+      data-testid="connection-chip"
+      title={version ? `Bridge ${version}` : "重新检查 Bridge 连接"}
+      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] px-2.5 text-xs text-[#566174] transition hover:bg-[#f6f8fb]"
+    >
+      <span
+        className={cn(
+          "size-2 rounded-full",
+          status === "connected" && "bg-emerald-500",
+          status === "checking" && "bg-amber-400",
+          status === "error" && "bg-red-500",
+        )}
+      />
+      {label}
+    </button>
+  );
+}
+
+function ConnectBridgeCard({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return (
+    <div className="mx-auto mt-6 w-full max-w-[560px] rounded-2xl border border-[#e4e8ef] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <div className="flex items-start gap-4">
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
+          <Plug className="size-5" />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold text-[#17181c]">先连接 Bridge</h1>
+          <p className="mt-1 text-sm leading-6 text-[#697386]">
+            XWorkmate 通过 Bridge 调用模型与工具。连接恢复后即可开始对话或运行任务。
+          </p>
+          {error ? (
+            <p className="mt-2 rounded-md bg-red-50 px-2.5 py-1.5 text-xs text-red-600">{error}</p>
+          ) : null}
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6]"
+          >
+            <RefreshCw className="size-4" />
+            重新连接
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StartCard({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="mx-auto mt-6 w-full max-w-[560px] rounded-2xl border border-[#e4e8ef] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <div className="flex items-start gap-4">
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-[#075ecc]">
+          <Pencil className="size-5" />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold text-[#17181c]">开始对话或运行任务</h1>
+          <p className="mt-1 text-sm leading-6 text-[#697386]">
+            输入需求，连接模型与工具，让 XWorkmate 帮你把想法推进到结果。Chat 直接回答；其他角色交给 Bot 团队执行。
+          </p>
+          <button
+            type="button"
+            onClick={onStart}
+            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6]"
+          >
+            <Pencil className="size-4" />
+            开始输入
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MessageBubble({ message }: { message: ConversationMessage }) {
+  if (message.role === "note") {
+    return (
+      <div className="mx-auto flex items-center gap-2 rounded-full border border-[#e4e8ef] bg-white px-3 py-1.5 text-xs text-[#566174]">
+        <Bot className="size-3.5 text-[#075ecc]" />
+        <span>{message.text}</span>
+        {message.link ? (
+          <Link href={message.link.href} className="text-[#075ecc] underline underline-offset-2">
+            {message.link.label}
+          </Link>
+        ) : null}
+      </div>
+    );
+  }
+  const isUser = message.role === "user";
+  return (
+    <article className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+      <div
+        className={cn(
+          "max-w-[88%] rounded-2xl px-4 py-2.5 text-sm leading-6",
+          isUser
+            ? "rounded-br-md bg-[#075ecc] text-white"
+            : "rounded-bl-md border border-[#e4e8ef] bg-white text-[#252a34]",
+          message.error && "border-red-200 bg-red-50 text-red-700",
+        )}
+      >
+        {message.header ? (
+          <div className="mb-1 flex items-center gap-1.5 text-xs text-[#697386]">
+            <Bot className="size-3.5" />
+            {message.header}
+          </div>
+        ) : null}
+        <p className="whitespace-pre-wrap break-words">
+          {message.pending ? (
+            <Loader2 className="mr-1.5 inline size-3.5 animate-spin align-[-2px]" />
+          ) : null}
+          {message.text}
+        </p>
+        {message.link ? (
+          <Link
+            href={message.link.href}
+            className="mt-1 inline-block text-xs text-[#075ecc] underline underline-offset-2"
+          >
+            {message.link.label}
+          </Link>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function RoleMenu({
+  role,
+  onChange,
+  locked,
+}: {
+  role: AssistantRole;
+  onChange: (role: AssistantRole) => void;
+  locked: boolean;
+}) {
+  const current = roleOption(role);
+  const Icon = runsOnBotTeam(role) ? Bot : MessageCircle;
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          data-testid="role-button"
+          aria-label={`角色：${current.label}`}
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] bg-white px-2.5 text-sm text-[#3d4553] transition hover:bg-[#f6f8fb]"
+        >
+          <Icon className="size-4 text-[#075ecc]" />
+          {current.label}
+          <ChevronDown className="size-3.5 text-[#8a93a2]" />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content align="start" sideOffset={6} className={cn(menuClass, "w-[280px]")}>
+          <DropdownMenu.Label className="px-2.5 pb-1 pt-1.5 text-xs text-[#8a93a2]">
+            Chat ⟶ Worker ⟶ Engineer ⟶ Architect ⟷ Researcher ⟶ Specialist
+          </DropdownMenu.Label>
+          {ASSISTANT_ROLES.map((option) => {
+            const optionLocked = locked && runsOnBotTeam(option.value);
+            return (
+              <DropdownMenu.Item
+                key={option.value}
+                data-testid={`role-option-${option.value}`}
+                disabled={optionLocked}
+                onSelect={() => onChange(option.value)}
+                className={menuItemClass}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{option.label}</span>
+                  <span className="block truncate text-xs text-[#8a93a2]">
+                    {optionLocked ? "登录账号后可交给 Bot 团队" : option.description}
+                  </span>
+                </span>
+                {option.value === role ? <Check className="size-4 text-[#075ecc]" /> : null}
+              </DropdownMenu.Item>
+            );
+          })}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
+const ComposerIconButton = forwardRef<
+  HTMLButtonElement,
+  { label: string; active?: boolean } & ButtonHTMLAttributes<HTMLButtonElement>
+>(function ComposerIconButton({ label, active = false, children, className, ...rest }, ref) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      aria-label={label}
+      title={label}
+      {...rest}
       className={cn(
-        "inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-500 shadow-sm",
-        compact ? "h-9 px-3 text-xs" : "h-11 px-4 text-sm",
-        strong && "bg-blue-50 text-slate-600",
+        "grid size-8 place-items-center rounded-lg border border-[#e4e8ef] bg-white text-[#697386] transition hover:bg-[#f6f8fb] hover:text-[#17181c]",
+        active && "border-[#b9d3f5] bg-[#eef5fe] text-[#075ecc]",
+        className,
       )}
     >
       {children}
+    </button>
+  );
+});
+
+function Chip({
+  icon,
+  label,
+  onRemove,
+}: {
+  icon: ReactNode;
+  label: string;
+  onRemove: () => void;
+}) {
+  return (
+    <span className="inline-flex max-w-[280px] items-center gap-1.5 rounded-lg border border-[#e4e8ef] bg-[#f8fafc] px-2 py-1 text-xs text-[#566174]">
+      {icon}
+      <span className="truncate">{label}</span>
+      <button type="button" onClick={onRemove} aria-label={`移除 ${label}`}>
+        <X className="size-3.5" />
+      </button>
     </span>
   );
 }
