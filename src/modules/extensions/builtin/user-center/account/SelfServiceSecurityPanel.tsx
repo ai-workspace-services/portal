@@ -495,8 +495,8 @@ export default function SelfServiceSecurityPanel() {
           </button>
           <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
             {zh
-              ? "仅 Free 5GB 用户可自助注销；账户记录保留，不会删除。"
-              : "Only Free 5GB users can self-cancel; the account record is retained."}
+              ? "仅 Free 用户可自助注销；账户记录保留，不会删除。"
+              : "Only Free users can self-cancel; the account record is retained."}
           </p>
         </div>
       ) : null}
