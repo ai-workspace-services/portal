@@ -364,7 +364,19 @@ export function VlessConnectionCard({
   // The pill row fits three regions on one line at the panel's width. A fourth
   // wraps onto a line of its own and reads as a stray control rather than part
   // of the group, so hand the choice to the select from four regions up.
-  const useCompactRegionSelect = regionOptions.length > REGION_PILL_LIMIT;
+  const useCompactRegionSelect =
+    regionOptions.length > REGION_PILL_LIMIT ||
+    new Set(regionOptions.map(({ pool }) => pool.code)).size <
+      regionOptions.length;
+  const regionGroups = useMemo(() => {
+    const groups = new Map<string, typeof regionOptions>();
+    for (const option of regionOptions) {
+      const group = groups.get(option.pool.code) ?? [];
+      group.push(option);
+      groups.set(option.pool.code, group);
+    }
+    return [...groups.values()];
+  }, [regionOptions]);
   const node = useMemo(() => {
     return (
       regionOptions.find(({ pool }) => pool.key === selectedRegionCode)?.node ??
@@ -449,10 +461,17 @@ export function VlessConnectionCard({
               value={selectedRegionCode ?? ""}
               onChange={(event) => setSelectedRegionCode(event.target.value)}
             >
-              {regionOptions.map((option) => (
-                <option key={option.pool.key} value={option.pool.key}>
-                  {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
-                </option>
+              {regionGroups.map((options) => (
+                <optgroup
+                  key={options[0].pool.code}
+                  label={zh ? options[0].pool.zhName : options[0].pool.enName}
+                >
+                  {options.map((option) => (
+                    <option key={option.pool.key} value={option.pool.key}>
+                      {`${option.pool.shortCode} · ${option.pool.entry}`}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           ) : (
@@ -473,6 +492,11 @@ export function VlessConnectionCard({
               })}
             </div>
           )}
+        </div>
+      ) : null}
+      {node ? (
+        <div className="xds-vless-selected-node" title={node.address}>
+          <code>{node.address}</code>
         </div>
       ) : null}
       <div className="xds-qr">

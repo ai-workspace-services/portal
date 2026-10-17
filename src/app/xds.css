@@ -620,7 +620,7 @@
 .xds-vless-region { min-height: 32px; border: 1px solid var(--border-default); border-radius: 999px; background: var(--bg-surface); color: var(--text-secondary); padding: 4px 12px; font-size: var(--fs-caption); cursor: pointer; transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast); }
 .xds-vless-region:hover { border-color: var(--blue-500); color: var(--text-primary); }
 .xds-vless-region.xds-is-active { border-color: var(--blue-500); background: var(--blue-50); color: var(--blue-700); font-weight: 600; }
-.xds-vless-region-select { min-height: 36px; min-width: 156px; border: 1px solid var(--blue-500); border-radius: 10px; background: var(--bg-surface); color: var(--text-primary); padding: 5px 32px 5px 12px; font-size: var(--fs-caption); font-weight: 600; cursor: pointer; }
+.xds-vless-region-select { min-height: 36px; min-width: 0; max-width: 100%; flex: 1 1 220px; border: 1px solid var(--blue-500); border-radius: 10px; background: var(--bg-surface); color: var(--text-primary); padding: 5px 32px 5px 12px; font-size: var(--fs-caption); font-weight: 600; cursor: pointer; }
 .xds-vless-region-select:focus-visible { outline: 2px solid var(--blue-500); outline-offset: 2px; }
   .xds-node-flag { width: 20px; height: 15px; border-radius: 2px; border: 1px solid var(--border-default); background: var(--bg-sunken); display: grid; place-items: center; font-size: var(--fs-eyebrow); font-family: var(--font-mono); color: var(--text-tertiary); }
   .xds-lat { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: var(--fs-micro); }
@@ -836,3 +836,5 @@
 .xds-mnav-star { color: var(--text-disabled); transition: color var(--dur-fast) var(--ease-out), fill var(--dur-fast) var(--ease-out); }
 .xds-mnav-repo:hover .xds-mnav-star { color: var(--warning); fill: var(--warning); }
 .xds-mnav-mobile .xds-mnav-repo { display: inline-flex; width: auto; margin-top: var(--sp-2); }
+
+.xds-vless-selected-node { grid-column: 1 / -1; min-width: 0; color: var(--text-secondary); font-size: var(--fs-caption); overflow-wrap: anywhere; }

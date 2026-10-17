@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { NodesTable, QuotaCard, VlessConnectionCard } from "./AccountPanels";
@@ -263,9 +263,47 @@ describe("VlessConnectionCard region selector", () => {
     expect(select).toBeInTheDocument();
     expect(
       screen.getAllByRole("option").map((option) => option.textContent),
-    ).toEqual(["HK 区域", "JP 区域", "PH 区域", "US 区域"]);
+    ).toEqual([
+      "HK · hk.entry.example",
+      "JP · jp.entry.example",
+      "PH · ph.entry.example",
+      "US · us.entry.example",
+    ]);
     // The pills and the select are alternatives, never both at once.
     expect(screen.queryByRole("button", { name: "HK 区域" })).toBeNull();
+  });
+
+  it("distinguishes nodes in the same region and updates the selected URI", async () => {
+    const first = regionalNode("JP");
+    const second = { ...first, address: "jp-second.entry.example" };
+    render(
+      <VlessConnectionCard
+        proxyUuid="11111111-1111-4111-8111-111111111111"
+        nodes={[first, second]}
+        zh
+      />,
+    );
+    const select = screen.getByRole("combobox", { name: "选择节点区域" });
+    expect(screen.getByRole("group", { name: "日本" })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent),
+    ).toEqual(["JP · jp-second.entry.example", "JP · jp.entry.example"]);
+    fireEvent.change(select, {
+      target: {
+        value: (
+          screen.getByRole("option", {
+            name: "JP · jp.entry.example",
+          }) as HTMLOptionElement
+        ).value,
+      },
+    });
+    await waitFor(() =>
+      expect(toDataURLMock).toHaveBeenLastCalledWith(
+        expect.stringContaining("@jp.entry.example:443"),
+        expect.anything(),
+      ),
+    );
+    expect(screen.getByText("jp.entry.example")).toBeInTheDocument();
   });
 
   it("keeps pills while the regions still fit on one row", () => {
