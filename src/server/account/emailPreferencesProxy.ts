@@ -18,26 +18,31 @@ export async function proxyEmailPreferences(
   }
   const endpoint = unsubscribe ? "email-unsubscribe" : "email-preferences";
   const suffix = key ? `?key=${encodeURIComponent(key)}` : "";
-  const response = await fetch(
-    `${getAccountServiceApiBaseUrl()}/${endpoint}${suffix}`,
-    {
-      method: request.method,
-      headers,
-      body: request.method === "GET" ? undefined : await request.text(),
-      cache: "no-store",
-    },
-  );
-  const responseHeaders = {
-    "Cache-Control": "no-store",
-    "Referrer-Policy": "no-referrer",
-  };
-  if (response.status === 204)
-    return new NextResponse(null, { status: 204, headers: responseHeaders });
-  return NextResponse.json(
-    await response.json().catch(() => ({ error: "invalid_response" })),
-    {
-      status: response.status,
+  try {
+    const response = await fetch(
+      `${getAccountServiceApiBaseUrl()}/${endpoint}${suffix}`,
+      {
+        method: request.method,
+        headers,
+        body: request.method === "GET" ? undefined : await request.text(),
+        cache: "no-store",
+      },
+    );
+    const responseHeaders = {
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+    };
+    if (response.status === 204)
+      return new NextResponse(null, { status: 204, headers: responseHeaders });
+    const payload = await response.json().catch(() => null);
+    return NextResponse.json(payload ?? { error: "invalid_response" }, {
+      status: payload === null ? 502 : response.status,
       headers: responseHeaders,
-    },
-  );
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "account_service_unavailable" },
+      { status: 502, headers: { "Cache-Control": "no-store" } },
+    );
+  }
 }
