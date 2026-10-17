@@ -183,7 +183,7 @@ async function main() {
     const content = await generateProductContent('xconnect')
     await fs.mkdir(OUTPUT_ROOT, { recursive: true })
     await fs.writeFile(path.join(OUTPUT_ROOT, 'xconnect.json'), JSON.stringify(content, null, 2))
-    await fs.writeFile(path.join(OUTPUT_ROOT, 'xconnect.ts'), 'export default ' + JSON.stringify(content, null, 2) + ';')
+    await fs.writeFile(path.join(OUTPUT_ROOT, 'xconnect.ts'), 'const content = ' + JSON.stringify(content, null, 2) + ';\n\nexport default content;\n')
     console.log('XConnect content generation complete!')
     return
   }
@@ -197,7 +197,7 @@ async function main() {
   const homepageContent = await generateHomepageContent()
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'homepage.ts'),
-    'export default ' + JSON.stringify(homepageContent, null, 2) + ';',
+    'const content = ' + JSON.stringify(homepageContent, null, 2) + ';\n\nexport default content;\n',
   )
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'homepage.json'),
@@ -249,7 +249,7 @@ async function main() {
     if (Object.keys(productContent).length > 0) {
       await fs.writeFile(
         path.join(OUTPUT_ROOT, `${product}.ts`),
-        'export default ' + JSON.stringify(productContent, null, 2) + ';',
+        'const content = ' + JSON.stringify(productContent, null, 2) + ';\n\nexport default content;\n',
       )
       await fs.writeFile(
         path.join(OUTPUT_ROOT, `${product}.json`),
@@ -280,7 +280,7 @@ async function main() {
   const docsContent = await generateDocsContent()
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'docs-home.ts'),
-    'export default ' + JSON.stringify(docsContent, null, 2) + ';',
+    'const content = ' + JSON.stringify(docsContent, null, 2) + ';\n\nexport default content;\n',
   )
   await fs.writeFile(
     path.join(OUTPUT_ROOT, 'docs-home.json'),
