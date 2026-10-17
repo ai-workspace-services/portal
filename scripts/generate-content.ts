@@ -188,10 +188,22 @@ async function generateEmailPreferencesContent() {
     return;
   }
   if (!exists.every(Boolean)) throw new Error("Email preferences requires both locales");
-  const values = await Promise.all(files.map(async (file) => JSON.parse(await fs.readFile(file, "utf8")) as Record<string, string>));
+  const values = await Promise.all(files.map(async (file) => JSON.parse(await fs.readFile(file, "utf8")) as Record<string, unknown>));
+  if (values.every(value => value.templates === undefined)) {
+    const generated = JSON.parse(await fs.readFile(generatedPath, "utf8"));
+    if (!Array.isArray(generated.zh?.templates) || !Array.isArray(generated.en?.templates)) throw new Error("Missing reviewed email campaign content");
+    console.log("Email campaign content not yet in source revision; retaining reviewed generated artifact.");
+    return;
+  }
+  for (const value of values) {
+    if (!Array.isArray(value.templates) || value.templates.length !== 3 || value.templates.map((step: { id?: string }) => step.id).join(",") !== "hello,first_steps,discover_more") throw new Error("Invalid onboarding template identities");
+    for (const step of value.templates) {
+      if (!Number.isInteger(step.delayHours) || step.delayHours < 0 || step.delayHours > 720 || ["subject", "body", "actionLabel", "path"].some(key => typeof step[key] !== "string" || !step[key].trim())) throw new Error("Invalid onboarding template content");
+    }
+  }
   const keys = Object.keys(values[0]).sort().join(",");
   for (const value of values) {
-    if (Object.keys(value).sort().join(",") !== keys || Object.values(value).some((text) => typeof text !== "string" || !text.trim())) throw new Error("Invalid email preferences content");
+    if (Object.keys(value).sort().join(",") !== keys || Object.entries(value).some(([key, text]) => key !== "templates" && (typeof text !== "string" || !text.trim()))) throw new Error("Invalid email preferences content");
   }
   await fs.mkdir(OUTPUT_ROOT, { recursive: true });
   await fs.writeFile(generatedPath, JSON.stringify(Object.fromEntries(locales.map((locale, i) => [locale, values[i]])), null, 2) + "\n");

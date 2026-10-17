@@ -10,6 +10,11 @@ import {
   type EmailManagementSettings,
 } from "@/lib/email-preferences";
 
+import EmailCampaignWorkspace from "./EmailCampaignWorkspace";
+import EmailOnboardingPanel from "./EmailOnboardingPanel";
+import EmailDeliveryPanel from "./EmailDeliveryPanel";
+import EmailSuppressionPanel from "./EmailSuppressionPanel";
+
 const ENDPOINT = "/api/auth/admin/email-management";
 const inputClass =
   "w-full rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm";
@@ -21,7 +26,7 @@ type Preview = {
   unsubscribeUrl: string;
 };
 
-export default function EmailManagementPanel() {
+function EmailSenderSettings() {
   const { language } = useLanguage();
   const t = emailCopy(language);
   const { data, error, isLoading, mutate } = useSWR<EmailManagementSettings>(
@@ -198,6 +203,41 @@ export default function EmailManagementPanel() {
           {t.manageOwn}
         </BoundaryLink>
       </section>
+    </div>
+  );
+}
+
+export default function EmailManagementPanel() {
+  const { language } = useLanguage();
+  const t = emailCopy(language);
+  const [section, setSection] = useState("campaigns");
+  const sections = [
+    { id: "campaigns", label: t.campaignSection },
+    { id: "onboarding", label: t.onboardingSection },
+    { id: "deliveries", label: t.deliverySection },
+    { id: "suppressions", label: t.suppressionSection },
+    { id: "sender", label: t.senderSection },
+  ];
+  return (
+    <div className="space-y-5">
+      <nav aria-label={t.title} className="flex flex-wrap gap-2">
+        {sections.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            aria-pressed={section === item.id}
+            onClick={() => setSection(item.id)}
+            className={`min-h-11 rounded-md border px-3 py-2 text-sm ${section === item.id ? "border-[var(--color-primary)] text-[var(--color-primary)]" : "border-[color:var(--color-surface-border)] text-[var(--color-text-muted)]"}`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+      {section === "campaigns" && <EmailCampaignWorkspace />}
+      {section === "onboarding" && <EmailOnboardingPanel />}
+      {section === "deliveries" && <EmailDeliveryPanel />}
+      {section === "suppressions" && <EmailSuppressionPanel />}
+      {section === "sender" && <EmailSenderSettings />}
     </div>
   );
 }

@@ -1,31 +1,33 @@
-# Root email management and recipient preferences
+# Email management and recipient preferences
 
-The existing `/panel/management` workspace has a **邮件与通知 / Email & notifications** tab visible only to Root. Accounts enforces Root on its read, write and preview endpoints; ordinary admins and operators cannot use the API even if they construct the URL.
+`/panel/management` has a Root-only **邮件与通知 / Email & notifications** workspace with:
 
-Root configures the real company name, valid postal address, contact mailbox and the HTTPS console origin. No company address is inferred from account records. Saving uses a version check. Preview generates links for the current Root account only and never sends a message.
+- **Announcement campaigns:** new feature, app release and announcement drafts; plain text plus optional HTTPS CTA; Free/subscriber/Team/all segments; frequency grouping; reviewed content/audience digest; explicit queue confirmation; cancellation and results.
+- **Welcome journey:** editable Hello, get-started and discover-more templates, activation switches and per-step delays. Hello is an account-service guide; follow-ups require tutorial consent and respect recipient frequency and step order.
+- **Delivery log:** bounded queue processing, SMTP acceptance, safe retries, suppressed/cancelled outcomes and explicit acknowledgment before retrying an uncertain SMTP result.
+- **Bounces and complaints:** Root registers provider-confirmed suppression events. A suppressed address cannot bypass the list by opting back into marketing.
+- **Sender and footer:** real legal identity and personalized preference/unsubscribe links. Preview links belong only to the current Root account and must not be forwarded.
 
-Recipients can open `/email/preferences` from their account settings, or use an opaque, mailbox-bound link from a marketing footer. All three categories (features, tutorials, offers) default to off. Explicit saves persist consent and a policy version in Accounts. `/email/unsubscribe` requires one confirmation; loading a link does not change state. The email client's standard one-click request posts directly to `/api/auth/email-unsubscribe`.
+All categories default off. User account settings link to `/email/preferences`; email capabilities permit preference changes or unsubscribe without login. Marketing adds `AD:` and the shared footer; necessary account/security/billing messages remain independent. UI success for `sent` is labeled **SMTP accepted**, not inbox delivery.
 
-The user-facing pages are public pages (the existing SSR public fallback); their `/api/auth/*` endpoints reach Accounts through the existing auth gateway. Selfhost uses the matching Next BFF routes. No gateway deployment topology or origins are added. Cross-boundary account navigation uses `BoundaryLink`.
+## Content and API ownership
 
-## Content ownership
+Knowledge's `content/website/account/email-preferences/{zh,en}.json` is canonical for bilingual UI and default onboarding template copy. Portal's generated JSON is a build artifact. Operator-authored campaign/template payloads and queue state are dynamic Accounts data, not website content publication.
 
-`knowledge/content/website/account/email-preferences/{zh,en}.json` is canonical. `src/data/content/email-preferences.json` is generated. To refresh only this surface:
+Refresh only this surface:
 
 ```sh
 WEBSITE_CONTENT_DIR=/path/to/knowledge/content/website yarn exec tsx scripts/generate-content.ts --account=email-preferences
 ```
 
-The normal content build also refreshes it. An older content revision retains the reviewed generated artifact until the matching Knowledge change is merged. Merge Knowledge before releasing Portal. Environment-specific origins and actual sender identity are runtime settings, not static copy.
+Older source revisions retain the reviewed generated artifact until the matching Knowledge content is merged. Merge Knowledge before releasing Portal. Selfhost uses the existing authenticated `/api/auth/admin/[...segments]` BFF and public preference BFF. Serverless announcement pages use the existing public-page fallback, while `/api/auth/*` reaches the Accounts auth gateway; no new gateway topology is introduced.
 
-## Verification and release
+## Dispatch and rollout
 
-Accounts includes the additive `2026101702_email_preferences` migration, a qualified PostgreSQL 17 native snapshot, API and SMTP header tests, and an isolated PostgreSQL migration/persistence test. Existing databases must use the normal reviewed bounded migration flow; no live migration is executed by this change.
+Accounts owns SMTP dispatch and enables its bounded background worker only under the existing database background-writer policy. The Root log can process a bounded due batch manually when background dispatch is unavailable. This change does not provision serverless scheduler infrastructure. Every step is disabled by default; saving drafts does not send. No implementation test sends real email.
 
-Run frontend lint, typecheck, unit tests and production build. For a worktree using a dependency symlink outside the Turbopack root, use `yarn build --webpack`.
+The two additive migrations and qualified PostgreSQL 17 native snapshot must pass the normal reviewed release gate. Before enabling real mail, configure the actual sender identity and SMTP, redact `key` parameters from ingress logs, verify DKIM/unsubscribe signing, and test opt-in, preview/launch, unsubscribe-after-queue, retry, cancellation and welcome enrollment on UAT.
 
-Before release, verify Root-only access and a non-Root 403 on the target environment; save the actual sender identity; use preview links on a test account; exercise preferences, confirmation unsubscribe and the client's one-click POST. Verify sent mail has the two List-Unsubscribe headers and that the SMTP provider signs them appropriately. Do not put preview tokens, customer addresses or session links into logs, screenshots or release notes. Redact the `key` query parameter in ingress/request logging.
+Local validation: lint, typecheck, UI confirmation/BFF tests and `yarn build --webpack` (the local worktree uses an external dependency symlink that Turbopack rejects). Browser QA uses a fictional Root and recipient and a fake SMTP sender; screenshots are fixtures. Accounts separately tests PostgreSQL concurrent queue claiming, deduplication, native init and business-data transfer. See Accounts' `docs/architecture/email-preferences.md` for retry and consent semantics.
 
-## Scope
-
-This is the sender-identity, footer, consent and self-service preference foundation. It does not start a campaign, change quotas or billing, or schedule expiry/renewal notifications. Necessary transactional mail stays separate. New marketing producers must use Accounts' `deliverEmail` with `MarketingRecipient`; that gate reloads category/frequency consent immediately before SMTP and appends the footer. A campaign queue must additionally implement its own per-period send ledger, frequency cap, delivery retries, bounce/complaint handling and event deduplication before bulk delivery is enabled. No bulk-send endpoint is exposed here.
+Root can resolve an uncertain delivery as SMTP accepted only after provider verification; this records acceptance without sending again. A suppressed or cancelled onboarding predecessor stops later steps.
