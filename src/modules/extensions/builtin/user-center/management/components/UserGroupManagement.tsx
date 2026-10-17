@@ -135,8 +135,8 @@ export const SUBSCRIPTION_UNLIMITED_OVERRIDE_GROUP =
   "segment:subscription:unlimited";
 const MONTHLY_QUOTA_GROUP_OPTIONS = [
   { value: "", label: "不参与月度限流" },
-  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free 3GB" },
-  { value: MONTHLY_PLUS_QUOTA_LIMIT_GROUP, label: "Plus 20GB" },
+  { value: MONTHLY_FREE_QUOTA_LIMIT_GROUP, label: "Free" },
+  { value: MONTHLY_PLUS_QUOTA_LIMIT_GROUP, label: "Plus" },
   { value: MONTHLY_UNLIMITED_BETA_GROUP, label: "无限制（内测分组）" },
 ] as const;
 type MonthlyQuotaGroup = (typeof MONTHLY_QUOTA_GROUP_OPTIONS)[number]["value"];
@@ -152,8 +152,8 @@ const PLAN_LABEL_BY_ID: Record<
   NonNullable<AdminPlanGroupUpdate["planId"]>,
   string
 > = {
-  FREE: "Free 3GB",
-  PLUS: "Plus 20GB",
+  FREE: "Free",
+  PLUS: "Plus",
   "UNLIMITED-BETA": "Unlimited Beta",
 };
 

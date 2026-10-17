@@ -630,6 +630,8 @@ export function QuotaCard({
   const planName =
     assignedPlan?.displayName || defaultPlan?.displayName || "default";
   const isAssigned = Boolean(assignedPlan);
+  const isNaturalMonth =
+    (assignedPlan ?? defaultPlan)?.quotaCycle === "natural_month";
   const isUnlimited = assignedPlan?.unlimited === true;
   const planMaxQuota = currentPlanMaxQuota(usage);
   const quotaExhausted = usage?.quotaExhausted === true;
@@ -673,6 +675,7 @@ export function QuotaCard({
                 : "Unlimited"
               : bytesOrDash(planMaxQuota)}
             {zh ? " / 月" : " / month"}
+            {isNaturalMonth ? (zh ? " · 自然月" : " · Calendar month") : null}
           </XdsBadge>
         }
       />
