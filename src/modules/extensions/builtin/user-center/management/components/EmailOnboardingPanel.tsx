@@ -188,7 +188,7 @@ export default function EmailOnboardingPanel() {
           const initial: Step = persisted ?? {
             id: template.id,
             version: 0,
-            enabled: false,
+            enabled: true,
             subject: template.subject,
             body: template.body,
             delayHours: template.delayHours,
