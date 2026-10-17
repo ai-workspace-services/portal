@@ -2,8 +2,8 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { QuotaCard } from "./AccountPanels";
-import { VlessConnectionCard } from "./AccountPanels";
+import { NodesTable, QuotaCard, VlessConnectionCard } from "./AccountPanels";
+import type { RegionalPool } from "../../lib/regionalPools";
 import type { VlessNode } from "../../lib/vless";
 
 const { toDataURLMock } = vi.hoisted(() => ({
@@ -190,6 +190,47 @@ describe("QuotaCard", () => {
         expect.any(Object),
       );
     });
+  });
+});
+
+describe("NodesTable resource groups", () => {
+  it("separates shared public pools from team-only pools", () => {
+    const pool = (entry: string): RegionalPool => ({
+      key: entry,
+      code: "tw",
+      shortCode: "TW",
+      zhName: "台湾",
+      enName: "Taiwan",
+      entry,
+      poolCount: 1,
+      openToUsers: false,
+    });
+
+    render(
+      <NodesTable
+        zh
+        pools={[
+          {
+            ...pool("agent-team-selfhost-uat.onwalk.net"),
+            resourceClass: "team",
+            teamId: "alpha",
+          },
+          {
+            ...pool("agent-shared-selfhost-uat.onwalk.net"),
+            resourceClass: "shared",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("shared · Free + Plus")).toBeInTheDocument();
+    expect(screen.getByText("team · Team · alpha")).toBeInTheDocument();
+    expect(
+      screen.getByText("agent-shared-selfhost-uat.onwalk.net"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("agent-team-selfhost-uat.onwalk.net"),
+    ).toBeInTheDocument();
   });
 });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BoundaryLink from "@/components/common/BoundaryLink";
 import { ChevronLeft, ChevronRight, Home, Menu } from "lucide-react";
 
 import { hasPublicUserEmail } from "@lib/publicUserIdentity";
@@ -115,14 +116,14 @@ export default function Header({
 
         <div className="flex shrink-0 items-center justify-end gap-3 pl-3">
           <div className="flex items-center gap-2 sm:gap-3">
-            <a
+            <BoundaryLink
               href="/"
               className="tactile-button tactile-button-soft inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition-colors sm:px-3 sm:text-caption"
               aria-label={language === "zh" ? "返回主页" : "Back to homepage"}
             >
               <Home className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{language === "zh" ? "返回主页" : "Back to homepage"}</span>
-            </a>
+            </BoundaryLink>
             <LanguageToggle />
             <span
               className={`rounded-[999px] px-3 py-1.5 text-xs font-semibold ${badgeClasses}`}

@@ -1847,12 +1847,12 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                           </span>
                           <span className="flex flex-wrap justify-end gap-1.5">
                             {mode.recommended ? (
-                              <span className="rounded-full bg-[var(--color-success-muted)] px-2 py-1 text-[11px] font-semibold text-[var(--color-success-foreground)]">
+                              <span className="rounded-full bg-[var(--color-success-muted)] px-2 py-1 text-eyebrow font-semibold text-[var(--color-success-foreground)]">
                                 {zh ? "推荐 · 默认" : "Recommended · Default"}
                               </span>
                             ) : null}
                             {mode.linuxGatewayOnly ? (
-                              <span className="rounded-full bg-[var(--color-warning-muted)] px-2 py-1 text-[11px] font-semibold text-[var(--color-warning-foreground)]">
+                              <span className="rounded-full bg-[var(--color-warning-muted)] px-2 py-1 text-eyebrow font-semibold text-[var(--color-warning-foreground)]">
                                 {zh ? "仅 Linux Gateway" : "Linux Gateway only"}
                               </span>
                             ) : null}
@@ -1867,7 +1867,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                         <span className="mt-3 flex-1 text-xs leading-5 text-[var(--color-text-subtle)]">
                           {zh ? mode.description.zh : mode.description.en}
                         </span>
-                        <code className="mt-4 w-fit rounded bg-[var(--color-surface-muted)] px-2 py-1 text-[11px] text-[var(--color-text-muted)]">
+                        <code className="mt-4 w-fit rounded bg-[var(--color-surface-muted)] px-2 py-1 text-eyebrow text-[var(--color-text-muted)]">
                           {mode.id}
                         </code>
                       </label>

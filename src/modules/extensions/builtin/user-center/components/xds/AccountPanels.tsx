@@ -43,9 +43,11 @@ import {
 } from "@/components/ui/xds";
 import { buildVlessUri, type VlessNode } from "../../lib/vless";
 import {
+  groupRegionalPools,
   regionalClosureReasonLabel,
   regionalNodeOptions,
   type RegionalPool,
+  type RegionalPoolResourceGroup,
 } from "../../lib/regionalPools";
 import type {
   AccountPolicy,
@@ -55,6 +57,17 @@ import type {
 const DASH = "—";
 // Region pills stay on one row up to this many; beyond it the panel uses a select.
 const REGION_PILL_LIMIT = 3;
+
+function regionalResourceGroupLabel(group: RegionalPoolResourceGroup): string {
+  const labels: Record<RegionalPoolResourceGroup, string> = {
+    shared: "shared · Free + Plus",
+    free: "free · Free",
+    plus: "plus · Plus",
+    team: "team · Team",
+    unknown: DASH,
+  };
+  return labels[group];
+}
 
 function pct(value?: number | null): string {
   return typeof value === "number" && Number.isFinite(value)
@@ -845,6 +858,8 @@ export function NodesTable({
   isLoading?: boolean;
   error?: Error;
 }) {
+  const groupedPools = groupRegionalPools(pools);
+
   return (
     <XdsCard id="xds-nodes">
       <XdsCardHead
@@ -892,41 +907,56 @@ export function NodesTable({
                 </td>
               </tr>
             )}
-            {pools.map((pool) => (
-              <tr key={pool.key}>
-                <td style={{ fontWeight: 500 }}>
-                  {zh ? pool.zhName : pool.enName}
-                </td>
-                <td className="xds-t-mono xds-subtle">{pool.code}</td>
-                <td className="xds-t-mono xds-subtle">{pool.entry}</td>
-                <td>
-                  <XdsBadge tone={pool.openToUsers ? "success" : "neutral"}>
-                    {pool.openToUsers
-                      ? zh
-                        ? "已开放"
-                        : "Open"
-                      : zh
-                        ? "未开放"
-                        : "Closed"}
-                  </XdsBadge>
-                </td>
-                <td className="xds-subtle">
-                  {pool.openToUsers
-                    ? DASH
-                    : pool.closedReasons?.length
-                      ? pool.closedReasons
-                          .map((reason) =>
-                            regionalClosureReasonLabel(reason, zh),
-                          )
-                          .join("；")
-                      : zh
-                        ? "服务端未提供原因"
-                        : "Reason not provided by server"}
-                </td>
-                <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
-              </tr>
-            ))}
           </tbody>
+          {groupedPools.map(({ group, teamId, pools: groupPools }) => (
+            <tbody key={`${group}:${teamId ?? ""}`}>
+              <tr key={`group-${group}`}>
+                <th
+                  scope="rowgroup"
+                  colSpan={6}
+                  className="xds-subtle"
+                  style={{ textAlign: "left" }}
+                >
+                  {regionalResourceGroupLabel(group)}
+                  {teamId ? ` · ${teamId}` : ""}
+                </th>
+              </tr>
+              {groupPools.map((pool) => (
+                <tr key={pool.key}>
+                  <td style={{ fontWeight: 500 }}>
+                    {zh ? pool.zhName : pool.enName}
+                  </td>
+                  <td className="xds-t-mono xds-subtle">{pool.code}</td>
+                  <td className="xds-t-mono xds-subtle">{pool.entry}</td>
+                  <td>
+                    <XdsBadge tone={pool.openToUsers ? "success" : "neutral"}>
+                      {pool.openToUsers
+                        ? zh
+                          ? "已开放"
+                          : "Open"
+                        : zh
+                          ? "未开放"
+                          : "Closed"}
+                    </XdsBadge>
+                  </td>
+                  <td className="xds-subtle">
+                    {pool.openToUsers
+                      ? DASH
+                      : pool.closedReasons?.length
+                        ? pool.closedReasons
+                            .map((reason) =>
+                              regionalClosureReasonLabel(reason, zh),
+                            )
+                            .join("；")
+                        : zh
+                          ? "服务端未提供原因"
+                          : "Reason not provided by server"}
+                  </td>
+                  <td style={{ textAlign: "right" }}>{pool.poolCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          ))}
         </table>
       </div>
 

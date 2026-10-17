@@ -511,12 +511,12 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                     { title: copy.guide.step3Title, description: copy.guide.step3Description },
                   ].map((step, index) => (
                     <li key={step.title} className="flex gap-2.5">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[11px] font-semibold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-eyebrow font-semibold text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
                         {index + 1}
                       </span>
                       <div>
                         <p className="text-xs font-semibold text-[var(--color-heading)]">{step.title}</p>
-                        <p className="mt-0.5 text-[11px] leading-normal text-[var(--color-text-subtle)]">{step.description}</p>
+                        <p className="mt-0.5 text-eyebrow leading-normal text-[var(--color-text-subtle)]">{step.description}</p>
                       </div>
                     </li>
                   ))}
@@ -576,14 +576,14 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                       <p className="rounded-lg border border-[color:var(--color-danger-muted)] bg-[var(--color-danger-muted)] p-2.5 text-xs text-[var(--color-danger-foreground)]">
                         {copy.errors.locked}
                         {lockoutLabel ? (
-                          <span className="mt-0.5 block text-[11px] text-[var(--color-danger)]">{lockoutLabel}</span>
+                          <span className="mt-0.5 block text-eyebrow text-[var(--color-danger)]">{lockoutLabel}</span>
                         ) : null}
                       </p>
                     ) : null}
 
                     <section>
                       <div className="flex flex-col gap-0.5 pr-10">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary)]">{copy.guide.step2Title}</p>
+                        <p className="text-eyebrow font-semibold uppercase tracking-wider text-[var(--color-primary)]">{copy.guide.step2Title}</p>
                         <h4 className="text-base font-semibold text-[var(--color-heading)]">{copy.qrLabel}</h4>
                       </div>
                       <div className="mt-3 grid gap-4 sm:grid-cols-[148px_minmax(0,1fr)] sm:items-center">
@@ -613,23 +613,23 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                           <div className="flex-1 space-y-2">
                             {secret ? (
                               <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
+                                <p className="text-eyebrow font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.secretLabel}</p>
                                 <code className="mt-0.5 block break-all rounded-md bg-[var(--color-surface-muted)] px-2.5 py-1.5 font-mono text-xs text-[var(--color-primary)]">{secret}</code>
                               </div>
                             ) : null}
                             {issuer ? (
                               <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.issuerLabel}</p>
+                                <p className="text-eyebrow font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.issuerLabel}</p>
                                 <p className="mt-0.5 break-all text-xs text-[var(--color-text-subtle)]">{issuer}</p>
                               </div>
                             ) : null}
                             {accountLabel ? (
                               <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.accountLabel}</p>
+                                <p className="text-eyebrow font-semibold uppercase tracking-wide text-[var(--color-primary)]">{copy.accountLabel}</p>
                                 <p className="mt-0.5 break-all text-xs text-[var(--color-text-subtle)]">{accountLabel}</p>
                               </div>
                             ) : null}
-                            <p className="text-[11px] leading-normal text-[var(--color-text-subtle)]">{copy.manualHint}</p>
+                            <p className="text-eyebrow leading-normal text-[var(--color-text-subtle)]">{copy.manualHint}</p>
                             <button
                               type="button"
                               onClick={handleProvision}
@@ -643,7 +643,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                     </section>
 
                     <section className="border-t border-[color:var(--color-surface-border)] pt-3.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-primary)]">{copy.guide.step3Title}</p>
+                      <p className="text-eyebrow font-semibold uppercase tracking-wider text-[var(--color-primary)]">{copy.guide.step3Title}</p>
                       <h4 className="mt-0.5 text-base font-semibold text-[var(--color-heading)]">{copy.codeLabel}</h4>
                         <form
                           onSubmit={handleVerify}
@@ -786,7 +786,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
 
                 <div className="mt-3.5 border-t border-[color:var(--color-surface-border)] pt-3 text-xs text-[var(--color-text-subtle)]">
                   <p className="font-semibold text-[var(--color-text-subtle)]">{copy.actions.help}</p>
-                  <p className="mt-0.5 text-[11px] text-[var(--color-text-subtle)]">{copy.actions.description}</p>
+                  <p className="mt-0.5 text-eyebrow text-[var(--color-text-subtle)]">{copy.actions.description}</p>
                   <div className="mt-2 flex flex-wrap gap-2.5">
                     <button
                       type="button"

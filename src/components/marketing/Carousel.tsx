@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export type CarouselImage =
@@ -54,8 +55,6 @@ export default function Carousel({
       >
         {images.map((img, idx) => {
           const rawSrc = typeof img === "string" ? img : img.src;
-          const width = typeof img === "string" ? undefined : img.width;
-          const height = typeof img === "string" ? undefined : img.height;
           const alt =
             typeof img === "string"
               ? `Slide ${idx + 1}`
@@ -67,11 +66,13 @@ export default function Carousel({
 
           return (
             <div key={idx} className="relative w-full h-full shrink-0">
-              <img
+              <Image
                 src={src}
                 alt={alt}
-                width={width}
-                height={height}
+                fill
+                sizes="100vw"
+                unoptimized
+                loading="eager"
                 className="w-full h-full object-cover"
               />
             </div>

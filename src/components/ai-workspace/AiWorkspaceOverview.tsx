@@ -1033,7 +1033,7 @@ function ProjectsDetail({
                       <h3 className="truncate font-bold text-sm text-[#17181c]">
                         {proj.name}
                       </h3>
-                      <p className="mt-0.5 truncate font-mono text-[11px] text-[#7b8494]">
+                      <p className="mt-0.5 truncate font-mono text-eyebrow text-[#7b8494]">
                         {formatLocation(proj.scope, proj.location)}
                       </p>
                     </div>
@@ -1042,7 +1042,7 @@ function ProjectsDetail({
                     {proj.sources.map((s) => (
                       <span
                         key={s}
-                        className="rounded bg-[#f0f3f7] px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase text-[#566174]"
+                        className="rounded bg-[#f0f3f7] px-1.5 py-0.5 text-eyebrow font-mono font-semibold uppercase text-[#566174]"
                       >
                         {s}
                       </span>
