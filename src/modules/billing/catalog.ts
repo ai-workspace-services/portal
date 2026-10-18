@@ -50,123 +50,196 @@ export type PlanCopyEntry = {
 };
 
 export const XCONNECT_PRODUCT_SLUG = "xconnect";
+export const XCONNECT_SUBSCRIPTION_PLAN_IDS = [
+  "PRO-MONTHLY-V2",
+  "PRO-YEARLY-V2",
+] as const;
 
 export const PLAN_COPY: Record<string, PlanCopyEntry> = {
+  PLUS: {
+    mode: "subscription",
+    zh: {
+      name: "Plus 月度订阅",
+      description: "每月 20GB 流量，适合日常 AI 对话与轻度使用。",
+      features: ["每月 20GB 高速流量", "按月续订"],
+    },
+    en: {
+      name: "Plus Monthly",
+      description: "20GB of monthly traffic for everyday AI conversations.",
+      features: ["20GB monthly traffic", "Renews monthly"],
+    },
+  },
   "PAYG-TOPUP-50": {
     mode: "payment",
     zh: {
-      name: "余额充值 ¥50",
-      description:
-        "为按量付费账户充值 ¥50，高速流量按 ¥1/GB 从余额扣减。到账后可在下方流水核对。",
+      name: "按量余额充值",
+      description: "按选择的金额一次性充值，进入按量付费余额。",
       features: [
-        "高速流量 ¥1/GB，按量扣费",
-        "充值即时到账，计入账单流水",
-        "欠费立即停机，充值后自动恢复",
+        "人民币余额独立记账",
+        "一次性充值，不自动续费",
+        "与有效订阅互斥",
       ],
     },
     en: {
-      name: "Balance top-up $7",
-      description:
-        "Add $7 to a pay-as-you-go balance. Accelerated traffic draws down at $0.15/GB. Check the ledger below once it lands.",
+      name: "Pay-as-you-go balance",
+      description: "Make a one-time top-up for the amount you select.",
       features: [
-        "Accelerated traffic at $0.15/GB",
-        "Credited immediately and recorded in the ledger",
-        "Suspended on zero balance, restored on top-up",
+        "CNY balance is recorded separately",
+        "One-time payment; no auto-renewal",
+        "Mutually exclusive with an active subscription",
       ],
     },
   },
   "PAYG-TOPUP-100": {
     mode: "payment",
     zh: {
-      name: "余额充值 ¥100",
-      description:
-        "为按量付费账户充值 ¥100，高速流量按 ¥1/GB 从余额扣减。到账后可在下方流水核对。",
+      name: "按量余额充值",
+      description: "按选择的金额一次性充值，进入按量付费余额。",
       features: [
-        "高速流量 ¥1/GB，按量扣费",
-        "充值即时到账，计入账单流水",
-        "欠费立即停机，充值后自动恢复",
+        "人民币余额独立记账",
+        "一次性充值，不自动续费",
+        "与有效订阅互斥",
       ],
     },
     en: {
-      name: "Balance top-up $14",
-      description:
-        "Add $14 to a pay-as-you-go balance. Accelerated traffic draws down at $0.15/GB. Check the ledger below once it lands.",
+      name: "Pay-as-you-go balance",
+      description: "Make a one-time top-up for the amount you select.",
       features: [
-        "Accelerated traffic at $0.15/GB",
-        "Credited immediately and recorded in the ledger",
-        "Suspended on zero balance, restored on top-up",
+        "CNY balance is recorded separately",
+        "One-time payment; no auto-renewal",
+        "Mutually exclusive with an active subscription",
       ],
     },
   },
-  "PAYG-TOPUP-500": {
+  "PAYG-TOPUP-200": {
     mode: "payment",
     zh: {
-      name: "余额充值 ¥500",
-      description:
-        "为按量付费账户充值 ¥500，高速流量按 ¥1/GB 从余额扣减。到账后可在下方流水核对。",
+      name: "按量余额充值",
+      description: "按选择的金额一次性充值，进入按量付费余额。",
       features: [
-        "高速流量 ¥1/GB，按量扣费",
-        "充值即时到账，计入账单流水",
-        "欠费立即停机，充值后自动恢复",
+        "人民币余额独立记账",
+        "一次性充值，不自动续费",
+        "与有效订阅互斥",
       ],
     },
     en: {
-      name: "Balance top-up $70",
-      description:
-        "Add $70 to a pay-as-you-go balance. Accelerated traffic draws down at $0.15/GB. Check the ledger below once it lands.",
+      name: "Pay-as-you-go balance",
+      description: "Make a one-time top-up for the amount you select.",
       features: [
-        "Accelerated traffic at $0.15/GB",
-        "Credited immediately and recorded in the ledger",
-        "Suspended on zero balance, restored on top-up",
+        "CNY balance is recorded separately",
+        "One-time payment; no auto-renewal",
+        "Mutually exclusive with an active subscription",
       ],
     },
   },
-  "PRO-MONTHLY": {
+  "PAYG-TOPUP-USD-20": {
+    mode: "payment",
+    zh: {
+      name: "按量余额充值",
+      description: "一次性充值美元余额，单独记账且不自动兑换。",
+      features: [
+        "美元余额独立记账",
+        "一次性充值，不自动续费",
+        "与有效订阅互斥",
+      ],
+    },
+    en: {
+      name: "Pay-as-you-go balance (USD)",
+      description:
+        "Make a one-time USD top-up; the balance is not automatically converted.",
+      features: [
+        "USD balance is recorded separately",
+        "One-time payment; no auto-renewal",
+        "Mutually exclusive with an active subscription",
+      ],
+    },
+  },
+  "PAYG-TOPUP-USD-50": {
+    mode: "payment",
+    zh: {
+      name: "按量余额充值",
+      description: "一次性充值美元余额，单独记账且不自动兑换。",
+      features: [
+        "美元余额独立记账",
+        "一次性充值，不自动续费",
+        "与有效订阅互斥",
+      ],
+    },
+    en: {
+      name: "Pay-as-you-go balance (USD)",
+      description:
+        "Make a one-time USD top-up; the balance is not automatically converted.",
+      features: [
+        "USD balance is recorded separately",
+        "One-time payment; no auto-renewal",
+        "Mutually exclusive with an active subscription",
+      ],
+    },
+  },
+  "PAYG-TOPUP-USD-100": {
+    mode: "payment",
+    zh: {
+      name: "按量余额充值",
+      description: "一次性充值美元余额，单独记账且不自动兑换。",
+      features: [
+        "美元余额独立记账",
+        "一次性充值，不自动续费",
+        "与有效订阅互斥",
+      ],
+    },
+    en: {
+      name: "Pay-as-you-go balance (USD)",
+      description:
+        "Make a one-time USD top-up; the balance is not automatically converted.",
+      features: [
+        "USD balance is recorded separately",
+        "One-time payment; no auto-renewal",
+        "Mutually exclusive with an active subscription",
+      ],
+    },
+  },
+  "PRO-MONTHLY-V2": {
     mode: "subscription",
     zh: {
-      name: "Pro 订阅（月付）",
-      description: "每月赠送 20GB 高速流量，超出部分按 ¥1/GB 自动计费。",
+      name: "Pro 月付",
+      description: "每月 50GB 高速流量，适合 AI 编程与更频繁的使用。",
       features: [
-        "每月 20GB 高速流量",
+        "每月 50GB 高速流量",
         "超出部分 ¥1/GB 自动计费",
         "资源卡片明码实价 + 20% 托管费",
         "14 天欠费宽限期",
       ],
     },
     en: {
-      name: "Pro (Monthly)",
+      name: "Pro Monthly",
       description:
-        "20GB of accelerated traffic every month; overage auto-bills at $0.15/GB.",
+        "50GB of accelerated traffic each month for frequent AI use.",
       features: [
-        "20GB accelerated traffic per month",
-        "Overage auto-billed at $0.15/GB",
+        "50GB accelerated traffic per month",
+        "Overage auto-billed at ¥1/GB",
         "Resource cards at list price + 20% managed fee",
         "14-day grace period on payment failure",
       ],
     },
   },
-  "PRO-YEARLY": {
+  "PRO-YEARLY-V2": {
     mode: "subscription",
     zh: {
-      name: "Pro 订阅（年付）",
-      description:
-        "每个自然月赠送 20GB 高速流量（全年共 240GB），比月付省 ¥40。",
+      name: "Pro 年付",
+      description: "一次支付，享全年不限流量。",
       features: [
-        "每自然月 20GB 高速流量，全年 240GB",
-        "超出部分 ¥1/GB 自动计费",
+        "全年不限流量",
+        "一次性年付，不按月续费",
         "资源卡片明码实价 + 20% 托管费",
-        "比月付省 ¥40/年",
       ],
     },
     en: {
-      name: "Pro (Yearly)",
-      description:
-        "20GB of accelerated traffic every calendar month (240GB/year) — save $8 versus monthly billing.",
+      name: "Pro Yearly",
+      description: "Pay once for unlimited traffic for the year.",
       features: [
-        "20GB accelerated traffic per calendar month, 240GB/year",
-        "Overage auto-billed at $0.15/GB",
+        "Unlimited traffic for the year",
+        "One annual payment; no monthly renewal",
         "Resource cards at list price + 20% managed fee",
-        "Save $8/year versus monthly billing",
       ],
     },
   },
@@ -174,11 +247,15 @@ export const PLAN_COPY: Record<string, PlanCopyEntry> = {
 
 /** Order the storefront shows plans in when the catalog omits sortOrder. */
 const SELLABLE_PLAN_ORDER = [
+  "PLUS",
+  "PRO-MONTHLY-V2",
+  "PRO-YEARLY-V2",
   "PAYG-TOPUP-50",
   "PAYG-TOPUP-100",
-  "PAYG-TOPUP-500",
-  "PRO-MONTHLY",
-  "PRO-YEARLY",
+  "PAYG-TOPUP-200",
+  "PAYG-TOPUP-USD-20",
+  "PAYG-TOPUP-USD-50",
+  "PAYG-TOPUP-USD-100",
 ];
 
 /**

@@ -4,6 +4,7 @@ import {
   formatPlanPrice,
   isPurchasable,
   PLAN_COPY,
+  XCONNECT_SUBSCRIPTION_PLAN_IDS,
   billingPlans,
   sellablePlans,
   type CatalogPlan,
@@ -14,6 +15,15 @@ function catalogOf(...plans: CatalogPlan[]): Map<string, CatalogPlan> {
 }
 
 describe("billing catalog", () => {
+  it("uses the versioned Stripe catalog IDs for the marketing subscription cards", () => {
+    expect(XCONNECT_SUBSCRIPTION_PLAN_IDS).toEqual([
+      "PRO-MONTHLY-V2",
+      "PRO-YEARLY-V2",
+    ]);
+    for (const planId of XCONNECT_SUBSCRIPTION_PLAN_IDS) {
+      expect(PLAN_COPY[planId]).toBeDefined();
+    }
+  });
   // The bug this guards: the user center used to render a hardcoded product
   // list, so it advertised plan IDs that did not exist in billing_plans and
   // priced them in a different currency from /prices. Every offer must now
@@ -24,9 +34,9 @@ describe("billing catalog", () => {
   });
 
   it("does not offer a plan that is active but has no Stripe price", () => {
-    const catalog = catalogOf({ planId: "PRO-MONTHLY", active: true });
+    const catalog = catalogOf({ planId: "PRO-MONTHLY-V2", active: true });
     const monthly = sellablePlans(catalog).find(
-      (offer) => offer.planId === "PRO-MONTHLY",
+      (offer) => offer.planId === "PRO-MONTHLY-V2",
     );
     expect(monthly).toBeDefined();
     // Checkout would fail at accounts' validCheckoutPrice, so the UI must not
@@ -36,24 +46,24 @@ describe("billing catalog", () => {
 
   it("does not offer a plan that has a Stripe price but was delisted", () => {
     const catalog = catalogOf({
-      planId: "PRO-MONTHLY",
+      planId: "PRO-MONTHLY-V2",
       active: false,
       stripePriceId: "price_123",
     });
     const monthly = sellablePlans(catalog).find(
-      (offer) => offer.planId === "PRO-MONTHLY",
+      (offer) => offer.planId === "PRO-MONTHLY-V2",
     );
     expect(isPurchasable(monthly!.plan)).toBe(false);
   });
 
   it("offers a plan only once it is both active and priced", () => {
     const catalog = catalogOf({
-      planId: "PRO-MONTHLY",
+      planId: "PRO-MONTHLY-V2",
       active: true,
       stripePriceId: "price_123",
     });
     const monthly = sellablePlans(catalog).find(
-      (offer) => offer.planId === "PRO-MONTHLY",
+      (offer) => offer.planId === "PRO-MONTHLY-V2",
     );
     expect(isPurchasable(monthly!.plan)).toBe(true);
     expect(monthly!.plan?.stripePriceId).toBe("price_123");
@@ -105,14 +115,34 @@ describe("billing catalog", () => {
     expect(isPurchasable(offers[0].plan)).toBe(false);
   });
 
-  it("checks out top-ups as one-off payments and Pro as subscriptions", () => {
+  it("checks out top-ups as one-off payments and subscription plans as subscriptions", () => {
     // A top-up sent with mode=subscription would create a recurring charge;
     // a subscription sent with mode=payment would never renew. Both are money
     // bugs, so the mode is pinned to the plan rather than inferred at the call
     // site.
     expect(PLAN_COPY["PAYG-TOPUP-50"].mode).toBe("payment");
-    expect(PLAN_COPY["PRO-MONTHLY"].mode).toBe("subscription");
-    expect(PLAN_COPY["PRO-YEARLY"].mode).toBe("subscription");
+    expect(PLAN_COPY["PAYG-TOPUP-USD-50"].mode).toBe("payment");
+    expect(PLAN_COPY.PLUS.mode).toBe("subscription");
+    expect(PLAN_COPY["PRO-MONTHLY-V2"].mode).toBe("subscription");
+    expect(PLAN_COPY["PRO-YEARLY-V2"].mode).toBe("subscription");
+  });
+
+  it("offers only the current subscription and fixed top-up denominations", () => {
+    const offers = sellablePlans(new Map()).map((offer) => offer.planId);
+
+    expect(offers).toEqual([
+      "PLUS",
+      "PRO-MONTHLY-V2",
+      "PRO-YEARLY-V2",
+      "PAYG-TOPUP-50",
+      "PAYG-TOPUP-100",
+      "PAYG-TOPUP-200",
+      "PAYG-TOPUP-USD-20",
+      "PAYG-TOPUP-USD-50",
+      "PAYG-TOPUP-USD-100",
+    ]);
+    expect(offers).not.toContain("PAYG-TOPUP-500");
+    expect(PLAN_COPY["PRO-YEARLY-V2"].zh.description).toContain("不限流量");
   });
 
   it("carries copy for every sellable plan in both languages", () => {
@@ -140,29 +170,29 @@ describe("formatPlanPrice", () => {
   it("renders minor units as a major-unit amount with a period suffix", () => {
     const price = formatPlanPrice(
       {
-        planId: "PRO-MONTHLY",
+        planId: "PRO-MONTHLY-V2",
         active: true,
-        priceAmount: 2000,
+        priceAmount: 5000,
         priceCurrency: "CNY",
         priceUnit: "month",
       },
       "zh",
     );
-    expect(price).toEqual({ amount: "¥20", period: "/月" });
+    expect(price).toEqual({ amount: "¥50", period: "/月" });
   });
 
   it("localizes the period suffix", () => {
     const price = formatPlanPrice(
       {
-        planId: "PRO-YEARLY",
+        planId: "PRO-YEARLY-V2",
         active: true,
-        priceAmount: 20000,
+        priceAmount: 50000,
         priceCurrency: "CNY",
         priceUnit: "year",
       },
       "en",
     );
-    expect(price).toEqual({ amount: "¥200", period: "/year" });
+    expect(price).toEqual({ amount: "¥500", period: "/year" });
   });
 
   it("keeps both decimals when the amount is not whole", () => {
