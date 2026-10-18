@@ -198,13 +198,12 @@ export default function BillingOptionsPanel({
                   packageName: "plus",
                 }}
               />
-              Plus · 20 GB/{zh ? "月" : "month"} ·{" "}
-              {zh ? "可选专属节点" : "optional dedicated nodes"}
+              Plus · 20 GB/{zh ? "月" : "month"}
             </p>
             <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
               {zh
-                ? "适合持续稳定使用；专属节点可另行选择。"
-                : "For steady use, with dedicated nodes available as an optional add-on."}
+                ? "适合日常 AI 对话与轻度使用。"
+                : "For everyday AI conversations and lighter use."}
             </p>
           </div>
           {subscriptionOptions.length ? (

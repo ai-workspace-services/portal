@@ -106,6 +106,12 @@ vi.mock("@modules/billing/catalog", () => ({
 describe("BillingOptionsPanel", () => {
   it("offers only fixed CNY and USD denominations and checks catalog prices", async () => {
     render(<BillingOptionsPanel />);
+    expect(screen.getByText("Plus · 20 GB/月")).toBeInTheDocument();
+    expect(
+      screen.getByText("适合日常 AI 对话与轻度使用。"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/专属节点/)).not.toBeInTheDocument();
+
     fireEvent.click(screen.getByRole("button", { name: "按量付费" }));
 
     expect(screen.getByRole("button", { name: "¥10" })).toBeInTheDocument();
