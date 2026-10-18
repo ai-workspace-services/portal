@@ -21,6 +21,9 @@ import LanguageToggle from "@/components/LanguageToggle";
 import MarketingBreadcrumbs from "@/components/marketing/MarketingBreadcrumbs";
 import { useUserStore } from "@lib/userStore";
 import { cn } from "@/lib/utils";
+import useSWR from "swr";
+import { fetchAccountUsageSummary } from "@modules/extensions/builtin/user-center/lib/fetchAccountUsage";
+import MembershipTierMark from "@modules/extensions/builtin/user-center/components/MembershipTierMark";
 
 type NavFlatLink = { label: string; href: string };
 
@@ -115,6 +118,15 @@ export default function MarketingNav() {
     user?.email?.charAt(0)?.toUpperCase() ??
     "?";
   const accountLabel = user?.username ?? user?.email ?? "";
+  const { data: accountUsage } = useSWR(
+    isAuthenticated ? "account-usage-summary" : null,
+    fetchAccountUsageSummary,
+    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
+  );
+  const membershipPlan =
+    accountUsage?.currentPlan?.assigned === true
+      ? accountUsage.currentPlan
+      : accountUsage?.defaultPlan;
 
   const [activeConsole, setActiveConsole] = useState<
     "user" | "admin" | "operator"
@@ -254,7 +266,10 @@ export default function MarketingNav() {
                   aria-expanded={accountOpen}
                   onClick={() => setAccountOpen((open) => !open)}
                 >
-                  <span className="xds-mnav-avatar">{accountInitial}</span>
+                  <span className="relative inline-flex shrink-0">
+                    <span className="xds-mnav-avatar">{accountInitial}</span>
+                    <MembershipTierMark plan={membershipPlan} size="avatar" />
+                  </span>
                   <span className="xds-mnav-account-label">{displayLabel}</span>
                   <ChevronDown
                     className={cn(
@@ -405,7 +420,10 @@ export default function MarketingNav() {
 
             {isAuthenticated && !isLoading ? (
               <div className="xds-row xds-mnav-mobile-account">
-                <span className="xds-mnav-avatar">{accountInitial}</span>
+                <span className="relative inline-flex shrink-0">
+                  <span className="xds-mnav-avatar">{accountInitial}</span>
+                  <MembershipTierMark plan={membershipPlan} size="avatar" />
+                </span>
                 <span className="xds-mnav-account-label">{accountLabel}</span>
               </div>
             ) : null}
