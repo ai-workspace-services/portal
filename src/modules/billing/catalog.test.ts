@@ -4,6 +4,7 @@ import {
   formatPlanPrice,
   isPurchasable,
   PLAN_COPY,
+  XCONNECT_SUBSCRIPTION_PLAN_IDS,
   billingPlans,
   sellablePlans,
   type CatalogPlan,
@@ -14,6 +15,15 @@ function catalogOf(...plans: CatalogPlan[]): Map<string, CatalogPlan> {
 }
 
 describe("billing catalog", () => {
+  it("uses the versioned Stripe catalog IDs for the marketing subscription cards", () => {
+    expect(XCONNECT_SUBSCRIPTION_PLAN_IDS).toEqual([
+      "PRO-MONTHLY-V2",
+      "PRO-YEARLY-V2",
+    ]);
+    for (const planId of XCONNECT_SUBSCRIPTION_PLAN_IDS) {
+      expect(PLAN_COPY[planId]).toBeDefined();
+    }
+  });
   // The bug this guards: the user center used to render a hardcoded product
   // list, so it advertised plan IDs that did not exist in billing_plans and
   // priced them in a different currency from /prices. Every offer must now

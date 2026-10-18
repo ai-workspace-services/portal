@@ -50,6 +50,10 @@ export type PlanCopyEntry = {
 };
 
 export const XCONNECT_PRODUCT_SLUG = "xconnect";
+export const XCONNECT_SUBSCRIPTION_PLAN_IDS = [
+  "PRO-MONTHLY-V2",
+  "PRO-YEARLY-V2",
+] as const;
 
 export const PLAN_COPY: Record<string, PlanCopyEntry> = {
   PLUS: {

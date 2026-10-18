@@ -13,6 +13,7 @@ import {
   formatPlanPrice,
   isPurchasable,
   PLAN_COPY,
+  XCONNECT_SUBSCRIPTION_PLAN_IDS,
   useBillingCatalog,
   XCONNECT_PRODUCT_SLUG,
   type CatalogPlan,
@@ -109,9 +110,9 @@ function useXconnectCards(
       {
         key: "xconnect-pro-monthly",
         productSlug: XCONNECT_PRODUCT_SLUG,
-        ...copyOf("PRO-MONTHLY"),
+        ...copyOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[0]),
         highlight: true,
-        button: purchasable("PRO-MONTHLY")
+        button: purchasable(XCONNECT_SUBSCRIPTION_PLAN_IDS[0])
           ? isChinese
             ? "使用 Stripe 订阅"
             : "Subscribe with Stripe"
@@ -120,15 +121,15 @@ function useXconnectCards(
             : "Coming soon",
         billingPlan: {
           mode: "subscription",
-          planId: "PRO-MONTHLY",
-          stripePriceId: priceIdOf("PRO-MONTHLY"),
+          planId: XCONNECT_SUBSCRIPTION_PLAN_IDS[0],
+          stripePriceId: priceIdOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[0]),
         },
       },
       {
         key: "xconnect-pro-yearly",
         productSlug: XCONNECT_PRODUCT_SLUG,
-        ...copyOf("PRO-YEARLY"),
-        button: purchasable("PRO-YEARLY")
+        ...copyOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[1]),
+        button: purchasable(XCONNECT_SUBSCRIPTION_PLAN_IDS[1])
           ? isChinese
             ? "使用 Stripe 订阅"
             : "Subscribe with Stripe"
@@ -137,8 +138,8 @@ function useXconnectCards(
             : "Coming soon",
         billingPlan: {
           mode: "subscription",
-          planId: "PRO-YEARLY",
-          stripePriceId: priceIdOf("PRO-YEARLY"),
+          planId: XCONNECT_SUBSCRIPTION_PLAN_IDS[1],
+          stripePriceId: priceIdOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[1]),
         },
       },
     ];
