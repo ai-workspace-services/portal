@@ -14,6 +14,7 @@ import {
   normalizeMfaProvisionResponse,
   resolveMfaOtpAuthUri,
 } from './mfaProvisioning'
+import AuthenticatorInstallHelp from './AuthenticatorInstallHelp'
 
 type TotpStatus = {
   totpEnabled?: boolean
@@ -521,6 +522,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                     </li>
                   ))}
                 </ol>
+                <AuthenticatorInstallHelp />
               </aside>
 
               <div className="p-4 sm:p-5 lg:p-6">
