@@ -382,10 +382,10 @@ export default function UserCenterSubscriptionRoute() {
                 label={zh ? "账户余额" : "Balance"}
                 value={
                   typeof usageSummary?.currentBalance === "number"
-                    ? usageSummary.currentBalance.toFixed(2)
+                    ? `¥${usageSummary.currentBalance.toFixed(2)}`
                     : DASH
                 }
-                meta={`${zh ? "套餐" : "Plan"} ${usageSummary?.currentPlan?.displayName || billingSummary?.currentPlan?.displayName || usageSummary?.defaultPlan?.displayName || "default"} · ${zh ? "最大流量" : "Max"} ${usageSummary?.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.defaultPlan?.maxTrafficBytes)} · ${zh ? "规则" : "rules"} ${usageSummary?.billingProfile?.pricingRuleVersion || DASH}`}
+                meta={`${zh ? "美元余额" : "USD wallet"} $${(usageSummary?.currentBalanceUsd ?? 0).toFixed(2)} · ${zh ? "套餐" : "Plan"} ${usageSummary?.currentPlan?.displayName || billingSummary?.currentPlan?.displayName || usageSummary?.defaultPlan?.displayName || "default"} · ${zh ? "最大流量" : "Max"} ${usageSummary?.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.defaultPlan?.maxTrafficBytes)} · ${zh ? "规则" : "rules"} ${usageSummary?.billingProfile?.pricingRuleVersion || DASH}`}
               />
 
               <XdsStat
@@ -501,12 +501,12 @@ export default function UserCenterSubscriptionRoute() {
                         </td>
                         <td className="xds-num">
                           {typeof entry.amountDelta === "number"
-                            ? entry.amountDelta.toFixed(2)
+                            ? `${entry.currency === "USD" ? "$" : "¥"}${entry.amountDelta.toFixed(2)}`
                             : DASH}
                         </td>
                         <td className="xds-num">
                           {typeof entry.balanceAfter === "number"
-                            ? entry.balanceAfter.toFixed(2)
+                            ? `${entry.currency === "USD" ? "$" : "¥"}${entry.balanceAfter.toFixed(2)}`
                             : DASH}
                         </td>
                       </tr>
