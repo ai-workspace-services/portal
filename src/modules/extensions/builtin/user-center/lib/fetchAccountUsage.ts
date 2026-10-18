@@ -11,6 +11,7 @@ export type AccountUsageSummary = {
   uplinkBytes?: number;
   downlinkBytes?: number;
   currentBalance?: number;
+  currentBalanceUsd?: number;
   remainingIncludedQuota?: number;
   includedQuotaBytes?: number;
   currentPlan?: AccountPlanSummary | null;
@@ -88,6 +89,7 @@ export type AccountUsageBucketsResponse = {
 export type BillingLedgerEntry = {
   id: string;
   entryType: string;
+  currency?: "CNY" | "USD" | string;
   ratedBytes: number;
   amountDelta: number;
   balanceAfter: number;
