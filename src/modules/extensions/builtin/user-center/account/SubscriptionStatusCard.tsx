@@ -14,6 +14,7 @@ import {
   XdsCardHead,
   XdsMeter,
 } from "@/components/ui/xds";
+import MembershipTierMark from "../components/MembershipTierMark";
 
 export type SubscriptionStatusRecord = {
   id: string;
@@ -118,7 +119,8 @@ export default function SubscriptionStatusCard({
             <div className="xds-stat-label">
               {zh ? "当前套餐" : "Current plan"}
             </div>
-            <div className="xds-stat-value">
+            <div className="xds-stat-value inline-flex items-center gap-2">
+              <MembershipTierMark plan={currentPlan} />
               {currentPlan?.displayName || "default"}
             </div>
             <div className="xds-stat-meta">

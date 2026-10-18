@@ -16,6 +16,7 @@ import {
   type CatalogPlan,
 } from "@modules/billing/catalog";
 import { useLanguage } from "@i18n/LanguageProvider";
+import MembershipTierMark from "../components/MembershipTierMark";
 
 type Mode = "subscription" | "payg";
 type Currency = "CNY" | "USD";
@@ -189,7 +190,14 @@ export default function BillingOptionsPanel({
       {mode === "subscription" ? (
         <div className="space-y-3">
           <div className="rounded-lg bg-[var(--color-surface)] p-4">
-            <p className="font-semibold text-[var(--color-heading)]">
+            <p className="flex items-center gap-2 font-semibold text-[var(--color-heading)]">
+              <MembershipTierMark
+                plan={{
+                  planId: "PLUS-20GB",
+                  displayName: "Plus",
+                  packageName: "plus",
+                }}
+              />
               Plus · 20 GB/{zh ? "月" : "month"} ·{" "}
               {zh ? "可选专属节点" : "optional dedicated nodes"}
             </p>
@@ -209,7 +217,8 @@ export default function BillingOptionsPanel({
                   className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[color:var(--color-surface-border)] p-4"
                 >
                   <div>
-                    <p className="font-semibold text-[var(--color-heading)]">
+                    <p className="flex items-center gap-2 font-semibold text-[var(--color-heading)]">
+                      <MembershipTierMark plan={plan} />
                       {plan.displayName || plan.planId}
                     </p>
                     <p className="text-sm text-[var(--color-text-subtle)]">

@@ -9,6 +9,9 @@ import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
 import { hasPublicUserEmail } from "@lib/publicUserIdentity";
 import { useUserStore } from "@lib/userStore";
+import useSWR from "swr";
+import { fetchAccountUsageSummary } from "../lib/fetchAccountUsage";
+import MembershipTierMark from "./MembershipTierMark";
 
 import Card from "./Card";
 import VlessQrCard from "./VlessQrCard";
@@ -41,6 +44,15 @@ export default function UserOverview({
   const vlessProxyUuid = proxyUuid || null;
   const username = user?.username ?? "—";
   const email = shouldRenderPublicEmail ? user?.email : "—";
+  const { data: accountUsage } = useSWR(
+    user ? "account-usage-summary" : null,
+    fetchAccountUsageSummary,
+    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
+  );
+  const membershipPlan =
+    accountUsage?.currentPlan?.assigned === true
+      ? accountUsage.currentPlan
+      : accountUsage?.defaultPlan;
   const docsUrl = mfaCopy.actions.docsUrl;
 
   const mfaStatusLabel = useMemo(() => {
@@ -213,8 +225,9 @@ export default function UserOverview({
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">
             {copy.cards.email.label}
           </p>
-          <p className="mt-1 break-all text-base font-medium text-[var(--color-text)]">
-            {email}
+          <p className="mt-1 flex items-center gap-2 break-all text-base font-medium text-[var(--color-text)]">
+            <span className="break-all">{email}</span>
+            <MembershipTierMark plan={membershipPlan} />
           </p>
           <p className="mt-2 text-xs leading-5 text-[var(--color-text-subtle)]">
             {copy.cards.email.description}
