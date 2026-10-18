@@ -3,6 +3,8 @@
 type StripeCheckoutPayload = {
   planId: string;
   stripePriceId: string;
+  amountMinor?: number;
+  currency?: "CNY" | "USD";
   mode: "payment" | "subscription";
   productSlug: string;
   sourcePath?: string;

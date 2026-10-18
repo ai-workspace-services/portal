@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import BillingOptionsPanel from "../BillingOptionsPanel";
@@ -7,6 +7,49 @@ import BillingOptionsPanel from "../BillingOptionsPanel";
 const { checkout, plans } = vi.hoisted(() => ({
   checkout: vi.fn(),
   plans: new Map([
+    [
+      "PLUS",
+      {
+        planId: "PLUS",
+        kind: "subscription",
+        active: true,
+        stripePriceId: "price_plus_monthly",
+        displayName: "Plus",
+        includedQuotaBytes: 21474836480,
+        priceAmount: 2000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+      },
+    ],
+    [
+      "PRO-MONTHLY-V2",
+      {
+        planId: "PRO-MONTHLY-V2",
+        kind: "subscription",
+        active: true,
+        stripePriceId: "price_pro_monthly",
+        displayName: "Pro 月付",
+        includedQuotaBytes: 53687091200,
+        priceAmount: 5000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+      },
+    ],
+    [
+      "PRO-YEARLY-V2",
+      {
+        planId: "PRO-YEARLY-V2",
+        kind: "subscription",
+        active: true,
+        stripePriceId: "price_pro_yearly",
+        displayName: "Pro 年付",
+        includedQuotaBytes: 9223372036854775807,
+        priceAmount: 50000,
+        priceCurrency: "CNY",
+        priceUnit: "year",
+        features: { fast_lane: { mode: "unlimited" } },
+      },
+    ],
     [
       "PAYG-TOPUP-50",
       {
@@ -20,34 +63,37 @@ const { checkout, plans } = vi.hoisted(() => ({
       },
     ],
     [
-      "PAYG-TOPUP-10",
+      "PAYG-TOPUP-100",
       {
-        planId: "PAYG-TOPUP-10",
+        planId: "PAYG-TOPUP-100",
         kind: "paygo_topup",
         active: true,
-        priceAmount: 1000,
+        stripePriceId: "price_cny_100",
+        priceAmount: 10000,
         priceCurrency: "CNY",
         priceUnit: "once",
       },
     ],
     [
-      "PAYG-TOPUP-USD-5",
+      "PAYG-TOPUP-200",
       {
-        planId: "PAYG-TOPUP-USD-5",
+        planId: "PAYG-TOPUP-200",
         kind: "paygo_topup",
         active: true,
-        priceAmount: 500,
-        priceCurrency: "USD",
+        stripePriceId: "price_cny_200",
+        priceAmount: 20000,
+        priceCurrency: "CNY",
         priceUnit: "once",
       },
     ],
     [
-      "PAYG-TOPUP-USD-10",
+      "PAYG-TOPUP-USD-50",
       {
-        planId: "PAYG-TOPUP-USD-10",
+        planId: "PAYG-TOPUP-USD-50",
         kind: "paygo_topup",
         active: true,
-        priceAmount: 1000,
+        stripePriceId: "price_usd_50",
+        priceAmount: 5000,
         priceCurrency: "USD",
         priceUnit: "once",
       },
@@ -58,6 +104,7 @@ const { checkout, plans } = vi.hoisted(() => ({
         planId: "PAYG-TOPUP-USD-20",
         kind: "paygo_topup",
         active: true,
+        stripePriceId: "price_usd_20",
         priceAmount: 2000,
         priceCurrency: "USD",
         priceUnit: "once",
@@ -104,29 +151,49 @@ vi.mock("@modules/billing/catalog", () => ({
 }));
 
 describe("BillingOptionsPanel", () => {
-  it("offers only fixed CNY and USD denominations and checks catalog prices", async () => {
+  it("offers the configured presets and bounded custom top-ups", async () => {
     render(<BillingOptionsPanel />);
     expect(screen.getByText("Plus · 20 GB/月")).toBeInTheDocument();
     expect(
       screen.getByText("适合日常 AI 对话与轻度使用。"),
     ).toBeInTheDocument();
+    expect(screen.getByText(/不限流量/)).toBeInTheDocument();
+    expect(screen.getByText(/50 GB/)).toBeInTheDocument();
     expect(screen.queryByText(/专属节点/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "按量付费" }));
 
-    expect(screen.getByRole("button", { name: "¥10" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "¥10" }));
-    expect(screen.getByRole("button", { name: "充值 ¥10" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "¥50" })).toBeEnabled();
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "¥50" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "¥100" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "¥200" })).toBeInTheDocument();
+    const customInput = screen.getByRole("spinbutton", {
+      name: "自定义充值金额",
+    });
+    fireEvent.change(customInput, { target: { value: "9" } });
+    expect(screen.getByRole("button", { name: "充值 ¥9" })).toBeDisabled();
+    fireEvent.change(customInput, { target: { value: "10" } });
+    expect(screen.getByRole("button", { name: "充值 ¥10" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "充值 ¥10" }));
+    expect(checkout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        planId: "PAYG-CUSTOM-CNY",
+        amountMinor: 1000,
+        currency: "CNY",
+        mode: "payment",
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "充值 ¥10" })).toBeEnabled(),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "美元 USD" }));
-    expect(screen.getByRole("button", { name: "$5" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /充值 \$10/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "$20" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "$50" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "$100" })).toBeInTheDocument();
     expect(screen.getByText(/美元余额独立记账/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "人民币 CNY" }));
+    fireEvent.click(screen.getByRole("button", { name: "¥50" }));
     fireEvent.click(screen.getByRole("button", { name: "充值 ¥50" }));
     expect(checkout).toHaveBeenCalledWith(
       expect.objectContaining({
