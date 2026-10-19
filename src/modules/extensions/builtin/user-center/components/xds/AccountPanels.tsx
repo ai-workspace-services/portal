@@ -350,12 +350,14 @@ export function VlessConnectionCard({
   nodes,
   zh,
   embedded = false,
+  accessPaused = false,
 }: {
   /** 代理 UUID —— VLESS 访问凭据，与账户身份 uuid 是两个字段（见 #220） */
   proxyUuid: string | null;
   nodes: VlessNode[];
   zh: boolean;
   embedded?: boolean;
+  accessPaused?: boolean;
 }) {
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(
     null,
@@ -394,7 +396,10 @@ export function VlessConnectionCard({
     if (selectedRegionCode !== currentRegion)
       setSelectedRegionCode(currentRegion);
   }, [node, regionOptions, selectedRegionCode]);
-  const uri = useMemo(() => buildVlessUri(proxyUuid, node), [proxyUuid, node]);
+  const uri = useMemo(
+    () => (accessPaused ? "" : buildVlessUri(proxyUuid, node)),
+    [proxyUuid, node, accessPaused],
+  );
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -500,7 +505,7 @@ export function VlessConnectionCard({
         </div>
       ) : null}
       <div className="xds-qr">
-        {qr ? (
+        {qr && uri ? (
           <Image
             src={qr}
             alt={zh ? "VLESS 订阅二维码" : "VLESS subscription QR code"}
@@ -519,7 +524,13 @@ export function VlessConnectionCard({
               color: "var(--text-tertiary)",
             }}
           >
-            {zh ? "二维码待生成" : "QR code pending"}
+            {accessPaused
+              ? zh
+                ? "连接已暂停"
+                : "Connection paused"
+              : zh
+                ? "二维码待生成"
+                : "QR code pending"}
           </div>
         )}
       </div>
@@ -534,13 +545,17 @@ export function VlessConnectionCard({
               marginBottom: 8,
             }}
           >
-            {!proxyUuid
+            {accessPaused
               ? zh
-                ? "连接凭据尚未就绪，就绪后会显示二维码。"
-                : "Connection credentials are pending. The QR code will appear when ready."
-              : zh
-                ? "当前暂无已开放的区域入口。区域开放后会自动显示二维码和订阅链接。"
-                : "No regional entry is currently open. The QR code and subscription link will appear when a region opens."}
+                ? "用户配置同步已暂停，二维码与订阅链接暂不可用。恢复访问后会自动显示。"
+                : "Configuration sync is paused. The QR code and subscription link will reappear when access is restored."
+              : !proxyUuid
+                ? zh
+                  ? "连接凭据尚未就绪，就绪后会显示二维码。"
+                  : "Connection credentials are pending. The QR code will appear when ready."
+                : zh
+                  ? "当前暂无已开放的区域入口。区域开放后会自动显示二维码和订阅链接。"
+                  : "No regional entry is currently open. The QR code and subscription link will appear when a region opens."}
           </p>
         ) : null}
         <div className="xds-row" style={{ gap: 8, flexWrap: "wrap" }}>

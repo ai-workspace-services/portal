@@ -316,6 +316,19 @@ describe("VlessConnectionCard region selector", () => {
 });
 
 describe("VlessConnectionCard availability", () => {
+  it("hides stale credentials and QR while access is paused", () => {
+    const { rerender } = render(
+      <VlessConnectionCard proxyUuid="test-user" nodes={[]} zh accessPaused />,
+    );
+    expect(screen.getByText("连接已暂停")).toBeInTheDocument();
+    expect(screen.queryByAltText("VLESS 订阅二维码")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "复制订阅链接" })).toBeDisabled();
+    expect(
+      screen.queryByText(/当前暂无已开放的区域入口/),
+    ).not.toBeInTheDocument();
+    rerender(<VlessConnectionCard proxyUuid="test-user" nodes={[]} zh />);
+    expect(screen.queryByText("连接已暂停")).not.toBeInTheDocument();
+  });
   it("explains why no QR exists and recovers when an open region arrives", async () => {
     const { rerender } = render(
       <VlessConnectionCard proxyUuid="test-user" nodes={[]} zh />,
