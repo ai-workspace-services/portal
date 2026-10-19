@@ -139,10 +139,12 @@ export default function UserCenterAccountRoute() {
     breakdown.last1Hour + breakdown.last24Hours + breakdown.monthToDate > 0;
 
   const nodeList = nodesError ? [] : nodes ?? [];
-  const credentialsReady = Boolean(proxyUuid);
+  const accessPaused = usageSummary?.networkAccessState === "paused" ||
+    usageSummary?.networkAccessState === "blocked" || usageSummary?.quotaExhausted === true;
+  const credentialsReady = Boolean(proxyUuid) && !accessPaused && nodeList.length > 0;
   // 「验证连接」只有在服务端确实下发了节点、且已经出现过用量时才算完成。
   // 没有连通性接口，所以不假装知道单个节点通不通。
-  const connectionVerified = nodeList.length > 0 && hasTraffic;
+  const connectionVerified = !accessPaused && nodeList.length > 0 && hasTraffic;
 
   const showEmail = hasPublicUserEmail({
     email: user?.email,
@@ -258,6 +260,7 @@ export default function UserCenterAccountRoute() {
                 nodes={nodeList}
                 zh={zh}
                 embedded
+                accessPaused={accessPaused}
               />
             }
             state={{

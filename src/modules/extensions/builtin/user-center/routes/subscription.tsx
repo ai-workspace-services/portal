@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useMemo, useState } from "react";
+import billingPolicy from "@/data/content/billing-policy.json";
 import NetworkTeamsPanel from "../components/NetworkTeamsPanel";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import useSWR from "swr";
@@ -706,9 +707,7 @@ export default function UserCenterSubscriptionRoute() {
                   {zh ? "申请退款" : "Request a refund"}
                 </div>
                 <p className="xds-t-caption" style={{ marginTop: 3 }}>
-                  {zh
-                    ? "首次订阅 7 天内可全额退款；超额用量部分不参与退款。审核后 5–10 个工作日原路退回。"
-                    : "Full refund within 7 days of a first subscription; overage is excluded. Returns to the original method in 5–10 business days after review."}
+                  {billingPolicy[zh ? "zh" : "en"].refundSummary}
                 </p>
               </div>
               <XdsButton

@@ -209,7 +209,40 @@ async function generateEmailPreferencesContent() {
   await fs.writeFile(generatedPath, JSON.stringify(Object.fromEntries(locales.map((locale, i) => [locale, values[i]])), null, 2) + "\n");
 }
 
+async function generateBillingPolicyContent() {
+  const locales = ["zh", "en"] as const;
+  const entries = await Promise.all(
+    locales.map(async (locale) => {
+      const value = JSON.parse(
+        await fs.readFile(
+          path.join(
+            CONTENT_ROOT,
+            "account",
+            "billing-policy",
+            `${locale}.json`,
+          ),
+          "utf8",
+        ),
+      );
+      if (
+        typeof value.refundSummary !== "string" ||
+        !value.refundSummary.trim()
+      ) {
+        throw new Error(`Missing billing policy refundSummary for ${locale}`);
+      }
+      return [locale, { refundSummary: value.refundSummary }];
+    }),
+  );
+  await fs.mkdir(OUTPUT_ROOT, { recursive: true });
+  await fs.writeFile(
+    path.join(OUTPUT_ROOT, "billing-policy.json"),
+    JSON.stringify(Object.fromEntries(entries), null, 2) + "\n",
+  );
+}
+
 async function main() {
+  if (process.argv.includes("--account=billing-policy")) { await generateBillingPolicyContent(); return; }
+  await generateBillingPolicyContent();
   if (process.argv.includes("--account=email-preferences")) { await generateEmailPreferencesContent(); return; }
   await generateEmailPreferencesContent();
   if (process.argv.includes("--campaign=referral")) { await generateReferralContent(); return; }
