@@ -70,9 +70,11 @@ describe("SubscriptionStatusCard", () => {
       />,
     );
 
-    expect(screen.getAllByText("额度已用尽 · 已断流")).toHaveLength(2);
+    expect(screen.getAllByText("额度已用尽 · 已暂停")).toHaveLength(2);
     expect(
-      screen.getByText("已停止配置同步并断开代理连接；恢复额度后可重新连接。"),
+      screen.getByText(
+        "可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。",
+      ),
     ).toBeInTheDocument();
   });
 });

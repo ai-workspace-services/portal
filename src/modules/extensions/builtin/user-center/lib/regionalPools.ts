@@ -13,7 +13,7 @@ export type RegionalPool = {
   zhName: string;
   enName: string;
   entry: string;
-  resourceClass?: "shared" | "free" | "plus" | "team";
+  resourceClass?: "shared" | "free" | "plus" | "pro" | "team";
   teamId?: string;
   poolCount: number;
   openToUsers: boolean;
@@ -30,9 +30,7 @@ export function regionalPoolResourceGroup(
   return pool.resourceClass ?? "unknown";
 }
 
-export function groupRegionalPools(
-  pools: RegionalPool[],
-): Array<{
+export function groupRegionalPools(pools: RegionalPool[]): Array<{
   group: RegionalPoolResourceGroup;
   teamId?: string;
   pools: RegionalPool[];
@@ -41,6 +39,7 @@ export function groupRegionalPools(
     "shared",
     "free",
     "plus",
+    "pro",
     "team",
     "unknown",
   ];
@@ -140,7 +139,7 @@ function isRegionalPoolReport(value: unknown): value is RegionalPoolReport {
     pool.poolCount > 0 &&
     typeof pool.openToUsers === "boolean" &&
     (pool.resourceClass === undefined ||
-      ["shared", "free", "plus", "team"].includes(pool.resourceClass)) &&
+      ["shared", "free", "plus", "pro", "team"].includes(pool.resourceClass)) &&
     (pool.teamId === undefined || typeof pool.teamId === "string") &&
     (pool.closedReasons === undefined ||
       (Array.isArray(pool.closedReasons) &&

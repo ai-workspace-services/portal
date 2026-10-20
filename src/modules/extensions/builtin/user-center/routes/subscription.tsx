@@ -478,7 +478,7 @@ export default function UserCenterSubscriptionRoute() {
                               : "Normal"}
                   </XdsBadge>
                 }
-                meta={`${zh ? "统计延迟" : "Sync delay"} ~${usageSummary?.syncDelaySeconds ?? 0} s · ${zh ? "策略组" : "groups"} ${accountPolicy?.eligibleNodeGroups?.join(", ") || DASH}`}
+                meta={`${usageSummary?.networkAccessReason === "quota_exhausted" ? (zh ? "可通过升级套餐恢复 · " : "Upgrade your plan to restore access · ") : ""}${zh ? "统计延迟" : "Sync delay"} ~${usageSummary?.syncDelaySeconds ?? 0} s · ${zh ? "策略组" : "groups"} ${accountPolicy?.eligibleNodeGroups?.join(", ") || DASH}`}
               />
             </section>
 

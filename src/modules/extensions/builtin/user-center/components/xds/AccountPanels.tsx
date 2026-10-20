@@ -60,9 +60,10 @@ const REGION_PILL_LIMIT = 3;
 
 function regionalResourceGroupLabel(group: RegionalPoolResourceGroup): string {
   const labels: Record<RegionalPoolResourceGroup, string> = {
-    shared: "shared · Free + Plus",
-    free: "free · Free",
-    plus: "plus · Plus",
+    shared: "shared · Free + Plus + Pro",
+    free: "free · Free + Plus + Pro",
+    plus: "plus · Plus + Pro",
+    pro: "pro · Pro",
     team: "team · Team",
     unknown: DASH,
   };
@@ -743,8 +744,8 @@ export function QuotaCard({
             }}
           >
             {zh
-              ? "本月配额已用尽，用户配置同步已暂停。配额续期或调整后会自动恢复。"
-              : "This month’s quota is exhausted. User configuration sync is paused and restores automatically after renewal or adjustment."}
+              ? "本月配额已用尽，用户配置同步已暂停。可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。"
+              : "This month’s quota is exhausted and configuration sync is paused. Upgrade your plan to restore access once payment is confirmed and the new quota takes effect. Access also resumes after quota renewal or adjustment."}
           </div>
         ) : null}
 

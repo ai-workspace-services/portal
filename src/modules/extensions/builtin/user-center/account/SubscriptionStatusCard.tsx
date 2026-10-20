@@ -82,8 +82,8 @@ export default function SubscriptionStatusCard({
   const statusLabel =
     usageSummary?.networkAccessReason === "quota_exhausted"
       ? zh
-        ? "额度已用尽 · 已断流"
-        : "Quota exhausted · Disconnected"
+        ? "额度已用尽 · 已暂停"
+        : "Quota exhausted · Paused"
       : usageSummary?.networkAccessReason === "billing_suspended"
         ? zh
           ? "账务暂停"
@@ -194,8 +194,8 @@ export default function SubscriptionStatusCard({
             <p className="xds-t-caption" style={{ marginTop: 3 }}>
               {usageSummary?.networkAccessReason === "quota_exhausted"
                 ? zh
-                  ? "已停止配置同步并断开代理连接；恢复额度后可重新连接。"
-                  : "Config sync is stopped and proxy access is disconnected; reconnect after quota recovery."
+                  ? "可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。"
+                  : "Upgrade your plan to restore access once payment is confirmed and the new quota takes effect. Access also resumes after quota renewal or adjustment."
                 : assigned
                   ? zh
                     ? "套餐变更只更新本地权益状态，支付渠道不会成为账户主键。"

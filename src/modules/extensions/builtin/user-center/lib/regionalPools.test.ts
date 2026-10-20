@@ -24,7 +24,7 @@ describe("registered regional pools", () => {
   it("groups by reported class, separates teams, and never infers class from a hostname", () => {
     const pool = (
       entry: string,
-      resourceClass?: "shared" | "free" | "plus" | "team",
+      resourceClass?: "shared" | "free" | "plus" | "pro" | "team",
       teamId?: string,
     ) => ({
       key: entry + (teamId ?? ""),
@@ -42,6 +42,7 @@ describe("registered regional pools", () => {
       pool("team.example", "team", "b"),
       pool("z-free.example", "shared"),
       pool("plus.example", "plus"),
+      pool("pro.example", "pro"),
       pool("team.example", "team", "a"),
       pool("free.example", "free"),
       pool("a.example", "shared"),
@@ -52,6 +53,7 @@ describe("registered regional pools", () => {
       ["shared", undefined],
       ["free", undefined],
       ["plus", undefined],
+      ["pro", undefined],
       ["team", "a"],
       ["team", "b"],
       ["unknown", undefined],
@@ -145,5 +147,27 @@ describe("registered regional pools", () => {
     await expect(fetchRegionalPools()).rejects.toThrow(
       "unexpected_regional_pools_payload",
     );
+  });
+
+  it("accepts an explicitly reported Pro resource without fabricating any node", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => [
+          {
+            code: "jp",
+            entry: "pro.example",
+            resourceClass: "pro",
+            poolCount: 1,
+            openToUsers: true,
+          },
+        ],
+      }),
+    );
+    expect(await fetchRegionalPools()).toEqual([
+      expect.objectContaining({ resourceClass: "pro", entry: "pro.example" }),
+    ]);
+    expect(regionalNodeOptions([])).toEqual([]);
   });
 });
