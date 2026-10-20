@@ -1,6 +1,7 @@
 "use client";
 
 import useSWR from "swr";
+import TeamAgentEnrollments from "../components/TeamAgentEnrollments";
 import { fetchRegionalPools, type RegionalPool } from "../lib/regionalPools";
 
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -25,6 +26,7 @@ export default function UserCenterAgentRoute() {
         isLoading={isLoading}
         error={error}
       />
+      <TeamAgentEnrollments zh={language === "zh"} />
     </div>
   );
 }
