@@ -2,6 +2,7 @@
 
 type AccountUsageError = Error & {
   status?: number;
+  code?: string;
 };
 
 export type AccountUsageSummary = {
@@ -131,6 +132,14 @@ function toError(payload: unknown, status: number): AccountUsageError {
         : `Request failed (${status})`;
   const error = new Error(message) as AccountUsageError;
   error.status = status;
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "error" in payload &&
+    typeof payload.error === "string"
+  ) {
+    error.code = payload.error;
+  }
   return error;
 }
 
@@ -154,8 +163,18 @@ export function fetchAccountUsageSummary(): Promise<AccountUsageSummary> {
   return requestJSON<AccountUsageSummary>("/api/account/usage/summary");
 }
 
-export function fetchAccountPolicy(): Promise<AccountPolicy> {
-  return requestJSON<AccountPolicy>("/api/account/policy");
+export async function fetchAccountPolicy(): Promise<AccountPolicy | null> {
+  try {
+    return await requestJSON<AccountPolicy>("/api/account/policy");
+  } catch (error) {
+    const failure = error as AccountUsageError;
+    // A candidate without policy generation has no snapshot yet. Cache the
+    // explicit empty state instead of repeatedly retrying a known absence.
+    // Authentication, unknown routes and infrastructure errors remain errors.
+    if (failure.status === 404 && failure.code === "policy_not_found")
+      return null;
+    throw error;
+  }
 }
 
 // Buckets are per-minute; the caller decides how far back to look (e.g.

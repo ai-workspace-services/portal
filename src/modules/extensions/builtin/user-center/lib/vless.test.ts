@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { buildVlessUri } from './vless'
 
@@ -14,6 +14,15 @@ const node = {
 }
 
 describe('buildVlessUri', () => {
+  it('keeps a missing eligible node empty without a console error or fabricated URI', () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      expect(buildVlessUri('11111111-1111-4111-8111-111111111111', undefined)).toBeNull()
+      expect(logged).not.toHaveBeenCalled()
+    } finally {
+      logged.mockRestore()
+    }
+  })
   it('keeps the canonical /split path and removes only empty XHTTP padding', () => {
     const uri = buildVlessUri('11111111-1111-4111-8111-111111111111', node)
 

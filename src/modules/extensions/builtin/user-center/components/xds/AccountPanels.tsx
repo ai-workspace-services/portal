@@ -633,7 +633,7 @@ export function QuotaCard({
   zh,
 }: {
   usage?: AccountUsageSummary;
-  policy?: AccountPolicy;
+  policy?: AccountPolicy | null;
   zh: boolean;
 }) {
   const percent = usage?.usagePercent;
