@@ -31,7 +31,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { openStripePortal } from "@components/billing/stripe-client";
+import {
+  getRefundReview,
+  openStripePortal,
+  requestRefundReview,
+} from "@components/billing/stripe-client";
 import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
 import { formatBytes } from "@lib/format";
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -146,6 +150,12 @@ export default function UserCenterSubscriptionRoute() {
   );
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [refundSubmitting, setRefundSubmitting] = useState(false);
+  const { data: refundReview, mutate: refreshRefundReview } = useSWR(
+    "subscription-refund-review",
+    getRefundReview,
+    { refreshInterval: 10000 },
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleCancel = useCallback(
@@ -187,6 +197,50 @@ export default function UserCenterSubscriptionRoute() {
       setPortalLoading(false);
     }
   }, [copy.portalError]);
+
+  const handleRefundRequest = useCallback(async () => {
+    const eligible = records.filter(
+      (record) =>
+        record.provider === "stripe" &&
+        record.kind === "subscription" &&
+        ["active", "canceling"].includes(record.status),
+    );
+    if (eligible.length !== 1) {
+      setError(
+        zh
+          ? "无法确定待审核订阅，请联系支持核查。"
+          : "The subscription needs verification. Contact support.",
+      );
+      return;
+    }
+    if (!window.confirm(billingPolicy[zh ? "zh" : "en"].refundSummary)) return;
+    setRefundSubmitting(true);
+    setError(null);
+    try {
+      await requestRefundReview(eligible[0].externalId);
+      await refreshRefundReview();
+    } catch {
+      setError(
+        zh
+          ? "无法确认申请状态，请刷新核查，不要重复付款。"
+          : "Unable to confirm the request. Refresh to check its status; do not pay again.",
+      );
+    } finally {
+      setRefundSubmitting(false);
+    }
+  }, [records, refreshRefundReview, zh]);
+
+  const refundStatusText =
+    refundReview?.status && refundReview.status !== "none"
+      ? {
+          pending_review: zh ? "待审核" : "Pending review",
+          needs_investigation: zh ? "待核查" : "Needs investigation",
+          rejected: zh ? "已拒绝" : "Rejected",
+          executing: zh ? "退款中" : "Refund in progress",
+          partially_completed: zh ? "部分完成" : "Partially completed",
+          refunded: zh ? "已退款" : "Refunded",
+        }[refundReview.status]
+      : null;
 
   if (isReadOnlyRole) {
     return (
@@ -709,13 +763,28 @@ export default function UserCenterSubscriptionRoute() {
                 <p className="xds-t-caption" style={{ marginTop: 3 }}>
                   {billingPolicy[zh ? "zh" : "en"].refundSummary}
                 </p>
+                {refundStatusText && (
+                  <p role="status" className="xds-t-caption">
+                    {refundStatusText}
+                  </p>
+                )}
               </div>
               <XdsButton
-                onClick={handleOpenPortal}
-                disabled={!mfaReady || portalLoading || records.length === 0}
+                onClick={handleRefundRequest}
+                disabled={
+                  !mfaReady ||
+                  refundSubmitting ||
+                  !refundReview ||
+                  refundReview.status !== "none" ||
+                  records.length === 0
+                }
                 style={{ flex: "none" }}
               >
-                {zh ? "申请退款" : "Request refund"}
+                {refundSubmitting
+                  ? zh
+                    ? "提交中…"
+                    : "Submitting…"
+                  : refundStatusText || (zh ? "申请退款" : "Request refund")}
               </XdsButton>
             </div>
             <div className="xds-sec-row">

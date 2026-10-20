@@ -18,12 +18,12 @@ export default function CheckoutStatusBanner({
       case "success":
         return {
           tone: "border-emerald-200 bg-emerald-50 text-emerald-800",
-          text: "Stripe 支付已完成，订阅状态正在同步到账户。",
+          text: "已返回支付页面，正在核验付款与权益状态，请勿重复购买。",
         };
       case "cancelled":
         return {
           tone: "border-amber-200 bg-amber-50 text-amber-800",
-          text: "你已取消本次 Stripe 结算，当前未产生新扣费。",
+          text: "你已返回账户；付款结果以核验后的账单状态为准。",
         };
       default:
         return null;
