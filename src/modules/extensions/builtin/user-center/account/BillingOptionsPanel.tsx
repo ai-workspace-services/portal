@@ -88,6 +88,9 @@ export default function BillingOptionsPanel({
   const [purchasePending, setPurchasePending] = useState<boolean | null>(null);
   const [pendingUrl, setPendingUrl] = useState<string | undefined>();
   const [canRetry, setCanRetry] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState<string>();
+  const [reviewPending, setReviewPending] = useState(false);
+  const [pendingPlanId, setPendingPlanId] = useState<string>();
   const [confirmation, setConfirmation] = useState<{
     quote: SubscriptionPreview;
     payload: StripeCheckoutPayload;
@@ -108,6 +111,9 @@ export default function BillingOptionsPanel({
           setPurchasePending(status.pending);
           setPendingUrl(status.pending ? status.url : undefined);
           setCanRetry(status.pending && status.retryable === true);
+          setCooldownUntil(status.cooldownUntil);
+          setReviewPending(status.refundReviewPending === true);
+          setPendingPlanId(status.pendingPlanId);
           if (!status.pending) setSettledPlanId(status.planId || undefined);
         }
       } catch {
@@ -501,6 +507,11 @@ export default function BillingOptionsPanel({
                       requiresMfa ||
                       Boolean(submitting) ||
                       purchasePending !== false ||
+                      reviewPending ||
+                      Boolean(pendingPlanId) ||
+                      (paidPlan &&
+                        Boolean(cooldownUntil) &&
+                        Date.parse(cooldownUntil!) > Date.now()) ||
                       (paidPlan &&
                         !(
                           selectedPlanId === "PLUS" &&
@@ -532,35 +543,49 @@ export default function BillingOptionsPanel({
                         ? zh
                           ? "同步中"
                           : "Synchronizing"
-                        : submitting === plan.planId
+                        : pendingPlanId === "FREE"
                           ? zh
-                            ? "跳转中…"
-                            : "Opening…"
-                          : requiresMfa
+                            ? "已安排取消"
+                            : "Cancellation scheduled"
+                          : reviewPending
                             ? zh
-                              ? "绑定 MFA 后可支付"
-                              : "Bind MFA to pay"
-                            : paidPlan && plan.planId === "PRO-YEARLY-V2"
+                              ? "退款待审核"
+                              : "Refund under review"
+                            : paidPlan &&
+                                cooldownUntil &&
+                                Date.parse(cooldownUntil) > Date.now()
                               ? zh
-                                ? "升级为年付"
-                                : "Upgrade to annual"
-                              : paidPlan &&
-                                  !(
-                                    selectedPlanId === "PLUS" &&
-                                    plan.planId === "PRO-MONTHLY-V2"
-                                  )
+                                ? `可于 ${new Date(cooldownUntil).toLocaleString()} 变更`
+                                : `Available ${new Date(cooldownUntil).toLocaleString()}`
+                              : submitting === plan.planId
                                 ? zh
-                                  ? "暂不支持此变更"
-                                  : "Change unavailable"
-                                : ready
+                                  ? "跳转中…"
+                                  : "Opening…"
+                                : requiresMfa
                                   ? zh
-                                    ? paidPlan
-                                      ? "升级到 Pro"
-                                      : `订阅 ${plan.displayName || plan.planId}`
-                                    : `${paidPlan ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
-                                  : zh
-                                    ? "即将上线"
-                                    : "Coming soon"}
+                                    ? "绑定 MFA 后可支付"
+                                    : "Bind MFA to pay"
+                                  : paidPlan && plan.planId === "PRO-YEARLY-V2"
+                                    ? zh
+                                      ? "升级为年付（暂未开放）"
+                                      : "Upgrade to annual (not available yet)"
+                                    : paidPlan &&
+                                        !(
+                                          selectedPlanId === "PLUS" &&
+                                          plan.planId === "PRO-MONTHLY-V2"
+                                        )
+                                      ? zh
+                                        ? "暂不支持此变更"
+                                        : "Change unavailable"
+                                      : ready
+                                        ? zh
+                                          ? paidPlan
+                                            ? "升级到 Pro"
+                                            : `订阅 ${plan.displayName || plan.planId}`
+                                          : `${paidPlan ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
+                                        : zh
+                                          ? "即将上线"
+                                          : "Coming soon"}
                   </button>
                 </div>
               );

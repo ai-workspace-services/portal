@@ -1,8 +1,8 @@
 {
   "zh": {
-    "refundSummary": "首次订阅 72 小时内可全额退款；超额用量部分不参与退款。审核后 3–5 个工作日原路退回。"
+    "refundSummary": "首次订阅成功付款后 72 小时内可申请退款，所有申请须人工审核。可退范围包括同一订阅的首付款和已支付升级差价，不含按量充值及超额用量费用；升级、迁移或重复申请不重新计算期限。批准后由系统执行，通常在退款成功后 3–5 个工作日原路到账。"
   },
   "en": {
-    "refundSummary": "Full refund within 72 hours of a first subscription; overage is excluded. Returns to the original payment method in 3–5 business days after review."
+    "refundSummary": "Request a refund within 72 hours of the first successful subscription payment. All requests require human review. Eligible amounts include the initial payment and paid upgrades on the same subscription, excluding PAYG top-ups and overage. Upgrades, migration and repeat requests do not restart the window. After approval, the system executes the refund; funds typically return to the original payment method within 3–5 business days after a successful refund."
   }
 }

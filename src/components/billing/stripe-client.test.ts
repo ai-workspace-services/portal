@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  getRefundReview,
+  requestRefundReview,
   retrySubscriptionPurchase,
   startStripeCheckout,
 } from "./stripe-client";
@@ -15,14 +17,45 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("subscription checkout boundary", () => {
-  it("retries the server-owned operation without accepting a replacement plan or operation ID", async () => {
+  it("submits only a subscription identity and preserves pending review rather than claiming a refund", async () => {
     const fetcher = vi
       .fn()
       .mockResolvedValue({
         ok: true,
-        status: 200,
-        json: async () => ({ pending: true }),
+        status: 202,
+        json: async () => ({
+          id: "review-1",
+          status: "pending_review",
+          refunded: false,
+        }),
       });
+    vi.stubGlobal("fetch", fetcher);
+    expect(await requestRefundReview("sub_original")).toMatchObject({
+      status: "pending_review",
+    });
+    expect(fetcher.mock.calls[0][0]).toBe("/api/auth/subscriptions/refund");
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({
+      externalId: "sub_original",
+    });
+  });
+  it("does not translate an unknown review result into a completed refund", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue({
+          ok: true,
+          json: async () => ({ status: "succeeded" }),
+        }),
+    );
+    await expect(getRefundReview()).rejects.toThrow("refund_status_invalid");
+  });
+  it("retries the server-owned operation without accepting a replacement plan or operation ID", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ pending: true }),
+    });
     vi.stubGlobal("fetch", fetcher);
     await retrySubscriptionPurchase();
     expect(fetcher.mock.calls[0][0]).toBe(

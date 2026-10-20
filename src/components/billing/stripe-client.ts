@@ -36,6 +36,11 @@ export async function getSubscriptionPurchase(): Promise<{
   planId?: string;
   url?: string;
   retryable?: boolean;
+  cooldownUntil?: string;
+  pendingPlanId?: string;
+  effectiveAt?: string;
+  stateVersion?: number;
+  refundReviewPending?: boolean;
 }> {
   const response = await fetch("/api/auth/stripe/subscription/pending", {
     credentials: "include",
@@ -58,6 +63,49 @@ export async function getSubscriptionPurchase(): Promise<{
       delete data.url;
   }
   return data;
+}
+
+export type RefundReviewStatus = {
+  status:
+    | "none"
+    | "pending_review"
+    | "needs_investigation"
+    | "rejected"
+    | "executing"
+    | "partially_completed"
+    | "refunded";
+  id?: string;
+  requestedAt?: string;
+};
+
+export async function getRefundReview(): Promise<RefundReviewStatus> {
+  const response = await fetch("/api/auth/subscriptions/refund", {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("refund_status_unavailable");
+  const data = await response.json();
+  if (
+    ![
+      "none",
+      "pending_review",
+      "needs_investigation",
+      "rejected",
+      "executing",
+      "partially_completed",
+      "refunded",
+    ].includes(data.status)
+  )
+    throw new Error("refund_status_invalid");
+  return data;
+}
+
+export async function requestRefundReview(
+  externalId: string,
+): Promise<RefundReviewStatus> {
+  return postJson<RefundReviewStatus>("/api/auth/subscriptions/refund", {
+    externalId,
+  });
 }
 
 type StripePortalPayload = {

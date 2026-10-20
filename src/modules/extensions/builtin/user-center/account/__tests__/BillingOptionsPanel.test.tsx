@@ -205,7 +205,43 @@ describe("BillingOptionsPanel", () => {
       expect(screen.getByRole("button", { name: "升级到 Pro" })).toBeEnabled(),
     );
     expect(screen.getByRole("button", { name: "当前套餐" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "升级为年付" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "升级为年付（暂未开放）" }),
+    ).toBeDisabled();
+  });
+
+  it("blocks changes while refund review is pending", async () => {
+    pending.mockResolvedValueOnce({
+      pending: false,
+      planId: "PLUS",
+      refundReviewPending: true,
+    });
+    render(<BillingOptionsPanel currentPlanId="PLUS" />);
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("button", { name: "退款待审核" }),
+      ).toHaveLength(2),
+    );
+    for (const button of screen.getAllByRole("button", { name: "退款待审核" }))
+      expect(button).toBeDisabled();
+  });
+
+  it("shows the user-level cooldown deadline without offering a second order", async () => {
+    pending.mockResolvedValueOnce({
+      pending: false,
+      planId: "PLUS",
+      cooldownUntil: "2099-01-01T00:00:00Z",
+    });
+    render(<BillingOptionsPanel currentPlanId="PLUS" />);
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("button", { name: /可于 .* 变更/ }),
+      ).toHaveLength(2),
+    );
+    for (const button of screen.getAllByRole("button", {
+      name: /可于 .* 变更/,
+    }))
+      expect(button).toBeDisabled();
   });
 
   it("restores the durable purchase lock on reload", async () => {
