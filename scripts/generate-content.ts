@@ -240,7 +240,26 @@ async function generateBillingPolicyContent() {
   );
 }
 
+async function generateTeamAgentEnrollmentsContent() {
+  const generatedPath = path.join(OUTPUT_ROOT, "team-agent-enrollments.json");
+  const files = ["zh", "en"].map(locale => path.join(CONTENT_ROOT, "account/team-agent-enrollments", `${locale}.json`));
+  const exists = await Promise.all(files.map(file => fs.access(file).then(() => true).catch(() => false)));
+  if (!exists.some(Boolean)) {
+    const generated = JSON.parse(await fs.readFile(generatedPath, "utf8"));
+    if (!generated.zh?.title || !generated.en?.title) throw new Error("Missing team node assignment content");
+    return;
+  }
+  if (!exists.every(Boolean)) throw new Error("Team node assignments require both locales");
+  const values = await Promise.all(files.map(async file => JSON.parse(await fs.readFile(file, "utf8")) as Record<string, unknown>));
+  const keys = Object.keys(values[0]).sort().join(",");
+  if (values.some(value => Object.keys(value).sort().join(",") !== keys || Object.values(value).some(text => typeof text !== "string" || !text.trim()))) throw new Error("Invalid team node assignment content");
+  await fs.mkdir(OUTPUT_ROOT, { recursive: true });
+  await fs.writeFile(generatedPath, JSON.stringify({ zh: values[0], en: values[1] }, null, 2) + "\n");
+}
+
 async function main() {
+  await generateTeamAgentEnrollmentsContent();
+  if (process.argv.includes("--account=team-agent-enrollments")) return;
   if (process.argv.includes("--account=billing-policy")) { await generateBillingPolicyContent(); return; }
   await generateBillingPolicyContent();
   if (process.argv.includes("--account=email-preferences")) { await generateEmailPreferencesContent(); return; }
