@@ -1,10 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 
 import CheckoutStatusBanner from "@components/billing/CheckoutStatusBanner";
 import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
-import { startStripeCheckout } from "@components/billing/stripe-client";
+import {
+  getSubscriptionPurchase,
+  previewSubscription,
+  retrySubscriptionPurchase,
+  startStripeCheckout,
+  type SubscriptionPreview,
+  type StripeCheckoutPayload,
+} from "@components/billing/stripe-client";
 import Card from "../components/Card";
 import { formatBytes } from "@lib/format";
 import {
@@ -77,6 +85,44 @@ export default function BillingOptionsPanel({
   const [customAmount, setCustomAmount] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<string | null>(null);
+  const [purchasePending, setPurchasePending] = useState<boolean | null>(null);
+  const [pendingUrl, setPendingUrl] = useState<string | undefined>();
+  const [canRetry, setCanRetry] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    quote: SubscriptionPreview;
+    payload: StripeCheckoutPayload;
+    name: string;
+  } | null>(null);
+  const [settledPlanId, setSettledPlanId] = useState<string | undefined>();
+  const selectedPlanId = settledPlanId ?? currentPlanId;
+  const paidPlan = ["PLUS", "PRO-MONTHLY-V2", "PRO-YEARLY-V2"].includes(
+    selectedPlanId ?? "",
+  );
+
+  useEffect(() => {
+    let active = true;
+    const check = async () => {
+      try {
+        const status = await getSubscriptionPurchase();
+        if (active) {
+          setPurchasePending(status.pending);
+          setPendingUrl(status.pending ? status.url : undefined);
+          setCanRetry(status.pending && status.retryable === true);
+          if (!status.pending) setSettledPlanId(status.planId || undefined);
+        }
+      } catch {
+        if (active) setPurchasePending(null); // Unknown is never permission to buy again.
+      }
+    };
+    void check();
+    const timer = window.setInterval(() => {
+      void check();
+    }, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   const subscriptionOptions = useMemo(
     () =>
@@ -161,7 +207,7 @@ export default function BillingOptionsPanel({
     setSubmitting(option.planId);
     setMessage(null);
     try {
-      await startStripeCheckout({
+      const payload: StripeCheckoutPayload = {
         planId: option.planId,
         stripePriceId: option.plan?.stripePriceId ?? "",
         ...(option.custom
@@ -170,7 +216,17 @@ export default function BillingOptionsPanel({
         mode: checkoutMode === "payg" ? "payment" : "subscription",
         productSlug: XCONNECT_PRODUCT_SLUG,
         sourcePath: "/panel/subscription",
-      });
+      };
+      if (checkoutMode === "subscription") {
+        const quote = await previewSubscription(payload);
+        setConfirmation({
+          quote,
+          payload,
+          name: option.plan?.displayName || option.planId,
+        });
+      } else {
+        await startStripeCheckout(payload);
+      }
     } catch (error) {
       console.warn("Failed to start Stripe checkout", error);
       setMessage(
@@ -219,6 +275,156 @@ export default function BillingOptionsPanel({
       </div>
 
       <CheckoutStatusBanner />
+      {purchasePending !== false && (
+        <p role="status" className="text-sm text-[var(--color-text-subtle)]">
+          {purchasePending
+            ? zh
+              ? "支付或权益同步中，请勿重复购买。确认后将恢复操作。"
+              : "Payment or entitlement synchronization is pending. Do not purchase again."
+            : zh
+              ? "正在核验支付状态，暂不可重复购买。"
+              : "Checking payment status before another purchase."}
+          {pendingUrl && (
+            <a className="ml-2 underline" href={pendingUrl}>
+              {zh ? "继续本次支付" : "Continue this payment"}
+            </a>
+          )}
+          {canRetry && (
+            <button
+              type="button"
+              disabled={Boolean(submitting)}
+              className="ml-2 underline disabled:opacity-50"
+              onClick={async () => {
+                setSubmitting("retry");
+                try {
+                  await retrySubscriptionPurchase();
+                  setMessage(
+                    zh
+                      ? "已重试原支付请求，正在核验结果。"
+                      : "The original payment was retried; checking its result.",
+                  );
+                } catch {
+                  setMessage(
+                    zh
+                      ? "暂未确认支付结果，请勿新建订单；可稍后重试原请求。"
+                      : "The payment result is still unconfirmed. Retry this request, not a new order.",
+                  );
+                } finally {
+                  setSubmitting(null);
+                }
+              }}
+            >
+              {zh ? "重试本次支付" : "Retry this payment"}
+            </button>
+          )}
+        </p>
+      )}
+      <Dialog.Root
+        open={confirmation !== null}
+        onOpenChange={(open) => {
+          if (!open && !submitting) setConfirmation(null);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-xl bg-[var(--color-surface)] p-6 shadow-xl">
+            <Dialog.Title className="text-lg font-semibold">
+              {zh ? "确认套餐与费用" : "Confirm plan and payment"}
+            </Dialog.Title>
+            <Dialog.Description className="text-sm text-[var(--color-text-subtle)]">
+              {confirmation?.name} ·{" "}
+              {confirmation?.quote.action === "upgrade"
+                ? zh
+                  ? "同周期升级，保留已用流量，不叠加额度。"
+                  : "Same-period upgrade; usage is retained, allowances are not stacked."
+                : zh
+                  ? "全新订阅，自动续费。"
+                  : "New subscription with automatic renewal."}
+            </Dialog.Description>
+            {confirmation && (
+              <dl className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <dt>{zh ? "本次应付" : "Due now"}</dt>
+                  <dd>
+                    {new Intl.NumberFormat(zh ? "zh-CN" : "en-US", {
+                      style: "currency",
+                      currency: confirmation.quote.currency,
+                    }).format(confirmation.quote.amountDue / 100)}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>{zh ? "生效时间" : "Effective"}</dt>
+                  <dd>{zh ? "付款确认后" : "After payment is confirmed"}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>{zh ? "下次续费金额" : "Next renewal"}</dt>
+                  <dd>
+                    {new Intl.NumberFormat(zh ? "zh-CN" : "en-US", {
+                      style: "currency",
+                      currency: confirmation.quote.currency,
+                    }).format(confirmation.quote.renewalAmount / 100)}
+                  </dd>
+                </div>
+                <div className="flex justify-between text-[var(--color-text-subtle)]">
+                  <dt>{zh ? "下次续费日期" : "Next renewal date"}</dt>
+                  <dd>
+                    {confirmation.quote.renewalAt
+                      ? new Date(
+                          confirmation.quote.renewalAt * 1000,
+                        ).toLocaleDateString(zh ? "zh-CN" : "en-US")
+                      : zh
+                        ? "付款确认后确定"
+                        : "Established after payment"}
+                  </dd>
+                </div>
+              </dl>
+            )}
+            <div className="flex justify-end gap-3">
+              <Dialog.Close
+                disabled={Boolean(submitting)}
+                className="rounded-md border px-4 py-2 text-sm"
+              >
+                {zh ? "暂不支付" : "Not now"}
+              </Dialog.Close>
+              <button
+                type="button"
+                disabled={Boolean(submitting) || purchasePending !== false}
+                className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm text-white disabled:opacity-50"
+                onClick={async () => {
+                  if (!confirmation || submitting) return;
+                  setSubmitting(confirmation.payload.planId);
+                  try {
+                    await startStripeCheckout({
+                      ...confirmation.payload,
+                      previewToken: confirmation.quote.previewToken,
+                    });
+                    setPurchasePending(true);
+                    setConfirmation(null);
+                  } catch {
+                    setMessage(
+                      zh
+                        ? "支付结果需要重新核验，请刷新状态，勿重复购买。"
+                        : "Recheck the payment result before trying again.",
+                    );
+                    setPurchasePending(null);
+                    setConfirmation(null);
+                  } finally {
+                    setSubmitting(null);
+                  }
+                }}
+              >
+                {submitting
+                  ? zh
+                    ? "确认中…"
+                    : "Confirming…"
+                  : zh
+                    ? "确认并支付"
+                    : "Confirm and pay"}
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
       {message ? (
         <p
           role="status"
@@ -281,11 +487,26 @@ export default function BillingOptionsPanel({
                   </div>
                   <button
                     type="button"
+                    title={
+                      paidPlan &&
+                      plan.planId === "PRO-YEARLY-V2" &&
+                      selectedPlanId !== plan.planId
+                        ? zh
+                          ? "月付转年付将在下一批开放，当前不会创建第二份订阅。"
+                          : "Annual conversion is planned for the next phase; no second subscription will be created."
+                        : undefined
+                    }
                     disabled={
                       !ready ||
                       requiresMfa ||
-                      submitting === plan.planId ||
-                      plan.planId === currentPlanId
+                      Boolean(submitting) ||
+                      purchasePending !== false ||
+                      (paidPlan &&
+                        !(
+                          selectedPlanId === "PLUS" &&
+                          plan.planId === "PRO-MONTHLY-V2"
+                        )) ||
+                      plan.planId === selectedPlanId
                     }
                     onClick={() =>
                       handleCheckout(
@@ -303,25 +524,43 @@ export default function BillingOptionsPanel({
                     }
                     className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {plan.planId === currentPlanId
+                    {plan.planId === selectedPlanId
                       ? zh
                         ? "当前套餐"
                         : "Current plan"
-                      : submitting === plan.planId
+                      : purchasePending === true
                         ? zh
-                          ? "跳转中…"
-                          : "Opening…"
-                        : requiresMfa
+                          ? "同步中"
+                          : "Synchronizing"
+                        : submitting === plan.planId
                           ? zh
-                            ? "绑定 MFA 后可支付"
-                            : "Bind MFA to pay"
-                          : ready
+                            ? "跳转中…"
+                            : "Opening…"
+                          : requiresMfa
                             ? zh
-                              ? "订阅 Plus"
-                              : "Subscribe"
-                            : zh
-                              ? "即将上线"
-                              : "Coming soon"}
+                              ? "绑定 MFA 后可支付"
+                              : "Bind MFA to pay"
+                            : paidPlan && plan.planId === "PRO-YEARLY-V2"
+                              ? zh
+                                ? "升级为年付"
+                                : "Upgrade to annual"
+                              : paidPlan &&
+                                  !(
+                                    selectedPlanId === "PLUS" &&
+                                    plan.planId === "PRO-MONTHLY-V2"
+                                  )
+                                ? zh
+                                  ? "暂不支持此变更"
+                                  : "Change unavailable"
+                                : ready
+                                  ? zh
+                                    ? paidPlan
+                                      ? "升级到 Pro"
+                                      : `订阅 ${plan.displayName || plan.planId}`
+                                    : `${paidPlan ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
+                                  : zh
+                                    ? "即将上线"
+                                    : "Coming soon"}
                   </button>
                 </div>
               );

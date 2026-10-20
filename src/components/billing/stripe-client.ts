@@ -1,6 +1,6 @@
 "use client";
 
-type StripeCheckoutPayload = {
+export type StripeCheckoutPayload = {
   planId: string;
   stripePriceId: string;
   amountMinor?: number;
@@ -8,7 +8,57 @@ type StripeCheckoutPayload = {
   mode: "payment" | "subscription";
   productSlug: string;
   sourcePath?: string;
+  previewToken?: string;
 };
+
+export type SubscriptionPreview = {
+  action: "subscribe" | "upgrade";
+  planId: string;
+  amountDue: number;
+  currency: string;
+  renewalAmount: number;
+  renewalAt: number;
+  expiresAt: number;
+  previewToken: string;
+};
+
+export async function previewSubscription(
+  payload: StripeCheckoutPayload,
+): Promise<SubscriptionPreview> {
+  return postJson<SubscriptionPreview>(
+    "/api/auth/stripe/subscription/preview",
+    payload,
+  );
+}
+
+export async function getSubscriptionPurchase(): Promise<{
+  pending: boolean;
+  planId?: string;
+  url?: string;
+  retryable?: boolean;
+}> {
+  const response = await fetch("/api/auth/stripe/subscription/pending", {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("purchase_status_unavailable");
+  const data = await response.json();
+  if (typeof data.pending !== "boolean")
+    throw new Error("purchase_status_invalid");
+  if (data.url) {
+    const url = new URL(data.url);
+    if (
+      url.protocol !== "https:" ||
+      ![
+        "checkout.stripe.com",
+        "invoice.stripe.com",
+        "billing.stripe.com",
+      ].includes(url.hostname)
+    )
+      delete data.url;
+  }
+  return data;
+}
 
 type StripePortalPayload = {
   returnPath?: string;
@@ -54,14 +104,39 @@ async function postJson<TResponse>(
 export async function startStripeCheckout(
   payload: StripeCheckoutPayload,
 ): Promise<void> {
-  const data = await postJson<{ url?: string }>(
+  // Other entry points (including /prices) cannot bypass quote confirmation.
+  if (payload.mode === "subscription" && !payload.previewToken) {
+    const quote = await previewSubscription(payload);
+    const money = (amount: number) =>
+      new Intl.NumberFormat("zh-CN", {
+        style: "currency",
+        currency: quote.currency,
+      }).format(amount / 100);
+    if (
+      !window.confirm(
+        `本次应付：${money(quote.amountDue)}\n生效时间：付款确认后\n下次续费日期：${quote.renewalAt ? new Date(quote.renewalAt * 1000).toLocaleDateString() : "付款确认后确定"}\n下次续费金额：${money(quote.renewalAmount)}`,
+      )
+    )
+      return;
+    payload = { ...payload, previewToken: quote.previewToken };
+  }
+  const data = await postJson<{ url?: string; pending?: boolean }>(
     "/api/auth/stripe/checkout",
     payload,
   );
+  if (data.pending && !data.url) return;
   if (!data.url) {
     throw new Error("stripe_checkout_url_missing");
   }
   window.location.href = data.url;
+}
+
+export async function retrySubscriptionPurchase(): Promise<void> {
+  const data = await postJson<{ url?: string }>(
+    "/api/auth/stripe/subscription/retry",
+    {},
+  );
+  if (data.url) window.location.href = data.url;
 }
 
 export async function openStripePortal(

@@ -4,8 +4,18 @@ import { describe, expect, it, vi } from "vitest";
 
 import BillingOptionsPanel from "../BillingOptionsPanel";
 
-const { checkout, plans } = vi.hoisted(() => ({
+const { checkout, preview, pending, retry, plans } = vi.hoisted(() => ({
   checkout: vi.fn(),
+  preview: vi.fn().mockResolvedValue({
+    action: "subscribe",
+    amountDue: 50000,
+    currency: "CNY",
+    renewalAmount: 50000,
+    renewalAt: 0,
+    previewToken: "signed-preview",
+  }),
+  pending: vi.fn().mockResolvedValue({ pending: false }),
+  retry: vi.fn().mockResolvedValue(undefined),
   plans: new Map([
     [
       "PLUS",
@@ -135,6 +145,9 @@ vi.mock("@components/billing/CheckoutStatusBanner", () => ({
 }));
 vi.mock("@components/billing/stripe-client", () => ({
   startStripeCheckout: checkout,
+  previewSubscription: preview,
+  getSubscriptionPurchase: pending,
+  retrySubscriptionPurchase: retry,
 }));
 vi.mock("@modules/billing/catalog", () => ({
   useBillingCatalog: () => plans,
@@ -151,6 +164,58 @@ vi.mock("@modules/billing/catalog", () => ({
 }));
 
 describe("BillingOptionsPanel", () => {
+  it("retries only the pending operation without starting another checkout", async () => {
+    checkout.mockClear();
+    retry.mockClear();
+    pending.mockResolvedValueOnce({ pending: true, retryable: true });
+    render(<BillingOptionsPanel />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "重试本次支付" }),
+    );
+    await waitFor(() => expect(retry).toHaveBeenCalledTimes(1));
+    expect(checkout).not.toHaveBeenCalled();
+  });
+  it("previews a fresh annual subscription, names its button correctly and waits for confirmation", async () => {
+    checkout.mockClear();
+    preview.mockClear();
+    render(<BillingOptionsPanel currentPlanId="FREE" />);
+    const button = screen.getByRole("button", { name: "订阅 Pro 年付" });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await screen.findByRole("dialog");
+    expect(checkout).not.toHaveBeenCalled();
+    expect(screen.getByText("本次应付")).toBeInTheDocument();
+    expect(screen.getByText("下次续费金额")).toBeInTheDocument();
+    expect(screen.getByText("下次续费日期")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "确认并支付" }));
+    await waitFor(() =>
+      expect(checkout).toHaveBeenCalledWith(
+        expect.objectContaining({
+          planId: "PRO-YEARLY-V2",
+          previewToken: "signed-preview",
+        }),
+      ),
+    );
+    expect(screen.getAllByRole("button", { name: "同步中" })).toHaveLength(3);
+  });
+
+  it("offers only a same-cycle Pro monthly upgrade to an existing Plus subscriber", async () => {
+    render(<BillingOptionsPanel currentPlanId="PLUS" />);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "升级到 Pro" })).toBeEnabled(),
+    );
+    expect(screen.getByRole("button", { name: "当前套餐" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "升级为年付" })).toBeDisabled();
+  });
+
+  it("restores the durable purchase lock on reload", async () => {
+    pending.mockResolvedValueOnce({ pending: true });
+    render(<BillingOptionsPanel />);
+    await screen.findByText(
+      "支付或权益同步中，请勿重复购买。确认后将恢复操作。",
+    );
+    expect(screen.getAllByRole("button", { name: "同步中" })).toHaveLength(3);
+  });
   it("offers the configured presets and bounded custom top-ups", async () => {
     render(<BillingOptionsPanel />);
     expect(screen.getByText("Plus · 20 GB/月")).toBeInTheDocument();

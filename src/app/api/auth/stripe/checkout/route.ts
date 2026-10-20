@@ -16,6 +16,12 @@ export async function POST(request: NextRequest) {
   // its public Price ID, but can never forward credentials or arbitrary Stripe
   // parameters to Accounts.
   const payload = {
+    previewToken:
+      typeof input?.previewToken === "string" ? input.previewToken : "",
+    ...(Number.isSafeInteger(input?.amountMinor) &&
+    ["CNY", "USD"].includes(input?.currency)
+      ? { amountMinor: input.amountMinor, currency: input.currency }
+      : {}),
     planId: typeof input?.planId === "string" ? input.planId : "",
     stripePriceId:
       typeof input?.stripePriceId === "string" ? input.stripePriceId : "",
