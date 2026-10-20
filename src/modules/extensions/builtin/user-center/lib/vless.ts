@@ -220,7 +220,7 @@ export function buildVlessUri(rawUuid: string | null | undefined, node?: VlessNo
   }
 
   if (!node) {
-    console.error('[VLESS] Cannot build URI: node is undefined')
+    // No eligible node is a valid loading/empty state, not a malformed URI.
     return null
   }
 

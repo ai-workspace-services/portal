@@ -70,6 +70,39 @@ describe("fetchAccountUsage", () => {
     });
   });
 
+  it("treats only an explicitly missing policy snapshot as a cacheable empty state", async () => {
+    const fetcher = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: "policy_not_found",
+            message: "account policy snapshot is not available",
+          }),
+          { status: 404 },
+        ),
+      );
+    await expect(fetchAccountPolicy()).resolves.toBeNull();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([401, 403, 500])(
+    "does not hide a %s policy failure as an empty snapshot",
+    async (status) => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "policy_not_found" }), { status }),
+      );
+      await expect(fetchAccountPolicy()).rejects.toMatchObject({ status });
+    },
+  );
+
+  it("does not hide an unknown 404 route", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "not_found" }), { status: 404 }),
+    );
+    await expect(fetchAccountPolicy()).rejects.toMatchObject({ status: 404 });
+  });
+
   it("loads the authoritative billing summary from the account api", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
       new Response(

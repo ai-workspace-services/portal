@@ -27,7 +27,7 @@ export default function AccountPolicySecurityPanel({
   mfaPending,
   canManageMfa,
 }: AccountPolicySecurityPanelProps) {
-  const { data, error, isLoading } = useSWR<AccountPolicy>(
+  const { data, error, isLoading } = useSWR<AccountPolicy | null>(
     "account-policy",
     fetchAccountPolicy,
   );
