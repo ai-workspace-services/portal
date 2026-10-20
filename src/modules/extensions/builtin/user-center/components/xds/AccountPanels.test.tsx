@@ -40,7 +40,7 @@ describe("QuotaCard", () => {
 
     expect(screen.getByText("额度已用尽 · 已暂停")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "本月配额已用尽，用户配置同步已暂停。配额续期或调整后会自动恢复。",
+      "本月配额已用尽，用户配置同步已暂停。可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。",
     );
   });
 
@@ -224,7 +224,7 @@ describe("NodesTable resource groups", () => {
       />,
     );
 
-    expect(screen.getByText("shared · Free + Plus")).toBeInTheDocument();
+    expect(screen.getByText("shared · Free + Plus + Pro")).toBeInTheDocument();
     expect(screen.getByText("team · Team · alpha")).toBeInTheDocument();
     expect(
       screen.getByText("agent-shared-selfhost-uat.onwalk.net"),
