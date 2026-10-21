@@ -85,11 +85,7 @@ function NavLink({
   );
 }
 
-export default function MarketingNav({
-  homeLinkOnly = false,
-}: {
-  homeLinkOnly?: boolean;
-}) {
+export default function MarketingNav() {
   const { language } = useLanguage();
   const content = homeMarketingContent[language] ?? homeMarketingContent.zh;
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
@@ -197,7 +193,7 @@ export default function MarketingNav({
     <header className="xds xds-mnav" ref={navRef}>
       <div className="xds-container-wide xds-mnav-inner">
         <div className="xds-mnav-wayfind">
-          <MarketingBreadcrumbs homeOnly={homeLinkOnly} />
+          <MarketingBreadcrumbs homeOnly />
         </div>
 
         <nav className="xds-mnav-links xds-mnav-desktop">
@@ -390,6 +386,10 @@ export default function MarketingNav({
             <Menu className="h-4 w-4" aria-hidden="true" />
           )}
         </button>
+      </div>
+
+      <div className="xds-container-wide xds-mnav-breadcrumb-row">
+        <MarketingBreadcrumbs hideOnHome />
       </div>
 
       {mobileOpen ? (

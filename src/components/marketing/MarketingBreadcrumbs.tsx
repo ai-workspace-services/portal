@@ -56,8 +56,10 @@ function isPrefixOf(prefix: string, pathname: string) {
 
 export default function MarketingBreadcrumbs({
   homeOnly = false,
+  hideOnHome = false,
 }: {
   homeOnly?: boolean;
+  hideOnHome?: boolean;
 }) {
   const pathname = usePathname() || "/";
   const { language } = useLanguage();
@@ -119,7 +121,9 @@ export default function MarketingBreadcrumbs({
     return trail.length > 1 ? trail : [];
   }, [content, locale, pathname]);
 
-  // 首页只留图标锚点，子页整块换成面包屑——左上角始终只有一个「我在哪」的答案。
+  // 首页只留站点图标；子页将层级导航放在主导航下方单独呈现。
+  if (hideOnHome && crumbs.length === 0) return null;
+
   if (homeOnly || crumbs.length === 0) {
     return (
       <BoundaryLink
