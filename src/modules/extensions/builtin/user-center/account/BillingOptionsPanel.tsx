@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSWRConfig } from "swr";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import CheckoutStatusBanner from "@components/billing/CheckoutStatusBanner";
@@ -79,6 +80,10 @@ export default function BillingOptionsPanel({
   const { language } = useLanguage();
   const zh = language === "zh";
   const catalog = useBillingCatalog();
+  const { mutate } = useSWRConfig();
+  const lastPurchase = useRef<
+    { pending: boolean; planId?: string } | undefined
+  >(undefined);
   const [mode, setMode] = useState<Mode>("subscription");
   const [currency, setCurrency] = useState<Currency>("CNY");
   const [selectedTopUp, setSelectedTopUp] = useState("PAYG-TOPUP-50");
@@ -108,6 +113,35 @@ export default function BillingOptionsPanel({
       try {
         const status = await getSubscriptionPurchase();
         if (active) {
+          const previous = lastPurchase.current;
+          const settled =
+            !status.pending &&
+            status.planId &&
+            (previous?.pending ||
+              (!previous && status.planId !== currentPlanId) ||
+              (previous && previous.planId !== status.planId));
+          lastPurchase.current = {
+            pending: status.pending,
+            planId: status.planId,
+          };
+          if (settled) {
+            // A confirmed payment changes all account read models, including
+            // node access after a previously exhausted Free allowance.
+            void mutate((key) => {
+              const name = Array.isArray(key) ? key[0] : key;
+              return (
+                typeof name === "string" &&
+                [
+                  "/api/auth/subscriptions",
+                  "account-usage-summary",
+                  "account-billing-summary",
+                  "account-policy",
+                  "user-center-agent-nodes",
+                  "team-nodes",
+                ].includes(name)
+              );
+            }).catch(() => undefined);
+          }
           setPurchasePending(status.pending);
           setPendingUrl(status.pending ? status.url : undefined);
           setCanRetry(status.pending && status.retryable === true);
@@ -128,7 +162,7 @@ export default function BillingOptionsPanel({
       active = false;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [currentPlanId, mutate]);
 
   const subscriptionOptions = useMemo(
     () =>

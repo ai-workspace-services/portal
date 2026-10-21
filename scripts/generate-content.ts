@@ -230,7 +230,13 @@ async function generateBillingPolicyContent() {
       ) {
         throw new Error(`Missing billing policy refundSummary for ${locale}`);
       }
-      return [locale, { refundSummary: value.refundSummary }];
+      const keys = ["refundSummary", "subscriptionSummary", "planSelectionDescription", "purchaseHelp", "assignedPlanHelp", "unassignedPlanHelp"];
+      for (const key of keys) {
+        if (typeof value[key] !== "string" || !value[key].trim()) {
+          throw new Error(`Missing billing policy ${key} for ${locale}`);
+        }
+      }
+      return [locale, Object.fromEntries(keys.map(key => [key, value[key]]))];
     }),
   );
   await fs.mkdir(OUTPUT_ROOT, { recursive: true });

@@ -487,9 +487,7 @@ export default function UserCenterSubscriptionRoute() {
               <XdsCardHead
                 title={zh ? "选择套餐" : "Choose a plan"}
                 description={
-                  zh
-                    ? "按量购买或订阅购买都会映射到统一的 Stripe 价格配置，回调与 webhook 自动更新订阅状态。"
-                    : "Metered and subscription purchases map to the same Stripe price config; callbacks and webhooks update state automatically."
+                  billingPolicy[zh ? "zh" : "en"].planSelectionDescription
                 }
               />
               <XdsCardBody>
@@ -506,9 +504,7 @@ export default function UserCenterSubscriptionRoute() {
                   title={zh ? "支付如何进行" : "How payment works"}
                   className="xds-mt-20"
                 >
-                  {zh
-                    ? "选择套餐 → 跳转 Stripe Checkout（本地不保存任何支付方式入口）→ 回调与 webhook 自动识别到账并更新订阅记录，无需手工同步。"
-                    : "Pick a plan → Stripe Checkout (no payment entry point is stored locally) → callbacks and webhooks reconcile the subscription record automatically."}
+                  {billingPolicy[zh ? "zh" : "en"].purchaseHelp}
                 </XdsAlert>
               </XdsCardBody>
             </XdsCard>

@@ -15,6 +15,7 @@ import {
   XdsMeter,
 } from "@/components/ui/xds";
 import MembershipTierMark from "../components/MembershipTierMark";
+import billingPolicy from "@/data/content/billing-policy.json";
 
 export type SubscriptionStatusRecord = {
   id: string;
@@ -100,11 +101,7 @@ export default function SubscriptionStatusCard({
     <XdsCard data-testid="subscription-status-card">
       <XdsCardHead
         title={zh ? "我的订阅" : "My subscriptions"}
-        description={
-          zh
-            ? "当前权益、历史订阅与额度状态来自 Accounts 本地账务模型。"
-            : "Entitlements, subscription history and quota state come from the local Accounts billing model."
-        }
+        description={billingPolicy[zh ? "zh" : "en"].subscriptionSummary}
         actions={
           <XdsBadge tone={statusTone}>
             {activeRecords.length > 0
@@ -197,12 +194,8 @@ export default function SubscriptionStatusCard({
                   ? "可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。"
                   : "Upgrade your plan to restore access once payment is confirmed and the new quota takes effect. Access also resumes after quota renewal or adjustment."
                 : assigned
-                  ? zh
-                    ? "套餐变更只更新本地权益状态，支付渠道不会成为账户主键。"
-                    : "Plan changes update local entitlements; the payment provider is never the account key."
-                  : zh
-                    ? "当前账户尚未被管理员分配套餐，注册属性保持不变。"
-                    : "No plan has been assigned yet; the registration attributes remain unchanged."}
+                  ? billingPolicy[zh ? "zh" : "en"].assignedPlanHelp
+                  : billingPolicy[zh ? "zh" : "en"].unassignedPlanHelp}
             </p>
           </div>
           <ShieldCheck
