@@ -6,6 +6,7 @@ type PublicPageShellProps = {
   children: React.ReactNode;
   mainClassName?: string;
   containerClassName?: string;
+  breadcrumbs?: React.ReactNode;
 };
 
 type PublicPageIntroProps = {
@@ -20,6 +21,7 @@ export function PublicPageShell({
   children,
   mainClassName,
   containerClassName,
+  breadcrumbs,
 }: PublicPageShellProps) {
   return (
     <div className="relative min-h-screen bg-background text-text transition-colors duration-150">
@@ -28,7 +30,7 @@ export function PublicPageShell({
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0))]"
       />
       <div className="relative">
-        <MarketingNav />
+        <MarketingNav homeLinkOnly={Boolean(breadcrumbs)} />
         <div
           className={cn(
             "mx-auto w-full max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16",
@@ -36,11 +38,9 @@ export function PublicPageShell({
           )}
         >
           <main
-            className={cn(
-              "space-y-6 pt-4 sm:space-y-8 sm:pt-6",
-              mainClassName,
-            )}
+            className={cn("space-y-6 pt-4 sm:space-y-8 sm:pt-6", mainClassName)}
           >
+            {breadcrumbs}
             {children}
           </main>
           <Footer />

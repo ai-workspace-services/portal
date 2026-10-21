@@ -7,6 +7,7 @@ export const revalidate = 3600;
 import { notFound } from "next/navigation";
 
 import DownloadCatalog from "@/components/download/DownloadCatalog";
+import MarketingBreadcrumbs from "@/components/marketing/MarketingBreadcrumbs";
 import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { getDownloadListings } from "@/lib/download/dl-index-data-artifacts";
 import { getOfflinePackageListings } from "@/lib/download/dl-index-data-offline-package";
@@ -43,7 +44,7 @@ export default async function DownloadHome({
   );
 
   return (
-    <PublicPageShell>
+    <PublicPageShell breadcrumbs={<MarketingBreadcrumbs />}>
       <DownloadCatalog catalog={catalog} />
     </PublicPageShell>
   );
