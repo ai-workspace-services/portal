@@ -16,11 +16,11 @@
  * 计费接口、Stripe 客户门户），没有新增字段。
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import billingPolicy from "@/data/content/billing-policy.json";
 import NetworkTeamsPanel from "../components/NetworkTeamsPanel";
 import BoundaryLink from "@/components/common/BoundaryLink";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import {
   ChevronRight,
   CreditCard,
@@ -156,6 +156,23 @@ export default function UserCenterSubscriptionRoute() {
     getRefundReview,
     { refreshInterval: 10000 },
   );
+  const { mutate: refreshCachedData } = useSWRConfig();
+  const previousRefundStatus = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const status = refundReview?.status;
+    if (!status || previousRefundStatus.current === status) return;
+    previousRefundStatus.current = status;
+    if (status !== "refunded" && status !== "partially_completed") return;
+    // Revalidate every mounted account view after confirmed refund settlement.
+    // Presentation remains unchanged; all consumers reload authoritative data.
+    void refreshCachedData((key) => {
+      const name = Array.isArray(key) ? key[0] : key;
+      return typeof name === "string" && [
+        "/api/auth/subscriptions", "account-usage-summary", "account-billing-summary",
+        "account-policy", "user-center-agent-nodes", "team-nodes",
+      ].includes(name);
+    }).catch(() => undefined);
+  }, [refundReview?.status, refreshCachedData]);
   const [error, setError] = useState<string | null>(null);
 
   const handleCancel = useCallback(
