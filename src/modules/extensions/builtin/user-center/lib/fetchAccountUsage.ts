@@ -5,6 +5,14 @@ type AccountUsageError = Error & {
   code?: string;
 };
 
+export type UsageFreshnessState = "fresh" | "stale" | "no_data";
+
+export type UsageBreakdown = {
+  last1Hour: number;
+  last24Hours: number;
+  monthToDate: number;
+};
+
 export type AccountUsageSummary = {
   accountUuid: string;
   totalBytes: number;
@@ -22,7 +30,9 @@ export type AccountUsageSummary = {
   usagePercent?: number;
   periodStart?: string | null;
   periodEnd?: string | null;
+  lastBucketAt?: string | null;
   syncDelaySeconds?: number;
+  freshnessState?: UsageFreshnessState;
   suspendState?: string;
   throttleState?: string;
   quotaExhausted?: boolean;
@@ -85,6 +95,9 @@ export type AccountUsageBucketsResponse = {
   accountUuid: string;
   sourceOfTruth?: string;
   buckets?: AccountUsageBucket[];
+  lastBucketAt?: string | null;
+  syncDelaySeconds?: number;
+  freshnessState?: UsageFreshnessState;
 };
 
 export type BillingLedgerEntry = {
@@ -177,16 +190,64 @@ export async function fetchAccountPolicy(): Promise<AccountPolicy | null> {
   }
 }
 
+export function currentUtcMonthStartIso(
+  now: Date | number = new Date(),
+): string {
+  const date = typeof now === "number" ? new Date(now) : now;
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0, 0),
+  ).toISOString();
+}
+
+export function summarizeUsageBuckets(
+  buckets: { bucketStart: string; totalBytes: number }[] | undefined,
+  now: Date | number = new Date(),
+): UsageBreakdown {
+  const nowDate = typeof now === "number" ? new Date(now) : now;
+  const nowMs = nowDate.getTime();
+  const oneHourAgo = nowMs - 60 * 60 * 1000;
+  const oneDayAgo = nowMs - 24 * 60 * 60 * 1000;
+  const monthStart = new Date(currentUtcMonthStartIso(nowDate)).getTime();
+  let last1Hour = 0;
+  let last24Hours = 0;
+  let monthToDate = 0;
+  for (const bucket of buckets ?? []) {
+    const bucketTime = new Date(bucket.bucketStart).getTime();
+    if (Number.isNaN(bucketTime)) continue;
+    const bytes =
+      typeof bucket.totalBytes === "number" && Number.isFinite(bucket.totalBytes)
+        ? bucket.totalBytes
+        : 0;
+    if (bucketTime >= monthStart && bucketTime <= nowMs) {
+      monthToDate += bytes;
+    }
+    if (bucketTime >= oneDayAgo && bucketTime <= nowMs) {
+      last24Hours += bytes;
+    }
+    if (bucketTime >= oneHourAgo && bucketTime <= nowMs) {
+      last1Hour += bytes;
+    }
+  }
+  return { last1Hour, last24Hours, monthToDate };
+}
+
 // Buckets are per-minute; the caller decides how far back to look (e.g.
 // month-to-date) and reduces them into hour/day/month totals client-side —
 // the API has no separate rollup endpoint for that.
 export function fetchAccountUsageBuckets(
-  start?: Date,
-  end?: Date,
+  start?: Date | string,
+  end?: Date | string,
 ): Promise<AccountUsageBucketsResponse> {
   const params = new URLSearchParams();
-  if (start) params.set("start", start.toISOString());
-  if (end) params.set("end", end.toISOString());
+  if (start) {
+    params.set(
+      "start",
+      typeof start === "string" ? start : start.toISOString(),
+    );
+  }
+  if (end) {
+    params.set("end", typeof end === "string" ? end : end.toISOString());
+  }
   const query = params.toString();
   return requestJSON<AccountUsageBucketsResponse>(
     `/api/account/usage/buckets${query ? `?${query}` : ""}`,

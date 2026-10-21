@@ -2,7 +2,12 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { NodesTable, QuotaCard, VlessConnectionCard } from "./AccountPanels";
+import {
+  NodesTable,
+  QuotaCard,
+  UsageCard,
+  VlessConnectionCard,
+} from "./AccountPanels";
 import type { RegionalPool } from "../../lib/regionalPools";
 import type { VlessNode } from "../../lib/vless";
 
@@ -365,6 +370,37 @@ describe("VlessConnectionCard availability", () => {
     expect(toDataURLMock).toHaveBeenCalledWith(
       expect.stringContaining("@sg-xconnect.onwalk.net:443"),
       expect.any(Object),
+    );
+  });
+});
+
+describe("UsageCard states", () => {
+  it("distinguishes query failure, loading, true zero, and stale data", () => {
+    const { rerender } = render(<UsageCard zh error={true} />);
+    expect(screen.getByTestId("usage-query-error")).toBeInTheDocument();
+    expect(screen.queryByText("0 B")).not.toBeInTheDocument();
+    expect(screen.queryByText(/还没有流量数据/)).not.toBeInTheDocument();
+
+    rerender(<UsageCard zh loading={true} />);
+    expect(screen.getByTestId("usage-loading")).toBeInTheDocument();
+    expect(screen.queryByText("0 B")).not.toBeInTheDocument();
+
+    rerender(<UsageCard zh buckets={[]} error={false} loading={false} />);
+    expect(screen.getAllByText("0 B")).toHaveLength(3);
+    expect(screen.getByTestId("usage-true-zero")).toBeInTheDocument();
+
+    rerender(
+      <UsageCard
+        zh
+        breakdown={{ last1Hour: 512, last24Hours: 1024, monthToDate: 2048 }}
+        hasTraffic
+        syncDelaySeconds={600}
+        lastBucketAt="2026-10-21T08:00:00Z"
+      />,
+    );
+    expect(screen.getByText("512 B")).toBeInTheDocument();
+    expect(screen.getByTestId("usage-stale-notice")).toHaveTextContent(
+      "2026-10-21 08:00:00 UTC",
     );
   });
 });

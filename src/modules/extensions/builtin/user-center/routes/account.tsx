@@ -62,37 +62,16 @@ import {
   VlessConnectionCard,
 } from "../components/xds/AccountPanels";
 import {
+  currentUtcMonthStartIso,
   fetchAccountPolicy,
   fetchAccountUsageBuckets,
   fetchAccountUsageSummary,
+  summarizeUsageBuckets,
 } from "../lib/fetchAccountUsage";
 import { fetchAgentNodes } from "../lib/fetchAgentNodes";
 import type { VlessNode } from "../lib/vless";
 
 const DASH = "—";
-
-/**
- * 分钟级桶在客户端聚合成小时 / 天 / 月三档 —— accounts 没有单独的 rollup
- * 接口，这段逻辑与 SubscriptionPanel 保持一致。
- */
-function summarizeUsageBuckets(
-  buckets: { bucketStart: string; totalBytes: number }[] | undefined,
-) {
-  const now = Date.now();
-  const hourAgo = now - 60 * 60 * 1000;
-  const dayAgo = now - 24 * 60 * 60 * 1000;
-  let last1Hour = 0;
-  let last24Hours = 0;
-  let monthToDate = 0;
-  for (const bucket of buckets ?? []) {
-    const ts = new Date(bucket.bucketStart).getTime();
-    if (Number.isNaN(ts)) continue;
-    monthToDate += bucket.totalBytes;
-    if (ts >= dayAgo) last24Hours += bucket.totalBytes;
-    if (ts >= hourAgo) last1Hour += bucket.totalBytes;
-  }
-  return { last1Hour, last24Hours, monthToDate };
-}
 
 export default function UserCenterAccountRoute() {
   const router = useRouter();
@@ -109,11 +88,15 @@ export default function UserCenterAccountRoute() {
   // VLESS 访问凭据用 proxyUuid，不是账户身份 uuid（见 #220）
   const proxyUuid = user?.proxyUuid || null;
 
-  const { data: usageSummary, mutate: mutateUsage } = useSWR(
-    "account-usage-summary",
-    fetchAccountUsageSummary,
-    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
-  );
+  const {
+    data: usageSummary,
+    error: usageSummaryError,
+    isLoading: usageSummaryLoading,
+    mutate: mutateUsage,
+  } = useSWR("account-usage-summary", fetchAccountUsageSummary, {
+    refreshInterval: 5 * 60_000,
+    revalidateOnFocus: true,
+  });
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
   const { data: nodes, error: nodesError } = useSWR<VlessNode[]>(
     user ? ["user-center-agent-nodes", user.id, user.proxyUuid] : null,
@@ -121,15 +104,14 @@ export default function UserCenterAccountRoute() {
     { refreshInterval: 30_000 },
   );
 
-  const monthStart = useMemo(() => {
-    const d = new Date();
-    d.setDate(1);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
-  const { data: usageBuckets, mutate: mutateBuckets } = useSWR(
-    ["account-usage-buckets", monthStart.toISOString()],
-    () => fetchAccountUsageBuckets(monthStart),
+  const monthStartIso = useMemo(() => currentUtcMonthStartIso(), []);
+  const {
+    data: usageBuckets,
+    error: usageBucketsError,
+    isLoading: usageBucketsLoading,
+    mutate: mutateBuckets,
+  } = useSWR(["account-usage-buckets", monthStartIso], () =>
+    fetchAccountUsageBuckets(monthStartIso),
   );
   const breakdown = useMemo(
     () => summarizeUsageBuckets(usageBuckets?.buckets),
@@ -458,10 +440,43 @@ export default function UserCenterAccountRoute() {
           <UsageCard
             zh={zh}
             breakdown={breakdown}
+            buckets={usageBuckets?.buckets}
             hasTraffic={hasTraffic}
-            sourceOfTruth={usageSummary?.sourceOfTruth}
+            sourceOfTruth={
+              usageSummary?.sourceOfTruth ?? usageBuckets?.sourceOfTruth
+            }
+            loading={
+              usageBucketsLoading || (usageSummaryLoading && !usageBuckets)
+            }
+            error={Boolean(
+              usageBucketsError || (!usageBuckets && usageSummaryError),
+            )}
+            lastBucketAt={
+              usageBuckets?.lastBucketAt ?? usageSummary?.lastBucketAt
+            }
+            syncDelaySeconds={
+              usageBuckets?.syncDelaySeconds ?? usageSummary?.syncDelaySeconds
+            }
+            freshnessState={
+              usageBuckets?.freshnessState ?? usageSummary?.freshnessState
+            }
           />
-          <QuotaCard zh={zh} usage={usageSummary} policy={accountPolicy} />
+          <QuotaCard
+            zh={zh}
+            usage={usageSummary}
+            policy={accountPolicy}
+            loading={usageSummaryLoading}
+            error={Boolean(usageSummaryError)}
+            lastBucketAt={
+              usageSummary?.lastBucketAt ?? usageBuckets?.lastBucketAt
+            }
+            syncDelaySeconds={
+              usageSummary?.syncDelaySeconds ?? usageBuckets?.syncDelaySeconds
+            }
+            freshnessState={
+              usageSummary?.freshnessState ?? usageBuckets?.freshnessState
+            }
+          />
         </section>
 
         {/* ── 策略与安全 ── */}
