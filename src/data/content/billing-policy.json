@@ -1,8 +1,18 @@
 {
   "zh": {
-    "refundSummary": "首次订阅成功付款后 72 小时内可申请退款，所有申请须人工审核。可退范围包括同一订阅的首付款和已支付升级差价，不含按量充值及超额用量费用；升级、迁移或重复申请不重新计算期限。批准后由系统执行，通常在退款成功后 3–5 个工作日原路到账。"
+    "refundSummary": "首次订阅成功付款后 72 小时内可申请退款，所有申请须人工审核。可退范围包括同一订阅的首付款和已支付升级差价，不含按量充值及超额用量费用；升级、迁移或重复申请不重新计算期限。批准后由系统执行，通常在退款成功后 3–5 个工作日原路到账。",
+    "subscriptionSummary": "查看当前套餐、可用额度和订阅记录。",
+    "planSelectionDescription": "按你的使用需求选择套餐，查看费用后再确认付款。",
+    "purchaseHelp": "付款成功后，套餐与可用额度将自动更新。",
+    "assignedPlanHelp": "你可以在这里查看套餐状态、可用额度和有效期。",
+    "unassignedPlanHelp": "选择适合你的套餐，开始使用更多额度。"
   },
   "en": {
-    "refundSummary": "Request a refund within 72 hours of the first successful subscription payment. All requests require human review. Eligible amounts include the initial payment and paid upgrades on the same subscription, excluding PAYG top-ups and overage. Upgrades, migration and repeat requests do not restart the window. After approval, the system executes the refund; funds typically return to the original payment method within 3–5 business days after a successful refund."
+    "refundSummary": "Request a refund within 72 hours of the first successful subscription payment. All requests require human review. Eligible amounts include the initial payment and paid upgrades on the same subscription, excluding PAYG top-ups and overage. Upgrades, migration and repeat requests do not restart the window. After approval, the system executes the refund; funds typically return to the original payment method within 3–5 business days after a successful refund.",
+    "subscriptionSummary": "View your current plan, available allowance and subscription history.",
+    "planSelectionDescription": "Choose a plan for your needs and review the cost before confirming payment.",
+    "purchaseHelp": "Your plan and available allowance update automatically after payment.",
+    "assignedPlanHelp": "Check your plan status, available allowance and validity here.",
+    "unassignedPlanHelp": "Choose a plan that suits your needs to get more allowance."
   }
 }

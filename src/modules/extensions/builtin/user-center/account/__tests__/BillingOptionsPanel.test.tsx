@@ -1,10 +1,17 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import BillingOptionsPanel from "../BillingOptionsPanel";
 
-const { checkout, preview, pending, retry, plans } = vi.hoisted(() => ({
+const { checkout, preview, pending, retry, plans, mutate } = vi.hoisted(() => ({
+  mutate: vi.fn().mockResolvedValue(undefined),
   checkout: vi.fn(),
   preview: vi.fn().mockResolvedValue({
     action: "subscribe",
@@ -137,6 +144,7 @@ const { checkout, preview, pending, retry, plans } = vi.hoisted(() => ({
 vi.mock("@i18n/LanguageProvider", () => ({
   useLanguage: () => ({ language: "zh" }),
 }));
+vi.mock("swr", () => ({ useSWRConfig: () => ({ mutate }) }));
 vi.mock("@components/billing/PaymentMfaNotice", () => ({
   usePaymentMfaRequired: () => false,
 }));
@@ -164,6 +172,45 @@ vi.mock("@modules/billing/catalog", () => ({
 }));
 
 describe("BillingOptionsPanel", () => {
+  it("refreshes account summaries and denied node discovery once payment is confirmed", async () => {
+    const interval = vi.spyOn(window, "setInterval");
+    mutate.mockClear();
+    pending.mockResolvedValueOnce({ pending: true, planId: "PLUS" });
+    const view = render(<BillingOptionsPanel currentPlanId="FREE" />);
+    try {
+      await waitFor(() =>
+        expect(screen.getAllByRole("button", { name: "同步中" })).toHaveLength(
+          3,
+        ),
+      );
+      const tick = interval.mock.calls.find(([, delay]) => delay === 5000)?.[0] as (() => void) | undefined;
+      pending.mockResolvedValueOnce({ pending: false, planId: "PLUS" });
+      await act(async () => {
+        tick?.();
+      });
+      await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
+      const predicate = mutate.mock.calls[0][0];
+      for (const key of [
+        "/api/auth/subscriptions",
+        "account-usage-summary",
+        "account-billing-summary",
+        "account-policy",
+        ["user-center-agent-nodes", "user-1"],
+        ["team-nodes", "team-1"],
+      ]) {
+        expect(predicate(key)).toBe(true);
+      }
+      expect(predicate("unrelated-query")).toBe(false);
+      pending.mockResolvedValueOnce({ pending: false, planId: "PLUS" });
+      await act(async () => {
+        tick?.();
+      });
+      expect(mutate).toHaveBeenCalledTimes(1);
+    } finally {
+      view.unmount();
+      interval.mockRestore();
+    }
+  });
   it("retries only the pending operation without starting another checkout", async () => {
     checkout.mockClear();
     retry.mockClear();

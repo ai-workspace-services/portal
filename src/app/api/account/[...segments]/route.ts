@@ -33,8 +33,16 @@ function createHandler() {
 
 const handler = createHandler()
 
-export function GET(request: NextRequest) {
-  return handler(request)
+export async function GET(request: NextRequest) {
+  const response = await handler(request)
+  if (request.nextUrl.pathname === '/api/account/policy' && response.status === 404) {
+    const payload = await response.clone().json().catch(() => null)
+    if (payload?.error === 'policy_not_found') {
+      // Optional snapshots are empty; route, authentication and store errors remain failures.
+      return Response.json(null, { headers: { 'Cache-Control': 'no-store' } })
+    }
+  }
+  return response
 }
 
 export function POST(request: NextRequest) {
