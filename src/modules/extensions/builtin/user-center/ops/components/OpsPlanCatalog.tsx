@@ -1,795 +1,710 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import {
-  AlertTriangle,
-  ArrowRight,
+  Box,
   Check,
-  Edit3,
+  ChevronDown,
+  ChevronRight,
+  Clock3,
+  Gift,
+  History,
   Loader2,
-  Package,
   Plus,
   RefreshCw,
-  ShieldCheck,
-  Trash2,
   X,
 } from "lucide-react";
-
 import { useUserStore } from "@lib/userStore";
-
 import { ADMIN_API_BASE } from "../../lib/adminApi";
+import { buildPlanUpsertBody, type BillingPlan } from "../planUpsert";
 import {
-  buildPlanUpsertBody,
-  type BillingPlan,
-  type PlanForm,
-} from "../planUpsert";
+  CATALOG_FAMILIES,
+  partitionCatalog,
+  policyFor,
+  quotaFromGB,
+  quotaToGB,
+  type CatalogPolicy,
+  type Family,
+  type FamilyId,
+} from "../planCatalog";
 
-type PlansResponse = { plans?: BillingPlan[] };
-
-const surface =
-  "rounded-[var(--radius-xl)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)]";
-
-async function fetcher<T>(input: RequestInfo): Promise<T> {
-  const response = await fetch(input, {
+const inputClass =
+  "w-full rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-muted)]";
+const panelClass =
+  "rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-elevated)]";
+async function fetchPlans(url: string): Promise<{ plans: BillingPlan[] }> {
+  const response = await fetch(url, {
     credentials: "include",
-    headers: { Accept: "application/json" },
     cache: "no-store",
   });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(
-      (payload as { error?: string } | null)?.error ?? "加载失败",
-    );
-  }
-  return payload as T;
+  if (!response.ok) throw new Error("无法加载套餐目录，请重试。");
+  return response.json();
 }
-
-function formatBytes(value?: number) {
-  if (value === undefined || Number.isNaN(value)) return "—";
-  if (value === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  const index = Math.min(
-    Math.floor(Math.log(value) / Math.log(1024)),
-    units.length - 1,
-  );
-  return `${(value / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
-}
-
-function kindLabel(kind: string) {
+function FamilyIcon({ id }: { id: FamilyId }) {
+  const Icon = id === "beta" ? Clock3 : id === "gift" ? Gift : Box;
+  const colors = {
+    free: "bg-slate-100 text-slate-500",
+    plus: "bg-blue-100 text-blue-600",
+    pro: "bg-violet-100 text-violet-600",
+    payg: "bg-emerald-100 text-emerald-600",
+    beta: "bg-orange-100 text-orange-600",
+    gift: "bg-slate-100 text-slate-500",
+  };
   return (
-    {
-      trial: "试用",
-      subscription: "订阅",
-      paygo_topup: "PAYG 充值",
-    }[kind] ?? kind
+    <span
+      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${colors[id]}`}
+    >
+      <Icon size={23} />
+    </span>
+  );
+}
+export default function OpsPlanCatalog() {
+  const user = useUserStore((s) => s.user);
+  const { data, error, isLoading, mutate } = useSWR(
+    `${ADMIN_API_BASE}/billing/plans`,
+    fetchPlans,
+    { revalidateOnFocus: false },
+  );
+  const { families, legacy } = useMemo(
+    () => partitionCatalog(data?.plans ?? []),
+    [data],
+  );
+  const [selected, setSelected] = useState<FamilyId | null>("plus");
+  const [showArchived, setShowArchived] = useState(false);
+  const [notice, setNotice] = useState("");
+  const canWrite = Boolean(
+    user?.isAdmin ||
+    user?.permissions?.includes("*") ||
+    user?.permissions?.includes("admin.billing.money.write"),
+  );
+  const family = families.find((f) => f.id === selected);
+  return (
+    <div className="space-y-4 pb-8">
+      <div
+        className={`grid items-start gap-4 ${family ? "lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]" : ""}`}
+      >
+        <section className={`${panelClass} min-w-0 p-4 sm:p-5`}>
+          <header className="mb-5 flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-heading)]">
+                套餐目录
+              </h1>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                价格与流量权益
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="rounded-lg p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]"
+                aria-label="刷新套餐目录"
+                onClick={() => void mutate()}
+              >
+                <RefreshCw
+                  size={17}
+                  className={isLoading ? "animate-spin" : ""}
+                />
+              </button>
+              {canWrite && (
+                <button
+                  onClick={() => {
+                    setSelected("gift");
+                    setNotice("选择档位后编辑并保存为新版本草稿。");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white"
+                >
+                  <Plus size={16} />
+                  新建套餐
+                </button>
+              )}
+            </div>
+          </header>
+          {error && (
+            <p role="alert" className="mb-4 text-sm text-[var(--color-danger)]">
+              {error.message}
+            </p>
+          )}
+          {isLoading ? (
+            <p className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+              目录加载中…
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {families.map((f) => {
+                const persisted = f.variants.filter((v) =>
+                  data?.plans.some((p) => p.planId === v.planId),
+                );
+                const published = persisted.some((v) => v.active);
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    aria-pressed={selected === f.id}
+                    onClick={() => {
+                      setSelected(f.id);
+                      setNotice("");
+                    }}
+                    className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${selected === f.id ? "border-[var(--color-primary)] bg-[var(--color-primary-muted)]" : "border-[color:var(--color-surface-border)] hover:border-[var(--color-primary)]"}`}
+                  >
+                    <FamilyIcon id={f.id} />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <strong className="text-base font-semibold text-[var(--color-heading)]">
+                          {f.name}
+                        </strong>
+                        {f.id === "free" && (
+                          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700">
+                            默认
+                          </span>
+                        )}
+                      </span>
+                      <span className="mt-1 block text-sm text-[var(--color-text-muted)]">
+                        {f.description}
+                      </span>
+                      <span className="mt-3 block text-sm text-[var(--color-text-subtle)]">
+                        {f.summary}
+                      </span>
+                    </span>
+                    <span className="hidden shrink-0 text-right sm:block">
+                      <span className="block text-sm font-semibold text-[var(--color-heading)]">
+                        {f.price}
+                      </span>
+                      <span
+                        className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${published ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                      >
+                        {published
+                          ? "已发布"
+                          : persisted.length
+                            ? "草稿"
+                            : "待配置"}
+                      </span>
+                    </span>
+                    <ChevronRight
+                      size={16}
+                      className="mt-1 shrink-0 text-[var(--color-text-subtle)]"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div className="mt-4 border-t border-[color:var(--color-surface-border)] pt-3">
+            <button
+              onClick={() => setShowArchived((v) => !v)}
+              aria-expanded={showArchived}
+              className="flex w-full items-center gap-2 py-2 text-left text-sm text-[var(--color-heading)]"
+            >
+              <History size={17} />
+              <span className="flex-1 font-medium">
+                历史套餐与旧目录{" "}
+                <span className="font-normal text-[var(--color-text-subtle)]">
+                  {legacy.length} 项
+                </span>
+              </span>
+              <ChevronDown
+                size={16}
+                className={showArchived ? "rotate-180" : ""}
+              />
+            </button>
+            <p className="ml-6 text-xs leading-5 text-[var(--color-text-subtle)]">
+              旧版本独立保留，已有订阅、价格映射与折扣不覆盖。
+            </p>
+            {showArchived && (
+              <div className="mt-3 divide-y divide-[color:var(--color-surface-border)]">
+                {legacy.map((p) => (
+                  <div
+                    key={p.planId}
+                    className="flex flex-wrap justify-between gap-2 py-3 text-sm"
+                  >
+                    <span>
+                      {p.displayName || p.planId}
+                      <small className="mt-1 block text-[var(--color-text-subtle)]">
+                        {p.planId}
+                      </small>
+                    </span>
+                    <span className="text-xs text-[var(--color-text-muted)]">
+                      {p.active ? "仍在服务 · 保留兼容" : "已下架"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+        {family && (
+          <CatalogEditor
+            key={family.id}
+            family={family}
+            plans={data?.plans ?? []}
+            canWrite={canWrite}
+            onClose={() => setSelected(null)}
+            onSaved={async (message) => {
+              await mutate();
+              setNotice(message);
+            }}
+          />
+        )}
+      </div>
+      <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
+        新规则使用独立版本保存。价格映射、额度周期及 VPS
+        分流完成服务端核验后再发布；保存草稿不会变更在用订阅。
+      </p>
+      {notice && (
+        <p
+          role="status"
+          className="flex items-center gap-2 text-sm text-[var(--color-success-foreground)]"
+        >
+          <Check size={16} />
+          {notice}
+        </p>
+      )}
+    </div>
   );
 }
 
-function emptyForm(plan?: BillingPlan): PlanForm {
+type EditState = {
+  name: string;
+  quotaGB: string;
+  amount: string;
+  stripePriceId: string;
+  policy: CatalogPolicy;
+  reason: string;
+};
+function formFor(plan: BillingPlan): EditState {
   return {
-    planId: plan?.planId ?? "",
-    displayName: plan?.displayName ?? "",
-    kind: plan?.kind ?? "subscription",
-    packageName: plan?.packageName ?? "default",
-    stripePriceId: plan?.stripePriceId ?? "",
-    includedQuotaBytes:
-      plan?.includedQuotaBytes === undefined
-        ? "0"
-        : String(plan.includedQuotaBytes),
-    trialDays: plan?.trialDays === undefined ? "0" : String(plan.trialDays),
-    sortOrder: plan?.sortOrder === undefined ? "0" : String(plan.sortOrder),
-    active: plan?.active ?? true,
+    name: plan.displayName ?? "",
+    quotaGB: quotaToGB(plan.includedQuotaBytes),
+    amount: String((plan.priceAmount ?? 0) / 100),
+    stripePriceId: plan.stripePriceId ?? "",
+    policy: { ...policyFor(plan) },
     reason: "",
   };
 }
-
-export default function OpsPlanCatalog() {
-  const user = useUserStore((state) => state.user);
-  const plansSWR = useSWR<PlansResponse>(`${ADMIN_API_BASE}/billing/plans`, fetcher, {
-    revalidateOnFocus: false,
-  });
-  const [editing, setEditing] = useState<BillingPlan | null | undefined>();
-  const [form, setForm] = useState<PlanForm>(() => emptyForm());
-  const [status, setStatus] = useState<string>();
-  const [error, setError] = useState<string>();
-  const [deleting, setDeleting] = useState<BillingPlan>();
-  const [deleteReason, setDeleteReason] = useState("");
-  const plans = useMemo(
-    () =>
-      [...(plansSWR.data?.plans ?? [])].sort(
-        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
-      ),
-    [plansSWR.data?.plans],
-  );
-  const canWrite = Boolean(
-    user?.isAdmin ||
-    user?.permissions.includes("*") ||
-    user?.permissions.includes("admin.billing.money.write"),
-  );
-
-  const openEditor = (plan?: BillingPlan) => {
-    setEditing(plan ?? null);
-    setForm(emptyForm(plan));
-    setStatus(undefined);
-    setError(undefined);
-  };
-
-  const updateForm = <K extends keyof PlanForm>(key: K, value: PlanForm[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
-  };
-
-  const savePlan = async () => {
-    if (!form.planId.trim() || !form.displayName.trim()) {
-      setError("请填写套餐 ID 和显示名称。");
-      return;
-    }
-    if (!form.reason.trim()) {
-      setError("请填写操作原因，发布或下架会写入审计流水。");
-      return;
-    }
-    const includedQuotaBytes = Number(form.includedQuotaBytes);
-    const trialDays = Number(form.trialDays);
-    const sortOrder = Number(form.sortOrder);
-    if (
-      ![includedQuotaBytes, trialDays, sortOrder].every(Number.isFinite) ||
-      includedQuotaBytes < 0 ||
-      trialDays < 0
-    ) {
-      setError("配额、试用天数和排序必须是有效的非负数字。");
-      return;
-    }
-    if (
-      form.stripePriceId.trim() &&
-      !form.stripePriceId.trim().startsWith("price_")
-    ) {
-      setError(
-        "Stripe Price ID 应以 price_ 开头；金额请在 Stripe 管理，不在此页面伪造。",
-      );
-      return;
-    }
-    if (
-      !window.confirm(
-        `${form.active ? "发布" : "下架"}套餐 ${form.planId.trim()}？将影响 /prices 展示与购买入口。`,
-      )
-    )
-      return;
-
-    setStatus("保存中…");
-    setError(undefined);
+function CatalogEditor({
+  family,
+  plans,
+  canWrite,
+  onClose,
+  onSaved,
+}: {
+  family: Family;
+  plans: BillingPlan[];
+  canWrite: boolean;
+  onClose: () => void;
+  onSaved: (message: string) => Promise<void>;
+}) {
+  const [variantIndex, setVariantIndex] = useState(0);
+  const [draft, setDraft] = useState(() => formFor(family.variants[0]));
+  const [saving, setSaving] = useState(false),
+    [error, setError] = useState("");
+  const plan = family.variants[variantIndex];
+  const existing = plans.find((p) => p.planId === plan.planId);
+  const patch = <K extends keyof EditState>(key: K, value: EditState[K]) =>
+    setDraft((d) => ({ ...d, [key]: value }));
+  const policy = <K extends keyof CatalogPolicy>(
+    key: K,
+    value: CatalogPolicy[K],
+  ) => setDraft((d) => ({ ...d, policy: { ...d.policy, [key]: value } }));
+  const save = async () => {
+    setError("");
     try {
+      if (!draft.name.trim() || !draft.reason.trim())
+        throw new Error("请填写名称与操作原因。");
+      const bytes = quotaFromGB(draft.quotaGB);
+      if (
+        family.id === "gift" &&
+        (Number(draft.quotaGB) < 5 || Number(draft.quotaGB) > 50)
+      )
+        throw new Error("每份临时流量包须为 5–50 GB。");
+      if (
+        family.id === "gift" &&
+        (!Number.isSafeInteger(draft.policy.quantity ?? 1) ||
+          (draft.policy.quantity ?? 1) < 1)
+      )
+        throw new Error("创建份数必须是正整数。");
+      if (!/^\d+(\.\d{1,2})?$/.test(draft.amount))
+        throw new Error("价格最多支持两位小数。");
+      if (draft.stripePriceId && !draft.stripePriceId.startsWith("price_"))
+        throw new Error("请填写有效的 Stripe Price ID。");
+      if (
+        draft.policy.minimumDays !== undefined &&
+        (draft.policy.minimumDays < 30 ||
+          (draft.policy.maximumDays ?? 0) > 90 ||
+          draft.policy.minimumDays > (draft.policy.maximumDays ?? 0))
+      )
+        throw new Error("内测有效期须为 30–90 天，起始天数不能大于结束天数。");
+      if (
+        family.id === "payg" &&
+        (!(draft.policy.cnyPerGB! > 0) || !(draft.policy.usdTrafficGB! > 0))
+      )
+        throw new Error("人民币单价与每美元 GB 数必须大于 0。");
+      if (existing?.active)
+        throw new Error(
+          "已发布版本请先通过价格与权益审核，创建新版本后再变更；此处仅保存草稿。",
+        );
+      const body = buildPlanUpsertBody(
+        {
+          planId: plan.planId,
+          displayName: draft.name,
+          kind: plan.kind,
+          packageName: plan.packageName ?? family.id,
+          stripePriceId: draft.stripePriceId,
+          includedQuotaBytes: String(bytes),
+          trialDays: String(plan.trialDays ?? 0),
+          sortOrder: String(
+            CATALOG_FAMILIES.findIndex((f) => f.id === family.id) * 10 +
+              variantIndex,
+          ),
+          active: false,
+          reason: draft.reason,
+        },
+        existing ?? plan,
+      );
+      body.priceAmount = Math.round(Number(draft.amount) * 100);
+      body.priceCurrency = body.priceAmount ? "CNY" : "";
+      body.priceUnit = body.priceAmount ? plan.priceUnit : "";
+      body.features = { ...plan.features, catalog_policy: draft.policy };
+      setSaving(true);
       const response = await fetch(
-        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(form.planId.trim())}`,
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(plan.planId)}`,
         {
           method: "PUT",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          // `editing` is the row this form was opened from, and carries the
-          // price and entitlement fields the form does not expose. Without it
-          // the upsert would blank them.
-          body: JSON.stringify(buildPlanUpsertBody(form, editing ?? undefined)),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
         },
       );
-      const payload = await response.json().catch(() => null);
-      if (!response.ok)
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
         throw new Error(
-          (payload as { error?: string } | null)?.error ?? "保存失败",
+          typeof data?.error === "string" ? data.error : "保存失败，请重试。",
         );
-      setStatus("已保存，审计记录已写入。");
-      await plansSWR.mutate();
-      window.setTimeout(() => setEditing(undefined), 700);
-    } catch (saveError) {
-      setStatus(undefined);
-      setError(saveError instanceof Error ? saveError.message : "保存失败");
+      }
+      await onSaved(`${draft.name} 草稿已保存；在用订阅未变更。`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存失败。");
+    } finally {
+      setSaving(false);
     }
   };
-
-  const deletePlan = async () => {
-    if (!deleting) return;
-    if (!deleteReason.trim()) {
-      setError("删除套餐必须填写原因。");
-      return;
-    }
-    if (
-      !window.confirm(
-        `确认永久删除套餐 ${deleting.planId}？已有订阅可能仍引用它。`,
-      )
-    )
-      return;
-    setStatus("删除中…");
-    setError(undefined);
-    try {
-      const query = new URLSearchParams({ reason: deleteReason.trim() });
-      const response = await fetch(
-        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(deleting.planId)}?${query}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        },
-      );
-      const payload = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(
-          (payload as { error?: string } | null)?.error ?? "删除失败",
-        );
-      setDeleting(undefined);
-      setDeleteReason("");
-      setStatus(undefined);
-      await plansSWR.mutate();
-    } catch (deleteError) {
-      setStatus(undefined);
-      setError(deleteError instanceof Error ? deleteError.message : "删除失败");
-    }
-  };
-
   return (
-    <div className="space-y-5 pb-8">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
-            Operations / plan catalog
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-heading)] sm:text-3xl">
-            套餐与订阅
-          </h1>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            管理 /prices 使用的套餐目录、权益和发布状态。
-          </p>
-        </div>
-        {canWrite ? (
-          <button
-            type="button"
-            onClick={() => openEditor()}
-            className="inline-flex w-fit items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)]"
-          >
-            <Plus className="h-4 w-4" />
-            新建套餐
-          </button>
-        ) : (
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[color:var(--color-surface-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)]">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            只读查看
-          </span>
-        )}
-      </div>
-      <OpsPlanNavigation />
-      <section className={`${surface} flex items-start gap-3 p-4`}>
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-warning)]" />
-        <div className="text-sm text-[var(--color-text-muted)]">
-          <p className="font-medium text-[var(--color-heading)]">发布边界</p>
-          <p className="mt-1">
-            此目录会影响公开价格页和购买入口。金额由 Stripe Price ID
-            对应，页面不直接伪造金额；发布、下架和删除均要求原因并写入审计。
-          </p>
-        </div>
-      </section>
-      <section className={`${surface} overflow-hidden`}>
-        <div className="flex items-center justify-between border-b border-[color:var(--color-surface-border)] px-4 py-4 sm:px-5">
-          <div>
-            <h2 className="text-base font-semibold text-[var(--color-heading)]">
-              套餐目录
-            </h2>
-            <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
-              {plans.length} 个套餐 · 包含已下架项
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => plansSWR.mutate()}
-            aria-label="刷新套餐目录"
-            className="rounded-lg p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-primary)]"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${plansSWR.isLoading ? "animate-spin" : ""}`}
-            />
-          </button>
-        </div>
-        {plansSWR.error ? (
-          <div className="p-8 text-center text-sm text-[var(--color-danger)]">
-            套餐目录加载失败：{plansSWR.error.message}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-[980px] w-full text-left text-sm">
-              <caption className="sr-only">套餐目录</caption>
-              <thead className="bg-[var(--color-surface-muted)] text-xs text-[var(--color-text-muted)]">
-                <tr>
-                  <th className="px-5 py-3 font-medium">套餐</th>
-                  <th className="px-3 py-3 font-medium">类型</th>
-                  <th className="px-3 py-3 font-medium">权益配额</th>
-                  <th className="px-3 py-3 font-medium">Stripe Price ID</th>
-                  <th className="px-3 py-3 font-medium">状态</th>
-                  <th className="px-5 py-3 text-right font-medium">操作</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[color:var(--color-surface-border)]">
-                {plansSWR.isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-5 py-12 text-center text-sm text-[var(--color-text-subtle)]"
-                    >
-                      目录加载中…
-                    </td>
-                  </tr>
-                ) : plans.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-5 py-12 text-center text-sm text-[var(--color-text-subtle)]"
-                    >
-                      暂无套餐，请先新建套餐。
-                    </td>
-                  </tr>
-                ) : (
-                  plans.map((plan) => (
-                    <tr
-                      key={plan.planId}
-                      className="hover:bg-[var(--color-surface-muted)]/60"
-                    >
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-[var(--color-heading)]">
-                          {plan.displayName || plan.planId}
-                        </p>
-                        <p className="mt-1 font-mono text-xs text-[var(--color-text-subtle)]">
-                          {plan.planId} · {plan.packageName || "default"}
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <span className="rounded-full border border-[color:var(--color-primary-border)] bg-[var(--color-primary-muted)] px-2 py-1 text-xs text-[var(--color-primary)]">
-                          {kindLabel(plan.kind)}
-                        </span>
-                      </td>
-                      <td className="px-3 py-4 text-[var(--color-text-muted)]">
-                        {formatBytes(plan.includedQuotaBytes)}
-                        {plan.trialDays ? (
-                          <span className="ml-2 text-xs text-[var(--color-text-subtle)]">
-                            试用 {plan.trialDays} 天
-                          </span>
-                        ) : null}
-                      </td>
-                      <td className="px-3 py-4 font-mono text-xs text-[var(--color-text-muted)]">
-                        {plan.stripePriceId || "未配置 · 待同步"}
-                      </td>
-                      <td className="px-3 py-4">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${plan.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                        >
-                          {plan.active ? "已发布" : "已下架"}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        {canWrite ? (
-                          <div className="inline-flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => openEditor(plan)}
-                              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-muted)]"
-                            >
-                              <Edit3 className="h-3.5 w-3.5" />
-                              编辑
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDeleting(plan);
-                                setDeleteReason("");
-                                setError(undefined);
-                              }}
-                              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--color-danger)] hover:bg-[var(--color-danger-muted)]"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              删除
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-[var(--color-text-subtle)]">
-                            无写权限
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-      {editing !== undefined ? (
-        <PlanEditor
-          form={form}
-          editing={editing}
-          status={status}
-          error={error}
-          onChange={updateForm}
-          onClose={() => setEditing(undefined)}
-          onSubmit={savePlan}
-        />
-      ) : null}
-      {deleting ? (
-        <DeleteDialog
-          plan={deleting}
-          reason={deleteReason}
-          status={status}
-          error={error}
-          onReasonChange={setDeleteReason}
-          onClose={() => setDeleting(undefined)}
-          onSubmit={deletePlan}
-        />
-      ) : null}
-      {status && !editing && !deleting ? (
-        <p
-          className="rounded-lg bg-[var(--color-success-muted)] px-3 py-2 text-sm text-[var(--color-success-foreground)]"
-          role="status"
+    <aside
+      className={`${panelClass} min-w-0 lg:sticky lg:top-4`}
+      aria-label={`编辑 ${family.name}`}
+    >
+      <header className="flex items-center justify-between border-b border-[color:var(--color-surface-border)] p-5">
+        <h2 className="text-xl font-semibold text-[var(--color-heading)]">
+          编辑 {family.name}
+        </h2>
+        <button
+          onClick={onClose}
+          aria-label="关闭编辑栏"
+          className="rounded p-1 text-[var(--color-text-subtle)]"
         >
-          {status}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function OpsPlanNavigation() {
-  return (
-    <nav
-      className="flex gap-1 overflow-x-auto rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] p-1"
-      aria-label="运营模块"
-    >
-      <Link
-        href="/panel/ops"
-        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-heading)]"
-      >
-        运营工作台 <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-      <Link
-        href="/panel/ops/accounts"
-        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-heading)]"
-      >
-        账号处置台
-      </Link>
-      <span className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[var(--color-surface)] px-3 py-2 text-sm font-medium text-[var(--color-primary)] shadow-sm">
-        <Package className="h-4 w-4" />
-        套餐与订阅
-      </span>
-      <Link
-        href="/panel/ops/billing/ledger"
-        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-heading)]"
-      >
-        账单与对账
-      </Link>
-      <Link
-        href="/panel/ops/audit"
-        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-heading)]"
-      >
-        审计与系统
-      </Link>
-    </nav>
-  );
-}
-
-function PlanEditor({
-  form,
-  editing,
-  status,
-  error,
-  onChange,
-  onClose,
-  onSubmit,
-}: {
-  form: PlanForm;
-  editing: BillingPlan | null;
-  status?: string;
-  error?: string;
-  onChange: <K extends keyof PlanForm>(key: K, value: PlanForm[K]) => void;
-  onClose: () => void;
-  onSubmit: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 shadow-xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="plan-editor-title"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2
-              id="plan-editor-title"
-              className="text-lg font-semibold text-[var(--color-heading)]"
-            >
-              {editing ? "编辑套餐" : "新建套餐"}
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              金额不在此编辑，保存后会影响公开价格目录。
-            </p>
+          <X size={19} />
+        </button>
+      </header>
+      <div className="space-y-5 p-5">
+        {family.variants.length > 1 && (
+          <div
+            className="flex rounded-lg bg-[var(--color-surface-muted)] p-1"
+            aria-label="套餐档位"
+          >
+            {family.variants.map((v, i) => (
+              <button
+                key={v.planId}
+                onClick={() => {
+                  setVariantIndex(i);
+                  setDraft(formFor(v));
+                  setError("");
+                }}
+                className={`flex-1 rounded-md px-3 py-2 text-sm ${i === variantIndex ? "bg-[var(--color-surface-elevated)] font-semibold text-[var(--color-primary)] shadow-sm" : "text-[var(--color-text-muted)]"}`}
+              >
+                {family.id === "free"
+                  ? `${quotaToGB(v.includedQuotaBytes)} GB`
+                  : v.priceUnit === "year"
+                    ? "年付"
+                    : "月付"}
+              </button>
+            ))}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="关闭"
-            className="rounded-lg p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Field
-            label="套餐 ID *"
-            value={form.planId}
-            disabled={Boolean(editing)}
-            onChange={(value) => onChange("planId", value)}
-            placeholder="PRO-MONTHLY"
-          />
-          <Field
-            label="显示名称 *"
-            value={form.displayName}
-            onChange={(value) => onChange("displayName", value)}
-            placeholder="Pro 月付"
-          />
-          <Field
-            label="套餐类型"
-            value={form.kind}
-            select
-            options={[
-              ["subscription", "订阅"],
-              ["trial", "试用"],
-              ["paygo_topup", "PAYG 充值"],
-            ]}
-            onChange={(value) => onChange("kind", value)}
-          />
-          <Field
-            label="内部包名"
-            value={form.packageName}
-            onChange={(value) => onChange("packageName", value)}
-            placeholder="pro"
-          />
-          <Field
-            label="Stripe Price ID"
-            value={form.stripePriceId}
-            onChange={(value) => onChange("stripePriceId", value)}
-            placeholder="price_...（可暂不配置）"
-          />
-          <Field
-            label="包含配额（字节）"
-            value={form.includedQuotaBytes}
-            onChange={(value) => onChange("includedQuotaBytes", value)}
-            placeholder="0"
-            type="number"
-          />
-          <Field
-            label="试用天数"
-            value={form.trialDays}
-            onChange={(value) => onChange("trialDays", value)}
-            placeholder="0"
-            type="number"
-          />
-          <Field
-            label="排序"
-            value={form.sortOrder}
-            onChange={(value) => onChange("sortOrder", value)}
-            placeholder="0"
-            type="number"
-          />
-        </div>
-        <label className="mt-4 flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(event) => onChange("active", event.target.checked)}
-            className="h-4 w-4 accent-[var(--color-primary)]"
-          />
-          发布到 /prices（取消勾选即下架）
-        </label>
-        <label className="mt-4 block text-sm font-medium text-[var(--color-text-muted)]">
-          操作原因 <span className="text-[var(--color-danger)]">*</span>
-          <textarea
-            value={form.reason}
-            onChange={(event) => onChange("reason", event.target.value)}
-            rows={3}
-            placeholder="填写工单号、业务背景或回滚原因"
-            className="mt-1 w-full resize-none rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[var(--color-primary)]"
-          />
-        </label>
-        {error ? (
-          <p
-            className="mt-3 rounded-lg bg-[var(--color-danger-muted)] px-3 py-2 text-sm text-[var(--color-danger-foreground)]"
-            role="alert"
-          >
+        )}
+        <fieldset
+          disabled={!canWrite || saving}
+          className="space-y-5 disabled:opacity-70"
+        >
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold text-[var(--color-heading)]">
+              基本信息
+            </h3>
+            <Field
+              label="套餐名称"
+              value={draft.name}
+              onChange={(v) => patch("name", v)}
+            />
+            <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
+              <span>状态</span>
+              <span className="rounded-full bg-slate-100 px-2 py-1 text-xs">
+                {existing?.active ? "已发布 · 只读" : "新版本草稿"}
+              </span>
+            </div>
+          </section>
+          {(family.id === "plus" || family.id === "pro") && (
+            <Section title="收费">
+              <Field
+                label={
+                  plan.priceUnit === "year"
+                    ? "年付价格（元 / 年）"
+                    : "月付价格（元 / 月）"
+                }
+                value={draft.amount}
+                type="number"
+                onChange={(v) => patch("amount", v)}
+              />
+              {family.id === "plus" && plan.priceUnit === "year" && (
+                <>
+                  <Field
+                    label="年付常规价格（元 / 年）"
+                    value={String(
+                      (draft.policy.regularAnnualAmount ?? 24000) / 100,
+                    )}
+                    type="number"
+                    onChange={(v) =>
+                      policy("regularAnnualAmount", Math.round(Number(v) * 100))
+                    }
+                  />
+                  <Field
+                    label="优惠截止日期"
+                    value={draft.policy.promotionEnds ?? "2026-12-31"}
+                    type="date"
+                    onChange={(v) => policy("promotionEnds", v)}
+                  />
+                  <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
+                    2027-01-01 起新订阅按常规价格，原订阅保留折扣。
+                  </p>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={draft.policy.grandfatherDiscount ?? true}
+                      onChange={(e) =>
+                        policy("grandfatherDiscount", e.target.checked)
+                      }
+                    />
+                    保留老用户折扣
+                  </label>
+                </>
+              )}
+            </Section>
+          )}
+          {family.id === "payg" ? (
+            <Section title="按量单价">
+              <Field
+                label="人民币（元 / GB）"
+                type="number"
+                value={String(draft.policy.cnyPerGB ?? 1)}
+                onChange={(v) => policy("cnyPerGB", Number(v))}
+              />
+              <Field
+                label="美元（GB / 美元）"
+                type="number"
+                value={String(draft.policy.usdTrafficGB ?? 7)}
+                onChange={(v) => policy("usdTrafficGB", Number(v))}
+              />
+              <p className="text-xs text-[var(--color-text-subtle)]">
+                双币种独立计费，不兑换汇率。
+              </p>
+            </Section>
+          ) : family.id === "beta" ? (
+            <Section title="有效期限">
+              <div className="grid grid-cols-2 gap-3">
+                <Field
+                  label="最短天数"
+                  type="number"
+                  value={String(draft.policy.minimumDays ?? 30)}
+                  onChange={(v) => policy("minimumDays", Number(v))}
+                />
+                <Field
+                  label="最长天数"
+                  type="number"
+                  value={String(draft.policy.maximumDays ?? 90)}
+                  onChange={(v) => policy("maximumDays", Number(v))}
+                />
+              </div>
+              <p className="text-sm text-[var(--color-text-muted)]">
+                不限流量 · 按账户设置有效期
+              </p>
+            </Section>
+          ) : (
+            <Section title={family.id === "gift" ? "赠送额度" : "高速流量"}>
+              <Field
+                min={family.id === "gift" ? 5 : 0}
+                max={family.id === "gift" ? 50 : undefined}
+                label={
+                  plan.priceUnit === "year"
+                    ? "年付高速流量（GB）"
+                    : "流量额度（GB）"
+                }
+                type="number"
+                value={draft.quotaGB}
+                onChange={(v) => patch("quotaGB", v)}
+              />
+              <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
+                {family.id === "free"
+                  ? "新注册默认 1 GB，可申请到 5 GB。"
+                  : family.id === "gift"
+                    ? "仅赠送，自然月到期，不支持退款。"
+                    : plan.priceUnit === "year"
+                      ? "年度额度按订阅年累计使用。"
+                      : "每月重置高速额度。"}
+              </p>
+              {family.id === "gift" && (
+                <div className="space-y-3">
+                  <Field
+                    label="创建份数"
+                    type="number"
+                    min={1}
+                    value={String(draft.policy.quantity ?? 1)}
+                    onChange={(v) => policy("quantity", Number(v))}
+                  />
+                  <p className="text-xs text-[var(--color-text-subtle)]">
+                    每份 5–50 GB · 本批总额度{" "}
+                    {Number(draft.quotaGB || 0) * (draft.policy.quantity ?? 1)}{" "}
+                    GB · 自然月到期
+                  </p>
+                  <p className="text-xs text-[var(--color-text-subtle)]">
+                    管理员与获授权运营分发；批次数量在库存服务确认后生效。
+                  </p>
+                </div>
+              )}
+              {family.id === "free" && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={draft.policy.registrationDefault ?? false}
+                    onChange={(e) =>
+                      policy("registrationDefault", e.target.checked)
+                    }
+                  />
+                  新注册默认档位
+                </label>
+              )}
+              {(family.id === "plus" || family.id === "pro") && (
+                <label className="block space-y-1.5 text-sm text-[var(--color-text-muted)]">
+                  <span>高速额度耗尽后</span>
+                  <select
+                    className={inputClass}
+                    value={draft.policy.fallback}
+                    onChange={(e) =>
+                      policy(
+                        "fallback",
+                        e.target.value as CatalogPolicy["fallback"],
+                      )
+                    }
+                  >
+                    <option value="vps_pool">VPS 流量池</option>
+                    <option value="pause">暂停访问</option>
+                  </select>
+                </label>
+              )}
+            </Section>
+          )}
+          <details className="border-t border-[color:var(--color-surface-border)] pt-3">
+            <summary className="cursor-pointer text-xs text-[var(--color-text-subtle)]">
+              更多设置（Stripe 映射等）
+            </summary>
+            <div className="mt-3 space-y-3">
+              <p className="break-all font-mono text-xs text-[var(--color-text-subtle)]">
+                {plan.planId}
+              </p>
+              <Field
+                label="Stripe Price ID"
+                value={draft.stripePriceId}
+                onChange={(v) => patch("stripePriceId", v)}
+              />
+              <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
+                新版本需使用匹配的新价格映射，旧订阅的映射保留。
+              </p>
+            </div>
+          </details>
+          <label className="block space-y-1.5 text-sm text-[var(--color-text-muted)]">
+            <span>操作原因</span>
+            <textarea
+              className={inputClass}
+              rows={2}
+              value={draft.reason}
+              onChange={(e) => patch("reason", e.target.value)}
+              placeholder="填写本次配置调整原因"
+            />
+          </label>
+        </fieldset>
+        {error && (
+          <p role="alert" className="text-sm text-[var(--color-danger)]">
             {error}
           </p>
-        ) : null}
-        {status ? (
-          <p
-            className="mt-3 flex items-center gap-2 rounded-lg bg-[var(--color-success-muted)] px-3 py-2 text-sm text-[var(--color-success-foreground)]"
-            role="status"
-          >
-            <Check className="h-4 w-4" />
-            {status}
-          </p>
-        ) : null}
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)]"
-          >
-            取消
-          </button>
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={Boolean(status)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {status === "保存中…" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : null}
-            {status === "保存中…" ? "保存中…" : "确认保存"}
-          </button>
-        </div>
-      </section>
-    </div>
+        )}
+      </div>
+      <footer className="flex justify-end gap-2 border-t border-[color:var(--color-surface-border)] p-4">
+        <button
+          onClick={onClose}
+          className="rounded-lg border border-[color:var(--color-surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)]"
+        >
+          取消
+        </button>
+        <button
+          disabled={!canWrite || saving || existing?.active}
+          onClick={() => void save()}
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          {saving && <Loader2 size={15} className="animate-spin" />}
+          保存当前档位草稿
+        </button>
+      </footer>
+    </aside>
   );
 }
-
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3 border-t border-[color:var(--color-surface-border)] pt-5">
+      <h3 className="text-sm font-semibold text-[var(--color-heading)]">
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
 function Field({
   label,
   value,
   onChange,
-  placeholder,
+  min = 0,
+  max,
   type = "text",
-  disabled = false,
-  select = false,
-  options = [],
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
   type?: string;
-  disabled?: boolean;
-  select?: boolean;
-  options?: string[][];
+  min?: number;
+  max?: number;
 }) {
-  const className =
-    "mt-1 w-full rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[var(--color-primary)] disabled:cursor-not-allowed disabled:bg-[var(--color-surface-muted)]";
   return (
-    <label className="block text-sm font-medium text-[var(--color-text-muted)]">
-      {label}
-      {select ? (
-        <select
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          disabled={disabled}
-          className={className}
-        >
-          {options.map(([option, labelText]) => (
-            <option key={option} value={option}>
-              {labelText}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          type={type}
-          disabled={disabled}
-          className={className}
-        />
-      )}
+    <label className="block space-y-1.5 text-sm text-[var(--color-text-muted)]">
+      <span>{label}</span>
+      <input
+        className={inputClass}
+        type={type}
+        min={type === "number" ? min : undefined}
+        max={type === "number" ? max : undefined}
+        step={type === "number" ? "any" : undefined}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </label>
-  );
-}
-
-function DeleteDialog({
-  plan,
-  reason,
-  status,
-  error,
-  onReasonChange,
-  onClose,
-  onSubmit,
-}: {
-  plan: BillingPlan;
-  reason: string;
-  status?: string;
-  error?: string;
-  onReasonChange: (value: string) => void;
-  onClose: () => void;
-  onSubmit: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4"
-      role="presentation"
-    >
-      <section
-        className="w-full max-w-lg rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 shadow-xl"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="delete-plan-title"
-      >
-        <div className="flex items-start justify-between">
-          <div>
-            <h2
-              id="delete-plan-title"
-              className="text-lg font-semibold text-[var(--color-heading)]"
-            >
-              删除套餐
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              {plan.planId} · {plan.displayName || "未命名"}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="关闭"
-            className="rounded-lg p-2 text-[var(--color-text-subtle)]"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="mt-4 rounded-lg bg-[var(--color-danger-muted)] p-3 text-sm text-[var(--color-danger-foreground)]">
-          <AlertTriangle className="mr-2 inline h-4 w-4" />
-          已有订阅可能引用此套餐，日常下架请优先编辑并取消发布。
-        </div>
-        <label className="mt-4 block text-sm font-medium text-[var(--color-text-muted)]">
-          删除原因 <span className="text-[var(--color-danger)]">*</span>
-          <textarea
-            value={reason}
-            onChange={(event) => onReasonChange(event.target.value)}
-            rows={3}
-            className="mt-1 w-full resize-none rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[var(--color-primary)]"
-          />
-        </label>
-        {error ? (
-          <p
-            className="mt-3 rounded-lg bg-[var(--color-danger-muted)] px-3 py-2 text-sm text-[var(--color-danger-foreground)]"
-            role="alert"
-          >
-            {error}
-          </p>
-        ) : null}
-        {status ? (
-          <p className="mt-3 text-sm text-[var(--color-text-muted)]">
-            {status}
-          </p>
-        ) : null}
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)]"
-          >
-            取消
-          </button>
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={Boolean(status)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-danger)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            <Trash2 className="h-4 w-4" />
-            确认删除
-          </button>
-        </div>
-      </section>
-    </div>
   );
 }
