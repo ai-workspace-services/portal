@@ -54,7 +54,11 @@ function isPrefixOf(prefix: string, pathname: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export default function MarketingBreadcrumbs() {
+export default function MarketingBreadcrumbs({
+  homeOnly = false,
+}: {
+  homeOnly?: boolean;
+}) {
   const pathname = usePathname() || "/";
   const { language } = useLanguage();
   const content = homeMarketingContent[language] ?? homeMarketingContent.zh;
@@ -116,7 +120,7 @@ export default function MarketingBreadcrumbs() {
   }, [content, locale, pathname]);
 
   // 首页只留图标锚点，子页整块换成面包屑——左上角始终只有一个「我在哪」的答案。
-  if (crumbs.length === 0) {
+  if (homeOnly || crumbs.length === 0) {
     return (
       <BoundaryLink
         href="/"

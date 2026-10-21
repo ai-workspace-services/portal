@@ -85,7 +85,11 @@ function NavLink({
   );
 }
 
-export default function MarketingNav() {
+export default function MarketingNav({
+  homeLinkOnly = false,
+}: {
+  homeLinkOnly?: boolean;
+}) {
   const { language } = useLanguage();
   const content = homeMarketingContent[language] ?? homeMarketingContent.zh;
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
@@ -154,7 +158,8 @@ export default function MarketingNav() {
     : accountLabel;
 
   const consoleHref = isAuthenticated
-    ? showRoleSelector && (activeConsole === "admin" || activeConsole === "operator")
+    ? showRoleSelector &&
+      (activeConsole === "admin" || activeConsole === "operator")
       ? "/panel/management"
       : "/panel"
     : "https://svc.plus/login?next=%2Fpanel";
@@ -192,7 +197,7 @@ export default function MarketingNav() {
     <header className="xds xds-mnav" ref={navRef}>
       <div className="xds-container-wide xds-mnav-inner">
         <div className="xds-mnav-wayfind">
-          <MarketingBreadcrumbs />
+          <MarketingBreadcrumbs homeOnly={homeLinkOnly} />
         </div>
 
         <nav className="xds-mnav-links xds-mnav-desktop">
@@ -359,10 +364,7 @@ export default function MarketingNav() {
             </>
           ) : (
             <>
-              <BoundaryLink
-                href="/login"
-                className="xds-btn xds-btn-ghost"
-              >
+              <BoundaryLink href="/login" className="xds-btn xds-btn-ghost">
                 {content.nav.login}
               </BoundaryLink>
               <BoundaryLink
