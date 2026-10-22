@@ -49,14 +49,24 @@ import {
   type RegionalPool,
   type RegionalPoolResourceGroup,
 } from "../../lib/regionalPools";
-import type {
-  AccountPolicy,
-  AccountUsageSummary,
+import {
+  summarizeUsageBuckets,
+  type AccountPolicy,
+  type AccountUsageSummary,
+  type UsageFreshnessState,
 } from "../../lib/fetchAccountUsage";
 
 const DASH = "—";
+const STALE_SYNC_DELAY_SECONDS = 300;
 // Region pills stay on one row up to this many; beyond it the panel uses a select.
 const REGION_PILL_LIMIT = 3;
+
+function formatUtcTimestamp(value?: string | null): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return `${d.toISOString().slice(0, 19).replace("T", " ")} UTC`;
+}
 
 function regionalResourceGroupLabel(group: RegionalPoolResourceGroup): string {
   const labels: Record<RegionalPoolResourceGroup, string> = {
@@ -632,10 +642,20 @@ export function QuotaCard({
   usage,
   policy,
   zh,
+  loading,
+  error,
+  lastBucketAt,
+  syncDelaySeconds,
+  freshnessState,
 }: {
   usage?: AccountUsageSummary;
   policy?: AccountPolicy | null;
   zh: boolean;
+  loading?: boolean;
+  error?: boolean | string | Error | null;
+  lastBucketAt?: string | null;
+  syncDelaySeconds?: number;
+  freshnessState?: UsageFreshnessState;
 }) {
   const percent = usage?.usagePercent;
   const assignedPlan =
@@ -651,6 +671,11 @@ export function QuotaCard({
   const isUnlimited = assignedPlan?.unlimited === true;
   const planMaxQuota = currentPlanMaxQuota(usage);
   const quotaExhausted = usage?.quotaExhausted === true;
+  const effectiveSyncDelay = syncDelaySeconds ?? usage?.syncDelaySeconds;
+  const effectiveFreshness = freshnessState ?? usage?.freshnessState;
+  const effectiveLastBucketAt = lastBucketAt ?? usage?.lastBucketAt;
+  const hasUsageError = Boolean(error) && !usage;
+  const isUsageLoading = !hasUsageError && Boolean(loading) && !usage;
   const accessPaused =
     usage?.networkAccessState === "paused" ||
     usage?.networkAccessState === "blocked";
@@ -704,9 +729,11 @@ export function QuotaCard({
             ) : null}
           </div>
           <span className="xds-t-caption xds-t-mono">
-            {isAssigned
-              ? `${bytesOrDash(usage?.usedBytes)} / ${isUnlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(planMaxQuota)}`
-              : `${zh ? "未分配" : "Unassigned"} · ${bytesOrDash(defaultPlan?.maxTrafficBytes)} ${zh ? "默认额度参考" : "default quota reference"}`}
+            {hasUsageError || isUsageLoading
+              ? DASH
+              : isAssigned
+                ? `${bytesOrDash(usage?.usedBytes)} / ${isUnlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(planMaxQuota)}`
+                : `${zh ? "未分配" : "Unassigned"} · ${bytesOrDash(defaultPlan?.maxTrafficBytes)} ${zh ? "默认额度参考" : "default quota reference"}`}
           </span>
         </div>
         <XdsMeter
@@ -773,7 +800,13 @@ export function QuotaCard({
           </span>
           {usage ? (
             <XdsBadge
-              tone={accessPaused || usage.arrears ? "danger" : "success"}
+              tone={
+                accessPaused || usage.arrears
+                  ? "danger"
+                  : effectiveFreshness === "stale"
+                    ? "warning"
+                    : "success"
+              }
             >
               {accessLabel}
             </XdsBadge>
@@ -786,9 +819,11 @@ export function QuotaCard({
             {zh ? "统计延迟" : "Sync delay"}
           </span>
           <span className="xds-t-mono xds-t-caption">
-            {typeof usage?.syncDelaySeconds === "number"
-              ? `~${usage.syncDelaySeconds} s`
-              : DASH}
+            {typeof effectiveSyncDelay === "number"
+              ? `~${effectiveSyncDelay} s`
+              : effectiveLastBucketAt
+                ? formatUtcTimestamp(effectiveLastBucketAt) ?? DASH
+                : DASH}
           </span>
         </div>
 
@@ -808,15 +843,83 @@ export function QuotaCard({
 
 export function UsageCard({
   breakdown,
+  buckets,
   sourceOfTruth,
   hasTraffic,
-  zh,
+  zh = true,
+  loading = false,
+  error = false,
+  lastBucketAt,
+  syncDelaySeconds,
+  freshnessState,
 }: {
-  breakdown: { last1Hour: number; last24Hours: number; monthToDate: number };
+  breakdown?: {
+    last1Hour: number;
+    last24Hours: number;
+    monthToDate: number;
+  } | null;
+  buckets?: { bucketStart: string; totalBytes: number }[];
   sourceOfTruth?: string;
-  hasTraffic: boolean;
-  zh: boolean;
+  hasTraffic?: boolean;
+  zh?: boolean;
+  loading?: boolean;
+  error?: boolean | string | Error | null;
+  lastBucketAt?: string | null;
+  syncDelaySeconds?: number;
+  freshnessState?: UsageFreshnessState;
 }) {
+  const resolvedBreakdown = useMemo(() => {
+    if (breakdown) return breakdown;
+    if (typeof summarizeUsageBuckets === "function") {
+      return summarizeUsageBuckets(buckets);
+    }
+    return { last1Hour: 0, last24Hours: 0, monthToDate: 0 };
+  }, [breakdown, buckets]);
+
+  const resolvedHasTraffic =
+    hasTraffic ??
+    resolvedBreakdown.last1Hour +
+      resolvedBreakdown.last24Hours +
+      resolvedBreakdown.monthToDate >
+      0;
+
+  const hasValidBuckets = Array.isArray(buckets) && buckets.length > 0;
+  const hasRecordedData = resolvedHasTraffic || hasValidBuckets;
+  const isErrorState = Boolean(error) && !hasRecordedData;
+  const isLoadingState = !isErrorState && Boolean(loading) && !hasRecordedData;
+  const showUnavailableDash = isErrorState || isLoadingState;
+
+  const isStale =
+    !isErrorState &&
+    !isLoadingState &&
+    (freshnessState === "stale" ||
+      (typeof syncDelaySeconds === "number" &&
+        Number.isFinite(syncDelaySeconds) &&
+        syncDelaySeconds > STALE_SYNC_DELAY_SECONDS));
+
+  const resolvedLastBucketAt = useMemo(() => {
+    if (lastBucketAt) return lastBucketAt;
+    if (!buckets || buckets.length === 0) return null;
+    let latestMs = -Infinity;
+    let latestIso: string | null = null;
+    for (const bucket of buckets) {
+      const ts = new Date(bucket.bucketStart).getTime();
+      if (!Number.isNaN(ts) && ts > latestMs) {
+        latestMs = ts;
+        latestIso = bucket.bucketStart;
+      }
+    }
+    return latestIso;
+  }, [buckets, lastBucketAt]);
+
+  const formattedLastBucketUtc = formatUtcTimestamp(resolvedLastBucketAt);
+  const customErrorDetail =
+    typeof error === "string" &&
+    error.trim().length > 0 &&
+    error !== "用量数据暂时无法加载，请稍后刷新重试"
+      ? error.trim()
+      : null;
+
   return (
     <XdsCard>
       <XdsCardHead
@@ -834,7 +937,9 @@ export function UsageCard({
               {zh ? "最近 1 小时" : "Last hour"}
             </div>
             <div className="xds-stat-value">
-              {formatBytes(breakdown.last1Hour)}
+              {showUnavailableDash
+                ? DASH
+                : formatBytes(resolvedBreakdown.last1Hour)}
             </div>
           </div>
           <div>
@@ -842,7 +947,9 @@ export function UsageCard({
               {zh ? "最近 24 小时" : "Last 24 hours"}
             </div>
             <div className="xds-stat-value">
-              {formatBytes(breakdown.last24Hours)}
+              {showUnavailableDash
+                ? DASH
+                : formatBytes(resolvedBreakdown.last24Hours)}
             </div>
           </div>
           <div>
@@ -850,13 +957,80 @@ export function UsageCard({
               {zh ? "本月合计" : "Month to date"}
             </div>
             <div className="xds-stat-value">
-              {formatBytes(breakdown.monthToDate)}
+              {showUnavailableDash
+                ? DASH
+                : formatBytes(resolvedBreakdown.monthToDate)}
             </div>
           </div>
         </div>
 
-        {!hasTraffic ? (
+        {isStale ? (
           <div
+            data-testid="usage-stale-notice"
+            role="status"
+            className="xds-t-caption"
+            style={{
+              marginTop: 16,
+              padding: "8px 12px",
+              borderRadius: "var(--r-md)",
+              border: "1px solid var(--border-subtle)",
+              background: "var(--bg-subtle, rgba(245, 158, 11, 0.08))",
+              color: "var(--text-secondary)",
+            }}
+          >
+            {zh ? "数据同步延迟" : "Data sync delayed"}
+            {typeof syncDelaySeconds === "number" &&
+            Number.isFinite(syncDelaySeconds)
+              ? zh
+                ? ` · 延迟约 ${Math.round(syncDelaySeconds)} s`
+                : ` · ~${Math.round(syncDelaySeconds)} s`
+              : ""}
+            {formattedLastBucketUtc
+              ? zh
+                ? ` · 最近同步 ${formattedLastBucketUtc}`
+                : ` · Last bucket ${formattedLastBucketUtc}`
+              : ""}
+          </div>
+        ) : null}
+
+        {isErrorState ? (
+          <div
+            data-testid="usage-query-error"
+            role="alert"
+            style={{
+              marginTop: 20,
+              borderTop: "1px solid var(--border-subtle)",
+              paddingTop: 16,
+            }}
+          >
+            <div className="xds-t-body-sm" style={{ fontWeight: 500 }}>
+              {zh
+                ? "用量数据暂时无法加载，请稍后刷新重试"
+                : "Unable to load usage data right now. Please refresh and try again."}
+            </div>
+            {customErrorDetail ? (
+              <p className="xds-t-caption" style={{ marginTop: 4 }}>
+                {customErrorDetail}
+              </p>
+            ) : null}
+          </div>
+        ) : isLoadingState ? (
+          <div
+            data-testid="usage-loading"
+            role="status"
+            style={{
+              marginTop: 20,
+              borderTop: "1px solid var(--border-subtle)",
+              paddingTop: 16,
+            }}
+          >
+            <span className="xds-t-caption">
+              {zh ? "正在加载用量数据…" : "Loading usage data…"}
+            </span>
+          </div>
+        ) : !resolvedHasTraffic ? (
+          <div
+            data-testid="usage-true-zero"
             style={{
               marginTop: 20,
               borderTop: "1px solid var(--border-subtle)",
@@ -869,8 +1043,8 @@ export function UsageCard({
               title={zh ? "还没有流量数据" : "No traffic yet"}
               description={
                 zh
-                  ? "完成第 3 步验证连接后，这里会显示按分钟聚合的用量。"
-                  : "Once step 3 is verified, per-minute usage shows up here."
+                  ? "还没有流量数据。连接节点产生流量后，这里会按小时、24 小时和当月累计显示。"
+                  : "No traffic data yet. Once you connect to a node and generate traffic, hourly, 24-hour, and monthly usage will appear here."
               }
               action={
                 <a

@@ -10,10 +10,12 @@ import PaymentMfaNotice, {
 import { formatBytes } from "@lib/format";
 import Card from "../components/Card";
 import {
+  currentUtcMonthStartIso,
   fetchAccountBillingSummary,
   fetchAccountPolicy,
   fetchAccountUsageBuckets,
   fetchAccountUsageSummary,
+  summarizeUsageBuckets,
 } from "../lib/fetchAccountUsage";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
@@ -67,27 +69,6 @@ function formatPeriodEnd(value?: string | null) {
   return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
 }
 
-// 分钟级桶只用来在客户端聚合成小时/天/月三档, accounts 没有单独的 rollup
-// 接口。一次月初到现在的查询就够覆盖三档, 没必要分别请求三次。
-function summarizeUsageBuckets(
-  buckets: { bucketStart: string; totalBytes: number }[] | undefined,
-) {
-  const now = Date.now();
-  const hourAgo = now - 60 * 60 * 1000;
-  const dayAgo = now - 24 * 60 * 60 * 1000;
-  let last1Hour = 0;
-  let last24Hours = 0;
-  let monthToDate = 0;
-  for (const bucket of buckets ?? []) {
-    const ts = new Date(bucket.bucketStart).getTime();
-    if (Number.isNaN(ts)) continue;
-    monthToDate += bucket.totalBytes;
-    if (ts >= dayAgo) last24Hours += bucket.totalBytes;
-    if (ts >= hourAgo) last1Hour += bucket.totalBytes;
-  }
-  return { last1Hour, last24Hours, monthToDate };
-}
-
 type SubscriptionPanelProps = {
   showPaymentMfaNotice?: boolean;
 };
@@ -111,20 +92,31 @@ export default function SubscriptionPanel({
     fetchAccountBillingSummary,
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
-  const monthStart = useMemo(() => {
-    const d = new Date();
-    d.setDate(1);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
-  const { data: usageBuckets } = useSWR(
-    ["account-usage-buckets", monthStart.toISOString()],
-    () => fetchAccountUsageBuckets(monthStart),
+  const monthStartIso = useMemo(() => currentUtcMonthStartIso(), []);
+  const {
+    data: usageBuckets,
+    error: usageBucketsError,
+    isLoading: usageBucketsLoading,
+  } = useSWR(["account-usage-buckets", monthStartIso], () =>
+    fetchAccountUsageBuckets(monthStartIso),
   );
   const usageBreakdown = useMemo(
     () => summarizeUsageBuckets(usageBuckets?.buckets),
     [usageBuckets?.buckets],
   );
+  const hasBucketsData =
+    Array.isArray(usageBuckets?.buckets) && usageBuckets.buckets.length > 0;
+  const showBucketsDash =
+    !hasBucketsData && Boolean(usageBucketsError || usageBucketsLoading);
+  const isUsageStale =
+    !showBucketsDash &&
+    (usageBuckets?.freshnessState === "stale" ||
+      usageSummary?.freshnessState === "stale" ||
+      (typeof (
+        usageBuckets?.syncDelaySeconds ?? usageSummary?.syncDelaySeconds
+      ) === "number" &&
+        (usageBuckets?.syncDelaySeconds ?? usageSummary?.syncDelaySeconds ?? 0) >
+          300));
   const [activeTab, setActiveTab] = useState<"overview" | "detail">("overview");
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -268,7 +260,9 @@ export default function SubscriptionPanel({
                     {copy.last1Hour}
                   </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-[var(--color-heading)]">
-                    {formatBytes(usageBreakdown.last1Hour)}
+                    {showBucketsDash
+                      ? "—"
+                      : formatBytes(usageBreakdown.last1Hour)}
                   </dd>
                 </div>
                 <div>
@@ -276,7 +270,9 @@ export default function SubscriptionPanel({
                     {copy.last24Hours}
                   </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-[var(--color-heading)]">
-                    {formatBytes(usageBreakdown.last24Hours)}
+                    {showBucketsDash
+                      ? "—"
+                      : formatBytes(usageBreakdown.last24Hours)}
                   </dd>
                 </div>
                 <div>
@@ -284,10 +280,29 @@ export default function SubscriptionPanel({
                     {copy.monthToDate}
                   </dt>
                   <dd className="mt-0.5 text-sm font-semibold text-[var(--color-heading)]">
-                    {formatBytes(usageBreakdown.monthToDate)}
+                    {showBucketsDash
+                      ? "—"
+                      : formatBytes(usageBreakdown.monthToDate)}
                   </dd>
                 </div>
               </dl>
+              {usageBucketsError && !hasBucketsData ? (
+                <p
+                  data-testid="usage-query-error"
+                  className="mt-2 text-xs text-amber-600"
+                >
+                  {language === "en"
+                    ? "Unable to load usage buckets right now. Please refresh and try again."
+                    : "用量数据暂时无法加载，请稍后刷新重试"}
+                </p>
+              ) : isUsageStale ? (
+                <p
+                  data-testid="usage-stale-notice"
+                  className="mt-2 text-xs text-[var(--color-text-subtle)]"
+                >
+                  {language === "en" ? "Data sync delayed" : "数据同步延迟"}
+                </p>
+              ) : null}
             </div>
             <div className="rounded-xl border border-[color:var(--color-surface-border)] bg-[color:var(--color-surface)] p-4 shadow-sm">
               <p className="text-xs uppercase tracking-wide text-[var(--color-primary)]">

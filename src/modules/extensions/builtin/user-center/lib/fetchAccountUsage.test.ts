@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  currentUtcMonthStartIso,
   fetchAccountBillingSummary,
   fetchAccountPolicy,
   fetchAccountUsageSummary,
+  summarizeUsageBuckets,
 } from "./fetchAccountUsage";
 
 describe("fetchAccountUsage", () => {
@@ -146,6 +148,27 @@ describe("fetchAccountUsage", () => {
           balanceAfter: 87.5,
         },
       ],
+    });
+  });
+
+  it("computes UTC month start and summarizes buckets within UTC windows", () => {
+    const now = new Date("2026-10-21T15:30:00.000Z");
+    expect(currentUtcMonthStartIso(now)).toBe("2026-10-01T00:00:00.000Z");
+
+    const summary = summarizeUsageBuckets(
+      [
+        { bucketStart: "2026-09-30T23:59:00.000Z", totalBytes: 1000 },
+        { bucketStart: "2026-10-01T00:00:00.000Z", totalBytes: 400 },
+        { bucketStart: "2026-10-20T15:30:00.000Z", totalBytes: 200 },
+        { bucketStart: "2026-10-21T14:30:00.000Z", totalBytes: 100 },
+        { bucketStart: "2026-10-21T15:31:00.000Z", totalBytes: 900 },
+      ],
+      now,
+    );
+    expect(summary).toEqual({
+      last1Hour: 100,
+      last24Hours: 300,
+      monthToDate: 700,
     });
   });
 });

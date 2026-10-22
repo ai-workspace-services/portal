@@ -76,11 +76,17 @@ vi.mock("@components/billing/stripe-client", () => ({
   openStripePortal: vi.fn(),
 }));
 
-vi.mock("../../lib/fetchAccountUsage", () => ({
-  fetchAccountUsageSummary: vi.fn(),
-  fetchAccountBillingSummary: vi.fn(),
-  fetchAccountPolicy: vi.fn(),
-}));
+vi.mock("../../lib/fetchAccountUsage", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../lib/fetchAccountUsage")>();
+  return {
+    ...actual,
+    fetchAccountUsageSummary: vi.fn(),
+    fetchAccountBillingSummary: vi.fn(),
+    fetchAccountPolicy: vi.fn(),
+    fetchAccountUsageBuckets: vi.fn(),
+  };
+});
 
 describe("SubscriptionPanel", () => {
   it("renders accounts-backed source-of-truth usage metadata", () => {
