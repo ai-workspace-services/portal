@@ -5,7 +5,7 @@ import useSWR from "swr";
 
 import { openStripePortal } from "@components/billing/stripe-client";
 import PaymentMfaNotice, {
-  usePaymentMfaRequired,
+  useMfaMissing,
 } from "@components/billing/PaymentMfaNotice";
 import { formatBytes } from "@lib/format";
 import Card from "../components/Card";
@@ -96,7 +96,7 @@ export default function SubscriptionPanel({
   showPaymentMfaNotice = true,
 }: SubscriptionPanelProps) {
   const { language } = useLanguage();
-  const requiresMfa = usePaymentMfaRequired();
+  const requiresMfa = useMfaMissing();
   const copy = translations[language].userCenter.account.subscription;
   const { data, isLoading, mutate } = useSWR<SubscriptionResponse>(
     "/api/auth/subscriptions",
@@ -184,10 +184,6 @@ export default function SubscriptionPanel({
         <button
           type="button"
           onClick={async () => {
-            if (requiresMfa) {
-              setError("请先绑定 MFA，才能管理账单。");
-              return;
-            }
             setPortalLoading(true);
             setError(null);
             try {
@@ -200,13 +196,9 @@ export default function SubscriptionPanel({
             }
           }}
           className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
-          disabled={requiresMfa || portalLoading}
+          disabled={portalLoading}
         >
-          {portalLoading
-            ? copy.openingBilling
-            : requiresMfa
-              ? "绑定 MFA 后可管理账单"
-              : copy.manageBilling}
+          {portalLoading ? copy.openingBilling : copy.manageBilling}
         </button>
       </div>
 
@@ -563,9 +555,9 @@ export default function SubscriptionPanel({
                           ? copy.cancelledAction
                           : requiresMfa
                             ? "绑定 MFA 后可变更"
-                          : submitting === record.externalId
-                            ? copy.processing
-                            : copy.stop}
+                            : submitting === record.externalId
+                              ? copy.processing
+                              : copy.stop}
                     </button>
                   </div>
                 </div>

@@ -264,6 +264,15 @@ async function generateTeamAgentEnrollmentsContent() {
 }
 
 async function main() {
+  const securityLocales = await Promise.all((["zh", "en"] as const).map(async locale => {
+    const value = JSON.parse(await fs.readFile(path.join(CONTENT_ROOT, "account", "security", `${locale}.json`), "utf8")) as Record<string, string>;
+    if (Object.values(value).some(text => typeof text !== "string" || !text.trim()) || !value.paymentRisk || !value.authorize || !value.reviewDescription) throw new Error("Invalid account security content");
+    return value;
+  }));
+  if (Object.keys(securityLocales[0]).sort().join() !== Object.keys(securityLocales[1]).sort().join()) throw new Error("Account security locales must have identical keys");
+  await fs.mkdir(OUTPUT_ROOT, { recursive: true });
+  await fs.writeFile(path.join(OUTPUT_ROOT, "account-security.json"), JSON.stringify({ zh: securityLocales[0], en: securityLocales[1] }, null, 2) + "\n");
+  if (process.argv.includes("--account=security")) return;
   await generateTeamAgentEnrollmentsContent();
   if (process.argv.includes("--account=team-agent-enrollments")) return;
   if (process.argv.includes("--account=billing-policy")) { await generateBillingPolicyContent(); return; }

@@ -146,7 +146,7 @@ vi.mock("@i18n/LanguageProvider", () => ({
 }));
 vi.mock("swr", () => ({ useSWRConfig: () => ({ mutate }) }));
 vi.mock("@components/billing/PaymentMfaNotice", () => ({
-  usePaymentMfaRequired: () => false,
+  useMfaMissing: () => true,
 }));
 vi.mock("@components/billing/CheckoutStatusBanner", () => ({
   default: () => null,

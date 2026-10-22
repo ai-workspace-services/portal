@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { accountSecurityCopy } from "@/lib/account-security";
 import Image from "next/image";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import {
@@ -124,8 +125,7 @@ export function OnboardingProgress({
   onSetupMfa: () => void;
   connectionContent?: ReactNode;
 }) {
-  const step1Done =
-    state.emailVerified && state.mfaEnabled && !state.mfaPending;
+  const step1Done = state.emailVerified;
   const step2Done = state.credentialsReady;
   const step3Done = state.connectionVerified;
   const doneCount = [step1Done, step2Done, step3Done].filter(Boolean).length;
@@ -136,9 +136,7 @@ export function OnboardingProgress({
     {
       done: step1Done,
       title: zh ? "完善账户安全" : "Secure the account",
-      desc: zh
-        ? "验证邮箱并绑定多因素认证，保护登录和计费操作。"
-        : "Verify email and bind MFA to protect sign-in and billing actions.",
+      desc: accountSecurityCopy(zh ? "zh" : "en").securityStep,
       checks: [
         {
           ok: state.emailVerified,
@@ -192,13 +190,7 @@ export function OnboardingProgress({
             {zh ? "账户设置进度" : "Account setup progress"}
           </div>
           <p className="xds-t-caption" style={{ marginTop: 3 }}>
-            {doneCount >= 3
-              ? zh
-                ? "全部完成，计费与订阅操作已解锁"
-                : "All done — billing and subscription actions unlocked"
-              : zh
-                ? `还差 ${3 - doneCount} 步即可解锁计费与订阅操作`
-                : `${3 - doneCount} step(s) left to unlock billing and subscription actions`}
+            {accountSecurityCopy(zh ? "zh" : "en").setupProgress}
           </p>
         </div>
         <div className="xds-prog">

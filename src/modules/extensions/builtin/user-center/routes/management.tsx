@@ -26,6 +26,7 @@ import UserGroupManagement, {
 import HomepageVideoSettingsPanel from "../management/components/HomepageVideoSettingsPanel";
 import { EmailBlacklist } from "../management/components/EmailBlacklist";
 import UserManagementWorkspace from "../management/components/UserManagementWorkspace";
+import MfaRecoveryReviews from "@/components/auth/MfaRecoveryReviews";
 import { resolveAccess } from "@lib/accessControl";
 import type { HomepageVideoSettingsResponse } from "@/lib/home/homepageVideo";
 import { useUserStore } from "@lib/userStore";
@@ -679,6 +680,7 @@ export default function UserCenterManagementRoute() {
 
       {activeTab === "users" ? (
         <>
+          <MfaRecoveryReviews />
           <div className="border-b border-[color:var(--color-surface-border)] px-4 py-4 sm:px-5">
             <OverviewCards
               overview={metricsSWR.data?.overview}

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import BoundaryLink from "@/components/common/BoundaryLink";
+import MfaRecoveryForm from "@/components/auth/MfaRecoveryForm";
 
 import {
   AUTH_INPUT_CLASS,
@@ -360,6 +361,7 @@ export default function AccountRecoveryContent() {
           </div>
         </div>
       )}
+      <MfaRecoveryForm />
     </AuthLayout>
   );
 }
