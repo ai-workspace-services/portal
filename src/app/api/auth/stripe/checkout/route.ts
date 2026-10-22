@@ -12,6 +12,18 @@ export async function POST(request: NextRequest) {
   }
 
   const input = await request.json().catch(() => ({}));
+  const mode =
+    input?.mode === "payment" || input?.mode === "payg"
+      ? "payment"
+      : input?.mode === "subscription"
+        ? "subscription"
+        : null;
+  if (!mode) {
+    return NextResponse.json(
+      { error: "invalid_checkout_mode" },
+      { status: 400 },
+    );
+  }
   // Keep the BFF boundary explicit: the browser may select a catalog plan and
   // its public Price ID, but can never forward credentials or arbitrary Stripe
   // parameters to Accounts.
@@ -25,7 +37,7 @@ export async function POST(request: NextRequest) {
     planId: typeof input?.planId === "string" ? input.planId : "",
     stripePriceId:
       typeof input?.stripePriceId === "string" ? input.stripePriceId : "",
-    mode: input?.mode === "payment" ? "payment" : "subscription",
+    mode,
     productSlug:
       typeof input?.productSlug === "string" ? input.productSlug : "",
     sourcePath:
