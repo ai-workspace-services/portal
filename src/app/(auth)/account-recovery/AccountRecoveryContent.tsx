@@ -40,15 +40,6 @@ export default function AccountRecoveryContent() {
     return () => window.clearTimeout(timer);
   }, [resendSeconds]);
 
-  useEffect(() => {
-    if (!isRecovered) return;
-    const timer = window.setTimeout(
-      () => window.location.assign("/login"),
-      900,
-    );
-    return () => window.clearTimeout(timer);
-  }, [isRecovered]);
-
   const copy = zh
     ? {
         badge: "账号恢复",
