@@ -31,27 +31,27 @@
       "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
     },
     "hero": {
-      "badge": "INTELLIGENT RUNTIME · PERSISTENT DASHBOARD",
+      "badge": "INTELLIGENT RUNTIME · AGENTIC OS",
       "title": "AI Workspace",
       "headline": [
         "智能工作空间运行时，",
-        "全景可观测与任务交付。"
+        "打通从想法到交付。"
       ],
       "subtitle": "立即进入你的智能工作空间，开始对话、任务与交付",
-      "description": "AI Workspace 是面向下一代自主智能体研发的执行运行域与控制中枢。提供任务流与长期记忆持久化看板（TaskThreads、Token 遥测、活动热力图）、QMD 共享记忆检索及统一模型网关。",
+      "description": "AI Workspace 是面向下一代自主智能体研发的执行运行域与控制中枢。提供多智能体任务拆解调度、QMD 共享记忆检索、统一模型网关及长程任务持久化，支持本地单机或云端容器无缝部署。",
       "cta": {
         "label": "立即进入工作空间",
         "href": "/panel"
       },
       "secondaryCta": {
-        "label": "配合 XWorkmate 客户端使用",
+        "label": "体验 XWorkmate 客户端",
         "href": "/products/xworkmate"
       },
       "downloadUrl": "/products/xworkmate",
       "supportedPlatforms": "Mac · Linux 单机独立运行 · Home-Lab · GKE / Cloud Run 云端容器托管",
-      "image": "/marketing/ai-workspace/hero-dashboard.png",
-      "imageAlt": "AI Workspace 任务流与长期记忆持久化看板：TaskThreads 监控、Token 遥测与活动热力图",
-      "imageCaption": "AI Workspace 数据大盘 · 任务流监控、Token 消耗遥测与活动热力图"
+      "image": "/marketing/ai-workspace/hero-workspace.png",
+      "imageAlt": "AI Workspace 智能工作空间全景展示",
+      "imageCaption": "AI Workspace 控制中枢 · 任务编排、模型调度与长期记忆检索"
     },
     "services": {
       "title": "无缝兼容主流云端大模型与开源本地运行时",
@@ -64,41 +64,41 @@
       ]
     },
     "wizard": {
-      "title": "初始化。挂载。交付。",
+      "title": "创建。挂载。交付。",
       "description": "简单三步，开启高生产力 AI 智能工作空间。",
       "steps": [
         {
           "step": 1,
-          "title": "初始化工作空间",
-          "description": "开箱即用，秒级启动本地独立运行域或云端容器托管实例。",
+          "title": "创建工作空间",
+          "description": "开箱即用，秒级初始化本地独立环境或云端托管实例。",
           "link": "/panel"
         },
         {
           "step": 2,
-          "title": "挂载 QMD 长期记忆",
+          "title": "挂载项目与记忆",
           "description": "一键关联代码仓库，接入 QMD MCP 毫秒级共享向量记忆库。",
           "link": "/panel"
         },
         {
           "step": 3,
-          "title": "全景观测与任务交付",
-          "description": "在任务大盘中实时监控 TaskThreads 状态、Token 消耗与执行成果。",
+          "title": "调度多智能体交付",
+          "description": "多 Agent 协同编写、审查与测试，自动生成结构化产物。",
           "link": "/panel"
         }
       ]
     },
     "diagnostics": {
-      "eyebrow": "PERSISTENT MEMORY & DASHBOARD",
+      "eyebrow": "EXECUTION DOMAIN & CONTROL PLANE",
       "title": [
-        "任务流与长期记忆持久化，",
-        "每一个执行节点皆可溯。"
+        "执行与控制解耦，",
+        "长程任务稳健持久化。"
       ],
-      "description": "解耦任务编排、模型网关与共享记忆层，提供生产级可靠性、数据高安全度与全链路可观测指标。",
+      "description": "解耦任务编排、模型网关与共享记忆层，提供生产级可靠性、数据高安全度与多租户隔离能力。",
       "features": [
-        "TaskThreads 任务流追踪：全生命周期管理长程任务，异步状态与成果实时同步",
-        "Token 遥测与活跃热力图：精确记录模型调用成本、负荷趋势与开发节律",
-        "QMD MCP 共享长期记忆：毫秒级多 Agent 向量检索，跨会话上下文不割裂",
-        "客户端无缝挂载关联：XWorkmate 客户端作为交互前端，一键无缝挂载并连接本地或云端 Workspace"
+        "DS Bot + DSH 角色调度：按任务启动轻量 worker 子进程，管理后台运行与人机介入状态",
+        "QMD MCP 共享记忆：为所有执行器提供毫秒级 SQLite/PostgreSQL 向量与上下文检索",
+        "AI Aggregator 统一网关：统一鉴权、额度管理、智能轮转与多通道故障容灾",
+        "XConnect 跨端互联：与 XWorkmate 客户端低延迟联动，支持 WebRTC 远程人工接管"
       ],
       "image": "/marketing/ai-workspace/architecture-v2.png",
       "imageAlt": "AI Workspace 总体分层架构图 (目标态 v2.1)",
@@ -106,16 +106,16 @@
       "privacyNote": "代码资产与记忆索引完全属于开发者，本地运行模式数据严格不出域。"
     },
     "guide": {
-      "eyebrow": "FRONTEND CLIENT INTEGRATION",
-      "title": "关联 XWorkmate 客户端，享受桌面级协同交互。",
-      "description": "XWorkmate 客户端作为交互前端，一键无缝挂载并连接本地或云端的 AI Workspace 运行时，为开发者提供原生桌面级多角色智能体协同体验。",
+      "eyebrow": "AUTOMATED WORKFLOW",
+      "title": "自动化生产流水线，连接代码库与云原生算力。",
+      "description": "通过标准 stdio worker 协议无缝衔接各类 CLI 工具（Codex CLI、Claude Code CLI 等），长程研发成果结构化落盘并支持实时比对与热重载。",
       "cta": {
-        "label": "查看 XWorkmate 客户端",
-        "href": "/products/xworkmate"
+        "label": "查看架构指南",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      "note": "AI Workspace 既可作为独立后端服务运行，也可深度配合 XWorkmate 客户端使用。",
-      "image": "/marketing/xworkmate/roles-workflow.png",
-      "imageAlt": "XWorkmate 客户端交互界面与多智能体角色切换面板"
+      "note": "支持搭配 XWorkmate 客户端获得全功能桌面协同体验。",
+      "image": "/marketing/ai-workspace/agent-flow.png",
+      "imageAlt": "AI Workspace 智能工作流运转图"
     },
     "source": {
       "eyebrow": "OPEN SOURCE & LAB",
@@ -137,8 +137,8 @@
     },
     "sharing": {
       "title": "AI Workspace — 立即进入你的智能工作空间，开始对话、任务与交付",
-      "description": "面向自主智能体研发的执行运行域与控制中枢。提供任务流与长期记忆持久化看板（TaskThreads、Token 遥测、活动热力图）及 QMD 共享记忆。",
-      "image": "/marketing/ai-workspace/hero-dashboard.png"
+      "description": "面向下一代自主智能体研发的执行运行域与控制中枢。提供多智能体任务拆解调度、QMD 共享记忆检索与统一模型网关。",
+      "image": "/marketing/ai-workspace/hero-workspace.png"
     },
     "team": {
       "title": "团队与私有化部署",
@@ -209,27 +209,27 @@
       "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
     },
     "hero": {
-      "badge": "INTELLIGENT RUNTIME · PERSISTENT DASHBOARD",
+      "badge": "INTELLIGENT RUNTIME · AGENTIC OS",
       "title": "AI Workspace",
       "headline": [
         "Intelligent Workspace Runtime,",
-        "Full Telemetry & Delivery."
+        "From Idea to Delivery."
       ],
       "subtitle": "Enter your intelligent workspace instantly — start conversations, execute tasks, and deliver results",
-      "description": "AI Workspace is the execution runtime and control plane for autonomous agents. Featuring persistent task streaming and memory dashboards (TaskThreads, token telemetry, activity heatmaps), QMD shared memory, and unified model gateways.",
+      "description": "AI Workspace is the execution runtime and control plane for autonomous agents. Delivering multi-agent role scheduling, QMD shared vector memory, unified model gateways, and durable task persistence across local machines and cloud clusters.",
       "cta": {
         "label": "Enter Workspace Now",
         "href": "/panel"
       },
       "secondaryCta": {
-        "label": "Pair with XWorkmate Client",
+        "label": "Explore XWorkmate Client",
         "href": "/products/xworkmate"
       },
       "downloadUrl": "/products/xworkmate",
       "supportedPlatforms": "Mac · Linux Standalone · Home-Lab · GKE / Cloud Run Managed Containers",
-      "image": "/marketing/ai-workspace/hero-dashboard.png",
-      "imageAlt": "AI Workspace Dashboard: TaskThreads monitoring, token telemetry, and activity heatmaps",
-      "imageCaption": "AI Workspace Dashboard · Real-time TaskThreads, token consumption telemetry, and activity trends"
+      "image": "/marketing/ai-workspace/hero-workspace.png",
+      "imageAlt": "AI Workspace Overview: Unified Agentic Workflow & Telemetry",
+      "imageCaption": "AI Workspace Control Hub · Multi-agent orchestration, model gateway, and long-term memory"
     },
     "services": {
       "title": "Native Interoperability with Cloud Foundation Models and Local Inference Runtimes",
@@ -242,41 +242,41 @@
       ]
     },
     "wizard": {
-      "title": "Initialize. Mount. Deliver.",
+      "title": "Create. Mount. Deliver.",
       "description": "Three simple steps to unlock a high-productivity AI workspace.",
       "steps": [
         {
           "step": 1,
-          "title": "Initialize Workspace",
+          "title": "Create Workspace",
           "description": "Instant setup for local isolated environments or cloud-managed instances.",
           "link": "/panel"
         },
         {
           "step": 2,
-          "title": "Mount QMD Memory",
+          "title": "Mount Project & Memory",
           "description": "Seamlessly link codebases with sub-millisecond QMD MCP vector memory.",
           "link": "/panel"
         },
         {
           "step": 3,
-          "title": "Telemetry & Delivery",
-          "description": "Monitor TaskThreads status, token consumption, and ship verified assets in real time.",
+          "title": "Orchestrate Delivery",
+          "description": "Collaborate with multi-agent squads to write, review, test, and ship verified assets.",
           "link": "/panel"
         }
       ]
     },
     "diagnostics": {
-      "eyebrow": "PERSISTENT MEMORY & DASHBOARD",
+      "eyebrow": "EXECUTION DOMAIN & CONTROL PLANE",
       "title": [
-        "TaskThreads & Persistent Memory,",
-        "Traceable Long-Horizon Execution."
+        "Decoupled Execution & Control,",
+        "Durable Long-Horizon Tasks."
       ],
-      "description": "Decouples task orchestration, model gateway, and shared memory layers to ensure production reliability, complete data sovereignty, and full-stack observability.",
+      "description": "Decouples task orchestration, model gateway, and shared memory layers to ensure production reliability, complete data sovereignty, and multi-tenant isolation.",
       "features": [
-        "TaskThreads Lifecycle Management: Asynchronous long-running task execution with real-time state synchronization",
-        "Token Telemetry & Activity Heatmaps: Granular visibility into model costs, workloads, and developer cadence",
-        "QMD MCP Shared Long-term Memory: Sub-millisecond vector retrieval across multi-agent sessions",
-        "Seamless Client Association: XWorkmate client functions as the frontend UI, connecting to local or cloud Workspaces with one click"
+        "DS Bot + DSH Role Scheduling: Spawns lightweight stdio workers, handling background runs and human-in-the-loop gates",
+        "QMD MCP Shared Memory: Sub-millisecond SQLite/PostgreSQL vector and context search for all agent executors",
+        "AI Aggregator Gateway: Unified authentication, quota management, and multi-channel failover routing",
+        "XConnect Mesh: Low-latency event streaming to XWorkmate clients with WebRTC remote interactive takeover"
       ],
       "image": "/marketing/ai-workspace/architecture-v2.png",
       "imageAlt": "AI Workspace Layered Architecture (Target State v2.1)",
@@ -284,16 +284,16 @@
       "privacyNote": "Your code and memory indices remain strictly under your control. In local mode, zero data leaves your machine."
     },
     "guide": {
-      "eyebrow": "FRONTEND CLIENT INTEGRATION",
-      "title": "Connect XWorkmate Client for Desktop Collaboration.",
-      "description": "XWorkmate client serves as the interactive frontend, seamlessly connecting to your local or cloud AI Workspace runtime to provide native multi-agent collaboration.",
+      "eyebrow": "AUTOMATED WORKFLOW",
+      "title": "Automated Pipelines Connecting Code Repos to Cloud-Native Compute.",
+      "description": "Interfaces with standard CLI engines (Codex CLI, Claude Code CLI, etc.) via stdio worker contracts. Verified deliverables land directly on disk with live diffing and hot reload.",
       "cta": {
-        "label": "Explore XWorkmate Client",
-        "href": "/products/xworkmate"
+        "label": "Read Architecture Guide",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      "note": "AI Workspace functions both as a standalone backend runtime and as the powerhouse behind XWorkmate client.",
-      "image": "/marketing/xworkmate/roles-workflow.png",
-      "imageAlt": "XWorkmate Client Interaction & Role Selector Showcase"
+      "note": "Pair seamlessly with the XWorkmate client for the complete desktop workflow experience.",
+      "image": "/marketing/ai-workspace/agent-flow.png",
+      "imageAlt": "AI Workspace Automated Workflow Showcase"
     },
     "source": {
       "eyebrow": "OPEN SOURCE & LAB",
@@ -315,8 +315,8 @@
     },
     "sharing": {
       "title": "AI Workspace — Enter Your Intelligent Workspace Instantly",
-      "description": "Execution runtime and control plane for autonomous agents. Featuring TaskThreads, token telemetry, activity heatmaps, and QMD shared memory.",
-      "image": "/marketing/ai-workspace/hero-dashboard.png"
+      "description": "Execution runtime and control plane for autonomous agents. Featuring multi-agent scheduling, QMD shared memory, and unified model gateways.",
+      "image": "/marketing/ai-workspace/hero-workspace.png"
     },
     "team": {
       "title": "Enterprise & Dedicated Deployments",
