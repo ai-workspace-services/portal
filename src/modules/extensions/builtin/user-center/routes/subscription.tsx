@@ -62,6 +62,8 @@ import {
   fetchAccountUsageSummary,
 } from "../lib/fetchAccountUsage";
 
+import { accountSyncPresentation } from "../lib/accountSyncPresentation";
+
 const DASH = "—";
 
 type SubscriptionRecord = {
@@ -133,13 +135,14 @@ export default function UserCenterSubscriptionRoute() {
   const { data: usageSummary } = useSWR(
     "account-usage-summary",
     fetchAccountUsageSummary,
-    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
+    { refreshInterval: 60_000, revalidateOnFocus: true },
   );
   const { data: billingSummary } = useSWR(
     "account-billing-summary",
     fetchAccountBillingSummary,
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
+  const sync = accountSyncPresentation(usageSummary, accountPolicy, zh);
 
   const records = useMemo(
     () => data?.subscriptions ?? [],
@@ -457,45 +460,13 @@ export default function UserCenterSubscriptionRoute() {
                     ? `¥${usageSummary.currentBalance.toFixed(2)}`
                     : DASH
                 }
-                meta={`${zh ? "美元余额" : "USD wallet"} $${(usageSummary?.currentBalanceUsd ?? 0).toFixed(2)} · ${zh ? "套餐" : "Plan"} ${usageSummary?.currentPlan?.displayName || billingSummary?.currentPlan?.displayName || usageSummary?.defaultPlan?.displayName || "default"} · ${zh ? "最大流量" : "Max"} ${usageSummary?.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.defaultPlan?.maxTrafficBytes)} · ${zh ? "规则" : "rules"} ${usageSummary?.billingProfile?.pricingRuleVersion || DASH}`}
+                meta={`${zh ? "美元余额" : "USD wallet"} ${typeof usageSummary?.currentBalanceUsd === "number" ? `$${usageSummary.currentBalanceUsd.toFixed(2)}` : DASH} · ${zh ? "套餐" : "Plan"} ${usageSummary?.currentPlan?.displayName || billingSummary?.currentPlan?.displayName || usageSummary?.defaultPlan?.displayName || "default"} · ${zh ? "最大流量" : "Max"} ${usageSummary?.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.defaultPlan?.maxTrafficBytes)} · ${zh ? "规则" : "rules"} ${usageSummary?.billingProfile?.pricingRuleVersion || DASH}`}
               />
 
               <XdsStat
                 label={zh ? "策略 / 同步" : "Policy / sync"}
-                value={
-                  <XdsBadge
-                    tone={
-                      usageSummary?.networkAccessState === "paused" ||
-                      usageSummary?.networkAccessState === "blocked" ||
-                      usageSummary?.arrears
-                        ? "danger"
-                        : "success"
-                    }
-                  >
-                    {usageSummary?.networkAccessReason === "quota_exhausted"
-                      ? zh
-                        ? "额度已用尽 · 已暂停"
-                        : "Quota exhausted · Paused"
-                      : usageSummary?.networkAccessReason ===
-                          "billing_suspended"
-                        ? zh
-                          ? "账务暂停"
-                          : "Billing suspended"
-                        : usageSummary?.networkAccessReason ===
-                            "operator_paused"
-                          ? zh
-                            ? "管理员暂停"
-                            : "Operator paused"
-                          : usageSummary?.arrears
-                            ? zh
-                              ? "欠费"
-                              : "Arrears"
-                            : zh
-                              ? "正常"
-                              : "Normal"}
-                  </XdsBadge>
-                }
-                meta={`${usageSummary?.networkAccessReason === "quota_exhausted" ? (zh ? "可通过升级套餐恢复 · " : "Upgrade your plan to restore access · ") : ""}${zh ? "统计延迟" : "Sync delay"} ~${usageSummary?.syncDelaySeconds ?? 0} s · ${zh ? "策略组" : "groups"} ${accountPolicy?.eligibleNodeGroups?.join(", ") || DASH}`}
+                value={<XdsBadge tone={sync.tone}>{sync.label}</XdsBadge>}
+                meta={`${usageSummary?.networkAccessReason === "quota_exhausted" ? (zh ? "可通过升级套餐恢复 · " : "Upgrade your plan to restore access · ") : ""}${zh ? "统计延迟" : "Sync delay"} ${sync.delayLabel} · ${zh ? "策略组" : "groups"} ${sync.groupsLabel}`}
               />
             </section>
 
