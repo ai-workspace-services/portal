@@ -90,16 +90,25 @@ export default function AiWorkspaceProductView({
           </div>
           <p className={styles.platforms}>{c.hero.supportedPlatforms}</p>
 
-          {/* 大图展示：AI Workspace 全景图 */}
-          <figure className={styles.showcase}>
-            <div className={styles.showcaseImage}>
+          {/* 大图展示：AI Workspace 任务看板大盘 */}
+          <figure className={styles.showcase} style={{ maxWidth: 960, margin: "0 auto", paddingTop: 20 }}>
+            <div
+              style={{
+                borderRadius: 16,
+                overflow: "hidden",
+                border: "1px solid rgba(18, 33, 59, 0.1)",
+                boxShadow: "0 24px 48px -12px rgba(18, 33, 59, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04)",
+                background: "#ffffff",
+              }}
+            >
               <Image
                 src={c.hero.image}
                 alt={c.hero.imageAlt}
-                width={1536}
-                height={768}
+                width={1024}
+                height={606}
                 priority
-                sizes="(max-width: 768px) 100vw, 1200px"
+                style={{ width: "100%", height: "auto", display: "block" }}
+                sizes="(max-width: 960px) 100vw, 960px"
               />
             </div>
             <figcaption>{c.hero.imageCaption}</figcaption>
@@ -183,12 +192,13 @@ export default function AiWorkspaceProductView({
             <p className={styles.note}>{c.diagnostics.privacyNote}</p>
           </div>
           <figure className={styles.diagnosticImage}>
-            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid #dce5f1", background: "#ffffff" }}>
+            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(18, 33, 59, 0.1)", background: "#ffffff", boxShadow: "0 16px 32px -8px rgba(18, 33, 59, 0.1)" }}>
               <Image
                 src={c.diagnostics.image}
                 alt={c.diagnostics.imageAlt}
                 width={1024}
                 height={631}
+                style={{ width: "100%", height: "auto", display: "block" }}
                 sizes="(max-width: 768px) 95vw, 600px"
               />
             </div>
@@ -216,12 +226,13 @@ export default function AiWorkspaceProductView({
               {c.guide.note}
             </p>
           </div>
-          <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid #dce5f1", background: "#ffffff" }}>
+          <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(18, 33, 59, 0.1)", background: "#ffffff", boxShadow: "0 12px 24px -8px rgba(18, 33, 59, 0.08)" }}>
             <Image
               src={c.guide.image}
               alt={c.guide.imageAlt}
               width={768}
               height={512}
+              style={{ width: "100%", height: "auto", display: "block" }}
               sizes="(max-width: 768px) 90vw, 480px"
             />
           </div>
