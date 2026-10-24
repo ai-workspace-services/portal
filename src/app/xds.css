@@ -460,8 +460,8 @@
 /* ============================================================
    Marketing nav / footer
    ============================================================ */
-.xds-mnav { position: sticky; top: 0; z-index: 20; height: 64px; border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.82); backdrop-filter: blur(12px); }
-.xds-mnav-inner { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--sp-6); }
+.xds-mnav { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--border-default); background: rgba(255,255,255,.9); backdrop-filter: blur(14px); }
+.xds-mnav-inner { height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--sp-6); }
 .xds-mnav-wayfind { min-width: 0; justify-self: start; }
 .xds-mnav-actions { justify-self: end; }
 .xds-logo { display: flex; align-items: center; gap: 8px; font-size: var(--fs-h4); font-weight: var(--fw-semibold); letter-spacing: -0.02em; }
@@ -825,6 +825,10 @@
 .xds-mnav-crumbs a:hover { color: var(--text-primary); }
 .xds-mnav-crumbs .xds-sep { color: var(--text-disabled); }
 .xds-mnav-crumbs .xds-cur { max-width: 30ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); font-weight: var(--fw-medium); }
+.xds-mnav-breadcrumb-row { display: flex; align-items: center; min-height: 36px; padding-top: 2px; padding-bottom: 8px; }
+.xds-mnav-breadcrumb-row:empty { display: none; }
+.xds-mnav-crumbs li + li { margin-left: var(--sp-1); }
+.xds-mnav-crumbs .xds-sep { opacity: .65; }
 @media (max-width: 760px) {
   /* 窄屏只留首页 + 当前层级，导航条不换行。 */
   .xds-mnav-crumbs li:not(:first-child):not(:last-child) { display: none; }
