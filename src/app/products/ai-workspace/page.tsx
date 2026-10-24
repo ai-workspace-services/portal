@@ -1,23 +1,37 @@
-// Marketing copy changes with a content push, not with a request. Prerender it
-// and refresh in the background.
+import type { Metadata } from "next";
+import content from "@/data/content/ai-workspace.json";
+import AiWorkspaceProductView from "@/components/products/AiWorkspaceProductView";
+import type { AiWorkspaceContent } from "@/lib/aiWorkspaceContent";
+
 export const revalidate = 900;
 
-import { getProduct } from "@/lib/docsServiceClient";
-import ProductPageTemplate from "@/components/products/ProductPageTemplate";
-import aiWorkspaceData from "@/data/content/ai-workspace.json";
+const copy = content as unknown as AiWorkspaceContent;
+const url = "https://xworktech.com/products/ai-workspace";
 
-export default async function AiWorkspacePage() {
-  let product = await getProduct("ai-workspace");
-  if (!product) {
-    const raw = (aiWorkspaceData as any).zh || (aiWorkspaceData as any).en || aiWorkspaceData;
-    product = {
-      slug: "ai-workspace",
-      language: "zh",
-      hero: raw.hero,
-      wizard: raw.wizard,
-      showcases: raw.showcases || [],
-    };
-  }
+export const metadata: Metadata = {
+  title: copy.zh.sharing.title,
+  description: copy.zh.sharing.description,
+  alternates: { canonical: url },
+  openGraph: {
+    type: "website",
+    url,
+    title: copy.zh.sharing.title,
+    description: copy.zh.sharing.description,
+    images: [
+      {
+        url: `https://xworktech.com${copy.zh.sharing.image}`,
+        alt: copy.zh.hero.imageAlt,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: copy.zh.sharing.title,
+    description: copy.zh.sharing.description,
+    images: [`https://xworktech.com${copy.zh.sharing.image}`],
+  },
+};
 
-  return <ProductPageTemplate product={product} language={product.language || "zh"} />;
+export default function AiWorkspacePage() {
+  return <AiWorkspaceProductView content={copy} />;
 }

@@ -8,6 +8,10 @@
           "href": "#xworkmate-title"
         },
         {
+          "label": "AI Workspace 运行时",
+          "href": "/products/ai-workspace"
+        },
+        {
           "label": "系统架构",
           "href": "#architecture"
         },
@@ -27,14 +31,14 @@
       "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
     },
     "hero": {
-      "badge": "AI WORKSPACE · NEXT-GEN AGENT OS",
+      "badge": "AI AGENT CLIENT · MULTI-BOT DESKTOP",
       "title": "XWorkmate",
       "headline": [
-        "全新理念 AI Workspace，",
-        "一人即可成团队。"
+        "AI 智能体协同客户端，",
+        "让 AI 真正参与你的工作。"
       ],
-      "subtitle": "基于 AI 与开源软件构建。一个客户端 APP，一个 AI Workspace，一套 XConnect 互联套件。",
-      "description": "XWorkmate 是面向开发者与中小团队的下一代 AI 智能体协同研发工作台，打通统一模型网关、多智能体协同、长程任务持久化与远程人工接管。",
+      "subtitle": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中",
+      "description": "XWorkmate 是专为开发者打造的多智能体协同客户端。跨端支持 macOS、Windows、Linux 及移动端，无缝连接底层 AI Workspace 运行时，自由调度 Bot 团队协同交付长程任务。",
       "cta": {
         "label": "立即体验",
         "href": "/panel"
@@ -47,7 +51,7 @@
       "supportedPlatforms": "macOS · Windows · Linux · iOS · Android · Web",
       "image": "/marketing/xworkmate/hero-dashboard.png",
       "imageAlt": "XWorkmate 客户端工作台仪表盘：TaskThreads 监控、Token 消耗统计与活动热力图",
-      "imageCaption": "XWorkmate 工作台界面 · 真实运行数据与模型遥测展示"
+      "imageCaption": "XWorkmate 工作台界面 · 真实运行数据与多智能体遥测展示"
     },
     "services": {
       "title": "原生无缝兼容主流大模型与本地开源推理引擎",
@@ -182,6 +186,10 @@
           "href": "#xworkmate-title"
         },
         {
+          "label": "AI Workspace Runtime",
+          "href": "/products/ai-workspace"
+        },
+        {
           "label": "Architecture",
           "href": "#architecture"
         },
@@ -201,14 +209,14 @@
       "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
     },
     "hero": {
-      "badge": "AI WORKSPACE · NEXT-GEN AGENT OS",
+      "badge": "AI AGENT CLIENT · MULTI-BOT DESKTOP",
       "title": "XWorkmate",
       "headline": [
-        "Distributed AI Agent Workspace,",
-        "Empowering Developers at Scale."
+        "AI Agent Collaboration Client,",
+        "Put AI to Real Work."
       ],
-      "subtitle": "Built with modern AI and open-source software. One App, One AI Workspace, One XConnect Suite.",
-      "description": "XWorkmate provides individual developers and engineering teams with an out-of-the-box multi-agent collaborative workspace featuring persistent memory and unified model routing.",
+      "subtitle": "AI Workspace · Put AI to real work, not just conversation",
+      "description": "XWorkmate is a dedicated multi-agent desktop client built for developers. Seamlessly connect to your AI Workspace runtime, orchestrate bot teams, and deliver long-horizon software projects across macOS, Windows, Linux, and mobile devices.",
       "cta": {
         "label": "Get Started",
         "href": "/panel"
