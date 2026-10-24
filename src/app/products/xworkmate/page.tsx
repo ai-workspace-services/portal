@@ -1,18 +1,37 @@
-// Marketing copy changes with a content push, not with a request. Prerender it
-// and refresh in the background.
+import type { Metadata } from "next";
+import content from "@/data/content/xworkmate.json";
+import XWorkmateProductView from "@/components/products/XWorkmateProductView";
+import type { XWorkmateContent } from "@/lib/xworkmateContent";
+
 export const revalidate = 900;
 
-import XWorkmateProductView from "@/components/products/XWorkmateProductView";
+const copy = content as unknown as XWorkmateContent;
+const url = "https://xworktech.com/products/xworkmate";
 
-export const metadata = {
-  title: "XWorkmate — AI Workspace",
-  description:
-    "Connect AI models, autonomous agents, engineering tools, and business data to deliver real-world work.",
-  alternates: {
-    canonical: "https://xworktech.com/products/xworkmate",
+export const metadata: Metadata = {
+  title: copy.zh.sharing.title,
+  description: copy.zh.sharing.description,
+  alternates: { canonical: url },
+  openGraph: {
+    type: "website",
+    url,
+    title: copy.zh.sharing.title,
+    description: copy.zh.sharing.description,
+    images: [
+      {
+        url: `https://xworktech.com${copy.zh.sharing.image}`,
+        alt: copy.zh.hero.imageAlt,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: copy.zh.sharing.title,
+    description: copy.zh.sharing.description,
+    images: [`https://xworktech.com${copy.zh.sharing.image}`],
   },
 };
 
 export default function XworkmatePage() {
-  return <XWorkmateProductView />;
+  return <XWorkmateProductView content={copy} />;
 }
