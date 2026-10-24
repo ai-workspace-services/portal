@@ -54,6 +54,8 @@ import type {
   AccountUsageSummary,
 } from "../../lib/fetchAccountUsage";
 
+import { accountSyncPresentation } from "../../lib/accountSyncPresentation";
+
 const DASH = "—";
 // Region pills stay on one row up to this many; beyond it the panel uses a select.
 const REGION_PILL_LIMIT = 3;
@@ -651,27 +653,7 @@ export function QuotaCard({
   const isUnlimited = assignedPlan?.unlimited === true;
   const planMaxQuota = currentPlanMaxQuota(usage);
   const quotaExhausted = usage?.quotaExhausted === true;
-  const accessPaused =
-    usage?.networkAccessState === "paused" ||
-    usage?.networkAccessState === "blocked";
-  const accessLabel = (() => {
-    switch (usage?.networkAccessReason) {
-      case "quota_exhausted":
-        return zh ? "额度已用尽 · 已暂停" : "Quota exhausted · Paused";
-      case "billing_suspended":
-        return zh ? "账务暂停" : "Billing suspended";
-      case "operator_paused":
-        return zh ? "管理员暂停" : "Operator paused";
-      default:
-        return usage?.arrears
-          ? zh
-            ? "欠费"
-            : "Arrears"
-          : zh
-            ? "正常"
-            : "Normal";
-    }
-  })();
+  const sync = accountSyncPresentation(usage, policy, zh);
   return (
     <XdsCard>
       <XdsCardHead
@@ -763,20 +745,14 @@ export function QuotaCard({
           <span className="xds-t-caption">
             {zh ? "策略组" : "Policy groups"}
           </span>
-          <span className="xds-t-caption xds-subtle">
-            {policy?.eligibleNodeGroups?.join(", ") || DASH}
-          </span>
+          <span className="xds-t-caption xds-subtle">{sync.groupsLabel}</span>
         </div>
         <div className="xds-sec-row">
           <span className="xds-t-caption">
             {zh ? "同步状态" : "Sync state"}
           </span>
           {usage ? (
-            <XdsBadge
-              tone={accessPaused || usage.arrears ? "danger" : "success"}
-            >
-              {accessLabel}
-            </XdsBadge>
+            <XdsBadge tone={sync.tone}>{sync.label}</XdsBadge>
           ) : (
             <span className="xds-t-caption xds-subtle">{DASH}</span>
           )}
@@ -785,11 +761,7 @@ export function QuotaCard({
           <span className="xds-t-caption">
             {zh ? "统计延迟" : "Sync delay"}
           </span>
-          <span className="xds-t-mono xds-t-caption">
-            {typeof usage?.syncDelaySeconds === "number"
-              ? `~${usage.syncDelaySeconds} s`
-              : DASH}
-          </span>
+          <span className="xds-t-mono xds-t-caption">{sync.delayLabel}</span>
         </div>
 
         <BoundaryLink

@@ -112,7 +112,7 @@ export default function UserCenterAccountRoute() {
   const { data: usageSummary, mutate: mutateUsage } = useSWR(
     "account-usage-summary",
     fetchAccountUsageSummary,
-    { refreshInterval: 5 * 60_000, revalidateOnFocus: true },
+    { refreshInterval: 60_000, revalidateOnFocus: true },
   );
   const { data: accountPolicy } = useSWR("account-policy", fetchAccountPolicy);
   const { data: nodes, error: nodesError } = useSWR<VlessNode[]>(

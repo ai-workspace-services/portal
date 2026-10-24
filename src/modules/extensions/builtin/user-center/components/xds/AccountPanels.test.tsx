@@ -19,6 +19,26 @@ vi.mock("qrcode", () => ({
 }));
 
 describe("QuotaCard", () => {
+  it("shows missing policy and no collection without a fabricated zero-second delay", () => {
+    render(
+      <QuotaCard
+        zh
+        usage={{
+          accountUuid: "missing",
+          totalBytes: 0,
+          networkAccessState: "active",
+          syncDelaySeconds: 0,
+          lastBucketAt: null,
+        }}
+        policy={null}
+      />,
+    );
+    expect(screen.getByText("策略未生成")).toBeInTheDocument();
+    expect(screen.getByText("暂无采集记录")).toBeInTheDocument();
+    expect(screen.queryByText("正常")).not.toBeInTheDocument();
+    expect(screen.queryByText("~0 s")).not.toBeInTheDocument();
+  });
+
   it("shows a configuration-sync pause when monthly quota is exhausted", () => {
     render(
       <QuotaCard
@@ -48,9 +68,17 @@ describe("QuotaCard", () => {
     render(
       <QuotaCard
         zh
+        policy={{
+          accountUuid: "account-2",
+          preferredStrategy: "ewma",
+          eligibleNodeGroups: ["shared"],
+          expiresAt: new Date(Date.now() + 3600000).toISOString(),
+        }}
         usage={{
           accountUuid: "account-2",
           totalBytes: 512,
+          lastBucketAt: new Date().toISOString(),
+          syncDelaySeconds: 1,
           includedQuotaBytes: 1024,
           remainingIncludedQuota: 512,
           usedBytes: 512,

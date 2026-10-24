@@ -23,6 +23,7 @@ export type AccountUsageSummary = {
   periodStart?: string | null;
   periodEnd?: string | null;
   syncDelaySeconds?: number;
+  lastBucketAt?: string | null;
   suspendState?: string;
   throttleState?: string;
   quotaExhausted?: boolean;
@@ -41,6 +42,7 @@ export type AccountPolicy = {
   preferredStrategy: string;
   eligibleNodeGroups?: string[];
   authState?: string;
+  expiresAt?: string;
   degradeMode?: string;
 };
 
