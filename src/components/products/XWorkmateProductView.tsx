@@ -155,11 +155,11 @@ export default function XWorkmateProductView({
           </ol>
         </section>
 
-        {/* 3. 三位一体架构深度解析 (Architecture) */}
+        {/* 3. 专职智能体分工与协同 (Bot Roles & Synergy) */}
         <section
           className={styles.diagnostics}
           aria-labelledby="architecture-title"
-          id="architecture"
+          id="agent-roles"
         >
           <div className={styles.diagnosticCopy}>
             <p className={styles.eyebrow}>{c.diagnostics.eyebrow}</p>
