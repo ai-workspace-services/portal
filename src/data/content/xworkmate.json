@@ -4,7 +4,7 @@
       "label": "XWorkmate 导航",
       "links": [
         {
-          "label": "客户端",
+          "label": "产品",
           "href": "#xworkmate-title"
         },
         {
@@ -12,8 +12,8 @@
           "href": "/products/ai-workspace"
         },
         {
-          "label": "智能体协同",
-          "href": "#agent-roles"
+          "label": "系统架构",
+          "href": "#architecture"
         },
         {
           "label": "团队方案",
@@ -25,20 +25,20 @@
         }
       ],
       "cta": {
-        "label": "进入控制台",
+        "label": "进入工作台",
         "href": "/panel"
       },
       "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
     },
     "hero": {
-      "badge": "CROSS-PLATFORM CLIENT · AGENT ORCHESTRATION",
+      "badge": "AI AGENT CLIENT · MULTI-BOT DESKTOP",
       "title": "XWorkmate",
       "headline": [
-        "跨平台智能体协同客户端，",
-        "一人即可调度专业工程团队。"
+        "AI 智能体协同客户端，",
+        "让 AI 真正参与你的工作。"
       ],
       "subtitle": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中",
-      "description": "XWorkmate APP 是专为开发者打造的跨平台客户端（支持 macOS / Windows / Linux / iOS / Android / Web）。内置专职智能体角色调度（Worker、Engineer、Architect、Researcher、Specialist），与底层 AI Workspace 深度协同工作，交付长程真实软件项目。",
+      "description": "XWorkmate 是专为开发者打造的多智能体协同客户端。跨端支持 macOS、Windows、Linux 及移动端，无缝连接底层 AI Workspace 运行时，自由调度 Bot 团队协同交付长程任务。",
       "cta": {
         "label": "立即体验",
         "href": "/panel"
@@ -49,9 +49,9 @@
       },
       "downloadUrl": "#source-and-downloads",
       "supportedPlatforms": "macOS · Windows · Linux · iOS · Android · Web",
-      "image": "/marketing/xworkmate/roles-workflow.png",
-      "imageAlt": "XWorkmate 跨平台客户端界面：专职智能体角色调度面板与对话工作流",
-      "imageCaption": "XWorkmate 客户端界面 · 专职智能体角色调度与工作流执行入口"
+      "image": "/marketing/xworkmate/hero-dashboard.png",
+      "imageAlt": "XWorkmate 客户端工作台仪表盘：TaskThreads 监控、Token 消耗统计与活动热力图",
+      "imageCaption": "XWorkmate 工作台界面 · 真实运行数据与多智能体遥测展示"
     },
     "services": {
       "title": "原生无缝兼容主流大模型与本地开源推理引擎",
@@ -64,91 +64,91 @@
       ]
     },
     "wizard": {
-      "title": "安装。连接。协同。",
-      "description": "简单三步，开启全功能桌面智能体研发体验。",
+      "title": "安装。启动。协同。",
+      "description": "简单三步，启动新一代 AI 多智能体工作空间。",
       "steps": [
         {
           "step": 1,
-          "title": "下载跨平台客户端",
-          "description": "支持 macOS、Windows、Linux 桌面端及移动端快速安装就绪。",
+          "title": "安装客户端",
+          "description": "跨平台轻量安装，支持 macOS / Windows / Linux 及移动端。",
           "link": "#source-and-downloads"
         },
         {
           "step": 2,
-          "title": "一键连接 AI Workspace",
-          "description": "内置安全 Bridge 互联协议，秒级挂载本地或云端 Workspace 运行时。",
+          "title": "启动 Workspace",
+          "description": "内置 Bridge 连接与安全转发，一键挂载本地项目与模型网关。",
           "link": "/panel"
         },
         {
           "step": 3,
-          "title": "专职角色协同调度",
-          "description": "自由指派 Architect、Engineer、Worker 等角色，多 Agent 分工交付成果。",
+          "title": "调度 Bot 团队",
+          "description": "自由调用 Worker、Engineer、Architect 等智能体分工交付任务。",
           "link": "/panel"
         }
       ]
     },
     "diagnostics": {
-      "eyebrow": "SPECIALIZED BOT SQUAD",
+      "eyebrow": "TRINITY ARCHITECTURE",
       "title": [
-        "专职智能体角色调度，",
-        "与 AI Workspace 深度协同。"
+        "三位一体架构，",
+        "长程研发任务不再中断。"
       ],
-      "description": "告别单一扁平对话。XWorkmate 客户端提供多角色专家智能体编排，与底层 AI Workspace 协同，长程任务持久化可追踪、产物实时落盘。",
+      "description": "端侧轻量客户端、执行控制运行域与跨端互联网络解耦，兼顾本地数据隐私与云端算力弹性扩容。",
       "features": [
-        "跨平台全端支持：覆盖 macOS、Windows、Linux、iOS、Android 与 Web 浏览器",
-        "专职智能体分工：Worker 执行日常批量、Engineer 编写测试代码、Architect 方案架构、Researcher 调研选型、Specialist 专精攻坚",
-        "协同 AI Workspace：底层自动联动 QMD 共享长期记忆库与 AI Aggregator 统一网关",
-        "人机审批流把关：长程任务断点续跑，支持低延迟 WebRTC 远程人工接入接管"
+        "一个 APP：全终端统一会话流、多角色智能体协同与审批看板",
+        "一个 AI Workspace：DS Bot 任务编排、QMD 共享记忆与 AI Aggregator 统一网关",
+        "一套 XConnect 套件：跨设备 Bridge 事件桥接、后台任务持久化与云归档",
+        "人机协同：低延迟 WebRTC 屏幕推流与远程接管交互"
       ],
       "image": "/marketing/xworkmate/architecture-v2.png",
-      "imageAlt": "XWorkmate 与 AI Workspace 总体协同分层架构图",
-      "imageCaption": "XWorkmate 客户端与 AI Workspace 总体协同分层架构 (目标态 v2.1)",
-      "privacyNote": "基于安全互联协议，本地代码库与凭据完全在私有信任域流转。"
+      "imageAlt": "AI Workspace 总体分层架构图 (目标态 v2.1)",
+      "imageCaption": "AI Workspace 总体分层架构 (目标态 v2.1)",
+      "privacyNote": "开源可审计，代码与敏感密钥严格保存在本地与私有域中。"
     },
     "guide": {
-      "eyebrow": "WORKSPACE COLLABORATION",
-      "title": "交互前端与执行后端的完美协作体系。",
-      "description": "XWorkmate APP 作为开发者的交互操作台，AI Workspace 作为底层任务执行域与记忆持久化中枢，两者通过 XConnect 协议实现毫秒级状态同步。",
+      "eyebrow": "SPECIALIZED BOT TEAM",
+      "title": "专职智能体协同，如同拥有一支全栈工程团队。",
+      "description": "预置 Architect 架构师、Engineer 研发工程师、Researcher 研究员与 Worker 执行者，根据任务复杂度自动拆解与长程执行。",
       "cta": {
-        "label": "探索 AI Workspace 运行时",
-        "href": "/products/ai-workspace"
+        "label": "查看架构指南",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      "note": "支持在单台电脑本地完全离线闭环运行，也支持连接团队云端集群。",
-      "image": "/marketing/ai-workspace/hero-dashboard.png",
-      "imageAlt": "AI Workspace 任务看板大盘"
+      "note": "支持根据团队研发规范灵活自定义智能体技能与角色职责。",
+      "image": "/marketing/xworkmate/roles-workflow.png",
+      "imageAlt": "XWorkmate 多智能体协同角色切换面板"
     },
     "source": {
-      "eyebrow": "OPEN SOURCE & DOWNLOADS",
-      "title": "开放代码。全平台跨端就绪。",
-      "description": "XWorkmate 基于 Flutter 与开源技术栈打造，核心组件归档于 GitHub 组织，欢迎下载体验与共同建设。",
+      "eyebrow": "OPEN SOURCE & COMMUNITY",
+      "title": "拥抱开源。赋能全球开发者。",
+      "description": "XWorkmate 依托开源生态与公开代码构建，核心仓库归档于 GitHub 组织下，欢迎参与共建。",
       "cta": {
         "label": "前往 GitHub 组织",
         "href": "https://github.com/ai-workspace-lab"
       },
       "downloadCta": {
-        "label": "获取客户端安装包",
+        "label": "获取各端客户端",
         "href": "https://github.com/ai-workspace-lab"
       },
       "pricingCta": {
-        "label": "查看订阅价格",
+        "label": "查看价格方案",
         "href": "/prices"
       },
       "availability": "各平台安装包与最新动态以 GitHub 组织发布及官方下载中心为准。"
     },
     "sharing": {
-      "title": "XWorkmate — 专为开发者打造的跨平台智能体协同客户端",
-      "description": "AI Workspace · 让 AI 真正参与你的工作，而不是停留在对话中。支持 macOS / Windows / Linux，专职智能体角色调度。",
-      "image": "/marketing/xworkmate/roles-workflow.png"
+      "title": "XWorkmate — 基于 AI 与开源软件构建的全新理念 AI Workspace",
+      "description": "一个客户端 APP，一个 AI Workspace，一套 XConnect 互联套件。专为个人开发者与中小团队打造的分布式智能体协同工作台。",
+      "image": "/marketing/xworkmate/hero-dashboard.png"
     },
     "team": {
-      "title": "团队与企业协同支持",
-      "description": "为工程团队提供多席位跨端客户端分发、私有安全网关与统一权限审计方案。",
-      "nodesLabel": "团队授权",
+      "title": "团队与企业专属定制",
+      "description": "为技术团队提供私有化 Workspace 部署、专属模型网关与长程多租户任务持久化支持。",
+      "nodesLabel": "专属工作区",
       "membersLabel": "成员席位",
       "validityLabel": "服务周期",
-      "contactLabel": "联系团队定制",
+      "contactLabel": "联系企业定制",
       "contactHref": "/contact",
-      "unavailable": "企业版服务目前开放早期内测申请中",
+      "unavailable": "企业服务当前正在内测开放中",
       "manageTitle": "团队工作区授权管理",
       "idLabel": "工作区标识",
       "nameLabel": "团队名称",
@@ -182,7 +182,7 @@
       "label": "XWorkmate Navigation",
       "links": [
         {
-          "label": "Client",
+          "label": "Product",
           "href": "#xworkmate-title"
         },
         {
@@ -190,8 +190,8 @@
           "href": "/products/ai-workspace"
         },
         {
-          "label": "Agent Squad",
-          "href": "#agent-roles"
+          "label": "Architecture",
+          "href": "#architecture"
         },
         {
           "label": "Teams",
@@ -209,14 +209,14 @@
       "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
     },
     "hero": {
-      "badge": "CROSS-PLATFORM CLIENT · AGENT ORCHESTRATION",
+      "badge": "AI AGENT CLIENT · MULTI-BOT DESKTOP",
       "title": "XWorkmate",
       "headline": [
-        "Cross-Platform Multi-Agent Client,",
-        "Command a Full Engineering Squad."
+        "AI Agent Collaboration Client,",
+        "Put AI to Real Work."
       ],
       "subtitle": "AI Workspace · Put AI to real work, not just conversation",
-      "description": "XWorkmate APP is a cross-platform client designed specifically for developers (supporting macOS, Windows, Linux, iOS, Android, and Web). Featuring specialized agent role scheduling (Worker, Engineer, Architect, Researcher, Specialist) working in synergy with AI Workspace to deliver verified software projects.",
+      "description": "XWorkmate is a dedicated multi-agent desktop client built for developers. Seamlessly connect to your AI Workspace runtime, orchestrate bot teams, and deliver long-horizon software projects across macOS, Windows, Linux, and mobile devices.",
       "cta": {
         "label": "Get Started",
         "href": "/panel"
@@ -227,9 +227,9 @@
       },
       "downloadUrl": "#source-and-downloads",
       "supportedPlatforms": "macOS · Windows · Linux · iOS · Android · Web",
-      "image": "/marketing/xworkmate/roles-workflow.png",
-      "imageAlt": "XWorkmate Cross-Platform Client: Specialized Agent Role Selector & Workflow",
-      "imageCaption": "XWorkmate Client Interface · Multi-agent role orchestration and workflow entry"
+      "image": "/marketing/xworkmate/hero-dashboard.png",
+      "imageAlt": "XWorkmate Dashboard: TaskThreads monitoring, token usage metrics, and activity heatmap",
+      "imageCaption": "XWorkmate Workspace UI · Real-world telemetry and multi-agent monitoring"
     },
     "services": {
       "title": "Seamlessly Compatible with Top Cloud Models and Local Inference Engines",
@@ -242,69 +242,69 @@
       ]
     },
     "wizard": {
-      "title": "Install. Connect. Orchestrate.",
-      "description": "Three simple steps to command autonomous agents right from your desktop.",
+      "title": "Install. Launch. Orchestrate.",
+      "description": "Get started with the new AI agent workspace in three simple steps.",
       "steps": [
         {
           "step": 1,
-          "title": "Get Desktop Client",
-          "description": "Lightweight client for macOS, Windows, Linux, and mobile devices.",
+          "title": "Install Client",
+          "description": "Lightweight cross-platform client for macOS, Windows, Linux, and mobile devices.",
           "link": "#source-and-downloads"
         },
         {
           "step": 2,
-          "title": "Mount AI Workspace",
-          "description": "Secure bridge protocols link instantly with your local or cloud workspace runtime.",
+          "title": "Launch Workspace",
+          "description": "Built-in Bridge securely mounts local project contexts and model gateways.",
           "link": "/panel"
         },
         {
           "step": 3,
-          "title": "Schedule Bot Roles",
-          "description": "Assign tasks across Architect, Engineer, and Worker agents to deliver verified outputs.",
+          "title": "Orchestrate Agents",
+          "description": "Deploy specialized Worker, Engineer, and Architect bots to solve long-horizon tasks.",
           "link": "/panel"
         }
       ]
     },
     "diagnostics": {
-      "eyebrow": "SPECIALIZED BOT SQUAD",
+      "eyebrow": "TRINITY ARCHITECTURE",
       "title": [
-        "Specialized Agent Role Scheduling,",
-        "In Synergy with AI Workspace."
+        "Trinity Architecture,",
+        "Uninterrupted Long-Horizon Execution."
       ],
-      "description": "Move beyond flat, single-turn prompts. XWorkmate client delivers multi-role expert agent orchestration backed by the AI Workspace engine for persistent task tracking and on-disk deliverables.",
+      "description": "Decouples desktop clients, execution runtimes, and mesh networking to ensure complete local privacy with cloud compute elasticity.",
       "features": [
-        "Cross-Platform Readiness: Complete support across macOS, Windows, Linux, iOS, Android, and Web",
-        "Specialized Agent Squad: Worker for routines, Engineer for code/tests, Architect for designs, Researcher for explorations, Specialist for deep domains",
-        "Synergy with AI Workspace: Automatic integration with QMD shared long-term memory and unified model gateways",
-        "Human-in-the-Loop Controls: Resumable long-horizon checkpoints and low-latency WebRTC interactive takeover"
+        "One App: Unified conversation flow, multi-agent switching, and approval monitoring",
+        "One AI Workspace: DS Bot task planning, QMD shared memory, and AI Aggregator gateway",
+        "One XConnect Suite: Cross-device event bridge, durable task leasing, and cloud archiving",
+        "Human-in-the-Loop: Low-latency WebRTC streaming and remote interactive takeover"
       ],
       "image": "/marketing/xworkmate/architecture-v2.png",
-      "imageAlt": "XWorkmate and AI Workspace Layered Collaborative Architecture",
-      "imageCaption": "XWorkmate Client & AI Workspace Layered Architecture (Target State v2.1)",
-      "privacyNote": "Secure mesh communication ensures your code and keys remain within trusted boundaries."
+      "imageAlt": "AI Workspace Layered Architecture (Target State v2.1)",
+      "imageCaption": "AI Workspace Layered Architecture (Target State v2.1)",
+      "privacyNote": "Open-source and fully auditable. Source code and private credentials remain strictly on-device."
     },
     "guide": {
-      "eyebrow": "WORKSPACE COLLABORATION",
-      "title": "Interactive Frontend Meets Execution Engine.",
-      "description": "XWorkmate APP acts as the developer's command desk, while AI Workspace provides task scheduling, model routing, and persistent memory.",
+      "eyebrow": "SPECIALIZED BOT TEAM",
+      "title": "Role-Based Agent Collaboration Like a Full Engineering Squad.",
+      "description": "Pre-configured Architect, Engineer, Researcher, and Worker agents automatically decompose tasks and deliver verified outcomes.",
       "cta": {
-        "label": "Explore AI Workspace Runtime",
-        "href": "/products/ai-workspace"
+        "label": "Explore Architecture Guide",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      "note": "Operates fully offline on a single machine or connects to team cloud clusters.",
-      "image": "/marketing/ai-workspace/hero-dashboard.png",
-      "imageAlt": "AI Workspace Dashboard Overview"
+      "note": "Fully customizable skills and agent definitions tailored to your team workflows.",
+      "image": "/marketing/xworkmate/roles-workflow.png",
+      "imageAlt": "XWorkmate Multi-Agent Role Switcher Panel"
     },
     "source": {
-      "eyebrow": "OPEN SOURCE & DOWNLOADS",
-      "title": "Open Source. Cross-Platform Ready.",
-      "description": "XWorkmate is crafted with Flutter and modern open-source stacks. Core tools are publicly hosted under our GitHub organization.",
+      "eyebrow": "OPEN SOURCE & COMMUNITY",
+      "title": "Open Code. Open Collaboration.",
+      "description": "XWorkmate embraces open source. Core projects and tooling are hosted under our GitHub organization for transparent community contribution.",
       "cta": {
         "label": "Visit GitHub Organization",
         "href": "https://github.com/ai-workspace-lab"
       },
       "downloadCta": {
-        "label": "Get Desktop Packages",
+        "label": "Downloads & Releases",
         "href": "https://github.com/ai-workspace-lab"
       },
       "pricingCta": {
@@ -314,14 +314,14 @@
       "availability": "Installers and release notes are maintained continuously on our GitHub organization."
     },
     "sharing": {
-      "title": "XWorkmate — Cross-Platform AI Agent Collaboration Client",
-      "description": "AI Workspace · Put AI to real work, not just conversation. Specialized agent role scheduling across macOS, Windows, and Linux.",
-      "image": "/marketing/xworkmate/roles-workflow.png"
+      "title": "XWorkmate — Next-Gen AI Workspace Built with AI & Open Source",
+      "description": "One App, One AI Workspace, One XConnect Suite. Built for individual developers and small-to-medium teams to orchestrate autonomous agents.",
+      "image": "/marketing/xworkmate/hero-dashboard.png"
     },
     "team": {
       "title": "Team & Enterprise Solutions",
-      "description": "Multi-seat client distribution, private security gateways, and audit logs for engineering organizations.",
-      "nodesLabel": "Team Licenses",
+      "description": "Dedicated Workspace instances, private model gateways, and multi-tenant task persistence for engineering organizations.",
+      "nodesLabel": "Workspaces",
       "membersLabel": "Seats",
       "validityLabel": "Subscription",
       "contactLabel": "Contact Enterprise Sales",
