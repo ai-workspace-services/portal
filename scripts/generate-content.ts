@@ -263,16 +263,70 @@ async function generateTeamAgentEnrollmentsContent() {
   await fs.writeFile(generatedPath, JSON.stringify({ zh: values[0], en: values[1] }, null, 2) + "\n");
 }
 
-async function main() {
-  const securityLocales = await Promise.all((["zh", "en"] as const).map(async locale => {
-    const value = JSON.parse(await fs.readFile(path.join(CONTENT_ROOT, "account", "security", `${locale}.json`), "utf8")) as Record<string, string>;
-    if (Object.values(value).some(text => typeof text !== "string" || !text.trim()) || !value.paymentRisk || !value.authorize || !value.reviewDescription) throw new Error("Invalid account security content");
-    return value;
-  }));
-  if (Object.keys(securityLocales[0]).sort().join() !== Object.keys(securityLocales[1]).sort().join()) throw new Error("Account security locales must have identical keys");
+async function generateAccountSecurityContent() {
+  const locales = ["zh", "en"] as const;
+  const generatedPath = path.join(OUTPUT_ROOT, "account-security.json");
+  const files = locales.map((locale) =>
+    path.join(CONTENT_ROOT, "account", "security", `${locale}.json`),
+  );
+  const exists = await Promise.all(
+    files.map((file) =>
+      fs
+        .access(file)
+        .then(() => true)
+        .catch(() => false),
+    ),
+  );
+  if (!exists.some(Boolean)) {
+    const generated = JSON.parse(await fs.readFile(generatedPath, "utf8"));
+    if (!generated.zh?.paymentRisk || !generated.en?.paymentRisk)
+      throw new Error("Missing reviewed account security content");
+    console.log(
+      "Account security source not yet in content revision; retaining reviewed generated artifact.",
+    );
+    return;
+  }
+  if (!exists.every(Boolean))
+    throw new Error("Account security requires both locales");
+  const securityLocales = await Promise.all(
+    files.map(
+      async (file) =>
+        JSON.parse(await fs.readFile(file, "utf8")) as Record<string, string>,
+    ),
+  );
+  for (const value of securityLocales) {
+    if (
+      Object.values(value).some(
+        (text) => typeof text !== "string" || !text.trim(),
+      ) ||
+      !value.paymentRisk ||
+      !value.authorize ||
+      !value.reviewDescription
+    )
+      throw new Error("Invalid account security content");
+  }
+  if (
+    Object.keys(securityLocales[0]).sort().join() !==
+    Object.keys(securityLocales[1]).sort().join()
+  )
+    throw new Error("Account security locales must have identical keys");
   await fs.mkdir(OUTPUT_ROOT, { recursive: true });
-  await fs.writeFile(path.join(OUTPUT_ROOT, "account-security.json"), JSON.stringify({ zh: securityLocales[0], en: securityLocales[1] }, null, 2) + "\n");
-  if (process.argv.includes("--account=security")) return;
+  await fs.writeFile(
+    generatedPath,
+    JSON.stringify(
+      { zh: securityLocales[0], en: securityLocales[1] },
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+async function main() {
+  if (process.argv.includes("--account=security")) {
+    await generateAccountSecurityContent();
+    return;
+  }
+  await generateAccountSecurityContent();
   await generateTeamAgentEnrollmentsContent();
   if (process.argv.includes("--account=team-agent-enrollments")) return;
   if (process.argv.includes("--account=billing-policy")) { await generateBillingPolicyContent(); return; }
@@ -287,6 +341,22 @@ async function main() {
     await fs.writeFile(path.join(OUTPUT_ROOT, 'xconnect.json'), JSON.stringify(content, null, 2))
     await fs.writeFile(path.join(OUTPUT_ROOT, 'xconnect.ts'), 'const content = ' + JSON.stringify(content, null, 2) + ';\n\nexport default content;\n')
     console.log('XConnect content generation complete!')
+    return
+  }
+  if (process.argv.includes('--product=ai-workspace')) {
+    const content = await generateProductContent('ai-workspace')
+    await fs.mkdir(OUTPUT_ROOT, { recursive: true })
+    await fs.writeFile(path.join(OUTPUT_ROOT, 'ai-workspace.json'), JSON.stringify(content, null, 2))
+    await fs.writeFile(path.join(OUTPUT_ROOT, 'ai-workspace.ts'), 'const content = ' + JSON.stringify(content, null, 2) + ';\n\nexport default content;\n')
+    console.log('AI Workspace content generation complete!')
+    return
+  }
+  if (process.argv.includes('--product=xworkmate')) {
+    const content = await generateProductContent('xworkmate')
+    await fs.mkdir(OUTPUT_ROOT, { recursive: true })
+    await fs.writeFile(path.join(OUTPUT_ROOT, 'xworkmate.json'), JSON.stringify(content, null, 2))
+    await fs.writeFile(path.join(OUTPUT_ROOT, 'xworkmate.ts'), 'const content = ' + JSON.stringify(content, null, 2) + ';\n\nexport default content;\n')
+    console.log('XWorkmate content generation complete!')
     return
   }
   await generateReferralContent();
@@ -316,12 +386,12 @@ async function main() {
   )
 
   // Generate product content
+  // Note: ai-workspace and xworkmate maintain full-fidelity template copy directly in src/data/content/
+  // and must not be overwritten by legacy hero.md stubs from CMS.
   const products = [
     'global-mesh',
     'xconnect',
-    'xworkmate',
     'open-platform',
-    'ai-workspace',
     'xstream',
     'xcloudflow',
     'xscopehub',
