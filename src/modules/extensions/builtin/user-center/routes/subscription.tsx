@@ -27,8 +27,6 @@ import {
   ExternalLink,
   FileText,
   Info,
-  Lock,
-  ShieldCheck,
 } from "lucide-react";
 
 import {
@@ -36,7 +34,9 @@ import {
   openStripePortal,
   requestRefundReview,
 } from "@components/billing/stripe-client";
-import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
+import PaymentMfaNotice, {
+  useMfaMissing,
+} from "@components/billing/PaymentMfaNotice";
 import { formatBytes } from "@lib/format";
 import { useLanguage } from "@i18n/LanguageProvider";
 import { translations } from "@i18n/translations";
@@ -123,9 +123,8 @@ export default function UserCenterSubscriptionRoute() {
 
   const user = useUserStore((state) => state.user);
   const isReadOnlyRole = Boolean(user?.isReadOnly);
-  // 「谁需要绑定 MFA 才能支付」这条规则由 PaymentMfaNotice 单独维护，
-  // 这里只复用它的判定，避免两处各写一份而慢慢跑偏。
-  const mfaRequired = usePaymentMfaRequired();
+  // MFA remains required for the existing cancellation and refund actions.
+  const mfaRequired = useMfaMissing();
   const mfaReady = !mfaRequired;
 
   const { data, isLoading, mutate } = useSWR<SubscriptionResponse>(
@@ -170,10 +169,17 @@ export default function UserCenterSubscriptionRoute() {
     // Presentation remains unchanged; all consumers reload authoritative data.
     void refreshCachedData((key) => {
       const name = Array.isArray(key) ? key[0] : key;
-      return typeof name === "string" && [
-        "/api/auth/subscriptions", "account-usage-summary", "account-billing-summary",
-        "account-policy", "user-center-agent-nodes", "team-nodes",
-      ].includes(name);
+      return (
+        typeof name === "string" &&
+        [
+          "/api/auth/subscriptions",
+          "account-usage-summary",
+          "account-billing-summary",
+          "account-policy",
+          "user-center-agent-nodes",
+          "team-nodes",
+        ].includes(name)
+      );
     }).catch(() => undefined);
   }, [refundReview?.status, refreshCachedData]);
   const [error, setError] = useState<string | null>(null);
@@ -320,38 +326,7 @@ export default function UserCenterSubscriptionRoute() {
 
         <NetworkTeamsPanel />
 
-        {/* ── 安全门禁：只出现一处，且可行动 ── */}
-        {mfaRequired ? (
-          <div className="xds-gate">
-            <span className="xds-gate-ico" aria-hidden="true">
-              <Lock className="h-5 w-5" />
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                className="xds-t-body-sm"
-                style={{ fontWeight: 600, color: "var(--warning)" }}
-              >
-                {zh ? "绑定 MFA 后即可发起支付" : "Bind MFA to enable payments"}
-              </div>
-              <p
-                className="xds-t-caption"
-                style={{ color: "var(--warning)", opacity: 0.85, marginTop: 3 }}
-              >
-                {zh
-                  ? "浏览用量、配额和账单不受影响。发起 Stripe 购买、变更订阅或进入客户门户前需要完成一次身份验证。"
-                  : "Viewing usage, quota and invoices is unaffected. A second factor is required before Stripe purchases, subscription changes or the customer portal."}
-              </p>
-            </div>
-            <BoundaryLink
-              href="/panel/account?setupMfa=1"
-              className="xds-btn xds-btn-primary"
-              style={{ flex: "none" }}
-            >
-              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-              {zh ? "去绑定 MFA" : "Bind MFA"}
-            </BoundaryLink>
-          </div>
-        ) : null}
+        <PaymentMfaNotice />
 
         {error ? (
           <XdsAlert tone="danger" icon={<Info className="h-4 w-4" />}>
@@ -591,14 +566,7 @@ export default function UserCenterSubscriptionRoute() {
                 <XdsButton
                   size="sm"
                   onClick={handleOpenPortal}
-                  disabled={portalLoading || !mfaReady}
-                  title={
-                    !mfaReady
-                      ? zh
-                        ? "需先绑定 MFA"
-                        : "Requires MFA"
-                      : undefined
-                  }
+                  disabled={portalLoading}
                 >
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                   {portalLoading ? copy.openingBilling : copy.manageBilling}

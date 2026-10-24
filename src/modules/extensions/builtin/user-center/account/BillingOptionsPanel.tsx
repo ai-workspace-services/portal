@@ -5,7 +5,6 @@ import { useSWRConfig } from "swr";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import CheckoutStatusBanner from "@components/billing/CheckoutStatusBanner";
-import { usePaymentMfaRequired } from "@components/billing/PaymentMfaNotice";
 import {
   getSubscriptionPurchase,
   previewSubscription,
@@ -76,7 +75,6 @@ export default function BillingOptionsPanel({
 }: {
   currentPlanId?: string;
 }) {
-  const requiresMfa = usePaymentMfaRequired();
   const { language } = useLanguage();
   const zh = language === "zh";
   const catalog = useBillingCatalog();
@@ -235,12 +233,6 @@ export default function BillingOptionsPanel({
         zh
           ? "该固定档位尚未配置可用的 Stripe 价格。"
           : "This fixed tier is not configured for checkout yet.",
-      );
-      return;
-    }
-    if (requiresMfa) {
-      setMessage(
-        zh ? "请先绑定 MFA，再发起支付。" : "Bind MFA before starting payment.",
       );
       return;
     }
@@ -538,7 +530,6 @@ export default function BillingOptionsPanel({
                     }
                     disabled={
                       !ready ||
-                      requiresMfa ||
                       Boolean(submitting) ||
                       purchasePending !== false ||
                       reviewPending ||
@@ -595,31 +586,27 @@ export default function BillingOptionsPanel({
                                 ? zh
                                   ? "跳转中…"
                                   : "Opening…"
-                                : requiresMfa
+                                : paidPlan && plan.planId === "PRO-YEARLY-V2"
                                   ? zh
-                                    ? "绑定 MFA 后可支付"
-                                    : "Bind MFA to pay"
-                                  : paidPlan && plan.planId === "PRO-YEARLY-V2"
+                                    ? "升级为年付（暂未开放）"
+                                    : "Upgrade to annual (not available yet)"
+                                  : paidPlan &&
+                                      !(
+                                        selectedPlanId === "PLUS" &&
+                                        plan.planId === "PRO-MONTHLY-V2"
+                                      )
                                     ? zh
-                                      ? "升级为年付（暂未开放）"
-                                      : "Upgrade to annual (not available yet)"
-                                    : paidPlan &&
-                                        !(
-                                          selectedPlanId === "PLUS" &&
-                                          plan.planId === "PRO-MONTHLY-V2"
-                                        )
+                                      ? "暂不支持此变更"
+                                      : "Change unavailable"
+                                    : ready
                                       ? zh
-                                        ? "暂不支持此变更"
-                                        : "Change unavailable"
-                                      : ready
-                                        ? zh
-                                          ? paidPlan
-                                            ? "升级到 Pro"
-                                            : `订阅 ${plan.displayName || plan.planId}`
-                                          : `${paidPlan ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
-                                        : zh
-                                          ? "即将上线"
-                                          : "Coming soon"}
+                                        ? paidPlan
+                                          ? "升级到 Pro"
+                                          : `订阅 ${plan.displayName || plan.planId}`
+                                        : `${paidPlan ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
+                                      : zh
+                                        ? "即将上线"
+                                        : "Coming soon"}
                   </button>
                 </div>
               );
@@ -739,7 +726,6 @@ export default function BillingOptionsPanel({
                   ? !customAmountValid
                   : !isPurchasable(selectedOption.plan) ||
                     !matchesTopUpPlan(selectedOption, selectedOption.plan)) ||
-                requiresMfa ||
                 submitting === selectedOption?.planId
               }
               onClick={() =>
@@ -751,13 +737,9 @@ export default function BillingOptionsPanel({
                 ? zh
                   ? "跳转中…"
                   : "Opening…"
-                : requiresMfa
-                  ? zh
-                    ? "绑定 MFA 后可支付"
-                    : "Bind MFA to pay"
-                  : zh
-                    ? `充值 ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : ""}`
-                    : `Top up ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : ""}`}
+                : zh
+                  ? `充值 ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : ""}`
+                  : `Top up ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : ""}`}
             </button>
           </div>
           <p className="text-xs text-[var(--color-text-subtle)]">

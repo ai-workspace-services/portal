@@ -186,6 +186,9 @@ describe("account recovery email-code flow", () => {
     ).toBeDisabled();
     fireEvent.submit(screen.getByLabelText("New password").closest("form")!);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    await act(async () => { vi.advanceTimersByTime(1000); });
+    expect(screen.getByRole("heading", { name: "Lost access to MFA?" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send MFA recovery verification code" })).toBeEnabled();
   });
 
   it("holds resending for 60 seconds and shows the destination email", async () => {

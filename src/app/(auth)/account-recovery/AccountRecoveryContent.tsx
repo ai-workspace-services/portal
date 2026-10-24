@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import BoundaryLink from "@/components/common/BoundaryLink";
+import MfaRecoveryForm from "@/components/auth/MfaRecoveryForm";
 
 import {
   AUTH_INPUT_CLASS,
@@ -38,15 +39,6 @@ export default function AccountRecoveryContent() {
     );
     return () => window.clearTimeout(timer);
   }, [resendSeconds]);
-
-  useEffect(() => {
-    if (!isRecovered) return;
-    const timer = window.setTimeout(
-      () => window.location.assign("/login"),
-      900,
-    );
-    return () => window.clearTimeout(timer);
-  }, [isRecovered]);
 
   const copy = zh
     ? {
@@ -360,6 +352,7 @@ export default function AccountRecoveryContent() {
           </div>
         </div>
       )}
+      <MfaRecoveryForm />
     </AuthLayout>
   );
 }

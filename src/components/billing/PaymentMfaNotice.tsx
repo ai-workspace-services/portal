@@ -5,8 +5,10 @@ import Link from "next/link";
 import { LockKeyhole } from "lucide-react";
 
 import { useUserStore } from "@lib/userStore";
+import { useLanguage } from "@i18n/LanguageProvider";
+import { accountSecurityCopy } from "@/lib/account-security";
 
-export function usePaymentMfaRequired(): boolean {
+export function useMfaMissing(): boolean {
   const user = useUserStore((state) => state.user);
   return Boolean(
     user && !user.isReadOnly && (!user.mfaEnabled || user.mfaPending),
@@ -14,7 +16,9 @@ export function usePaymentMfaRequired(): boolean {
 }
 
 export default function PaymentMfaNotice() {
-  const requiresMfa = usePaymentMfaRequired();
+  const requiresMfa = useMfaMissing();
+  const { language } = useLanguage();
+  const copy = accountSecurityCopy(language);
 
   if (!requiresMfa) {
     return null;
@@ -28,18 +32,15 @@ export default function PaymentMfaNotice() {
       <div className="flex gap-3">
         <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
         <div>
-          <p className="font-semibold">绑定 MFA 后即可安全支付</p>
-          <p className="mt-1 text-xs leading-5">
-            浏览和管理用户中心不受影响；发起 Stripe
-            购买、订阅或账单管理前需要完成身份验证。
-          </p>
+          <p className="font-semibold">{copy.paymentTitle}</p>
+          <p className="mt-1 text-xs leading-5">{copy.paymentRisk}</p>
         </div>
       </div>
       <Link
         href="/panel/account?setupMfa=1"
         className="tactile-button tactile-button-primary shrink-0 px-3 text-sm"
       >
-        去绑定 MFA
+        {copy.bindMfa}
       </Link>
     </div>
   );
