@@ -1,110 +1,358 @@
 {
   "zh": {
-    "hero": {
-      "badge": "开放 AI 工作空间",
-      "title": "AI Workspace",
-      "subtitle": "XWorkmate、XConnect 与 AI Aggregator 协同工作，把对话、任务、模型网关与全局连接整合进一个开放的 AI 工作空间，从想法到交付一步到位。",
+    "navigation": {
+      "label": "AI Workspace 导航",
+      "links": [
+        {
+          "label": "工作空间",
+          "href": "#workspace-title"
+        },
+        {
+          "label": "XWorkmate 客户端",
+          "href": "/products/xworkmate"
+        },
+        {
+          "label": "分层架构",
+          "href": "#architecture"
+        },
+        {
+          "label": "团队方案",
+          "href": "/contact"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/ai-workspace-lab"
+        }
+      ],
       "cta": {
-        "label": "进入控制台",
+        "label": "进入工作空间",
         "href": "/panel"
-      }
+      },
+      "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
+    },
+    "hero": {
+      "badge": "INTELLIGENT RUNTIME · AGENTIC OS",
+      "title": "AI Workspace",
+      "headline": [
+        "智能工作空间运行时，",
+        "打通从想法到交付。"
+      ],
+      "subtitle": "立即进入你的智能工作空间，开始对话、任务与交付",
+      "description": "AI Workspace 是面向下一代自主智能体研发的执行运行域与控制中枢。提供多智能体任务拆解调度、QMD 共享记忆检索、统一模型网关及长程任务持久化，支持本地单机或云端容器无缝部署。",
+      "cta": {
+        "label": "立即进入工作空间",
+        "href": "/panel"
+      },
+      "secondaryCta": {
+        "label": "体验 XWorkmate 客户端",
+        "href": "/products/xworkmate"
+      },
+      "downloadUrl": "/products/xworkmate",
+      "supportedPlatforms": "Mac · Linux 单机独立运行 · Home-Lab · GKE / Cloud Run 云端容器托管",
+      "image": "/marketing/ai-workspace/hero-workspace.png",
+      "imageAlt": "AI Workspace 智能工作空间全景展示",
+      "imageCaption": "AI Workspace 控制中枢 · 任务编排、模型调度与长期记忆检索"
+    },
+    "services": {
+      "title": "无缝兼容主流云端大模型与开源本地运行时",
+      "names": [
+        "Gemini",
+        "Claude",
+        "ChatGPT",
+        "Grok",
+        "GitHub"
+      ]
     },
     "wizard": {
-      "title": "3 步开启智能工作空间",
-      "description": "快速进入智能工作台，连接模型、工具与工作流。",
+      "title": "创建。挂载。交付。",
+      "description": "简单三步，开启高生产力 AI 智能工作空间。",
       "steps": [
         {
           "step": 1,
-          "title": "创建工作区",
-          "description": "登录控制台即可免费开启个人专属 AI 工作空间。",
+          "title": "创建工作空间",
+          "description": "开箱即用，秒级初始化本地独立环境或云端托管实例。",
           "link": "/panel"
         },
         {
           "step": 2,
-          "title": "配置智能代理与 AI 网关",
-          "description": "通过 AI Aggregator 接入主流模型与 Agent 工具链，按需调度多渠道算力与 Token 配额。"
+          "title": "挂载项目与记忆",
+          "description": "一键关联代码仓库，接入 QMD MCP 毫秒级共享向量记忆库。",
+          "link": "/panel"
         },
         {
           "step": 3,
-          "title": "开始任务协同",
-          "description": "在工作空间内协同完成代码开发、知识整理与自动化交付。"
+          "title": "调度多智能体交付",
+          "description": "多 Agent 协同编写、审查与测试，自动生成结构化产物。",
+          "link": "/panel"
         }
       ]
     },
-    "showcases": [
-      {
-        "title": "对话即工作",
-        "description": "由 XWorkmate 驱动，把对话、任务和工具整合在同一个工作台里，持续产出可交付的结果，而不是停留在聊天记录中。",
-        "icon": "bot",
-        "image": "/marketing/xworkmate/已生成图像 2.png"
+    "diagnostics": {
+      "eyebrow": "EXECUTION DOMAIN & CONTROL PLANE",
+      "title": [
+        "执行与控制解耦，",
+        "长程任务稳健持久化。"
+      ],
+      "description": "解耦任务编排、模型网关与共享记忆层，提供生产级可靠性、数据高安全度与多租户隔离能力。",
+      "features": [
+        "DS Bot + DSH 角色调度：按任务启动轻量 worker 子进程，管理后台运行与人机介入状态",
+        "QMD MCP 共享记忆：为所有执行器提供毫秒级 SQLite/PostgreSQL 向量与上下文检索",
+        "AI Aggregator 统一网关：统一鉴权、额度管理、智能轮转与多通道故障容灾",
+        "XConnect 跨端互联：与 XWorkmate 客户端低延迟联动，支持 WebRTC 远程人工接管"
+      ],
+      "image": "/marketing/ai-workspace/architecture-v2.png",
+      "imageAlt": "AI Workspace 总体分层架构图 (目标态 v2.1)",
+      "imageCaption": "AI Workspace 总体分层架构 (目标态 v2.1)",
+      "privacyNote": "代码资产与记忆索引完全属于开发者，本地运行模式数据严格不出域。"
+    },
+    "guide": {
+      "eyebrow": "AUTOMATED WORKFLOW",
+      "title": "自动化生产流水线，连接代码库与云原生算力。",
+      "description": "通过标准 stdio worker 协议无缝衔接各类 CLI 工具（Codex CLI、Claude Code CLI 等），长程研发成果结构化落盘并支持实时比对与热重载。",
+      "cta": {
+        "label": "查看架构指南",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      {
-        "title": "AI Aggregator 调度控制台",
-        "description": "集高性能模型网关、智能凭据轮转与多通道配额调度于一体。原生兼容 OpenAI、Claude、Gemini、DeepSeek 等主流推理协议，内置实时 Token 消耗洞察与高可用容灾路由，为团队与企业级 Agent 应用提供统一算力中枢。",
-        "icon": "cpu",
-        "image": "/marketing/home-hero/desktop-ai-delivery.png"
+      "note": "支持搭配 XWorkmate 客户端获得全功能桌面协同体验。",
+      "image": "/marketing/ai-workspace/agent-flow.png",
+      "imageAlt": "AI Workspace 智能工作流运转图"
+    },
+    "source": {
+      "eyebrow": "OPEN SOURCE & LAB",
+      "title": "开源中枢。全球开发者共建。",
+      "description": "AI Workspace 依托开源生态构建，核心仓库归档于 GitHub 组织下，欢迎参与、反馈与共建。",
+      "cta": {
+        "label": "前往 GitHub 组织",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      {
-        "title": "无缝连接一切",
-        "description": "由 XConnect 提供稳定、安全的连接能力，让你的 AI 工作空间随时访问全球 AI 服务与自建资源。",
-        "icon": "network",
-        "image": "/marketing/xconnect/product.png",
-        "reverse": true
-      }
-    ]
+      "downloadCta": {
+        "label": "下载 XWorkmate 客户端",
+        "href": "/products/xworkmate"
+      },
+      "pricingCta": {
+        "label": "查看订阅方案",
+        "href": "/prices"
+      },
+      "availability": "提供本地单机开源版与团队云端托管版，满足不同规模研发团队需求。"
+    },
+    "sharing": {
+      "title": "AI Workspace — 立即进入你的智能工作空间，开始对话、任务与交付",
+      "description": "面向下一代自主智能体研发的执行运行域与控制中枢。提供多智能体任务拆解调度、QMD 共享记忆检索与统一模型网关。",
+      "image": "/marketing/ai-workspace/hero-workspace.png"
+    },
+    "team": {
+      "title": "团队与私有化部署",
+      "description": "为企业与团队提供专有 AI Workspace 运行域托管、多租户隔离与长程任务持久化服务。",
+      "nodesLabel": "Workspace 实例",
+      "membersLabel": "席位支持",
+      "validityLabel": "服务周期",
+      "contactLabel": "咨询企业部署",
+      "contactHref": "/contact",
+      "unavailable": "企业版服务目前开放早期内测申请中",
+      "manageTitle": "Workspace 运行域配置",
+      "idLabel": "实例 ID",
+      "nameLabel": "工作区名称",
+      "fromLabel": "启用时间",
+      "untilLabel": "有效期至",
+      "activeLabel": "正常运行",
+      "reasonLabel": "变更原因",
+      "saveTeamLabel": "保存配置",
+      "userLabel": "成员分配",
+      "modeLabel": "运行模式",
+      "personalLabel": "单机私有",
+      "dedicatedLabel": "团队专属",
+      "removedLabel": "已归档",
+      "saveMemberLabel": "更新授权",
+      "selectLabel": "选择工作区",
+      "newTeamLabel": "新建运行域",
+      "statusLabel": "状态",
+      "statsTitle": "运行域资源状态",
+      "statsDescription": "实时统计运行中的智能体任务数与算力开销。",
+      "teamCountLabel": "运行域数",
+      "activeTeamsLabel": "活跃实例",
+      "teamMembersCountLabel": "总开发者数",
+      "unassignedMembersLabel": "未分组成员",
+      "membersUnknownLabel": "未知",
+      "loadingLabel": "加载中…",
+      "emptyLabel": "暂无运行域数据"
+    }
   },
   "en": {
-    "hero": {
-      "badge": "Open AI Workspace",
-      "title": "AI Workspace",
-      "subtitle": "XWorkmate, XConnect, and AI Aggregator work together to unite conversations, tasks, model gateways, and secure connectivity into an open AI workspace — from idea to delivery.",
+    "navigation": {
+      "label": "AI Workspace Navigation",
+      "links": [
+        {
+          "label": "Workspace",
+          "href": "#workspace-title"
+        },
+        {
+          "label": "XWorkmate Client",
+          "href": "/products/xworkmate"
+        },
+        {
+          "label": "Architecture",
+          "href": "#architecture"
+        },
+        {
+          "label": "Teams",
+          "href": "/contact"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/ai-workspace-lab"
+        }
+      ],
       "cta": {
-        "label": "Enter Console",
+        "label": "Open Workspace",
         "href": "/panel"
-      }
+      },
+      "copyright": "© 2026 XWork Technologies LLC. All rights reserved."
+    },
+    "hero": {
+      "badge": "INTELLIGENT RUNTIME · AGENTIC OS",
+      "title": "AI Workspace",
+      "headline": [
+        "Intelligent Workspace Runtime,",
+        "From Idea to Delivery."
+      ],
+      "subtitle": "Enter your intelligent workspace instantly — start conversations, execute tasks, and deliver results",
+      "description": "AI Workspace is the execution runtime and control plane for autonomous agents. Delivering multi-agent role scheduling, QMD shared vector memory, unified model gateways, and durable task persistence across local machines and cloud clusters.",
+      "cta": {
+        "label": "Enter Workspace Now",
+        "href": "/panel"
+      },
+      "secondaryCta": {
+        "label": "Explore XWorkmate Client",
+        "href": "/products/xworkmate"
+      },
+      "downloadUrl": "/products/xworkmate",
+      "supportedPlatforms": "Mac · Linux Standalone · Home-Lab · GKE / Cloud Run Managed Containers",
+      "image": "/marketing/ai-workspace/hero-workspace.png",
+      "imageAlt": "AI Workspace Overview: Unified Agentic Workflow & Telemetry",
+      "imageCaption": "AI Workspace Control Hub · Multi-agent orchestration, model gateway, and long-term memory"
+    },
+    "services": {
+      "title": "Native Interoperability with Cloud Foundation Models and Local Inference Runtimes",
+      "names": [
+        "Gemini",
+        "Claude",
+        "ChatGPT",
+        "Grok",
+        "GitHub"
+      ]
     },
     "wizard": {
-      "title": "Get Started in 3 Simple Steps",
-      "description": "Quickly access your intelligent workbench and connect models, tools, and workflows.",
+      "title": "Create. Mount. Deliver.",
+      "description": "Three simple steps to unlock a high-productivity AI workspace.",
       "steps": [
         {
           "step": 1,
           "title": "Create Workspace",
-          "description": "Log into the console to start your dedicated AI workspace for free.",
+          "description": "Instant setup for local isolated environments or cloud-managed instances.",
           "link": "/panel"
         },
         {
           "step": 2,
-          "title": "Configure Agents & AI Gateway",
-          "description": "Connect mainstream models and agent toolchains via AI Aggregator with flexible quota management."
+          "title": "Mount Project & Memory",
+          "description": "Seamlessly link codebases with sub-millisecond QMD MCP vector memory.",
+          "link": "/panel"
         },
         {
           "step": 3,
-          "title": "Collaborate on Tasks",
-          "description": "Collaboratively build code, organize knowledge, and automate deliveries."
+          "title": "Orchestrate Delivery",
+          "description": "Collaborate with multi-agent squads to write, review, test, and ship verified assets.",
+          "link": "/panel"
         }
       ]
     },
-    "showcases": [
-      {
-        "title": "Conversation is the work",
-        "description": "Powered by XWorkmate — bring conversations, tasks, and tools into one workbench, and keep producing real deliverable outputs instead of just chat history.",
-        "icon": "bot",
-        "image": "/marketing/xworkmate/已生成图像 2.png"
+    "diagnostics": {
+      "eyebrow": "EXECUTION DOMAIN & CONTROL PLANE",
+      "title": [
+        "Decoupled Execution & Control,",
+        "Durable Long-Horizon Tasks."
+      ],
+      "description": "Decouples task orchestration, model gateway, and shared memory layers to ensure production reliability, complete data sovereignty, and multi-tenant isolation.",
+      "features": [
+        "DS Bot + DSH Role Scheduling: Spawns lightweight stdio workers, handling background runs and human-in-the-loop gates",
+        "QMD MCP Shared Memory: Sub-millisecond SQLite/PostgreSQL vector and context search for all agent executors",
+        "AI Aggregator Gateway: Unified authentication, quota management, and multi-channel failover routing",
+        "XConnect Mesh: Low-latency event streaming to XWorkmate clients with WebRTC remote interactive takeover"
+      ],
+      "image": "/marketing/ai-workspace/architecture-v2.png",
+      "imageAlt": "AI Workspace Layered Architecture (Target State v2.1)",
+      "imageCaption": "AI Workspace Layered Architecture (Target State v2.1)",
+      "privacyNote": "Your code and memory indices remain strictly under your control. In local mode, zero data leaves your machine."
+    },
+    "guide": {
+      "eyebrow": "AUTOMATED WORKFLOW",
+      "title": "Automated Pipelines Connecting Code Repos to Cloud-Native Compute.",
+      "description": "Interfaces with standard CLI engines (Codex CLI, Claude Code CLI, etc.) via stdio worker contracts. Verified deliverables land directly on disk with live diffing and hot reload.",
+      "cta": {
+        "label": "Read Architecture Guide",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      {
-        "title": "AI Aggregator Console",
-        "description": "Integrated high-performance model gateway, smart credential rotation, and multi-channel quota scheduling. Natively compatible with OpenAI, Claude, Gemini, and DeepSeek protocols, featuring real-time token telemetry and automatic failover routing.",
-        "icon": "cpu",
-        "image": "/marketing/home-hero/desktop-ai-delivery.png"
+      "note": "Pair seamlessly with the XWorkmate client for the complete desktop workflow experience.",
+      "image": "/marketing/ai-workspace/agent-flow.png",
+      "imageAlt": "AI Workspace Automated Workflow Showcase"
+    },
+    "source": {
+      "eyebrow": "OPEN SOURCE & LAB",
+      "title": "Open Source Hub. Global Community.",
+      "description": "AI Workspace is fostered by the open-source community. Core projects and runtimes are hosted under our GitHub organization for open collaboration.",
+      "cta": {
+        "label": "Visit GitHub Organization",
+        "href": "https://github.com/ai-workspace-lab"
       },
-      {
-        "title": "Connected to everything",
-        "description": "Powered by XConnect — stable, secure connectivity that keeps your AI workspace reachable, from global AI services to your own self-hosted resources.",
-        "icon": "network",
-        "image": "/marketing/xconnect/product.png",
-        "reverse": true
-      }
-    ]
+      "downloadCta": {
+        "label": "Get XWorkmate Client",
+        "href": "/products/xworkmate"
+      },
+      "pricingCta": {
+        "label": "View Plans & Pricing",
+        "href": "/prices"
+      },
+      "availability": "Available as a standalone open-source local package or cloud-managed team edition."
+    },
+    "sharing": {
+      "title": "AI Workspace — Enter Your Intelligent Workspace Instantly",
+      "description": "Execution runtime and control plane for autonomous agents. Featuring multi-agent scheduling, QMD shared memory, and unified model gateways.",
+      "image": "/marketing/ai-workspace/hero-workspace.png"
+    },
+    "team": {
+      "title": "Enterprise & Dedicated Deployments",
+      "description": "Dedicated Workspace instances, private cluster runtimes, and enterprise task persistence for engineering organizations.",
+      "nodesLabel": "Workspace Instances",
+      "membersLabel": "Supported Seats",
+      "validityLabel": "Subscription",
+      "contactLabel": "Contact Enterprise Sales",
+      "contactHref": "/contact",
+      "unavailable": "Enterprise cloud workspaces are currently open for early pilot registration.",
+      "manageTitle": "Workspace Domain Management",
+      "idLabel": "Instance ID",
+      "nameLabel": "Workspace Name",
+      "fromLabel": "Start Date",
+      "untilLabel": "Expiration",
+      "activeLabel": "Running",
+      "reasonLabel": "Audit Reason",
+      "saveTeamLabel": "Save Workspace",
+      "userLabel": "Members",
+      "modeLabel": "Deployment Mode",
+      "personalLabel": "Local Private",
+      "dedicatedLabel": "Team Dedicated",
+      "removedLabel": "Archived",
+      "saveMemberLabel": "Update Access",
+      "selectLabel": "Select Workspace",
+      "newTeamLabel": "Create Domain",
+      "statusLabel": "Status",
+      "statsTitle": "Workspace Resource Metrics",
+      "statsDescription": "Real-time tracking of active task threads and compute usage.",
+      "teamCountLabel": "Domains",
+      "activeTeamsLabel": "Active Instances",
+      "teamMembersCountLabel": "Total Developers",
+      "unassignedMembersLabel": "Unassigned",
+      "membersUnknownLabel": "Unknown",
+      "loadingLabel": "Loading...",
+      "emptyLabel": "No workspace domain data"
+    }
   }
 }
