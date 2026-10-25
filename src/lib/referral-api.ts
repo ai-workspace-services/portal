@@ -56,6 +56,10 @@ export function isReferralOverview(value: unknown): value is ReferralOverview {
   return (
     typeof v?.code === "string" &&
     typeof v?.inviteUrl === "string" &&
+    (v?.historyHasMore === undefined ||
+      (typeof v.historyHasMore?.referrals === "boolean" &&
+        typeof v.historyHasMore?.settlements === "boolean" &&
+        typeof v.historyHasMore?.extensions === "boolean")) &&
     finiteAmount(v?.stats?.successfulInvites) &&
     finiteAmount(v?.stats?.awardedDays) &&
     Array.isArray(v?.stats?.cashByCurrency) &&
@@ -77,7 +81,10 @@ export function isReferralOverview(value: unknown): value is ReferralOverview {
         typeof r?.invitee === "string" &&
         typeof r?.status === "string" &&
         currency(r?.currency) &&
-        finiteAmount(r?.rewardMinor),
+        finiteAmount(r?.rewardMinor) &&
+        finiteAmount(r?.paidMinor) &&
+        (r?.planType === "month" || r?.planType === "year") &&
+        timestamp(r?.eligibleAt),
     ) &&
     Array.isArray(v?.settlements) &&
     v.settlements.every(
@@ -86,7 +93,8 @@ export function isReferralOverview(value: unknown): value is ReferralOverview {
         typeof s?.id === "string" &&
         typeof s?.status === "string" &&
         currency(s?.currency) &&
-        finiteAmount(s?.amountMinor),
+        finiteAmount(s?.amountMinor) &&
+        (s?.settledAt === null || timestamp(s?.settledAt)),
     ) &&
     Array.isArray(v?.extensions) &&
     v.extensions.every(
