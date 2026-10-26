@@ -1,3 +1,8 @@
+import { useReferralCampaign } from "@/state/referral-campaign";
+import {
+  campaignAcceptsRegistration,
+  campaignDisplayContent,
+} from "@/lib/referral-campaign";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { ArrowRight, Gift, Wallet } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -14,13 +19,18 @@ export default function ReferralPromoSection({
   compact = false,
 }: ReferralPromoSectionProps) {
   const { language } = useLanguage();
-  const copy = content[language] ?? content.zh;
+  const campaign = useReferralCampaign();
+  const displayContent = campaignDisplayContent(content, campaign);
+  const registrationActive = campaignAcceptsRegistration(campaign);
+  const copy = displayContent[language] ?? displayContent.zh;
   const [cashback, extension] = copy.rewards.items;
 
   return (
     <section
       aria-labelledby="referral-promo-title"
-      className={compact ? "px-4 py-14 sm:px-6 sm:py-20" : "px-4 py-16 sm:px-6 sm:py-24"}
+      className={
+        compact ? "px-4 py-14 sm:px-6 sm:py-20" : "px-4 py-16 sm:px-6 sm:py-24"
+      }
     >
       <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-blue-200/80 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#eef2ff_100%)] p-6 shadow-[0_20px_60px_rgba(37,99,235,0.12)] sm:p-10 lg:p-12">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-14">
@@ -43,6 +53,10 @@ export default function ReferralPromoSection({
             <div className="mt-7 flex flex-wrap gap-3">
               <BoundaryLink
                 href="/products/xconnect/referral"
+                aria-disabled={!registrationActive}
+                onClick={(event) => {
+                  if (!registrationActive) event.preventDefault();
+                }}
                 className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700"
               >
                 {copy.hero.primaryCta.label}
@@ -63,14 +77,18 @@ export default function ReferralPromoSection({
               <h3 className="mt-3 text-base font-semibold text-slate-950">
                 {cashback.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{cashback.description}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {cashback.description}
+              </p>
             </div>
             <div className="rounded-2xl border border-indigo-100 bg-white/85 p-5">
               <Gift className="h-5 w-5 text-indigo-600" aria-hidden />
               <h3 className="mt-3 text-base font-semibold text-slate-950">
                 {extension.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{extension.description}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {extension.description}
+              </p>
             </div>
           </div>
         </div>

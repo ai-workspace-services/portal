@@ -14,6 +14,7 @@ import {
   useState,
   useId,
 } from "react";
+import { buildAuthHref, safeAuthDestination } from "@/lib/auth-navigation";
 import { useReferralAttribution } from "@/state/referral-attribution";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -57,12 +58,13 @@ export default function RegisterContent({
   const alerts = t.alerts;
   const searchParams = useSearchParams();
   const router = useRouter();
-  const returnTo = useMemo(() => {
-    const requested = searchParams.get("returnTo");
-    return requested?.startsWith("/") && !requested.startsWith("//")
-      ? requested
-      : "/";
-  }, [searchParams]);
+  const returnTo = useMemo(
+    () =>
+      safeAuthDestination(
+        searchParams.get("returnTo") ?? searchParams.get("redirect"),
+      ),
+    [searchParams],
+  );
 
   const isSocialAuthVisible = false;
   const githubAuthUrl = `${accountServiceBaseUrl}/api/auth/oauth/login/github`;
@@ -385,6 +387,8 @@ export default function RegisterContent({
           account_service_unreachable: alerts.genericError,
         };
 
+        if (errorCode === "invalid_referral_code")
+          useReferralAttribution.getState().clear();
         showError(errorMap[normalize(errorCode)] ?? alerts.genericError);
         return;
       }
@@ -475,9 +479,13 @@ export default function RegisterContent({
           account_service_unreachable: alerts.genericError,
         };
 
+        if (errorCode === "invalid_referral_code")
+          useReferralAttribution.getState().clear();
         showError(errorMap[normalize(errorCode)] ?? alerts.genericError);
         return;
       }
+
+      useReferralAttribution.getState().clear();
 
       // 2. Login
       const loginResponse = await fetch("/api/auth/login", {
@@ -507,16 +515,12 @@ export default function RegisterContent({
         // Login failed but registration succeeded
         const successMessage = alerts.registrationComplete ?? alerts.success;
         setAlert({ type: "success", message: successMessage });
-        router.push(
-          returnTo === "/"
-            ? "/login"
-            : `/login?redirect=${encodeURIComponent(returnTo)}`,
-        );
+        router.push(buildAuthHref("/login", returnTo));
         return;
       }
 
       if (loginData?.needMfa) {
-        router.push("/login?needMfa=1");
+        router.push(buildAuthHref("/login", returnTo, null, true));
         router.refresh();
         return;
       }
@@ -526,12 +530,9 @@ export default function RegisterContent({
       const successMessage = alerts.registrationComplete ?? alerts.success;
       setAlert({ type: "success", message: successMessage });
 
-      const accountRedirect = loginData?.redirectTo;
-      const safeAccountRedirect =
-        accountRedirect?.startsWith("/") && !accountRedirect.startsWith("//")
-          ? accountRedirect
-          : undefined;
-      router.push(safeAccountRedirect || returnTo);
+      router.push(
+        returnTo || safeAuthDestination(loginData?.redirectTo) || "/",
+      );
       router.refresh();
     } catch (error) {
       console.error("Failed to complete registration", error);
@@ -624,7 +625,7 @@ export default function RegisterContent({
       switchAction={{
         text: t.loginPrompt.text,
         linkLabel: t.loginPrompt.link,
-        href: "/login",
+        href: buildAuthHref("/login", returnTo, referralCode),
       }}
       bottomNote={t.bottomNote}
     >

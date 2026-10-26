@@ -40,6 +40,7 @@ export function bffBoundaryForRoute(relativePath) {
   )
     return "console";
   if (
+    relativePath === "api/referrals/campaign/route.ts" ||
     relativePath === "api/global-mesh/nodes/route.ts" ||
     relativePath.startsWith("api/global-mesh/")
   )

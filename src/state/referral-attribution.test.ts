@@ -20,4 +20,12 @@ describe("registration referral attribution", () => {
     useReferralAttribution.getState().captureLocation();
     expect(useReferralAttribution.getState().referralCode).toBe("AB12CD34");
   });
+  it("accepts a new link after rejected or completed registration clears attribution", () => {
+    window.history.replaceState(null, "", "/referral?code=AB12CD34");
+    useReferralAttribution.getState().captureLocation();
+    useReferralAttribution.getState().clear();
+    window.history.replaceState(null, "", "/register?ref=ZX98YX76");
+    useReferralAttribution.getState().captureLocation();
+    expect(useReferralAttribution.getState().referralCode).toBe("ZX98YX76");
+  });
 });

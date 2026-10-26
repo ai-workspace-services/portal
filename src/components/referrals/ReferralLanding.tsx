@@ -1,6 +1,12 @@
 "use client";
+import { useReferralCampaign } from "@/state/referral-campaign";
+import {
+  campaignAcceptsRegistration,
+  campaignDisplayContent,
+} from "@/lib/referral-campaign";
 
 import Image from "next/image";
+import { buildAuthHref } from "@/lib/auth-navigation";
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -32,7 +38,10 @@ export default function ReferralLanding({
   product: XConnectContent;
 }) {
   const { language } = useLanguage();
-  const c = content[language];
+  const campaign = useReferralCampaign();
+  const displayContent = campaignDisplayContent(content, campaign);
+  const registrationActive = campaignAcceptsRegistration(campaign);
+  const c = displayContent[language];
   const p = product[language];
   const user = useUserStore((s) => s.user);
   const referralCode = useReferralAttribution((s) => s.referralCode);
@@ -55,9 +64,7 @@ export default function ReferralLanding({
     ? c.hero.secondaryCta
     : {
         ...c.hero.primaryCta,
-        href: referralCode
-          ? `/register?ref=${encodeURIComponent(referralCode)}`
-          : c.hero.primaryCta.href,
+        href: buildAuthHref("/register", "/referrals", referralCode),
       };
   return (
     <div className={styles.page}>
@@ -87,7 +94,14 @@ export default function ReferralLanding({
         </nav>
         <div className={styles.actions}>
           <LanguageToggle size="md" />
-          <BoundaryLink href={cta.href} className={styles.primary}>
+          <BoundaryLink
+            href={cta.href}
+            aria-disabled={!user && !registrationActive}
+            onClick={(event) => {
+              if (!user && !registrationActive) event.preventDefault();
+            }}
+            className={styles.primary}
+          >
             {cta.label}
           </BoundaryLink>
         </div>
@@ -134,7 +148,14 @@ export default function ReferralLanding({
             ))}
           </div>
           <div className={styles.heroButtons}>
-            <BoundaryLink className={styles.primary} href={cta.href}>
+            <BoundaryLink
+              className={styles.primary}
+              href={cta.href}
+              aria-disabled={!user && !registrationActive}
+              onClick={(event) => {
+                if (!user && !registrationActive) event.preventDefault();
+              }}
+            >
               {cta.label}
               <ArrowRight size={18} aria-hidden />
             </BoundaryLink>

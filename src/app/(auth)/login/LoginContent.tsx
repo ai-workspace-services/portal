@@ -9,6 +9,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { buildAuthHref, safeAuthDestination } from "@/lib/auth-navigation";
+import { useReferralAttribution } from "@/state/referral-attribution";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Github } from "@/components/icons/brand";
@@ -39,6 +41,13 @@ export default function LoginContent({
   const alerts = t.alerts;
   const searchParams = useSearchParams();
   const router = useRouter();
+  const referralCode = useReferralAttribution((s) => s.referralCode);
+  const captureReferralLocation = useReferralAttribution(
+    (s) => s.captureLocation,
+  );
+  useEffect(() => {
+    captureReferralLocation();
+  }, [captureReferralLocation]);
 
   useEffect(() => {
     const sensitiveKeys = ["username", "password", "email"];
@@ -62,8 +71,9 @@ export default function LoginContent({
   const errorParam = searchParams.get("error");
   const registeredParam = searchParams.get("registered");
   const setupMfaParam = searchParams.get("setupMfa");
-  const redirectParam =
-    searchParams.get("redirect") ?? searchParams.get("returnTo");
+  const redirectParam = safeAuthDestination(
+    searchParams.get("redirect") ?? searchParams.get("returnTo"),
+  );
 
   const normalize = useCallback(
     (value: string) =>
@@ -413,7 +423,8 @@ export default function LoginContent({
           !redirectParam.startsWith("//")
             ? redirectParam
             : undefined;
-        const target = redirectTarget || data?.redirectTo || "/panel";
+        const target =
+          redirectTarget || safeAuthDestination(data?.redirectTo) || "/panel";
         window.location.assign(target);
       } catch (error) {
         console.error("Failed to submit login request", error);
@@ -487,7 +498,10 @@ export default function LoginContent({
               >
                 {t.form.password}
               </label>
-              <BoundaryLink href="/account-recovery" className={AUTH_TEXT_LINK_CLASS}>
+              <BoundaryLink
+                href="/account-recovery"
+                className={AUTH_TEXT_LINK_CLASS}
+              >
                 {t.forgotPassword}
               </BoundaryLink>
             </div>
@@ -591,7 +605,7 @@ export default function LoginContent({
       switchAction={{
         text: t.registerPrompt.text,
         linkLabel: t.registerPrompt.link,
-        href: "/register",
+        href: buildAuthHref("/register", redirectParam, referralCode),
       }}
       bottomNote={t.bottomNote}
     >
