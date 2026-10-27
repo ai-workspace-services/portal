@@ -12,6 +12,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { XWorkLogoMark } from "@/components/icons/brand";
 
 import { getExtensionRegistry } from "@extensions/loader";
 import { useLanguage } from "@i18n/LanguageProvider";
@@ -194,8 +195,8 @@ export function PanelSidebarContent({
         className="xds-sidebar-brand block hover:opacity-85 transition-opacity"
         title={language === "zh" ? "返回主页" : "Back to homepage"}
       >
-        <span className="xds-logo-mark">
-          <Zap className="xds-ico" aria-hidden="true" />
+        <span className="xds-logo-mark p-0.5 bg-transparent">
+          <XWorkLogoMark className="w-full h-full" aria-hidden="true" />
         </span>
         <div className="xds-sidebar-brand-text min-w-0">
           <div

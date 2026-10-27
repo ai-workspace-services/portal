@@ -51,3 +51,27 @@ export function Twitter(props: BrandIconProps) {
     </BrandIcon>
   )
 }
+
+/**
+ * XWork 官方 2x2 对角互锁母体标识 (Official Master Mark)
+ */
+export function XWorkLogoMark({ size = 24, className, ...props }: BrandIconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      fill="none"
+      className={className}
+      {...props}
+    >
+      <rect width="32" height="32" rx="8" fill="#0F172A" />
+      <rect x="5" y="5" width="9.5" height="9.5" rx="2.5" fill="#FFFFFF" />
+      <rect x="17.5" y="5" width="9.5" height="9.5" rx="2.5" fill="#38BDF8" />
+      <rect x="5" y="17.5" width="9.5" height="9.5" rx="2.5" fill="#38BDF8" />
+      <rect x="17.5" y="17.5" width="9.5" height="9.5" rx="2.5" fill="#FFFFFF" />
+    </svg>
+  )
+}
+

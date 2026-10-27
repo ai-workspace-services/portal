@@ -12,6 +12,7 @@
 import BoundaryLink from "@/components/common/BoundaryLink";
 import AiResourceLinks from "@/components/marketing/AiResourceLinks";
 import { Zap } from "lucide-react";
+import { XWorkLogoMark } from "@/components/icons/brand";
 
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { COMPANY_GITHUB_URL, COMPANY_LEGAL_NAME } from "@/lib/company";
@@ -152,8 +153,8 @@ export default function XdsSiteFooter({
         <div className="xds-footer-grid">
           <div>
             <BoundaryLink className="xds-logo" href="/">
-              <span className="xds-logo-mark">
-                <Zap className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="xds-logo-mark p-0.5 bg-transparent">
+                <XWorkLogoMark className="w-full h-full" aria-hidden="true" />
               </span>
               {brand}
             </BoundaryLink>
