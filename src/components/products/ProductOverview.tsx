@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Bot, Cloud, Network, Layers } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Layers } from "lucide-react";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import XdsSiteFooter from "@/components/xds/XdsSiteFooter";
@@ -9,7 +10,11 @@ import { publicDiscovery } from "@/data/content/public-discovery";
 import styles from "./ProductCatalog.module.css";
 
 const PRODUCT_ORDER = ["xworkmate", "xconnect", "ai-workspace"];
-const PRODUCT_ICONS = [Bot, Network, Cloud];
+const PRODUCT_MARKS: Record<string, string> = {
+  xworkmate: "/marketing/xworkmate/brand-mark.png",
+  xconnect: "/marketing/xconnect/brand-mark.png",
+  "ai-workspace": "/marketing/ai-workspace/brand-mark.png",
+};
 
 export function ProductCards({ locale }: { locale: "zh" | "en" }) {
   return (
@@ -18,12 +23,17 @@ export function ProductCards({ locale }: { locale: "zh" | "en" }) {
         const product = publicDiscovery.products.find(
           (item) => item.slug === slug,
         )!;
-        const Icon = PRODUCT_ICONS[index];
         return (
           <article key={slug} className={styles.card}>
             <div className={styles.cardTop}>
               <span className={styles.icon}>
-                <Icon size={24} aria-hidden="true" />
+                <Image
+                  src={PRODUCT_MARKS[slug]}
+                  alt=""
+                  width={36}
+                  height={36}
+                  style={{ objectFit: "contain" }}
+                />
               </span>
               <span className={styles.number}>0{index + 1}</span>
             </div>
