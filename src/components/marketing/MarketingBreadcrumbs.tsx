@@ -17,6 +17,7 @@ import BoundaryLink from "@/components/common/BoundaryLink";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { Zap } from "lucide-react";
+import { XWorkLogoMark } from "@/components/icons/brand";
 
 import { publicDiscovery } from "@/data/content/public-discovery";
 import { homeMarketingContent } from "@/components/marketing/content";
@@ -131,8 +132,8 @@ export default function MarketingBreadcrumbs({
         className="xds-logo xds-mnav-lockup"
         aria-label={HOME_LABEL[locale]}
       >
-        <span className="xds-logo-mark">
-          <Zap className="h-3.5 w-3.5" aria-hidden="true" />
+        <span className="xds-logo-mark p-0.5 bg-transparent">
+          <XWorkLogoMark className="w-full h-full" aria-hidden="true" />
         </span>
       </BoundaryLink>
     );
