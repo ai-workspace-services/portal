@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Check Feature SIT build isolation contract
-        run: python3 -m unittest discover -s scripts/github-actions/tests -p test_feature_sit_build.py
+        run: python3 -m unittest discover -s scripts/github-actions/tests -p 'test_*build*.py'
 
       - name: Resolve Inputs
         id: inputs
