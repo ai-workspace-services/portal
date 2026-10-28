@@ -41,6 +41,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 async function handleProxy(request: NextRequest, params: { path: string[] }) {
+  // No isolated Bridge target is declared for Feature SIT. Do not forward
+  // its cookies or authorization to the production Bridge.
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === 'sit') {
+    return NextResponse.json({ error: 'bridge_unavailable' }, { status: 503 });
+  }
   const upstreamBaseUrl = 'https://xworkmate-bridge.svc.plus';
   const path = params.path.join('/');
   const search = request.nextUrl.search;
