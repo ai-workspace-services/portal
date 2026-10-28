@@ -50,12 +50,24 @@ export async function GET(request: NextRequest) {
     ? `${accountApiBase}/mfa/status?${endpointParams}`
     : `${accountApiBase}/mfa/status`
 
-  const response = await fetch(endpoint, {
-    method: 'GET',
-    headers,
-    cache: 'no-store',
-  })
+  try {
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    })
 
-  const payload = await response.json().catch(() => ({}))
-  return NextResponse.json(payload, { status: response.status })
+    const payload = await response.json().catch(() => ({}))
+    
+    // If upstream route is not found (404), gracefully fallback to optional MFA
+    // instead of leaking 404 to the frontend UI
+    if (response.status === 404) {
+      return NextResponse.json({ mfa: { totpEnabled: false } }, { status: 200 })
+    }
+
+    return NextResponse.json(payload, { status: response.status })
+  } catch (error) {
+    console.error('Account service MFA status request failed', error)
+    return NextResponse.json({ mfa: { totpEnabled: false } }, { status: 200 })
+  }
 }

@@ -165,7 +165,8 @@ export async function POST(request: NextRequest) {
       return result;
     }
 
-    const statusCode = response.status || 401;
+    // Map 404 from upstream accounts service to 401 to prevent browser and client UI from throwing unhandled 404
+    const statusCode = response.status === 404 ? 401 : (response.status || 401);
     const result = NextResponse.json(
       { success: false, error: errorCode, needMfa: false },
       { status: statusCode },
