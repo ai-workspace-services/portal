@@ -52,6 +52,9 @@ clone_repo() {
     return 1
   }
   git -C "${TMP_DIR}/repo" checkout --detach FETCH_HEAD >/dev/null 2>&1
+  if [[ -n "${CONTENT_RESOLVED_SHA_FILE:-}" ]]; then
+    git -C "${TMP_DIR}/repo" rev-parse HEAD > "${CONTENT_RESOLVED_SHA_FILE}"
+  fi
   if [[ "${REMOTE_BRANCH}" =~ ^[0-9a-fA-F]{40}$ ]]; then
     [[ "$(git -C "${TMP_DIR}/repo" rev-parse HEAD)" == "$(printf '%s' "${REMOTE_BRANCH}" | tr '[:upper:]' '[:lower:]')" ]] || {
       echo "Fetched website content SHA does not match WEBSITE_CONTENT_REF" >&2

@@ -54,10 +54,15 @@ if [[ "${PUSH_LATEST:-false}" == "true" ]]; then
   tag_args+=(--tag "${IMAGE_LATEST_REF}")
 fi
 
+metadata_args=()
+if [[ -n "${IMAGE_METADATA_FILE:-}" ]]; then
+  metadata_args+=(--metadata-file "${IMAGE_METADATA_FILE}")
+fi
 docker buildx build \
   --platform "${DOCKER_PLATFORM:-linux/amd64}" \
   --file "${REPO_ROOT}/Dockerfile" \
   "${tag_args[@]}" \
   "${build_args[@]}" \
+  "${metadata_args[@]}" \
   --push \
   "${REPO_ROOT}"

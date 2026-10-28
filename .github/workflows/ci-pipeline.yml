@@ -32,6 +32,18 @@ on:
         default: uat
         type: choice
         options: [sit, uat, prod]
+      feature_sit:
+        description: Build an isolated Feature SIT image
+        type: boolean
+        default: false
+      sit_hostname:
+        description: Candidate console hostname under onwalk.net
+        type: string
+        required: false
+      website_content_sha:
+        description: Full fixed website content commit SHA
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -76,6 +88,9 @@ jobs:
       - name: Check Out Repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
+      - name: Check Feature SIT build isolation contract
+        run: python3 -m unittest discover -s scripts/github-actions/tests -p 'test_*build*.py'
+
       - name: Resolve Inputs
         id: inputs
         env:
@@ -87,6 +102,8 @@ jobs:
 
       - name: Compute Image Metadata
         id: metadata
+        env:
+          FEATURE_SIT: ${{ inputs.feature_sit || false }}
         run: |
           bash scripts/github-actions/compute-frontend-release-metadata.sh
 
@@ -94,6 +111,7 @@ jobs:
         id: push
         env:
           REF: ${{ github.ref }}
+          FEATURE_SIT: ${{ inputs.feature_sit || false }}
         run: bash scripts/github-actions/resolve-push-latest.sh
 
   build:
@@ -114,6 +132,14 @@ jobs:
     steps:
       - name: Check Out Repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Configure isolated Feature SIT build
+        if: ${{ inputs.feature_sit == true }}
+        env:
+          SIT_HOSTNAME: ${{ inputs.sit_hostname }}
+          SIT_CONTENT_SHA: ${{ inputs.website_content_sha }}
+          SIT_ENVIRONMENT: ${{ needs.prep.outputs.deployment_environment }}
+        run: bash scripts/github-actions/configure-feature-sit-build.sh
 
       - name: Set Up Docker Buildx
         run: bash scripts/github-actions/setup-docker-buildx.sh
@@ -141,7 +167,27 @@ jobs:
           IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
           IMAGE_LATEST_REF: ${{ needs.prep.outputs.image_latest_ref }}
           PUSH_LATEST: ${{ needs.prep.outputs.push_latest }}
+          CONTENT_RESOLVED_SHA_FILE: ${{ runner.temp }}/website-content-sha
+          IMAGE_METADATA_FILE: ${{ runner.temp }}/console-image-metadata.json
         run: bash scripts/github-actions/publish-frontend-image.sh
+
+      - name: Record immutable build provenance
+        env:
+          IMAGE_REF: ${{ needs.prep.outputs.image_ref }}
+          FEATURE_SIT: ${{ inputs.feature_sit || false }}
+          SIT_HOSTNAME: ${{ inputs.sit_hostname }}
+          SIT_CONTENT_SHA: ${{ inputs.website_content_sha }}
+          CONTENT_RESOLVED_SHA_FILE: ${{ runner.temp }}/website-content-sha
+          IMAGE_METADATA_FILE: ${{ runner.temp }}/console-image-metadata.json
+          BUILD_PROVENANCE_FILE: ${{ runner.temp }}/console-build-provenance.json
+        run: python3 scripts/github-actions/write-build-provenance.py
+
+      - name: Retain immutable build provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: console-build-provenance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/console-build-provenance.json
+          if-no-files-found: error
 
   release:
     name: Publish release manifest and assets

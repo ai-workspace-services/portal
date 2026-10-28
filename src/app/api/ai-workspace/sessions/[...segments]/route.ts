@@ -44,6 +44,9 @@ async function proxy(
   request: NextRequest,
   context: RouteContext,
 ): Promise<Response> {
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === "sit") {
+    return Response.json({ error: "bridge_unavailable" }, { status: 503 });
+  }
   const { segments } = await context.params;
   if (
     !isAllowedPath(segments, request.method) ||
