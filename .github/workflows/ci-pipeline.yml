@@ -32,6 +32,18 @@ on:
         default: uat
         type: choice
         options: [sit, uat, prod]
+      feature_sit:
+        description: Build an isolated Feature SIT image
+        type: boolean
+        default: false
+      sit_hostname:
+        description: Candidate console hostname under onwalk.net
+        type: string
+        required: false
+      website_content_sha:
+        description: Full fixed website content commit SHA
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -87,6 +99,8 @@ jobs:
 
       - name: Compute Image Metadata
         id: metadata
+        env:
+          FEATURE_SIT: ${{ inputs.feature_sit || false }}
         run: |
           bash scripts/github-actions/compute-frontend-release-metadata.sh
 
@@ -94,6 +108,7 @@ jobs:
         id: push
         env:
           REF: ${{ github.ref }}
+          FEATURE_SIT: ${{ inputs.feature_sit || false }}
         run: bash scripts/github-actions/resolve-push-latest.sh
 
   build:
@@ -114,6 +129,14 @@ jobs:
     steps:
       - name: Check Out Repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Configure isolated Feature SIT build
+        if: ${{ inputs.feature_sit == true }}
+        env:
+          SIT_HOSTNAME: ${{ inputs.sit_hostname }}
+          SIT_CONTENT_SHA: ${{ inputs.website_content_sha }}
+          SIT_ENVIRONMENT: ${{ needs.prep.outputs.deployment_environment }}
+        run: bash scripts/github-actions/configure-feature-sit-build.sh
 
       - name: Set Up Docker Buildx
         run: bash scripts/github-actions/setup-docker-buildx.sh
