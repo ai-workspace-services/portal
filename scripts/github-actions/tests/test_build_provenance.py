@@ -21,12 +21,15 @@ class ProvenanceTest(unittest.TestCase):
                        IMAGE_METADATA_FILE=str(tmp / 'metadata'), BUILD_PROVENANCE_FILE=str(tmp / 'out'),
                        IMAGE_REF='ghcr.io/ai-workspace-services/console:sit-build-1-1',
                        GITHUB_REPOSITORY='ai-workspace-services/portal', NEXT_PUBLIC_RUNTIME_ENVIRONMENT='sit',
-                       FEATURE_SIT='true', SIT_HOSTNAME=hostname, CANONICAL_DOMAIN=hostname, SIT_CONTENT_SHA='a' * 40)
+                       FEATURE_SIT='true', SIT_HOSTNAME=hostname, CANONICAL_DOMAIN=hostname, SIT_CONTENT_SHA='a' * 40,
+                       WEBSITE_CONTENT_REPOSITORY='https://github.com/example/knowledge.git')
             run = lambda: subprocess.run([sys.executable, str(SCRIPT)], cwd=ROOT, env=env, capture_output=True, text=True)
             self.assertEqual(run().returncode, 0)
             self.assertEqual(json.loads((tmp / 'out').read_text())['candidate_hostname'], hostname)
+            self.assertEqual(json.loads((tmp / 'out').read_text())['website_content_repository'], 'example/knowledge')
             for key, value in [('SIT_CONTENT_SHA', 'b' * 40), ('CANONICAL_DOMAIN', 'console.svc.plus'),
-                               ('NEXT_PUBLIC_RUNTIME_ENVIRONMENT', 'uat')]:
+                               ('NEXT_PUBLIC_RUNTIME_ENVIRONMENT', 'uat'),
+                               ('WEBSITE_CONTENT_REPOSITORY', 'https://user:secret@github.com/example/knowledge')]:
                 old = env[key]
                 env[key] = value
                 self.assertNotEqual(run().returncode, 0)

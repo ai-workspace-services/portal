@@ -9,6 +9,7 @@ content_sha="${SIT_CONTENT_SHA:-}"
 label="${host%.onwalk.net}"
 (( ${#label} <= 54 )) || { echo 'SIT service hostname too long' >&2; exit 1; }
 [[ "$content_sha" =~ ^[0-9a-f]{40}$ ]] || { echo 'Content must be a full fixed SHA' >&2; exit 1; }
+[[ "${WEBSITE_CONTENT_REPOSITORY:-}" =~ ^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(\.git)?$ ]] || { echo 'Feature content source must be a credential-free GitHub repository URL' >&2; exit 1; }
 {
   printf 'CANONICAL_DOMAIN=%s\n' "$host"
   printf 'SERVED_DOMAINS=%s\n' "$host"

@@ -14,7 +14,8 @@ class FeatureSitBuildTest(unittest.TestCase):
             output = Path(directory) / 'env'
             env = dict(os.environ, GITHUB_ENV=str(output), GITHUB_EVENT_NAME='workflow_dispatch',
                        GITHUB_REF='refs/heads/main', SIT_ENVIRONMENT='sit',
-                       SIT_HOSTNAME='smoke-sit-test-1483-sit.onwalk.net', SIT_CONTENT_SHA='a' * 40)
+                       SIT_HOSTNAME='smoke-sit-test-1483-sit.onwalk.net', SIT_CONTENT_SHA='a' * 40,
+                       WEBSITE_CONTENT_REPOSITORY='https://github.com/example/knowledge.git')
             def run():
                 return subprocess.run(['bash', str(SCRIPT)], env=env, capture_output=True, text=True)
             self.assertEqual(run().returncode, 0)
@@ -30,7 +31,8 @@ class FeatureSitBuildTest(unittest.TestCase):
                 value = next(line.split('=', 1)[1] for line in args.splitlines() if line.startswith(key + '='))
                 self.assertTrue(value.startswith('https://smoke-sit-test-1483-sit.onwalk.net'))
             for key, value in [('SIT_CONTENT_SHA', 'main'), ('SIT_HOSTNAME', 'console.svc.plus'),
-                               ('SIT_ENVIRONMENT', 'uat'), ('GITHUB_REF', 'refs/heads/other')]:
+                               ('SIT_ENVIRONMENT', 'uat'), ('GITHUB_REF', 'refs/heads/other'),
+                               ('WEBSITE_CONTENT_REPOSITORY', 'https://user:secret@github.com/example/knowledge')]:
                 previous = env[key]
                 env[key] = value
                 self.assertNotEqual(run().returncode, 0)
