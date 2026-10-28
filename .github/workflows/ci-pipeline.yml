@@ -88,6 +88,9 @@ jobs:
       - name: Check Out Repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
+      - name: Check Feature SIT build isolation contract
+        run: python3 -m unittest discover -s scripts/github-actions/tests -p test_feature_sit_build.py
+
       - name: Resolve Inputs
         id: inputs
         env:
