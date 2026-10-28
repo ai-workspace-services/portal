@@ -29,6 +29,9 @@ async function resolveToken(request: NextRequest): Promise<string | undefined> {
 }
 
 export async function GET(request: NextRequest): Promise<Response> {
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === "sit") {
+    return Response.json({ error: "bridge_unavailable" }, { status: 503 });
+  }
   const token = await resolveToken(request);
   if (!token) {
     return Response.json({ ok: false, error: { code: "unauthorized", message: "Authentication required." } }, { status: 401 });

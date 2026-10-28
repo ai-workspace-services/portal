@@ -27,6 +27,9 @@ function bridgeHeaders(token: string): HeadersInit {
 }
 
 export async function GET(request: NextRequest): Promise<Response> {
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === "sit") {
+    return Response.json({ error: "bridge_unavailable" }, { status: 503 });
+  }
   const action = request.nextUrl.searchParams.get("action") ?? "ping";
   if (action !== "ping") {
     return jsonError("Unsupported bridge action.", 400);
@@ -50,6 +53,9 @@ export async function GET(request: NextRequest): Promise<Response> {
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === "sit") {
+    return Response.json({ error: "bridge_unavailable" }, { status: 503 });
+  }
   let payload: unknown;
   try {
     payload = await request.json();

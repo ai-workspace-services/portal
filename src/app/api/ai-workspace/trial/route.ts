@@ -102,6 +102,9 @@ async function scrubTrialArtifacts(body: string): Promise<string> {
 }
 
 export async function GET(request: NextRequest): Promise<Response> {
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === "sit") {
+    return Response.json({ error: "bridge_unavailable" }, { status: 503 });
+  }
   if (request.nextUrl.searchParams.get("action") === "ping") {
     return pingBridge();
   }
@@ -132,6 +135,9 @@ export async function GET(request: NextRequest): Promise<Response> {
 }
 
 export async function POST(request: NextRequest): Promise<Response> {
+  if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === "sit") {
+    return Response.json({ error: "bridge_unavailable" }, { status: 503 });
+  }
   let payload: unknown;
   try {
     payload = await request.json();
