@@ -174,6 +174,9 @@ jobs:
       - name: Record immutable build provenance
         env:
           IMAGE_REF: ${{ needs.prep.outputs.image_ref }}
+          FEATURE_SIT: ${{ inputs.feature_sit || false }}
+          SIT_HOSTNAME: ${{ inputs.sit_hostname }}
+          SIT_CONTENT_SHA: ${{ inputs.website_content_sha }}
           CONTENT_RESOLVED_SHA_FILE: ${{ runner.temp }}/website-content-sha
           IMAGE_METADATA_FILE: ${{ runner.temp }}/console-image-metadata.json
           BUILD_PROVENANCE_FILE: ${{ runner.temp }}/console-build-provenance.json

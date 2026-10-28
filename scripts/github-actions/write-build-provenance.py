@@ -25,4 +25,12 @@ if environment not in ('sit', 'uat', 'prod'):
 result = {'schema': 1, 'repository': repository, 'source_sha': sha,
           'website_content_sha': content_sha, 'environment': environment,
           'image': image_repository + '@' + digest}
+if os.environ.get('FEATURE_SIT') == 'true':
+    hostname = os.environ.get('SIT_HOSTNAME', '')
+    expected_sha = os.environ.get('SIT_CONTENT_SHA', '')
+    if (environment != 'sit' or expected_sha != content_sha or
+            hostname != os.environ.get('CANONICAL_DOMAIN') or
+            not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*-sit\.onwalk\.net', hostname)):
+        raise SystemExit('Feature SIT build inputs do not match provenance')
+    result.update(candidate_hostname=hostname, build_mode='feature-sit')
 Path(os.environ['BUILD_PROVENANCE_FILE']).write_text(json.dumps(result, sort_keys=True) + '\n')
