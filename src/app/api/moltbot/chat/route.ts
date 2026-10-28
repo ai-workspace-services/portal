@@ -7,6 +7,9 @@ const MOLTBOT_SERVICE_URL = process.env.MOLTBOT_SERVICE_URL || 'https://moltbot.
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+    if (process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT === 'sit' || process.env.RUNTIME_ENV === 'sit') {
+        return NextResponse.json({ error: 'Moltbot is unavailable in SIT' }, { status: 503 })
+    }
     try {
         console.log(`Proxying Moltbot chat request to: ${MOLTBOT_SERVICE_URL}/chat`)
 
