@@ -141,7 +141,24 @@ jobs:
           IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
           IMAGE_LATEST_REF: ${{ needs.prep.outputs.image_latest_ref }}
           PUSH_LATEST: ${{ needs.prep.outputs.push_latest }}
+          CONTENT_RESOLVED_SHA_FILE: ${{ runner.temp }}/website-content-sha
+          IMAGE_METADATA_FILE: ${{ runner.temp }}/console-image-metadata.json
         run: bash scripts/github-actions/publish-frontend-image.sh
+
+      - name: Record immutable build provenance
+        env:
+          IMAGE_REF: ${{ needs.prep.outputs.image_ref }}
+          CONTENT_RESOLVED_SHA_FILE: ${{ runner.temp }}/website-content-sha
+          IMAGE_METADATA_FILE: ${{ runner.temp }}/console-image-metadata.json
+          BUILD_PROVENANCE_FILE: ${{ runner.temp }}/console-build-provenance.json
+        run: python3 scripts/github-actions/write-build-provenance.py
+
+      - name: Retain immutable build provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: console-build-provenance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/console-build-provenance.json
+          if-no-files-found: error
 
   release:
     name: Publish release manifest and assets
