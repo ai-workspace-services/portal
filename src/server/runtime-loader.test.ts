@@ -27,6 +27,13 @@ describe("runtime-loader", () => {
     process.env = ORIGINAL_ENV;
   });
 
+  it("does not fall back to the public docs service in SIT", async () => {
+    process.env.RUNTIME_ENV = "sit";
+    const { loadRuntimeConfig } = await import("./runtime-loader");
+    expect(loadRuntimeConfig({ hostname: "smoke-sit-test-1483-sit.onwalk.net" }).docsServiceUrl)
+      .toBe("http://127.0.0.1:8084");
+  });
+
   it("loads the console runtime auth URL from the prod yaml config", async () => {
     const { loadRuntimeConfig } = await import("./runtime-loader");
 
