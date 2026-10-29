@@ -447,6 +447,10 @@ export default function UserCenterAccountRoute() {
           </XdsCard>
         </section>
 
+        {isReadOnlyRole ? (
+          <VlessConnectionCard proxyUuid={proxyUuid} nodes={nodeList} zh={zh} />
+        ) : null}
+
         {/* ── 实时流量 + 配额 ── */}
         <section
           className="xds-grid"
