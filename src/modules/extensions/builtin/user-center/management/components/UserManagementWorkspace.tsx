@@ -27,6 +27,9 @@ type UserManagementWorkspaceProps = {
   isLoading?: boolean;
   canEditRoles: boolean;
   pendingUserIds?: Set<string>;
+  pendingGroupIds?: Set<string>;
+  groupError?: string;
+  onGroupsChange?: (userId: string, groups: string[]) => void;
   onRoleChange?: (userId: string, role: string) => void;
   onPauseUser?: (userId: string) => void;
   onResumeUser?: (userId: string) => void;
@@ -83,6 +86,9 @@ export default function UserManagementWorkspace({
   isLoading = false,
   canEditRoles,
   pendingUserIds,
+  pendingGroupIds,
+  groupError,
+  onGroupsChange,
   onRoleChange,
   onPauseUser,
   onResumeUser,
@@ -472,6 +478,39 @@ export default function UserManagementWorkspace({
                               </span>
                             ))
                           : "未分组"}
+                        {canEditRoles &&
+                        onGroupsChange &&
+                        selectedUser.groups?.some(
+                          (group) =>
+                            group.trim().toLowerCase() === "readonly role",
+                        ) ? (
+                          <button
+                            type="button"
+                            disabled={pendingGroupIds?.has(selectedUser.id)}
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `移除 ${selectedUser.email} 的只读分组？`,
+                                )
+                              ) {
+                                onGroupsChange(
+                                  selectedUser.id,
+                                  (selectedUser.groups ?? []).filter(
+                                    (group) =>
+                                      group.trim().toLowerCase() !==
+                                      "readonly role",
+                                  ),
+                                );
+                              }
+                            }}
+                            className="rounded-md border border-[color:var(--color-primary-border)] px-2 py-0.5 text-xs text-[var(--color-primary)] disabled:opacity-50"
+                          >
+                            移除只读分组
+                          </button>
+                        ) : null}
+                        {groupError ? (
+                          <span role="alert">{groupError}</span>
+                        ) : null}
                       </dd>
                       <dt className="text-[var(--color-text-subtle)]">状态</dt>
                       <dd>
