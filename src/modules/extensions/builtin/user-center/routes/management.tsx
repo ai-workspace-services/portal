@@ -704,6 +704,9 @@ export default function UserCenterManagementRoute() {
             isLoading={usersLoading}
             canEditRoles={canEditRoles}
             pendingUserIds={pendingRoleUpdates}
+            pendingGroupIds={pendingGroupUpdates}
+            groupError={groupsUpdateMessage}
+            onGroupsChange={handleGroupsChange}
             onRoleChange={handleRoleChange}
             onPauseUser={handlePauseUser}
             onResumeUser={handleResumeUser}
