@@ -250,18 +250,18 @@ export default function UserCenterAccountRoute() {
         ) : null}
 
         {/* ── 三步引导 ── */}
-        {!isReadOnlyRole ? (
-          <OnboardingProgress
-            zh={zh}
-            onSetupMfa={handleSetupMfa}
-            connectionContent={
-              <VlessConnectionCard
-                proxyUuid={proxyUuid}
-                nodes={nodeList}
-                zh={zh}
-                embedded
-                accessPaused={accessPaused}
-              />
+        <OnboardingProgress
+          zh={zh}
+          onSetupMfa={handleSetupMfa}
+          canManageMfa={!isReadOnlyRole}
+          connectionContent={
+            <VlessConnectionCard
+              proxyUuid={proxyUuid}
+              nodes={nodeList}
+              zh={zh}
+              embedded
+              accessPaused={accessPaused}
+            />
             }
             state={{
               emailVerified: Boolean(user?.email),
@@ -271,7 +271,6 @@ export default function UserCenterAccountRoute() {
               connectionVerified,
             }}
           />
-        ) : null}
 
         {/* ── 账户元信息条 ── */}
         <IdentityStrip
@@ -446,10 +445,6 @@ export default function UserCenterAccountRoute() {
             </XdsCardBody>
           </XdsCard>
         </section>
-
-        {isReadOnlyRole ? (
-          <VlessConnectionCard proxyUuid={proxyUuid} nodes={nodeList} zh={zh} />
-        ) : null}
 
         {/* ── 实时流量 + 配额 ── */}
         <section

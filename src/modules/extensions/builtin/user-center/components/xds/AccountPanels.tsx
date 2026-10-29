@@ -120,11 +120,13 @@ export function OnboardingProgress({
   state,
   zh,
   onSetupMfa,
+  canManageMfa = true,
   connectionContent,
 }: {
   state: OnboardingState;
   zh: boolean;
   onSetupMfa: () => void;
+  canManageMfa?: boolean;
   connectionContent?: ReactNode;
 }) {
   const step1Done = state.emailVerified;
@@ -278,7 +280,7 @@ export function OnboardingProgress({
             ) : null}
 
             <div className="xds-s3-act">
-              {i === 0 ? (
+              {i === 0 && canManageMfa ? (
                 <XdsButton
                   variant={i === activeIndex ? "primary" : "secondary"}
                   size="sm"
