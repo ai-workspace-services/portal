@@ -262,15 +262,15 @@ export default function UserCenterAccountRoute() {
               embedded
               accessPaused={accessPaused}
             />
-            }
-            state={{
-              emailVerified: Boolean(user?.email),
-              mfaEnabled: Boolean(user?.mfaEnabled),
-              mfaPending: Boolean(user?.mfaPending),
-              credentialsReady,
-              connectionVerified,
-            }}
-          />
+          }
+          state={{
+            emailVerified: Boolean(user?.email),
+            mfaEnabled: Boolean(user?.mfaEnabled),
+            mfaPending: Boolean(user?.mfaPending),
+            credentialsReady,
+            connectionVerified,
+          }}
+        />
 
         {/* ── 账户元信息条 ── */}
         <IdentityStrip
