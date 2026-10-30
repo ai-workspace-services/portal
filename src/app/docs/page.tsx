@@ -40,7 +40,7 @@ export default async function DocsHomePage() {
   const uniqueRepositories = [...new Map(repositories.map((item) => [item.href, item])).values()];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <section className="rounded-[1rem] border border-slate-900/8 bg-white/90 p-5 shadow-[var(--shadow-soft)] lg:p-6">
         <PublicPageIntro
           eyebrow={isChinese ? "文档" : "Docs"}
@@ -59,13 +59,28 @@ export default async function DocsHomePage() {
         </section>
       ) : null}
 
+      <nav aria-label={isChinese ? "本页目录" : "On this page"} className="flex flex-wrap gap-2 text-sm">
+        {[
+          ["#docs-ebooks", isChinese ? "电子书与教程" : "E-books"],
+          ...(collections.length > 0 ? [["#docs-collections", isChinese ? "文档集合" : "Collections"]] : []),
+          ["#docs-source", isChinese ? "开源仓库" : "Repositories"],
+        ].map(([href, label]) => (
+          <a key={href} href={href} className="rounded-full border border-slate-900/8 bg-white px-3 py-1 text-text-muted transition hover:border-primary hover:text-primary">
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <EbookCatalog isChinese={isChinese} />
 
       {collections.length > 0 ? (
-        <section aria-labelledby="docs-collections" className="space-y-4">
-          <h2 id="docs-collections" className="text-xl font-semibold text-slate-950">
+        <section aria-labelledby="docs-collections" className="scroll-mt-24 space-y-5">
+          <header className="space-y-1 border-b border-slate-900/8 pb-4">
+          <h2 id="docs-collections" className="text-2xl font-semibold tracking-tight text-slate-950">
             {isChinese ? "文档集合" : "Collections"}
           </h2>
+          <p className="text-sm text-text-subtle">{isChinese ? "使用指南、架构说明与运维手册，按产品分组。" : "Guides, architecture and runbooks grouped by product."}</p>
+        </header>
           <ul className="grid gap-4 sm:grid-cols-2">
             {collections.map((collection) => (
               <li key={collection.slug}>
@@ -92,11 +107,14 @@ export default async function DocsHomePage() {
         </section>
       ) : null}
 
-      <section aria-labelledby="docs-source" className="space-y-4">
-        <h2 id="docs-source" className="text-xl font-semibold text-slate-950">
+      <section aria-labelledby="docs-source" className="scroll-mt-24 space-y-5">
+        <header className="space-y-1 border-b border-slate-900/8 pb-4">
+          <h2 id="docs-source" className="text-2xl font-semibold tracking-tight text-slate-950">
           {isChinese ? "开源仓库与 README" : "Source repositories and READMEs"}
         </h2>
-        <ul className="grid gap-3 sm:grid-cols-2">
+          <p className="text-sm text-text-subtle">{isChinese ? "各产品的开源仓库与 README。" : "Open-source repositories and READMEs."}</p>
+        </header>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {uniqueRepositories.map((repository) => (
             <li key={repository.href}>
               <a
@@ -104,7 +122,7 @@ export default async function DocsHomePage() {
                 rel="noopener"
                 className="block rounded-[0.95rem] border border-slate-900/8 bg-white px-4 py-3 text-sm font-medium text-primary hover:underline"
               >
-                {repository.label}
+                {repository.label} ↗
               </a>
             </li>
           ))}

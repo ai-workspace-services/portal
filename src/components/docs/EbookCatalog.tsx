@@ -9,7 +9,7 @@ type Book = (typeof catalog.books)[number] & { blurb?: string };
 export function EbookCatalog({ isChinese = true, limit, showResources = false }: { isChinese?: boolean; limit?: number; showResources?: boolean }) {
   const books = (limit ? catalog.books.slice(0, limit) : catalog.books) as Book[];
   return (
-    <section aria-labelledby="docs-ebooks" className="space-y-8">
+    <section aria-labelledby="docs-ebooks" className="scroll-mt-24 space-y-8">
       <header className="space-y-2 border-b border-slate-900/8 pb-5">
         <h2 id="docs-ebooks" className="text-2xl font-semibold tracking-tight text-slate-950">
           {isChinese ? "电子书与教程" : "E-books & Tutorials"}
