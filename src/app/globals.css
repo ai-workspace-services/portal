@@ -1089,3 +1089,10 @@ button {
     --shadow-md: 0 18px 45px rgba(15, 23, 42, 0.08);
   }
 }
+
+/* ebook covers: follow site theme (html.dark set by ThemeProvider, incl. system) */
+.ebook-cover-dark { display: none; }
+html.dark .ebook-cover-light { display: none; }
+html.dark .ebook-cover-dark { display: block; }
+html.dark .ebook-card { background: #1b1e26; border-color: rgba(255,255,255,.08); }
+html.dark .ebook-card h3, html.dark li.ebook-card { color: #f1f5f9; }

@@ -25,10 +25,12 @@ export function EbookCatalog({ isChinese = true, limit, showResources = false }:
         {books.map((b) => (
           <li key={b.slug}>
             <a href={b.pdf} target="_blank" rel="noopener"
-               className="group flex h-full gap-4 rounded-[1rem] border border-slate-900/8 bg-white p-4 shadow-[var(--shadow-soft)] transition hover:border-primary">
+               className="ebook-card group flex h-full gap-4 rounded-[1rem] border border-slate-900/8 bg-white p-4 shadow-[var(--shadow-soft)] transition hover:border-primary">
               <div className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden rounded-md bg-slate-100 sm:w-28">
-                <Image src={b.cover} alt={`${b.title} 封面`} fill sizes="112px"
-                       className="object-cover transition group-hover:scale-[1.03]" />
+                <Image src={b.coverLight} alt={`${b.title} 封面`} fill sizes="112px"
+                       className="ebook-cover-light object-cover transition group-hover:scale-[1.03]" />
+                <Image src={b.coverDark} alt="" aria-hidden fill sizes="112px"
+                       className="ebook-cover-dark object-cover transition group-hover:scale-[1.03]" />
               </div>
               <div className="flex min-w-0 flex-col">
                 <h3 className="text-base font-semibold text-slate-950 group-hover:text-primary">{b.title}</h3>
@@ -50,7 +52,7 @@ export function EbookCatalog({ isChinese = true, limit, showResources = false }:
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {books.map((b) => (
-              <li key={b.slug} className="rounded-[0.75rem] border border-slate-900/8 bg-white p-3 text-sm">
+              <li key={b.slug} className="ebook-card rounded-[0.75rem] border border-slate-900/8 bg-white p-3 text-sm">
                 <span className="block font-medium text-slate-950">{b.title}</span>
                 <span className="mt-1 flex gap-3 text-xs">
                   {b.source && <a className="text-primary hover:underline" href={b.source} target="_blank" rel="noopener">{isChinese ? "源码包" : "Source"} ↗</a>}
