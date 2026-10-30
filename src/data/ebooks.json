@@ -1,12 +1,103 @@
 {
   "updatedAt": "2026-10-30",
   "books": [
-    {"slug":"it-history","title":"图解 IT 简史","version":"v4.9.1","cover":"/ebooks/covers/it-history.webp","pdf":"https://drive.google.com/file/d/1heEAEsvb03bLqjETctFP50TM--bwyvMO/view?usp=drivesdk","sizeMB":92,"source":"https://drive.google.com/file/d/1xln5ZhfGXWfFwxPCmnlswnEN3Dp1uDjL/view?usp=drivesdk","readme":"https://drive.google.com/file/d/1FaxCO0-xrOtjBVjtfmdwBYxCMXwXX68z/view?usp=drivesdk","tags":["IT 史"]},
-    {"slug":"data-infra-ai","title":"趣谈数据基础设施 · AI 时代","version":"v5.1","cover":"/ebooks/covers/data-infra-ai.webp","pdf":"https://drive.google.com/file/d/1OaenKGbINFoJ9_AZnXLxcOCd0sqDZo7p/view?usp=drivesdk","sizeMB":39,"source":"https://drive.google.com/file/d/1fOzMEAWOU3hGABpKbeCFHUoMPiCuTszm/view?usp=drivesdk","readme":"https://drive.google.com/file/d/1pi_Pt2Gm-bh2hLqZlLgmG1c7WxF9he4_/view?usp=drivesdk","tags":["数据","AI"]},
-    {"slug":"overseas-first-step","title":"出海第一步 · 一人公司合规全流程","version":"v1.2","cover":"/ebooks/covers/overseas-first-step.webp","pdf":"https://drive.google.com/file/d/1JmmBA0qsZviPkSe-oK5eCZfyV7bOkjdq/view?usp=drivesdk","sizeMB":2.6,"source":"https://drive.google.com/file/d/1uCSc466CLd9dFdC4M0fOBweTmNcd618G/view?usp=drivesdk","readme":"https://drive.google.com/file/d/1HiKCXp6QyXO7DuK_rm0zTz2VapIk4LI7/view?usp=drivesdk","tags":["出海","合规"]},
-    {"slug":"platform-engineering","title":"图解平台工程 · 云中立实践","version":"v0.9.13","cover":"/ebooks/covers/platform-engineering.webp","pdf":"https://drive.google.com/file/d/1b7zYmm3SgWfQ0Lzu368Gkvv5W6dPQvR6/view?usp=drivesdk","sizeMB":25.3,"source":"https://drive.google.com/file/d/1KFNJNoaFd5URsKILZmZZDpaa5Rh-2jue/view?usp=drivesdk","readme":"https://drive.google.com/file/d/10OWVYjTTLVHIa78Dkhev7mCj6G44gk7_/view?usp=drivesdk","tags":["平台工程"]},
-    {"slug":"ai-native","title":"AI-Native 超级个体 · 新时代游戏","version":"v0.9.5","cover":"/ebooks/covers/ai-native.webp","pdf":"https://drive.google.com/file/d/1dw3JKKFHKEdyYK0D0QgCUsAssOrEurAY/view?usp=drivesdk","sizeMB":7.1,"source":"https://drive.google.com/file/d/15zpxeWHFZes9Sa30D3XBvMx0EyJfiRbT/view?usp=drivesdk","readme":"https://drive.google.com/file/d/1BKucQJVB6NBnn_vfAuYwtiX-3dl8Kzws/view?usp=drivesdk","tags":["AI","个体"]},
-    {"slug":"ai-tools-overseas","title":"AI 工具出海通关 · 注册与订阅全流程","version":"v0.2.5","cover":"/ebooks/covers/ai-tools-overseas.webp","pdf":"https://drive.google.com/file/d/1qEqo7rKo08vgzwRCMCDJI_LjGKG5UOR2/view?usp=drivesdk","sizeMB":1.1,"source":"https://drive.google.com/file/d/126u2MfjVl5tZbjhTjjI2A5ETs6QSV96x/view?usp=drivesdk","readme":"https://drive.google.com/file/d/1QCIrb5zvvyZkFqadSyPPIn-JhB5kkM1P/view?usp=drivesdk","tags":["AI 工具","出海"]},
-    {"slug":"observer-season-1","title":"独立开发观察者计划：AI × 可观测 SaaS 首季","version":"v0.1-r4","cover":"/ebooks/covers/observer-season-1.webp","pdf":"https://drive.google.com/file/d/10a2U-Owgs1BDBT9O7Tfh5LM3ISl8LPUP/view?usp=drivesdk","sizeMB":7.1,"source":"https://drive.google.com/file/d/1rtNyt-wA0MQwagPwxJ0vVhVQSJbaa2BH/view?usp=drivesdk","readme":"https://drive.google.com/file/d/1wE7bMpJFUZ7Gve4zPfB4Jk-fbdB1HLcH/view?usp=drivesdk","tags":["可观测","SaaS"]}
+    {
+      "slug": "it-history",
+      "title": "图解 IT 简史",
+      "version": "v4.9.1",
+      "cover": "/ebooks/covers/it-history.webp",
+      "pdf": "https://drive.google.com/file/d/1heEAEsvb03bLqjETctFP50TM--bwyvMO/view?usp=drivesdk",
+      "sizeMB": 92,
+      "source": "https://drive.google.com/file/d/1xln5ZhfGXWfFwxPCmnlswnEN3Dp1uDjL/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/1FaxCO0-xrOtjBVjtfmdwBYxCMXwXX68z/view?usp=drivesdk",
+      "tags": [
+        "IT 史"
+      ],
+      "blurb": "从大型机、PC 到云与 AI，用图解串起 IT 产业的关键转折。"
+    },
+    {
+      "slug": "data-infra-ai",
+      "title": "趣谈数据基础设施 · AI 时代",
+      "version": "v5.1",
+      "cover": "/ebooks/covers/data-infra-ai.webp",
+      "pdf": "https://drive.google.com/file/d/1OaenKGbINFoJ9_AZnXLxcOCd0sqDZo7p/view?usp=drivesdk",
+      "sizeMB": 39,
+      "source": "https://drive.google.com/file/d/1fOzMEAWOU3hGABpKbeCFHUoMPiCuTszm/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/1pi_Pt2Gm-bh2hLqZlLgmG1c7WxF9he4_/view?usp=drivesdk",
+      "tags": [
+        "数据",
+        "AI"
+      ],
+      "blurb": "数据库、湖仓、流处理到向量检索，AI 时代的数据基础设施全景。"
+    },
+    {
+      "slug": "overseas-first-step",
+      "title": "出海第一步 · 一人公司合规全流程",
+      "version": "v1.2",
+      "cover": "/ebooks/covers/overseas-first-step.webp",
+      "pdf": "https://drive.google.com/file/d/1JmmBA0qsZviPkSe-oK5eCZfyV7bOkjdq/view?usp=drivesdk",
+      "sizeMB": 2.6,
+      "source": "https://drive.google.com/file/d/1uCSc466CLd9dFdC4M0fOBweTmNcd618G/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/1HiKCXp6QyXO7DuK_rm0zTz2VapIk4LI7/view?usp=drivesdk",
+      "tags": [
+        "出海",
+        "合规"
+      ]
+    },
+    {
+      "slug": "platform-engineering",
+      "title": "图解平台工程 · 云中立实践",
+      "version": "v0.9.13",
+      "cover": "/ebooks/covers/platform-engineering.webp",
+      "pdf": "https://drive.google.com/file/d/1b7zYmm3SgWfQ0Lzu368Gkvv5W6dPQvR6/view?usp=drivesdk",
+      "sizeMB": 25.3,
+      "source": "https://drive.google.com/file/d/1KFNJNoaFd5URsKILZmZZDpaa5Rh-2jue/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/10OWVYjTTLVHIa78Dkhev7mCj6G44gk7_/view?usp=drivesdk",
+      "tags": [
+        "平台工程"
+      ]
+    },
+    {
+      "slug": "ai-native",
+      "title": "AI-Native 超级个体 · 新时代游戏",
+      "version": "v0.9.5",
+      "cover": "/ebooks/covers/ai-native.webp",
+      "pdf": "https://drive.google.com/file/d/1dw3JKKFHKEdyYK0D0QgCUsAssOrEurAY/view?usp=drivesdk",
+      "sizeMB": 7.1,
+      "source": "https://drive.google.com/file/d/15zpxeWHFZes9Sa30D3XBvMx0EyJfiRbT/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/1BKucQJVB6NBnn_vfAuYwtiX-3dl8Kzws/view?usp=drivesdk",
+      "tags": [
+        "AI",
+        "个体"
+      ]
+    },
+    {
+      "slug": "ai-tools-overseas",
+      "title": "AI 工具出海通关 · 注册与订阅全流程",
+      "version": "v0.2.5",
+      "cover": "/ebooks/covers/ai-tools-overseas.webp",
+      "pdf": "https://drive.google.com/file/d/1qEqo7rKo08vgzwRCMCDJI_LjGKG5UOR2/view?usp=drivesdk",
+      "sizeMB": 1.1,
+      "source": "https://drive.google.com/file/d/126u2MfjVl5tZbjhTjjI2A5ETs6QSV96x/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/1QCIrb5zvvyZkFqadSyPPIn-JhB5kkM1P/view?usp=drivesdk",
+      "tags": [
+        "AI 工具",
+        "出海"
+      ]
+    },
+    {
+      "slug": "observer-season-1",
+      "title": "独立开发观察者计划：AI × 可观测 SaaS 首季",
+      "version": "v0.1-r4",
+      "cover": "/ebooks/covers/observer-season-1.webp",
+      "pdf": "https://drive.google.com/file/d/10a2U-Owgs1BDBT9O7Tfh5LM3ISl8LPUP/view?usp=drivesdk",
+      "sizeMB": 7.1,
+      "source": "https://drive.google.com/file/d/1rtNyt-wA0MQwagPwxJ0vVhVQSJbaa2BH/view?usp=drivesdk",
+      "readme": "https://drive.google.com/file/d/1wE7bMpJFUZ7Gve4zPfB4Jk-fbdB1HLcH/view?usp=drivesdk",
+      "tags": [
+        "可观测",
+        "SaaS"
+      ]
+    }
   ]
 }
