@@ -1,6 +1,7 @@
 import DocsSidebar, { DocsMobileNav } from "./DocsSidebar";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import Footer from "@components/Footer";
+import DocsFooterLinks from "@/components/docs/DocsFooterLinks";
 import { getDocCollections } from "./resources.server";
 
 export default async function DocsLayout({
@@ -27,7 +28,8 @@ export default async function DocsLayout({
           </main>
         </div>
       </div>
-      <div className="print:hidden">
+      <div className="print:hidden mx-auto w-full max-w-[1600px] px-2 sm:px-3 lg:px-4">
+        <DocsFooterLinks />
         <Footer />
       </div>
     </div>
