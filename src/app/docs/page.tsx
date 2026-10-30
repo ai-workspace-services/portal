@@ -6,6 +6,7 @@
 import Link from "next/link";
 
 import { PublicPageIntro } from "@/components/public/PublicPageShell";
+import { EbookCatalog } from "@/components/docs/EbookCatalog";
 import { COMPANY_GITHUB_URL, PRODUCT_SOURCES } from "@/lib/company";
 import { getContentLanguage } from "@server/contentLanguage";
 
@@ -57,6 +58,8 @@ export default async function DocsHomePage() {
           />
         </section>
       ) : null}
+
+      <EbookCatalog isChinese={isChinese} />
 
       {collections.length > 0 ? (
         <section aria-labelledby="docs-collections" className="space-y-4">
