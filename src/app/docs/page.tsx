@@ -7,7 +7,6 @@ import Link from "next/link";
 
 import { PublicPageIntro } from "@/components/public/PublicPageShell";
 import { EbookCatalog } from "@/components/docs/EbookCatalog";
-import { COMPANY_GITHUB_URL, PRODUCT_SOURCES } from "@/lib/company";
 import { getContentLanguage } from "@server/contentLanguage";
 
 import { getDocCollections, getDocsHomeContent } from "./resources.server";
@@ -36,8 +35,6 @@ export default async function DocsHomePage() {
     (isChinese
       ? "XWorkmate、XConnect 与开放平台的使用指南、架构说明与运维手册。"
       : "Guides, architecture notes, and runbooks for XWorkmate, XConnect, and the open platform.");
-  const repositories = Object.values(PRODUCT_SOURCES).flatMap((item) => item.repositories);
-  const uniqueRepositories = [...new Map(repositories.map((item) => [item.href, item])).values()];
 
   return (
     <div className="space-y-10">
@@ -63,7 +60,6 @@ export default async function DocsHomePage() {
         {[
           ["#docs-ebooks", isChinese ? "电子书与教程" : "E-books"],
           ...(collections.length > 0 ? [["#docs-collections", isChinese ? "文档集合" : "Collections"]] : []),
-          ["#docs-source", isChinese ? "开源仓库" : "Repositories"],
         ].map(([href, label]) => (
           <a key={href} href={href} className="rounded-full border border-slate-900/8 bg-white px-3 py-1 text-text-muted transition hover:border-primary hover:text-primary">
             {label}
@@ -107,32 +103,6 @@ export default async function DocsHomePage() {
         </section>
       ) : null}
 
-      <section aria-labelledby="docs-source" className="scroll-mt-24 space-y-5">
-        <header className="space-y-1 border-b border-slate-900/8 pb-4">
-          <h2 id="docs-source" className="text-2xl font-semibold tracking-tight text-slate-950">
-          {isChinese ? "开源仓库与 README" : "Source repositories and READMEs"}
-        </h2>
-          <p className="text-sm text-text-subtle">{isChinese ? "各产品的开源仓库与 README。" : "Open-source repositories and READMEs."}</p>
-        </header>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {uniqueRepositories.map((repository) => (
-            <li key={repository.href}>
-              <a
-                href={repository.href}
-                rel="noopener"
-                className="block rounded-[0.95rem] border border-slate-900/8 bg-white px-4 py-3 text-sm font-medium text-primary hover:underline"
-              >
-                {repository.label} ↗
-              </a>
-            </li>
-          ))}
-        </ul>
-        <p className="text-sm text-text-muted">
-          <a href={COMPANY_GITHUB_URL} rel="noopener" className="text-primary hover:underline">
-            {COMPANY_GITHUB_URL}
-          </a>
-        </p>
-      </section>
     </div>
   );
 }
