@@ -23,11 +23,14 @@ vi.mock("@components/auth/AuthLayout", () => ({
   AuthLayout: ({
     children,
     alert,
+    description,
   }: {
     children: ReactNode;
     alert?: { message: string };
+    description?: string;
   }) => (
     <div>
+      {description && <p>{description}</p>}
       {alert && <div role="alert">{alert.message}</div>}
       {children}
     </div>
@@ -59,35 +62,62 @@ describe("open registration", () => {
     navigation.push.mockReset();
     navigation.refresh.mockReset();
   });
-  it("hides email code, registers an active account, then logs in", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockImplementation(async (input) => {
-        if (String(input).endsWith("registration-policy"))
-          return new Response(
-            JSON.stringify({ mode: "open", emailVerificationRequired: false }),
-          );
-        return new Response(JSON.stringify({ success: true }));
-      });
+  it.each([
+    { success: true },
+    { token: "test-session", user: { active: true } },
+  ])(
+    "hides email code and accepts the successful login response %s",
+    async (loginResult) => {
+      const fetchMock = vi
+        .spyOn(globalThis, "fetch")
+        .mockImplementation(async (input) => {
+          if (String(input).endsWith("registration-policy"))
+            return new Response(
+              JSON.stringify({
+                mode: "open",
+                emailVerificationRequired: false,
+              }),
+            );
+          if (String(input).endsWith("/login"))
+            return new Response(JSON.stringify(loginResult));
+          return new Response(JSON.stringify({ success: true }));
+        });
+      render(
+        <RegisterContent accountServiceBaseUrl="https://accounts.example" />,
+      );
+      const submit = await screen.findByRole("button", { name: "完成注册" });
+      await waitFor(() => expect(submit).toBeEnabled());
+      expect(
+        screen.queryByText(/先提交邮箱和密码获取验证码/),
+      ).not.toBeInTheDocument();
+      fillForm();
+      fireEvent.click(submit);
+      await waitFor(() => expect(navigation.push).toHaveBeenCalledWith("/"));
+      expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+        "/api/auth/registration-policy",
+        "/api/auth/register",
+        "/api/auth/login",
+      ]);
+      expect(
+        document.querySelector('input[autocomplete="one-time-code"]'),
+      ).toBeNull();
+      expect(JSON.parse(fetchMock.mock.calls[1][1]?.body as string).code).toBe(
+        "",
+      );
+    },
+  );
+  it("retains the email-mode instructions only when verification is required", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ mode: "email", emailVerificationRequired: true }),
+      ),
+    );
     render(
       <RegisterContent accountServiceBaseUrl="https://accounts.example" />,
     );
-    const submit = await screen.findByRole("button", { name: "完成注册" });
-    await waitFor(() => expect(submit).toBeEnabled());
-    fillForm();
-    fireEvent.click(submit);
-    await waitFor(() => expect(navigation.push).toHaveBeenCalled());
-    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
-      "/api/auth/registration-policy",
-      "/api/auth/register",
-      "/api/auth/login",
-    ]);
-    expect(
-      document.querySelector('input[autocomplete="one-time-code"]'),
-    ).toBeNull();
-    expect(JSON.parse(fetchMock.mock.calls[1][1]?.body as string).code).toBe(
-      "",
-    );
+    const next = await screen.findByRole("button", { name: /下一步/ });
+    expect(next).toBeEnabled();
+    expect(screen.getByText(/先提交邮箱和密码获取验证码/)).toBeInTheDocument();
   });
   it("shows duplicate email and does not attempt login", async () => {
     const fetchMock = vi
