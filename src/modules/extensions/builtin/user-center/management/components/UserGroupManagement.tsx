@@ -30,6 +30,7 @@ export type ManagedUser = {
   role?: string;
   groups?: string[];
   active?: boolean;
+  proxyAccessState?: "active" | "paused";
   created_at?: string;
   subscriptionValidFrom?: string | null;
   subscriptionValidUntil?: string | null;

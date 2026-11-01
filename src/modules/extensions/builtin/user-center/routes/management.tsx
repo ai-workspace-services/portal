@@ -125,6 +125,9 @@ export default function UserCenterManagementRoute() {
   const [groupsUpdateMessage, setGroupsUpdateMessage] = useState<
     string | undefined
   >();
+  const [pendingAccessIds, setPendingAccessIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [isBlacklistOpen, setIsBlacklistOpen] = useState(false);
   const [homepageVideoSaving, setHomepageVideoSaving] = useState(false);
   const [homepageVideoStatus, setHomepageVideoStatus] = useState<
@@ -477,33 +480,38 @@ export default function UserCenterManagementRoute() {
     [canEditRoles, markRolePending, usersSWR],
   );
 
-  const handlePauseUser = useCallback(
-    async (userId: string) => {
+  const handleAccessChange = useCallback(
+    async (
+      userId: string,
+      action: "activate" | "deactivate" | "pause" | "resume",
+    ) => {
+      if (!canEditRoles) return;
+      setPendingAccessIds((previous) => new Set(previous).add(userId));
       try {
-        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/pause`, {
+        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/${action}`, {
           method: "POST",
         });
-        usersSWR.mutate();
+        await usersSWR.mutate();
       } catch (error) {
         alert(error instanceof Error ? error.message : "操作失败");
-      }
-    },
-    [usersSWR],
-  );
-
-  const handleResumeUser = useCallback(
-    async (userId: string) => {
-      try {
-        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}/resume`, {
-          method: "POST",
+      } finally {
+        setPendingAccessIds((previous) => {
+          const next = new Set(previous);
+          next.delete(userId);
+          return next;
         });
-        usersSWR.mutate();
-      } catch (error) {
-        alert(error instanceof Error ? error.message : "操作失败");
       }
     },
-    [usersSWR],
+    [canEditRoles, usersSWR],
   );
+  const handleActivateUser = (userId: string) =>
+    handleAccessChange(userId, "activate");
+  const handleDeactivateUser = (userId: string) =>
+    handleAccessChange(userId, "deactivate");
+  const handlePauseUser = (userId: string) =>
+    handleAccessChange(userId, "pause");
+  const handleResumeUser = (userId: string) =>
+    handleAccessChange(userId, "resume");
 
   const handleDeleteUser = useCallback(
     async (userId: string) => {
@@ -708,6 +716,9 @@ export default function UserCenterManagementRoute() {
             groupError={groupsUpdateMessage}
             onGroupsChange={handleGroupsChange}
             onRoleChange={handleRoleChange}
+            pendingAccessIds={pendingAccessIds}
+            onActivateUser={handleActivateUser}
+            onDeactivateUser={handleDeactivateUser}
             onPauseUser={handlePauseUser}
             onResumeUser={handleResumeUser}
             onDeleteUser={handleDeleteUser}
