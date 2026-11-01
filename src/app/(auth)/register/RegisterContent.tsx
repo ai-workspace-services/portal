@@ -554,6 +554,7 @@ export default function RegisterContent({
       let loginData: {
         success?: boolean;
         needMfa?: boolean;
+        token?: string;
         error?: string;
         redirectTo?: string;
       } | null = null;
@@ -563,7 +564,10 @@ export default function RegisterContent({
         loginData = null;
       }
 
-      if (!loginResponse.ok || !loginData?.success) {
+      if (
+        !loginResponse.ok ||
+        (loginData?.success !== true && !loginData?.token)
+      ) {
         // Login failed but registration succeeded
         const successMessage = alerts.registrationComplete ?? alerts.success;
         setAlert({ type: "success", message: successMessage });
@@ -670,7 +674,9 @@ export default function RegisterContent({
       mode="register"
       badge={t.badge}
       title={t.form.title}
-      description={t.form.subtitle}
+      description={
+        policy?.emailVerificationRequired ? t.form.subtitle : undefined
+      }
       alert={alert}
       socialHeading={t.social.title}
       socialButtons={socialButtons}
