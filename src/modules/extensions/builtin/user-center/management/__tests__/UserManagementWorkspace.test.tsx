@@ -12,6 +12,7 @@ const users = [
     role: "admin",
     groups: ["Admin"],
     active: true,
+    proxyAccessState: "active" as const,
     created_at: "2026-08-16T08:25:00.000Z",
   },
   {
@@ -40,6 +41,7 @@ describe("UserManagementWorkspace", () => {
   });
 
   it("uses existing callbacks for quick actions", () => {
+    const onDeactivateUser = vi.fn();
     const onPauseUser = vi.fn();
     const onRenewUuid = vi.fn();
     render(
@@ -47,13 +49,17 @@ describe("UserManagementWorkspace", () => {
         users={users}
         canEditRoles
         onPauseUser={onPauseUser}
+        onDeactivateUser={onDeactivateUser}
         onRenewUuid={onRenewUuid}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "禁用用户" }));
+    fireEvent.click(screen.getByRole("button", { name: "停用账号" }));
     fireEvent.click(screen.getByRole("button", { name: "重置 UUID" }));
 
+    expect(onDeactivateUser).toHaveBeenCalledWith(users[0].id);
+    expect(onPauseUser).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "暂停流量" }));
     expect(onPauseUser).toHaveBeenCalledWith(users[0].id);
     expect(onRenewUuid).toHaveBeenCalledWith(users[0].id);
   });
@@ -70,5 +76,36 @@ describe("UserManagementWorkspace", () => {
     expect(
       screen.getByRole("heading", { name: "用户详情" }),
     ).toBeInTheDocument();
+  });
+  it("enables inactive accounts separately and cannot resume their traffic", () => {
+    const onActivateUser = vi.fn();
+    const onResumeUser = vi.fn();
+    render(
+      <UserManagementWorkspace
+        users={[{ ...users[1], proxyAccessState: "paused" }]}
+        canEditRoles
+        onActivateUser={onActivateUser}
+        onResumeUser={onResumeUser}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "启用账号" }));
+    expect(onActivateUser).toHaveBeenCalledWith(users[1].id);
+    expect(screen.getByRole("button", { name: "恢复流量" })).toBeDisabled();
+    expect(onResumeUser).not.toHaveBeenCalled();
+  });
+  it("resumes traffic without enabling an already active account", () => {
+    const onActivateUser = vi.fn();
+    const onResumeUser = vi.fn();
+    render(
+      <UserManagementWorkspace
+        users={[{ ...users[0], proxyAccessState: "paused" }]}
+        canEditRoles
+        onActivateUser={onActivateUser}
+        onResumeUser={onResumeUser}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "恢复流量" }));
+    expect(onResumeUser).toHaveBeenCalledWith(users[0].id);
+    expect(onActivateUser).not.toHaveBeenCalled();
   });
 });

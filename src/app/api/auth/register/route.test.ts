@@ -54,4 +54,43 @@ describe("registration attribution proxy", () => {
       JSON.parse(fetchMock.mock.calls[0][1]?.body as string),
     ).not.toHaveProperty("referralCode");
   });
+  it("delegates the code requirement to Accounts and never forwards caller-controlled roles", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}"));
+    expect(
+      (
+        await POST(
+          request({
+            ...registration,
+            code: undefined,
+            role: "root",
+            active: false,
+            groups: ["Admin"],
+          }),
+        )
+      ).status,
+    ).toBe(200);
+    const body = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+    expect(body.code).toBe("");
+    expect(body).not.toHaveProperty("role");
+    expect(body).not.toHaveProperty("active");
+    expect(body).not.toHaveProperty("groups");
+  });
+  it("preserves duplicate-email conflicts for repeated and parallel submissions", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ error: "email_already_exists" }), {
+          status: 409,
+        }),
+    );
+    const responses = await Promise.all([
+      POST(request(registration)),
+      POST(request(registration)),
+    ]);
+    for (const response of responses) {
+      expect(response.status).toBe(409);
+      expect((await response.json()).error).toBe("email_already_exists");
+    }
+  });
 });
