@@ -1,55 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
 
-import { normalizeReferralCode } from '@/lib/referral-code'
-import { getAccountServiceApiBaseUrl } from '@server/serviceConfig'
+import { normalizeReferralCode } from "@/lib/referral-code";
+import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 
-const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl()
+const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
 
 type RegistrationPayload = {
-  name?: string
-  email?: string
-  password?: string
-  confirmPassword?: string
-  code?: string
-  referralCode?: string
-}
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  code?: string;
+  referralCode?: string;
+};
 
 function normalizeEmail(value: unknown) {
-  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
 function normalizeString(value: unknown) {
-  return typeof value === 'string' ? value.trim() : ''
+  return typeof value === "string" ? value.trim() : "";
 }
 
 export async function POST(request: NextRequest) {
-  let payload: RegistrationPayload
+  let payload: RegistrationPayload;
   try {
-    payload = (await request.json()) as RegistrationPayload
+    payload = (await request.json()) as RegistrationPayload;
   } catch (error) {
-    console.error('Failed to decode registration payload', error)
-    return NextResponse.json({ success: false, error: 'invalid_request', needMfa: false }, { status: 400 })
+    console.error("Failed to decode registration payload", error);
+    return NextResponse.json(
+      { success: false, error: "invalid_request", needMfa: false },
+      { status: 400 },
+    );
   }
 
-  const email = normalizeEmail(payload?.email)
-  const password = typeof payload?.password === 'string' ? payload.password : ''
+  const email = normalizeEmail(payload?.email);
+  const password =
+    typeof payload?.password === "string" ? payload.password : "";
   const confirmPassword =
-    typeof payload?.confirmPassword === 'string' ? payload.confirmPassword : payload?.password ?? ''
-  const name = normalizeString(payload?.name)
-  const code = normalizeString(payload?.code)
-  const referralCode = normalizeReferralCode(payload?.referralCode)
-  if (payload?.referralCode !== undefined && !referralCode) return NextResponse.json({ success: false, error: "invalid_referral_code", needMfa: false }, { status: 400 })
+    typeof payload?.confirmPassword === "string"
+      ? payload.confirmPassword
+      : (payload?.password ?? "");
+  const name = normalizeString(payload?.name);
+  const code = normalizeString(payload?.code);
+  const referralCode = normalizeReferralCode(payload?.referralCode);
+  if (payload?.referralCode !== undefined && !referralCode)
+    return NextResponse.json(
+      { success: false, error: "invalid_referral_code", needMfa: false },
+      { status: 400 },
+    );
 
   if (!email || !password) {
-    return NextResponse.json({ success: false, error: 'missing_credentials', needMfa: false }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: "missing_credentials", needMfa: false },
+      { status: 400 },
+    );
   }
 
   if (password !== confirmPassword) {
-    return NextResponse.json({ success: false, error: 'password_mismatch', needMfa: false }, { status: 400 })
-  }
-
-  if (!code) {
-    return NextResponse.json({ success: false, error: 'verification_required', needMfa: false }, { status: 400 })
+    return NextResponse.json(
+      { success: false, error: "password_mismatch", needMfa: false },
+      { status: 400 },
+    );
   }
 
   const body = {
@@ -58,42 +70,48 @@ export async function POST(request: NextRequest) {
     code,
     ...(name ? { name } : {}),
     ...(referralCode ? { referralCode } : {}),
-  }
+  };
 
   try {
     const response = await fetch(`${ACCOUNT_API_BASE}/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-      cache: 'no-store',
-    })
+      cache: "no-store",
+    });
 
-    const data = await response.json().catch(() => ({}))
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const errorCode = typeof (data as { error?: string })?.error === 'string' ? data.error : 'registration_failed'
+      const errorCode =
+        typeof (data as { error?: string })?.error === "string"
+          ? data.error
+          : "registration_failed";
       return NextResponse.json(
         { success: false, error: errorCode, needMfa: false },
         { status: response.status || 400 },
-      )
+      );
     }
 
-    return NextResponse.json({ success: true, error: null, needMfa: false })
+    return NextResponse.json({ success: true, error: null, needMfa: false });
   } catch (error) {
-    console.error('Account service registration proxy failed', error)
-    return NextResponse.json({ success: false, error: 'account_service_unreachable', needMfa: false }, { status: 502 })
+    console.error("Account service registration proxy failed", error);
+    return NextResponse.json(
+      { success: false, error: "account_service_unreachable", needMfa: false },
+      { status: 502 },
+    );
   }
 }
 
 export function GET() {
   return NextResponse.json(
-    { success: false, error: 'method_not_allowed', needMfa: false },
+    { success: false, error: "method_not_allowed", needMfa: false },
     {
       status: 405,
       headers: {
-        Allow: 'POST',
+        Allow: "POST",
       },
     },
-  )
+  );
 }

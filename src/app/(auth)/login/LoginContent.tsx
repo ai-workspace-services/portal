@@ -387,6 +387,7 @@ export default function LoginContent({
           }
 
           const errorMap: Record<string, string> = {
+            account_suspended: pageCopy.accountSuspended,
             invalid_credentials: alerts.invalidCredentials,
             missing_credentials: alerts.missingCredentials,
             user_not_found: alerts.userNotFound ?? alerts.genericError,
@@ -440,6 +441,7 @@ export default function LoginContent({
       normalize,
       redirectParam,
       language,
+      pageCopy.accountSuspended,
     ],
   );
 

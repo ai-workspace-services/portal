@@ -56,6 +56,39 @@ export default function RegisterContent({
   }, [captureReferralLocation]);
   const t = translations[language].auth.register;
   const alerts = t.alerts;
+  const [policy, setPolicy] = useState<{
+    mode: "email" | "open";
+    emailVerificationRequired: boolean;
+  } | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/auth/registration-policy", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("registration unavailable");
+        const data = await response.json();
+        if (
+          !["email", "open"].includes(data.mode) ||
+          typeof data.emailVerificationRequired !== "boolean"
+        )
+          throw new Error("invalid registration policy");
+        setPolicy(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setAlert({
+            type: "error",
+            message:
+              language === "zh"
+                ? "注册服务暂不可用，请稍后重试。"
+                : "Registration is unavailable. Please try again later.",
+          });
+      });
+    return () => controller.abort();
+  }, [language]);
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const returnTo = useMemo(
@@ -138,7 +171,10 @@ export default function RegisterContent({
       user_already_exists: alerts.userExists,
       email_must_be_a_valid_address: alerts.invalidEmail,
       password_must_be_at_least_8_characters: alerts.weakPassword,
-      email_already_exists: alerts.userExists,
+      email_already_exists:
+        language === "zh"
+          ? "该邮箱已注册，请直接登录或找回密码。"
+          : "This email is already registered. Sign in or reset your password.",
       name_already_exists: alerts.usernameExists ?? alerts.userExists,
       invalid_email: alerts.invalidEmail,
       password_too_short: alerts.weakPassword,
@@ -148,7 +184,7 @@ export default function RegisterContent({
     };
     const message = errorMap[normalizedError] ?? alerts.genericError;
     return { type: "error", message };
-  }, [alerts, normalize, searchParams]);
+  }, [alerts, language, normalize, searchParams]);
 
   const [alert, setAlert] = useState<AlertState | null>(initialAlert);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -351,6 +387,12 @@ export default function RegisterContent({
       return;
     }
 
+    if (!policy) return;
+    if (!policy.emailVerificationRequired) {
+      await handleCompleteRegistration();
+      return;
+    }
+
     setIsSubmitting(true);
     showStatus(
       t.form.validation?.submitting ??
@@ -383,7 +425,10 @@ export default function RegisterContent({
           invalid_request: alerts.genericError,
           invalid_email: alerts.invalidEmail,
           verification_failed: alerts.verificationFailed ?? alerts.genericError,
-          email_already_exists: alerts.userExists,
+          email_already_exists:
+            language === "zh"
+              ? "该邮箱已注册，请直接登录或找回密码。"
+              : "This email is already registered. Sign in or reset your password.",
           account_service_unreachable: alerts.genericError,
         };
 
@@ -414,7 +459,11 @@ export default function RegisterContent({
   // Step 2: Verify Code & Register
   const handleCompleteRegistration = async () => {
     const verificationCode = codeDigits.join("");
-    if (verificationCode.length !== VERIFICATION_CODE_LENGTH) {
+    if (!policy) return;
+    if (
+      policy.emailVerificationRequired &&
+      verificationCode.length !== VERIFICATION_CODE_LENGTH
+    ) {
       showError(
         alerts.codeRequired ?? alerts.invalidCode ?? alerts.missingFields,
       );
@@ -464,7 +513,10 @@ export default function RegisterContent({
           missing_credentials: alerts.missingFields,
           invalid_email: alerts.invalidEmail,
           password_too_short: alerts.weakPassword,
-          email_already_exists: alerts.userExists,
+          email_already_exists:
+            language === "zh"
+              ? "该邮箱已注册，请直接登录或找回密码。"
+              : "This email is already registered. Sign in or reset your password.",
           name_already_exists: alerts.usernameExists ?? alerts.userExists,
           invalid_name: alerts.invalidName ?? alerts.genericError,
           name_required: alerts.invalidName ?? alerts.genericError,
@@ -602,9 +654,10 @@ export default function RegisterContent({
       if (currentStep === 0) return t.form.submitting ?? t.form.submit;
       return t.form.completing ?? t.form.submit;
     }
-    if (currentStep === 0) return "下一步 (获取验证码)";
+    if (currentStep === 0 && policy?.emailVerificationRequired)
+      return "下一步 (获取验证码)";
     return t.form.completeSubmit ?? "完成注册";
-  }, [isSubmitting, currentStep, t.form]);
+  }, [isSubmitting, currentStep, policy, t.form]);
 
   const resendLabel = isResending
     ? (t.form.verificationCodeResending ?? t.form.verificationCodeResend)
@@ -740,7 +793,7 @@ export default function RegisterContent({
           </>
         )}
 
-        {currentStep === 1 && (
+        {currentStep === 1 && policy?.emailVerificationRequired && (
           <div className="space-y-6">
             <div className={AUTH_HINT_PANEL_CLASS}>
               我们已向你的邮箱 <strong>{formValues.email}</strong>{" "}
@@ -799,7 +852,11 @@ export default function RegisterContent({
         <button
           type="submit"
           disabled={
-            isSubmitting || (currentStep === 1 && codeDigits.some((d) => !d))
+            isSubmitting ||
+            !policy ||
+            (currentStep === 1 &&
+              policy.emailVerificationRequired &&
+              codeDigits.some((d) => !d))
           }
           className={`w-full ${AUTH_PRIMARY_BUTTON_CLASS}`}
         >

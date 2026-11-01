@@ -31,6 +31,9 @@ type UserManagementWorkspaceProps = {
   groupError?: string;
   onGroupsChange?: (userId: string, groups: string[]) => void;
   onRoleChange?: (userId: string, role: string) => void;
+  pendingAccessIds?: Set<string>;
+  onActivateUser?: (userId: string) => void;
+  onDeactivateUser?: (userId: string) => void;
   onPauseUser?: (userId: string) => void;
   onResumeUser?: (userId: string) => void;
   onDeleteUser?: (userId: string) => void;
@@ -90,6 +93,9 @@ export default function UserManagementWorkspace({
   groupError,
   onGroupsChange,
   onRoleChange,
+  pendingAccessIds,
+  onActivateUser,
+  onDeactivateUser,
   onPauseUser,
   onResumeUser,
   onDeleteUser,
@@ -516,6 +522,17 @@ export default function UserManagementWorkspace({
                       <dd>
                         <StatusPill active={selectedActive} />
                       </dd>
+
+                      <dt className="text-[var(--color-text-subtle)]">
+                        节点访问
+                      </dt>
+                      <dd>
+                        {selectedUser.proxyAccessState === "paused"
+                          ? "流量已暂停"
+                          : selectedUser.proxyAccessState === "active"
+                            ? "流量未暂停"
+                            : "状态未知"}
+                      </dd>
                       <dt className="text-[var(--color-text-subtle)]">
                         注册时间
                       </dt>
@@ -534,13 +551,43 @@ export default function UserManagementWorkspace({
                         type="button"
                         onClick={() =>
                           selectedActive
-                            ? onPauseUser?.(selectedUser.id)
-                            : onResumeUser?.(selectedUser.id)
+                            ? onDeactivateUser?.(selectedUser.id)
+                            : onActivateUser?.(selectedUser.id)
                         }
-                        className="inline-flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] p-2.5 text-left text-sm hover:bg-[var(--color-surface-hover)]"
+                        disabled={
+                          !canEditRoles ||
+                          pendingAccessIds?.has(selectedUser.id) ||
+                          (selectedActive ? !onDeactivateUser : !onActivateUser)
+                        }
+                        title="控制账号登录和业务访问"
+                        className="inline-flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] p-2.5 text-left text-sm hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
                       >
                         <UserMinus className="h-4 w-4 text-red-500" />
-                        {selectedActive ? "禁用用户" : "恢复用户"}
+                        {selectedActive ? "停用账号" : "启用账号"}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={
+                          !canEditRoles ||
+                          !selectedActive ||
+                          pendingAccessIds?.has(selectedUser.id) ||
+                          !selectedUser.proxyAccessState ||
+                          (selectedUser.proxyAccessState === "paused"
+                            ? !onResumeUser
+                            : !onPauseUser)
+                        }
+                        title="仅控制节点访问，账号仍可登录"
+                        onClick={() =>
+                          selectedUser.proxyAccessState === "paused"
+                            ? onResumeUser?.(selectedUser.id)
+                            : onPauseUser?.(selectedUser.id)
+                        }
+                        className="inline-flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] p-2.5 text-left text-sm hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
+                      >
+                        {selectedUser.proxyAccessState === "paused"
+                          ? "恢复流量"
+                          : "暂停流量"}
                       </button>
                       <button
                         type="button"
