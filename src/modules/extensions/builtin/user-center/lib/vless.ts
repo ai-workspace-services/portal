@@ -96,6 +96,7 @@ export type XrayConfig = typeof DEFAULT_XRAY_CONFIG
 export type VlessTransport = 'tcp' | 'xhttp'
 
 export type VlessNode = {
+  private?: boolean
   name: string
   region?: string
   resource_class?: 'free' | 'plus' | 'team' | string

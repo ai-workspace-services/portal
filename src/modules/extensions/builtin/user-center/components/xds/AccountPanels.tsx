@@ -67,6 +67,7 @@ function regionalResourceGroupLabel(group: RegionalPoolResourceGroup): string {
     free: "free · Free + Plus + Pro",
     plus: "plus · Plus + Pro",
     pro: "pro · Pro",
+    custom: "custom · Private",
     team: "team · Team",
     unknown: DASH,
   };
@@ -468,7 +469,7 @@ export function VlessConnectionCard({
                 >
                   {options.map((option) => (
                     <option key={option.pool.key} value={option.pool.key}>
-                      {`${option.pool.shortCode} · ${option.pool.entry}`}
+                      {`${option.pool.shortCode} · ${option.pool.entry}${option.pool.private ? (zh ? " · 专属" : " · Private") : ""}`}
                     </option>
                   ))}
                 </optgroup>
@@ -486,7 +487,7 @@ export function VlessConnectionCard({
                     className={`xds-vless-region${active ? " xds-is-active" : ""}`}
                     onClick={() => setSelectedRegionCode(option.pool.key)}
                   >
-                    {`${option.pool.shortCode} ${zh ? "区域" : "Region"}`}
+                    {`${option.pool.shortCode} ${zh ? "区域" : "Region"}${option.pool.private ? (zh ? " · 专属" : " · Private") : ""}`}
                   </button>
                 );
               })}
