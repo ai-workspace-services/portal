@@ -75,6 +75,9 @@ describe("registered regional pools", () => {
     });
     expect(options[0].node).toBe(node);
   });
+  it("retains the private marker from an authorized node", () => {
+    expect(regionalNodeOptions([{ ...node, private: true }])[0].pool.private).toBe(true);
+  });
   it("never synthesizes entries from empty, wildcard, or unclassified nodes", () => {
     expect(regionalNodeOptions([])).toEqual([]);
     expect(
