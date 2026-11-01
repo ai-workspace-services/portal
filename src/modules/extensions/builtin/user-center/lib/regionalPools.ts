@@ -7,13 +7,14 @@ export type RegionalClosureReason =
   | "xray_not_running";
 
 export type RegionalPool = {
+  private?: boolean;
   key: string;
   code: string;
   shortCode: string;
   zhName: string;
   enName: string;
   entry: string;
-  resourceClass?: "shared" | "free" | "plus" | "pro" | "team";
+  resourceClass?: "shared" | "free" | "plus" | "pro" | "custom" | "team";
   teamId?: string;
   poolCount: number;
   openToUsers: boolean;
@@ -41,6 +42,7 @@ export function groupRegionalPools(pools: RegionalPool[]): Array<{
     "plus",
     "pro",
     "team",
+    "custom",
     "unknown",
   ];
   const groups = new Map<
@@ -71,6 +73,7 @@ export function groupRegionalPools(pools: RegionalPool[]): Array<{
 
 type RegionalPoolReport = Pick<
   RegionalPool,
+  | "private"
   | "code"
   | "entry"
   | "poolCount"
@@ -139,7 +142,7 @@ function isRegionalPoolReport(value: unknown): value is RegionalPoolReport {
     pool.poolCount > 0 &&
     typeof pool.openToUsers === "boolean" &&
     (pool.resourceClass === undefined ||
-      ["shared", "free", "plus", "pro", "team"].includes(pool.resourceClass)) &&
+      ["shared", "free", "plus", "pro", "custom", "team"].includes(pool.resourceClass)) &&
     (pool.teamId === undefined || typeof pool.teamId === "string") &&
     (pool.closedReasons === undefined ||
       (Array.isArray(pool.closedReasons) &&
@@ -167,6 +170,7 @@ export function regionalNodeOptions(
     )
       continue;
     const report = {
+      private: node.private,
       code: node.region,
       entry: node.address,
       poolCount: node.pool_count ?? 0,
