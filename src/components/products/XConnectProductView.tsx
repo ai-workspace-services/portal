@@ -237,25 +237,53 @@ export default function XConnectProductView({
             </div>
           </div>
         </section>
-        {c.team ? (
-          <section className={styles.source} aria-label={c.team.title}>
-            <div>
-              <h2>{c.team.title}</h2>
-              <p>{c.team.description}</p>
-              <p>
-                {c.team.nodesLabel} / {c.team.membersLabel} /{" "}
-                {c.team.validityLabel}
-              </p>
+        {c.plans ? (
+          <section className={styles.plans} aria-labelledby="plans-title">
+            <h2 id="plans-title">{c.plans.title}</h2>
+            <div className={styles.planTable}>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">{c.plans.benefitLabel}</th>
+                    {c.plans.names.map((name) => (
+                      <th scope="col" key={name}>
+                        {name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.plans.rows.map((row) => (
+                    <tr key={row.label}>
+                      <th scope="row">{row.label}</th>
+                      {row.values.map((value, index) => (
+                        <td key={index}>{value}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <BoundaryLink
-              className={styles.secondary}
-              href={c.team.contactHref}
-            >
-              {c.team.contactLabel}
-            </BoundaryLink>
+            <div className={styles.planCards}>
+              {c.plans.names.map((name, index) => (
+                <article className={styles.planCard} key={name}>
+                  <h3>{name}</h3>
+                  <dl>
+                    {c.plans?.rows.map((row) => (
+                      <div key={row.label}>
+                        <dt>{row.label}</dt>
+                        <dd>{row.values[index]}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </article>
+              ))}
+            </div>
           </section>
         ) : null}
-        {referralContent ? <ReferralPromoSection content={referralContent} compact /> : null}
+        {referralContent ? (
+          <ReferralPromoSection content={referralContent} compact />
+        ) : null}
       </main>
       <footer className={styles.footer}>
         <div>

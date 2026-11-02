@@ -44,6 +44,12 @@ type XConnectTeamCopy = Record<
   >;
 
 export type XConnectLocale = {
+  plans?: {
+    title: string;
+    benefitLabel: string;
+    names: string[];
+    rows: { label: string; values: string[] }[];
+  };
   team?: XConnectTeamCopy;
   navigation: { label: string; links: Cta[]; cta: Cta; copyright: string };
   hero: {
@@ -201,6 +207,22 @@ export function validateXConnectLocale(
     const cta = record[section][name] as Cta;
     string(cta?.label, `${section}.${name}.label`);
     href(cta?.href, `${section}.${name}.href`);
+  }
+  if (record.plans) {
+    const plans = record.plans;
+    string(plans.title, "plans.title");
+    string(plans.benefitLabel, "plans.benefitLabel");
+    if (!Array.isArray(plans.names) || plans.names.length !== 3)
+      fail("plans.names");
+    (plans.names as unknown[]).forEach((name) => string(name, "plans.names"));
+    if (!Array.isArray(plans.rows) || plans.rows.length !== 6)
+      fail("plans.rows");
+    (plans.rows as { label: string; values: unknown[] }[]).forEach((row) => {
+      string(row?.label, "plans.rows.label");
+      if (!Array.isArray(row?.values) || row.values.length !== 3)
+        fail("plans.rows.values");
+      row.values.forEach((value) => string(value, "plans.rows.values"));
+    });
   }
   if (record.team) href(record.team.contactHref, "team.contactHref");
   const links = record.navigation.links;

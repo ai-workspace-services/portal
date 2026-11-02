@@ -42,4 +42,15 @@ describe("XConnect website content", () => {
       "/download?product=xconnect",
     );
   });
+  it("rejects incomplete plan comparisons", () => {
+    const copy = structuredClone(content.zh);
+    copy.plans.rows[0].values.pop();
+    expect(() => validateXConnectLocale(copy, "test")).toThrow(
+      "plans.rows.values",
+    );
+  });
+  it("accepts older content without plans", () => {
+    const { plans: _plans, ...copy } = content.zh;
+    expect(() => validateXConnectLocale(copy, "test")).not.toThrow();
+  });
 });

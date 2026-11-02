@@ -29,10 +29,7 @@
     "hero": {
       "badge": "OPEN SOURCE · GLOBAL AI CONNECTIVITY",
       "title": "XConnect",
-      "headline": [
-        "全球 AI 加速，",
-        "三步开始。"
-      ],
+      "headline": ["全球 AI 加速，", "三步开始。"],
       "subtitle": "开源、跨平台，连接状态实时可见。",
       "description": "XConnect 是一款面向全球用户的开源 AI 连接加速工具，支持 iOS、Android、macOS、Windows 和 Linux，并提供实时诊断与修复建议。",
       "cta": {
@@ -51,13 +48,7 @@
     },
     "services": {
       "title": "面向日常 AI 与开发工具的网络连接",
-      "names": [
-        "ChatGPT",
-        "Claude",
-        "Gemini",
-        "Grok",
-        "GitHub"
-      ]
+      "names": ["ChatGPT", "Claude", "Gemini", "Grok", "GitHub"]
     },
     "wizard": {
       "title": "注册。下载。登录。",
@@ -85,10 +76,7 @@
     },
     "diagnostics": {
       "eyebrow": "REAL-TIME DIAGNOSTICS",
-      "title": [
-        "连接有波动，",
-        "先看哪里出了问题。"
-      ],
+      "title": ["连接有波动，", "先看哪里出了问题。"],
       "description": "实时查看延迟、丢包与链路状态，按建议排查和修复。",
       "features": [
         "延迟、丢包、网络类型一目了然",
@@ -170,6 +158,49 @@
       "membersUnknownLabel": "成员数 —",
       "loadingLabel": "加载中…",
       "emptyLabel": "暂无团队分组"
+    },
+    "plans": {
+      "title": "选择适合你的连接方案",
+      "benefitLabel": "权益",
+      "names": ["共享基础版", "专属配置版", "独享 IP 与团队定制版"],
+      "rows": [
+        {
+          "label": "价格",
+          "values": [
+            "¥20/月 · ¥200/年",
+            "¥50/月 · ¥500/年",
+            "¥80/月起 · ¥800/年起"
+          ]
+        },
+        {
+          "label": "流量",
+          "values": [
+            "20GB/自然月，年累计 240GB；仅限个人使用",
+            "50GB/自然月，年累计 600GB；特惠权益：年付不限流量（仅限个人使用）",
+            "基础套餐提供总流量包（1 TB/月）（支持按需定制升级）"
+          ]
+        },
+        {
+          "label": "资源",
+          "values": ["共享资源池", "独立资源池、专属配置", "独享资源、独占节点"]
+        },
+        {
+          "label": "出口 IP",
+          "values": ["共享 IP", "精品 IP 资源", "独占 IP"]
+        },
+        {
+          "label": "IP 更换",
+          "values": ["—", "—", "每月免费一次，之后 ¥10/次"]
+        },
+        {
+          "label": "服务",
+          "values": [
+            "环境维护与技术支持",
+            "环境维护与技术支持",
+            "环境维护与技术支持；按团队定制节点、成员上限与服务有效期"
+          ]
+        }
+      ]
     }
   },
   "en": {
@@ -202,10 +233,7 @@
     "hero": {
       "badge": "OPEN SOURCE · GLOBAL AI CONNECTIVITY",
       "title": "XConnect",
-      "headline": [
-        "Global AI connectivity.",
-        "Three steps to start."
-      ],
+      "headline": ["Global AI connectivity.", "Three steps to start."],
       "subtitle": "Open source. Cross-platform. Connection status at a glance.",
       "description": "XConnect is an open-source AI connectivity accelerator for users worldwide, supporting iOS, Android, macOS, Windows, and Linux with real-time diagnostics and repair guidance.",
       "cta": {
@@ -224,13 +252,7 @@
     },
     "services": {
       "title": "Network connectivity for everyday AI and developer tools",
-      "names": [
-        "ChatGPT",
-        "Claude",
-        "Gemini",
-        "Grok",
-        "GitHub"
-      ]
+      "names": ["ChatGPT", "Claude", "Gemini", "Grok", "GitHub"]
     },
     "wizard": {
       "title": "Sign up. Download. Sign in.",
@@ -258,10 +280,7 @@
     },
     "diagnostics": {
       "eyebrow": "REAL-TIME DIAGNOSTICS",
-      "title": [
-        "Connection issues?",
-        "See where they start."
-      ],
+      "title": ["Connection issues?", "See where they start."],
       "description": "Check latency, packet loss, and connection segments in real time, then follow the guidance to troubleshoot and repair.",
       "features": [
         "Latency, packet loss, and network type at a glance",
@@ -343,6 +362,57 @@
       "membersUnknownLabel": "Members —",
       "loadingLabel": "Loading…",
       "emptyLabel": "No team groups"
+    },
+    "plans": {
+      "title": "Choose your connection plan",
+      "benefitLabel": "Benefits",
+      "names": [
+        "Shared Basic",
+        "Premium Configuration",
+        "Dedicated IP & Team Plans"
+      ],
+      "rows": [
+        {
+          "label": "Price",
+          "values": [
+            "¥20/month · ¥200/year",
+            "¥50/month · ¥500/year",
+            "From ¥80/month · From ¥800/year"
+          ]
+        },
+        {
+          "label": "Data",
+          "values": [
+            "20GB per calendar month, 240GB annual total; personal use only",
+            "50GB per calendar month, 600GB annual total; special offer: unlimited data with annual billing (personal use only)",
+            "Base plan includes a total data allowance of 1 TB/month; custom upgrades available on demand"
+          ]
+        },
+        {
+          "label": "Resources",
+          "values": [
+            "Shared resource pool",
+            "Separate resource pool, personalized configuration",
+            "Exclusive resources and node"
+          ]
+        },
+        {
+          "label": "Exit IP",
+          "values": ["Shared IP", "Premium IP resources", "Exclusive IP"]
+        },
+        {
+          "label": "IP changes",
+          "values": ["—", "—", "One free change per month, then ¥10/change"]
+        },
+        {
+          "label": "Support",
+          "values": [
+            "Environment maintenance and technical support",
+            "Environment maintenance and technical support",
+            "Environment maintenance and technical support; custom team nodes, member limits, and service validity"
+          ]
+        }
+      ]
     }
   }
 }

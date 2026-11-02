@@ -509,3 +509,101 @@
     gap: 22px;
   }
 }
+
+.plans {
+  padding: 36px 0;
+  scroll-margin-top: 24px;
+}
+.plans h2 {
+  margin-bottom: 28px;
+  text-align: center;
+}
+.planTable {
+  overflow: hidden;
+  border: 1px solid #d9e6f5;
+  border-radius: 14px;
+  background: white;
+}
+.planTable table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+}
+.planTable th,
+.planTable td {
+  padding: 20px 24px;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.planTable thead {
+  background: #eff6ff;
+}
+.planTable thead th {
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-semibold);
+}
+.planTable th:first-child {
+  width: 15%;
+}
+.planTable tbody th {
+  color: #52647d;
+  font-weight: var(--fw-medium);
+}
+.planTable tbody tr {
+  border-top: 1px solid #e8eef6;
+}
+.planTable tbody tr:first-child td {
+  color: #0058bd;
+  font-weight: var(--fw-semibold);
+}
+.planCards {
+  display: none;
+}
+@media (max-width: 800px) {
+  .planTable {
+    display: none;
+  }
+  .planCards {
+    display: grid;
+    gap: 18px;
+  }
+  .plans h2 {
+    font-size: var(--fs-h2);
+  }
+  .planCard {
+    padding: 24px;
+    border: 1px solid #d9e6f5;
+    border-radius: 14px;
+    background: white;
+  }
+  .planCard h3 {
+    color: #0058bd;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-semibold);
+    margin-bottom: 18px;
+  }
+  .planCard dl {
+    margin: 0;
+    font-size: var(--fs-body);
+  }
+  .planCard dl > div {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid #e8eef6;
+  }
+  .planCard dt {
+    color: #52647d;
+  }
+  .planCard dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .planCard dl > div:first-child dd {
+    color: #0058bd;
+    font-weight: var(--fw-semibold);
+  }
+}
