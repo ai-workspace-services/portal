@@ -106,6 +106,7 @@ export default function UserCenterManagementRoute() {
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
   const canCreateCustomUser = Boolean(user?.isRoot);
+  const canManageSubscriptions = Boolean(user?.isRoot || user?.isAdmin || user?.role === "operator");
 
   const [matrixDraft, setMatrixDraft] = useState<PermissionMatrix>({});
   const [matrixVersion, setMatrixVersion] = useState<number>(0);
@@ -360,7 +361,7 @@ export default function UserCenterManagementRoute() {
       previewToken: string,
       reason: string,
     ) => {
-      if (!canEditRoles || updates.length === 0) return;
+      if (!canManageSubscriptions || updates.length === 0) return;
       setGroupsUpdateMessage(undefined);
       updates.forEach(({ userId }) => markGroupsPending(userId, true));
       const endpoint =
@@ -388,12 +389,12 @@ export default function UserCenterManagementRoute() {
         updates.forEach(({ userId }) => markGroupsPending(userId, false));
       }
     },
-    [canEditRoles, markGroupsPending, usersSWR],
+    [canManageSubscriptions, markGroupsPending, usersSWR],
   );
 
   const handleSubscriptionRecordsImport = useCallback(
     async (csv: string, reason: string): Promise<AdminPlanGroupPreview> => {
-      if (!canEditRoles) throw new Error("没有导入权限");
+      if (!canManageSubscriptions) throw new Error("没有导入权限");
       return jsonFetcher<AdminPlanGroupPreview>(
         `${ADMIN_API_BASE}/users/plan-groups/batch`,
         {
@@ -408,7 +409,7 @@ export default function UserCenterManagementRoute() {
         },
       );
     },
-    [canEditRoles],
+    [canManageSubscriptions],
   );
 
   const handleSubscriptionRecordsExport =
@@ -775,10 +776,10 @@ export default function UserCenterManagementRoute() {
             onPlanGroupPreview={handlePlanGroupPreview}
             onPlanGroupApply={handlePlanGroupApply}
             onSubscriptionRecordsImport={
-              user?.isRoot ? handleSubscriptionRecordsImport : undefined
+              canManageSubscriptions ? handleSubscriptionRecordsImport : undefined
             }
             onSubscriptionRecordsExport={
-              user?.isRoot ? handleSubscriptionRecordsExport : undefined
+              canManageSubscriptions ? handleSubscriptionRecordsExport : undefined
             }
             pendingGroupUserIds={pendingGroupUpdates}
           />

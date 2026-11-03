@@ -652,8 +652,10 @@ export function UserGroupManagement({
       const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = "subscription-records.csv";
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(downloadUrl);
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "导出失败");
     }
@@ -662,7 +664,7 @@ export function UserGroupManagement({
   const importMembers = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file || !onSubscriptionRecordsImport || !canEditRoles) return;
+    if (!file || !onSubscriptionRecordsImport) return;
     try {
       const reason =
         "按邮箱覆盖匹配账户的订阅记录，跳过不存在的邮箱并保留覆盖历史";
@@ -712,13 +714,13 @@ export function UserGroupManagement({
               type="file"
               accept=".csv,.tsv,text/csv,text/tab-separated-values"
               onChange={importMembers}
-              disabled={!onSubscriptionRecordsImport || !canEditRoles}
+              disabled={!onSubscriptionRecordsImport}
               className="hidden"
             />
             <button
               type="button"
               onClick={() => importInputRef.current?.click()}
-              disabled={!onSubscriptionRecordsImport || !canEditRoles}
+              disabled={!onSubscriptionRecordsImport}
               className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50"
             >
               <FileUp className="h-4 w-4" />
