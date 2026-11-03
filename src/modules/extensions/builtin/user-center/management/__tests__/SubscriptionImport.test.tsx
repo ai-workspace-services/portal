@@ -179,3 +179,64 @@ describe("subscription management", () => {
     expect(screen.getAllByText("未配置").length).toBeGreaterThan(1);
   });
 });
+
+describe("file import compatibility", () => {
+  it("shows skipped rows for an all-unknown file without offering apply", async () => {
+    const { container } = render(
+      <UserGroupManagement
+        canEditRoles={false}
+        onSubscriptionRecordsImport={async () => ({
+          requestId: "no-op",
+          previewToken: "",
+          expiresAt: "",
+          noChanges: true,
+          changes: [],
+          skipped: [
+            {
+              row: 13,
+              email: "unknown@example.invalid",
+              reason: "user_not_found",
+            },
+          ],
+        })}
+      />,
+    );
+    const file = new File(["csv"], "subscriptions.tsv");
+    Object.defineProperty(file, "text", { value: async () => "csv" });
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [file] },
+    });
+    expect(await screen.findByRole("status")).toHaveTextContent("变化 0 条");
+    expect(screen.getByRole("status")).toHaveTextContent("第 13 行");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("shows a paid custom record without adding subscription entitlement groups", () => {
+    render(
+      <UserGroupManagement
+        canEditRoles={false}
+        users={[
+          {
+            id: "dedicated",
+            email: "dedicated@example.invalid",
+            groups: ["access:dedicated-only"],
+            subscriptionRecord: {
+              userId: "dedicated",
+              planCode: "CUSTOM",
+              subscriptionType: "month",
+              monthlyQuotaBytes: 50 * 1024 ** 3,
+              annualQuotaBytes: 0,
+              feeMinor: 5000,
+              paymentStatus: "paid",
+              note: "scope retained",
+              validFrom: "2020-01-01",
+              validUntil: "2099-12-31",
+            },
+          },
+        ]}
+      />,
+    );
+    expect(
+      screen.getAllByText("dedicated@example.invalid").length,
+    ).toBeGreaterThan(0);
+  });
+});

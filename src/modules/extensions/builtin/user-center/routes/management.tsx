@@ -106,7 +106,9 @@ export default function UserCenterManagementRoute() {
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
   const canCreateCustomUser = Boolean(user?.isRoot);
-  const canManageSubscriptions = Boolean(user?.isRoot || user?.isAdmin || user?.role === "operator");
+  const canManageSubscriptions = Boolean(
+    user?.isRoot || user?.isAdmin || user?.role === "operator",
+  );
 
   const [matrixDraft, setMatrixDraft] = useState<PermissionMatrix>({});
   const [matrixVersion, setMatrixVersion] = useState<number>(0);
@@ -415,7 +417,7 @@ export default function UserCenterManagementRoute() {
   const handleSubscriptionRecordsExport =
     useCallback(async (): Promise<string> => {
       const response = await fetch(
-        `${ADMIN_API_BASE}/users/subscription-records?format=csv`,
+        `${ADMIN_API_BASE}/users/subscription-records?format=csv&includeHistory=true`,
         { credentials: "include", cache: "no-store" },
       );
       if (!response.ok) throw new Error(`导出失败（HTTP ${response.status}）`);
@@ -776,10 +778,14 @@ export default function UserCenterManagementRoute() {
             onPlanGroupPreview={handlePlanGroupPreview}
             onPlanGroupApply={handlePlanGroupApply}
             onSubscriptionRecordsImport={
-              canManageSubscriptions ? handleSubscriptionRecordsImport : undefined
+              canManageSubscriptions
+                ? handleSubscriptionRecordsImport
+                : undefined
             }
             onSubscriptionRecordsExport={
-              canManageSubscriptions ? handleSubscriptionRecordsExport : undefined
+              canManageSubscriptions
+                ? handleSubscriptionRecordsExport
+                : undefined
             }
             pendingGroupUserIds={pendingGroupUpdates}
           />
