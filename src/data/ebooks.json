@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30",
+  "updatedAt": "2026-11-03",
   "books": [
     {
       "slug": "it-history",
@@ -105,6 +105,38 @@
       ],
       "coverLight": "/ebooks/covers/observer-season-1-light.webp",
       "coverDark": "/ebooks/covers/observer-season-1-dark.webp"
+    },
+    {
+      "slug": "agent-skills-spec",
+      "title": "Agent Skills 工程规范 · 开放方案",
+      "version": "v0.2",
+      "pdf": "https://drive.google.com/file/d/1CVnFpZvNn_ZuULRNJLNJQlUFqK53Jw7d/view?usp=drivesdk",
+      "sizeMB": 1.1,
+      "source": "https://github.com/ai-workspace-services/ebooks/tree/main/books/agent-skills-spec",
+      "readme": "https://github.com/ai-workspace-services/ebooks/blob/main/books/agent-skills-spec/README.md",
+      "tags": [
+        "Agent",
+        "工程规范"
+      ],
+      "blurb": "一个人带十几个 Agent：技能怎么分层、怎么写、怎么验，一套可复用的开放方案。",
+      "coverLight": "/ebooks/covers/agent-skills-spec-light.webp",
+      "coverDark": "/ebooks/covers/agent-skills-spec-dark.webp"
+    },
+    {
+      "slug": "cny-overseas-card-routes",
+      "title": "人民币海外卡三条路线攻略",
+      "version": "v1.1",
+      "pdf": "https://drive.google.com/file/d/197gS3oRpKPgU4PUBOXQhHkjS_LZGu6vS/view?usp=drivesdk",
+      "sizeMB": 0.9,
+      "source": "https://github.com/ai-workspace-services/ebooks/tree/main/books/cny-overseas-card-routes",
+      "readme": "https://github.com/ai-workspace-services/ebooks/blob/main/books/cny-overseas-card-routes/README.md",
+      "tags": [
+        "出海",
+        "支付"
+      ],
+      "blurb": "香港、菲律宾 eSIM + Maya、美国 LLC + Mercury，三条把人民币变成海外卡的路线怎么选。",
+      "coverLight": "/ebooks/covers/cny-overseas-card-routes-light.webp",
+      "coverDark": "/ebooks/covers/cny-overseas-card-routes-dark.webp"
     }
   ]
 }
