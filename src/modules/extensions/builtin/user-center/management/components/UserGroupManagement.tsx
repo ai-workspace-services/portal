@@ -61,6 +61,7 @@ export type SubscriptionRecord = {
   validUntil?: string | null;
 };
 export type AdminPlanGroupPreview = {
+  skipped?: Array<{ row: number; email: string; reason: string }>;
   requestId: string;
   previewToken: string;
   expiresAt: string;
@@ -664,7 +665,7 @@ export function UserGroupManagement({
     if (!file || !onSubscriptionRecordsImport || !canEditRoles) return;
     try {
       const reason =
-        "按完整订阅清单对齐：清单外个人用户归 Free，保留历史商业记录及空白字段";
+        "按邮箱覆盖匹配账户的订阅记录，跳过不存在的邮箱并保留覆盖历史";
       const preview = await onSubscriptionRecordsImport(
         await file.text(),
         reason,
@@ -709,7 +710,7 @@ export function UserGroupManagement({
             <input
               ref={importInputRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,.tsv,text/csv,text/tab-separated-values"
               onChange={importMembers}
               disabled={!onSubscriptionRecordsImport || !canEditRoles}
               className="hidden"
@@ -1336,6 +1337,11 @@ export function UserGroupManagement({
                     : "。"}
                 </p>
               </div>
+              {!!planGroupDialog.preview?.skipped?.length && (
+                <p role="status" className="text-sm text-amber-700">
+                  已跳过不存在的邮箱：{planGroupDialog.preview.skipped.map((row) => `第 ${row.row} 行 ${row.email}`).join("；")}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => setPlanGroupDialog(undefined)}
