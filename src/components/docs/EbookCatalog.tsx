@@ -1,5 +1,5 @@
 /** 电子书目录（教程画廊式布局，参考 pgsql.cc/docs/tutorials 的结构，沿用 xworktech 样式）。
- * 结构：页头（标题 + 一句说明）→ 横向书卡两列网格（左封面、右标题/简介/元信息）→ 「源码与构建」紧凑卡片区。
+ * 结构：页头（标题 + 一句说明）→ 横向书卡网格（xl 三列，9 本即 3×3）（左封面、右标题/简介/元信息）→ 「源码与构建」紧凑卡片区。
  * 数据源 src/data/ebooks.json，封面在 public/ebooks/covers/。 */
 import Image from "next/image";
 import catalog from "@/data/ebooks.json";
@@ -21,7 +21,7 @@ export function EbookCatalog({ isChinese = true, limit, showResources = false }:
         </p>
       </header>
 
-      <ul className="grid gap-5 md:grid-cols-2">
+      <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {books.map((b) => (
           <li key={b.slug}>
             <a href={b.pdf} target="_blank" rel="noopener"
