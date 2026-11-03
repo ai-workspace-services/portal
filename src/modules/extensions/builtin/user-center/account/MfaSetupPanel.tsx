@@ -74,6 +74,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
   const [isProvisioning, setIsProvisioning] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [isDisabling, setIsDisabling] = useState(false)
+  const [disableCode, setDisableCode] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRefs = useRef<Array<HTMLInputElement | null>>([])
@@ -359,13 +360,22 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
     window.location.assign('/login')
   }, [logout])
 
-  const handleDisable = useCallback(async () => {
+  const handleDisable = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const normalizedCode = disableCode.replace(/\D/g, '').slice(0, 6)
+    if (normalizedCode.length !== 6) {
+      setError(resolveErrorMessage('mfa_code_required'))
+      return
+    }
+
     setIsDisabling(true)
     setError(null)
     try {
       const response = await fetch('/api/auth/mfa/disable', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ code: normalizedCode }),
       })
       const payload = (await response.json().catch(() => ({}))) as {
         success?: boolean
@@ -383,6 +393,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       setIssuer('')
       setAccountLabel('')
       setCode('')
+      setDisableCode('')
       await refresh()
       void fetchStatus()
       router.refresh()
@@ -392,7 +403,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
     } finally {
       setIsDisabling(false)
     }
-  }, [fetchStatus, refresh, resolveErrorMessage, router])
+  }, [disableCode, fetchStatus, refresh, resolveErrorMessage, router])
 
   const closeDialog = useCallback(() => {
     setIsDialogOpen(false)
@@ -560,14 +571,31 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                         <p className="font-semibold text-sm text-[var(--color-danger-foreground)]">{copy.disable.title}</p>
                         <p className="mt-0.5 text-[var(--color-danger-foreground)]">{copy.disable.description}</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleDisable}
-                        disabled={isDisabling}
-                        className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-danger-muted)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-danger-foreground)] transition hover:border-[color:var(--color-danger)] hover:bg-[var(--color-danger-muted)] disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        {isDisabling ? copy.disable.confirming : copy.disable.action}
-                      </button>
+                      <form onSubmit={handleDisable} className="space-y-2.5">
+                        <label className="block text-xs font-medium" htmlFor="mfa-disable-code">
+                          {copy.disable.codeLabel}
+                        </label>
+                        <input
+                          id="mfa-disable-code"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]{6}"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          value={disableCode}
+                          onChange={(event) => setDisableCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder={copy.disable.codePlaceholder}
+                          aria-label={copy.disable.codeLabel}
+                          className="h-9 w-full max-w-56 rounded-md border border-[color:var(--color-danger-muted)] bg-[var(--color-surface)] px-2.5 text-sm font-mono tracking-[0.2em] text-[var(--color-text)] focus:border-[color:var(--color-danger)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-danger-muted)]"
+                        />
+                        <button
+                          type="submit"
+                          disabled={isDisabling || disableCode.length !== 6}
+                          className="inline-flex items-center justify-center rounded-md border border-[color:var(--color-danger-muted)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-danger-foreground)] transition hover:border-[color:var(--color-danger)] hover:bg-[var(--color-danger-muted)] disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {isDisabling ? copy.disable.confirming : copy.disable.action}
+                        </button>
+                      </form>
                     </div>
 
                     {error ? <p className="text-xs text-[var(--color-danger)]">{error}</p> : null}
