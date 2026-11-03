@@ -461,6 +461,8 @@ type UserCenterMfaTranslation = {
   disable: {
     title: string
     description: string
+    codeLabel: string
+    codePlaceholder: string
     action: string
     confirming: string
   }
@@ -1231,6 +1233,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         disable: {
           title: 'Unbind authenticator',
           description: 'Removing MFA will disable extra verification until you bind an authenticator again.',
+          codeLabel: 'Current authenticator code',
+          codePlaceholder: 'Enter the 6-digit code',
           action: 'Unbind MFA',
           confirming: 'Unbinding…',
         },
@@ -2110,6 +2114,8 @@ export const translations: Record<'en' | 'zh', Translation> = {
         disable: {
           title: '解绑认证器',
           description: '解绑后将暂停额外验证，建议在重新绑定前谨慎操作。',
+          codeLabel: '请输入当前动态验证码',
+          codePlaceholder: '输入 6 位数字验证码',
           action: '立即解绑',
           confirming: '解绑中…',
         },

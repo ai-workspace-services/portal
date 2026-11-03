@@ -7,7 +7,6 @@ import { getAccountServiceApiBaseUrl } from "@server/serviceConfig";
 const ACCOUNT_API_BASE = getAccountServiceApiBaseUrl();
 
 export async function POST(request: NextRequest) {
-  void request;
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value?.trim();
 
   if (!token) {
@@ -18,11 +17,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const body = await request.text();
     const response = await fetch(`${ACCOUNT_API_BASE}/mfa/disable`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        ...(body.trim() ? { "Content-Type": "application/json" } : {}),
       },
+      ...(body.trim() ? { body } : {}),
       cache: "no-store",
     });
 
