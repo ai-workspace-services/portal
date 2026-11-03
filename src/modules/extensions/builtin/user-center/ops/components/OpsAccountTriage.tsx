@@ -129,7 +129,7 @@ type BillingLedgerResponse = {
   updatedAt?: string;
 };
 
-type ActionName = "plan" | "grant-trial" | "quota" | "balance" | "clear-arrears";
+type ActionName = "reset-monthly-usage" | "plan" | "grant-trial" | "quota" | "balance" | "clear-arrears";
 
 type AttentionState = "normal" | "arrears" | "suspended" | "payg-low" | "trial-ending" | "syncing";
 
@@ -267,12 +267,14 @@ export default function OpsAccountTriage() {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(searchParams.get("uuid") ?? undefined);
   const [action, setAction] = useState<ActionName | null>(null);
+  const [resetTarget, setResetTarget] = useState<{id: string; email: string} | null>(null);
   const [reason, setReason] = useState("");
   const [actionValue, setActionValue] = useState("");
   const [actionStatus, setActionStatus] = useState<string | undefined>();
   const [actionError, setActionError] = useState<string | undefined>();
 
   const canAccess = Boolean(user);
+  const canResetUsage = Boolean(user?.isRoot || user?.isAdmin || user?.role === "operator");
   const usersSWR = useSWR<ManagedUser[]>(canAccess ? `${ADMIN_API_BASE}/billing/accounts` : null, jsonFetcher, {
     revalidateOnFocus: false,
   });
@@ -335,6 +337,7 @@ export default function OpsAccountTriage() {
   );
 
   const openAction = (nextAction: ActionName) => {
+    setResetTarget(nextAction === "reset-monthly-usage" && selected && detailUser?.email ? {id: selected, email: detailUser.email} : null);
     setAction(nextAction);
     setActionValue("");
     setReason("");
@@ -350,6 +353,10 @@ export default function OpsAccountTriage() {
     }
 
     const payload: Record<string, unknown> = { reason: reason.trim() };
+    if (action === "reset-monthly-usage") {
+      if (!canResetUsage || !resetTarget || resetTarget.id !== selected || resetTarget.email !== detailUser?.email) { setActionError("请按邮箱选择可操作的账号"); return; }
+      payload.email = resetTarget.email;
+    }
     if (action === "plan") payload.planId = actionValue.trim();
     if (action === "grant-trial") {
       payload.planId = actionValue.trim() || "TRIAL-7D";
@@ -551,14 +558,14 @@ export default function OpsAccountTriage() {
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
             <div className="rounded-xl border border-[color:var(--color-surface-border)] p-4"><div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--color-heading)]">账户概览</h3><WalletCards className="h-4 w-4 text-[var(--color-primary)]" /></div><dl className="mt-3 space-y-3 text-sm"><div className="flex items-center justify-between"><dt className="text-[var(--color-text-muted)]">账户余额</dt><dd className={`font-semibold ${billing?.currentBalance !== undefined && billing.currentBalance < 0 ? "text-[var(--color-danger)]" : "text-[var(--color-heading)]"}`}>{formatMoneyOrPending(billing?.currentBalance)}</dd></div><div className="flex items-center justify-between"><dt className="text-[var(--color-text-muted)]">剩余配额</dt><dd className="font-medium text-[var(--color-heading)]">{formatBytes(billing?.remainingIncludedQuota)}</dd></div><div className="flex items-center justify-between"><dt className="text-[var(--color-text-muted)]">停机状态</dt><dd className="font-medium text-[var(--color-heading)]">{billing?.suspendState ?? "—"}</dd></div></dl></div>
-            <div className="rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)]/20 p-4"><div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--color-heading)]">账号操作</h3><Settings2 className="h-4 w-4 text-[var(--color-warning)]" /></div><div className="mt-3 grid gap-2"><ActionButton icon={Package} label="指派套餐" onClick={() => openAction("plan")} primary /><ActionButton icon={Gift} label="发放试用" onClick={() => openAction("grant-trial")} /><ActionButton icon={Gauge} label="调整配额" onClick={() => openAction("quota")} /><div className="mt-1 border-t border-[color:var(--color-warning-muted)] pt-2"><ActionButton icon={CircleDollarSign} label="调整余额" onClick={() => openAction("balance")} /><ActionButton icon={Ban} label="清欠费" onClick={() => openAction("clear-arrears")} /></div><p className="pt-1 text-center text-eyebrow text-[var(--color-warning-foreground)]">所有变更必须填写原因</p></div></div>
+            <div className="rounded-xl border border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)]/20 p-4"><div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--color-heading)]">账号操作</h3><Settings2 className="h-4 w-4 text-[var(--color-warning)]" /></div><div className="mt-3 grid gap-2"><ActionButton icon={Package} label="指派套餐" onClick={() => openAction("plan")} primary /><ActionButton icon={Gift} label="发放试用" onClick={() => openAction("grant-trial")} /><ActionButton icon={Gauge} label="调整配额" onClick={() => openAction("quota")} />{canResetUsage && selectedId && selectedUser ? <ActionButton icon={RefreshCw} label="重置本月用量" onClick={() => openAction("reset-monthly-usage")} /> : null}<div className="mt-1 border-t border-[color:var(--color-warning-muted)] pt-2"><ActionButton icon={CircleDollarSign} label="调整余额" onClick={() => openAction("balance")} /><ActionButton icon={Ban} label="清欠费" onClick={() => openAction("clear-arrears")} /></div><p className="pt-1 text-center text-eyebrow text-[var(--color-warning-foreground)]">所有变更必须填写原因</p></div></div>
           </div>
 
           <div className="mt-4 rounded-xl bg-[var(--color-surface-muted)] p-4"><div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--color-heading)]">最近操作审计</h3><Link href={`/panel/ops/audit?target=${encodeURIComponent(detailUser?.id ?? "")}`} className="text-xs font-semibold text-[var(--color-primary)]">查看全部</Link></div>{billingSWR.data?.ledger?.slice(0, 3).map((entry) => <div key={entry.id ?? `${entry.entryType}-${entry.createdAt}`} className="mt-3 flex items-center justify-between gap-3 text-xs"><span className="truncate text-[var(--color-text-muted)]">{entry.entryType ?? "账务变更"}</span><span className="font-medium text-[var(--color-heading)]">{entry.amountDelta !== undefined ? formatMoneyOrPending(entry.amountDelta) : "待同步"}</span><span className="shrink-0 text-[var(--color-text-subtle)]">{formatDate(entry.createdAt)}</span></div>)}{!billingSWR.data?.ledger?.length ? <p className="mt-3 text-xs text-[var(--color-text-subtle)]">暂无账号级操作记录</p> : null}</div>
         </aside>
       </div>
 
-      {action ? <ActionDialog action={action} value={actionValue} reason={reason} status={actionStatus} error={actionError} onValueChange={setActionValue} onReasonChange={setReason} onClose={() => setAction(null)} onSubmit={submitAction} /> : null}
+      {action ? <ActionDialog accountEmail={resetTarget?.email ?? detailUser?.email ?? ""} action={action} value={actionValue} reason={reason} status={actionStatus} error={actionError} onValueChange={setActionValue} onReasonChange={setReason} onClose={() => setAction(null)} onSubmit={submitAction} /> : null}
     </div>
   );
 }
@@ -612,8 +619,9 @@ function CashflowRow({ label, value, danger = false }: { label: string; value: s
   return <div className="flex items-center justify-between gap-3"><span className="text-[var(--color-text-muted)]">{label}</span><span className={`font-medium ${danger ? "text-[var(--color-danger)]" : "text-[var(--color-heading)]"}`}>{value}</span></div>;
 }
 
-function ActionDialog({ action, value, reason, status, error, onValueChange, onReasonChange, onClose, onSubmit }: { action: ActionName; value: string; reason: string; status?: string; error?: string; onValueChange: (value: string) => void; onReasonChange: (value: string) => void; onClose: () => void; onSubmit: () => void }) {
+function ActionDialog({ accountEmail, action, value, reason, status, error, onValueChange, onReasonChange, onClose, onSubmit }: { accountEmail: string; action: ActionName; value: string; reason: string; status?: string; error?: string; onValueChange: (value: string) => void; onReasonChange: (value: string) => void; onClose: () => void; onSubmit: () => void }) {
   const copy: Record<ActionName, { title: string; description: string; placeholder: string }> = {
+    "reset-monthly-usage": { title: "重置本月用量", description: `目标账号：${accountEmail}。按 UTC 自然月，下一分钟起重新计算用量，额度恢复为当前套餐月额度；下月 1 日 00:00 自动失效。原始流量、余额、欠费和停用状态保留。`, placeholder: "无需填写变更值" },
     plan: { title: "指派套餐", description: "为当前账号应用目录中的套餐权益。", placeholder: "例如 PRO-MONTHLY" },
     "grant-trial": { title: "发放试用", description: "默认发放 7 天试用权益，可在后端按套餐策略校验。", placeholder: "可选：试用套餐 ID" },
     quota: { title: "调整配额", description: "请输入新的剩余配额，单位为字节。", placeholder: "例如 21474836480" },
@@ -621,5 +629,5 @@ function ActionDialog({ action, value, reason, status, error, onValueChange, onR
     "clear-arrears": { title: "清欠费", description: "确认账号已完成付款或获得人工豁免。", placeholder: "无需填写变更值" },
   };
   const current = copy[action];
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="w-full max-w-lg rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="ops-action-title"><div className="flex items-start justify-between gap-4"><div><h2 id="ops-action-title" className="text-lg font-semibold text-[var(--color-heading)]">{current.title}</h2><p className="mt-1 text-sm text-[var(--color-text-muted)]">{current.description}</p></div><button type="button" onClick={onClose} aria-label="关闭" className="rounded-lg p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"><X className="h-4 w-4" /></button></div>{action !== "clear-arrears" ? <label className="mt-5 block space-y-1 text-sm font-medium text-[var(--color-text-muted)]">变更值<input value={value} onChange={(event) => onValueChange(event.target.value)} placeholder={current.placeholder} className="mt-1 w-full rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]" /></label> : null}<label className="mt-4 block space-y-1 text-sm font-medium text-[var(--color-text-muted)]">操作原因<span className="text-[var(--color-danger)]"> *</span><textarea value={reason} onChange={(event) => onReasonChange(event.target.value)} rows={4} placeholder="说明这次变更的业务原因或工单号" className="mt-1 w-full resize-none rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]" /></label>{error ? <p className="mt-3 rounded-lg bg-[var(--color-danger-muted)] px-3 py-2 text-sm text-[var(--color-danger-foreground)]" role="alert">{error}</p> : null}{status ? <p className="mt-3 flex items-center gap-2 rounded-lg bg-[var(--color-success-muted)] px-3 py-2 text-sm text-[var(--color-success-foreground)]" aria-live="polite"><Check className="h-4 w-4" />{status}</p> : null}<div className="mt-5 flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-lg border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]">取消</button><button type="button" disabled={Boolean(status)} onClick={onSubmit} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60">{status === "提交中…" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{status === "提交中…" ? "提交中…" : "确认变更"}</button></div></section></div>;
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="w-full max-w-lg rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="ops-action-title"><div className="flex items-start justify-between gap-4"><div><h2 id="ops-action-title" className="text-lg font-semibold text-[var(--color-heading)]">{current.title}</h2><p className="mt-1 text-sm text-[var(--color-text-muted)]">{current.description}</p></div><button type="button" onClick={onClose} aria-label="关闭" className="rounded-lg p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"><X className="h-4 w-4" /></button></div>{action !== "clear-arrears" && action !== "reset-monthly-usage" ? <label className="mt-5 block space-y-1 text-sm font-medium text-[var(--color-text-muted)]">变更值<input value={value} onChange={(event) => onValueChange(event.target.value)} placeholder={current.placeholder} className="mt-1 w-full rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]" /></label> : null}<label className="mt-4 block space-y-1 text-sm font-medium text-[var(--color-text-muted)]">操作原因<span className="text-[var(--color-danger)]"> *</span><textarea value={reason} onChange={(event) => onReasonChange(event.target.value)} rows={4} placeholder="说明这次变更的业务原因或工单号" className="mt-1 w-full resize-none rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]" /></label>{error ? <p className="mt-3 rounded-lg bg-[var(--color-danger-muted)] px-3 py-2 text-sm text-[var(--color-danger-foreground)]" role="alert">{error}</p> : null}{status ? <p className="mt-3 flex items-center gap-2 rounded-lg bg-[var(--color-success-muted)] px-3 py-2 text-sm text-[var(--color-success-foreground)]" aria-live="polite"><Check className="h-4 w-4" />{status}</p> : null}<div className="mt-5 flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-lg border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]">取消</button><button type="button" disabled={Boolean(status)} onClick={onSubmit} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60">{status === "提交中…" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{status === "提交中…" ? "提交中…" : "确认变更"}</button></div></section></div>;
 }
