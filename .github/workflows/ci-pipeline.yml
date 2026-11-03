@@ -144,20 +144,9 @@ jobs:
       - name: Set Up Docker Buildx
         run: bash scripts/github-actions/setup-docker-buildx.sh
 
-      - name: Load Vault secrets (CICD)
-        id: vault
-        uses: hashicorp/vault-action@v4
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          method: jwt
-          role: github-actions-console-${{ needs.prep.outputs.deployment_environment }}
-          jwtGithubAudience: vault
-          secrets: |
-            kv/data/CICD GHCR_TOKEN | GHCR_TOKEN
-
       - name: Log In To GHCR
         env:
-          GHCR_TOKEN: ${{ steps.vault.outputs.GHCR_TOKEN }}
+          GHCR_TOKEN: ${{ github.token }}
         run: bash scripts/github-actions/login-ghcr.sh
 
       - name: Publish Frontend Image
