@@ -51,7 +51,7 @@ const variant = (
     catalog_policy: {
       family,
       quotaCycle: unit === "year" ? "subscription_year" : "natural_month",
-      fallback: family === "plus" || family === "pro" ? "vps_pool" : "pause",
+      fallback: "pause",
       ...extra,
     },
   },
@@ -77,7 +77,7 @@ export const CATALOG_FAMILIES: Family[] = [
   {
     id: "plus",
     name: "Plus",
-    description: "月付或年付，高速额度用尽转 VPS 流量池。",
+    description: "月付或年付，额度耗尽后暂停。",
     summary: "20 GB / 月 · 240 GB / 年",
     price: "¥20 / 月 · 年付优惠 ¥200",
     variants: [
@@ -92,8 +92,8 @@ export const CATALOG_FAMILIES: Family[] = [
   {
     id: "pro",
     name: "Pro",
-    description: "总流量不限，高速额度用尽转 VPS 流量池。",
-    summary: "50 GB / 月 · 600 GB / 年 · 总流量不限",
+    description: "按账户配额计量，额度耗尽后暂停。",
+    summary: "50 GB / 月 · 600 GB / 年",
     price: "¥50 / 月 · ¥500 / 年",
     variants: [
       variant("pro", "PRO-MONTHLY-2026", "Pro 月付", 50, 5000, "month"),
