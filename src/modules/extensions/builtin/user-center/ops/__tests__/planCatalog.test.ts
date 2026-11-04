@@ -29,7 +29,9 @@ describe("catalog unit boundary and version preservation", () => {
     const result = partitionCatalog([legacy]);
     expect(result.legacy).toEqual([legacy]);
     expect(JSON.stringify(legacy)).toBe(snapshot);
-    expect(result.families).toHaveLength(6);
+    expect(result.families).toHaveLength(4);
+    expect(result.families.map((f) => f.id)).not.toContain("beta");
+    expect(result.families.map((f) => f.id)).not.toContain("gift");
     expect(
       result.families.flatMap((f) => f.variants).every((p) => !p.active),
     ).toBe(true);
