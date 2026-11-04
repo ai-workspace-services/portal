@@ -114,32 +114,6 @@ export const CATALOG_FAMILIES: Family[] = [
       }),
     ],
   },
-  {
-    id: "beta",
-    name: "无限制（内测）",
-    description: "限时开放，按账户分配有效期。",
-    summary: "30–90 天 · 不限流量",
-    price: "内测申请",
-    variants: [
-      variant("beta", "UNLIMITED-BETA-2026", "无限制（内测）", 0, 0, "", {
-        quotaCycle: "none",
-        minimumDays: 30,
-        maximumDays: 90,
-      }),
-    ],
-  },
-  {
-    id: "gift",
-    name: "临时流量包",
-    description: "一次性赠送额度，自然月到期。",
-    summary: "赠送 · 自然月到期 · 不退款",
-    price: "赠送",
-    variants: [
-      variant("gift", "TRAFFIC-GIFT-2026", "临时流量包", 10, 0, "", {
-        giftOnly: true,
-      }),
-    ],
-  },
 ];
 export function policyFor(plan: BillingPlan): CatalogPolicy {
   return plan.features?.catalog_policy as CatalogPolicy;
