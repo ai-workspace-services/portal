@@ -50,6 +50,7 @@ export type AdminPlanGroupUpdate = {
   validUntil?: string | null;
 };
 export type SubscriptionRecord = {
+  planCode?: string;
   userId: string;
   subscriptionType: string;
   monthlyQuotaBytes: number;
@@ -61,6 +62,7 @@ export type SubscriptionRecord = {
   validUntil?: string | null;
 };
 export type AdminPlanGroupPreview = {
+  noChanges?: boolean;
   skipped?: Array<{ row: number; email: string; reason: string }>;
   requestId: string;
   previewToken: string;
@@ -71,6 +73,10 @@ export type AdminPlanGroupPreview = {
     usedBytesPreserved: number;
     remainingIncludedQuota: number;
     configurationSyncWillPause: boolean;
+    before?: {
+      subscriptionRecord?: SubscriptionRecord;
+      includedQuotaBytes?: number;
+    };
     after?: {
       validFrom?: string | null;
       validUntil?: string | null;
@@ -252,7 +258,12 @@ const hasSegment = (user: ManagedUser, segment: Segment): boolean => {
   const record = user.subscriptionRecord;
   if (
     record &&
-    (user.groups ?? []).includes("segment:subscription:listed") &&
+    ((user.groups ?? []).includes("segment:subscription:listed") ||
+      (record.planCode === "CUSTOM" &&
+        (!record.validFrom || Date.parse(record.validFrom) <= Date.now()) &&
+        (!record.validUntil ||
+          Date.parse(record.validUntil.slice(0, 10)) + 86400000 >
+            Date.now()))) &&
     ["paid", "已付费", "已支付"].includes(record.paymentStatus)
   ) {
     if (segment.id === "monthly") return record.subscriptionType === "month";
@@ -661,6 +672,27 @@ export function UserGroupManagement({
     }
   };
 
+  const showImportPreview = (
+    preview: AdminPlanGroupPreview,
+    reason: string,
+  ) => {
+    setNotice(
+      `变化 ${preview.changes.length} 条；跳过 ${preview.skipped?.length ?? 0} 条。${preview.skipped?.map((row) => `第 ${row.row} 行 ${row.email}：账号不存在`).join("；") ?? ""}`,
+    );
+    if (preview.noChanges || preview.changes.length === 0) return;
+    setPlanGroupDialog({
+      scope: "batch",
+      reason,
+      validFrom: "",
+      validUntil: "",
+      importedCSV: true,
+      updates: preview.changes.map((change) => ({
+        userId: change.userId,
+        planId: change.planId as AdminPlanGroupUpdate["planId"],
+      })),
+      preview,
+    });
+  };
   const importMembers = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -672,18 +704,7 @@ export function UserGroupManagement({
         await file.text(),
         reason,
       );
-      setPlanGroupDialog({
-        scope: "batch",
-        reason,
-        validFrom: "",
-        validUntil: "",
-        importedCSV: true,
-        updates: preview.changes.map((change) => ({
-          userId: change.userId,
-          planId: change.planId as AdminPlanGroupUpdate["planId"],
-        })),
-        preview,
-      });
+      showImportPreview(preview, reason);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "导入失败");
     }
@@ -1341,7 +1362,10 @@ export function UserGroupManagement({
               </div>
               {!!planGroupDialog.preview?.skipped?.length && (
                 <p role="status" className="text-sm text-amber-700">
-                  已跳过不存在的邮箱：{planGroupDialog.preview.skipped.map((row) => `第 ${row.row} 行 ${row.email}`).join("；")}
+                  已跳过不存在的邮箱：
+                  {planGroupDialog.preview.skipped
+                    .map((row) => `第 ${row.row} 行 ${row.email}`)
+                    .join("；")}
                 </p>
               )}
               <button
@@ -1471,9 +1495,34 @@ export function UserGroupManagement({
                             ? `${change.after?.validFrom || "未配置"} — ${change.after?.validUntil || "未配置"}`
                             : `${planGroupDialog.validFrom || "开始日期不变"} — ${planGroupDialog.validUntil || "结束日期不变"}`}
                         </p>
+                        {change.before?.subscriptionRecord ? (
+                          <p className="text-xs text-[var(--color-text-muted)]">
+                            原记录：
+                            {change.before.subscriptionRecord.planCode ||
+                              "历史套餐未标记"}{" "}
+                            ·{" "}
+                            {change.before.subscriptionRecord
+                              .subscriptionType || "未配置周期"}{" "}
+                            · 月配额{" "}
+                            {formatQuotaBytes(
+                              change.before.subscriptionRecord
+                                .monthlyQuotaBytes,
+                            )}{" "}
+                            · 费用 ¥
+                            {(
+                              change.before.subscriptionRecord.feeMinor / 100
+                            ).toFixed(2)}{" "}
+                            ·{" "}
+                            {change.before.subscriptionRecord.paymentStatus ||
+                              "未配置付费状态"}
+                          </p>
+                        ) : null}
                         {change.after?.subscriptionRecord ? (
                           <p className="text-xs text-[var(--color-text-muted)]">
-                            订阅：
+                            来源套餐：
+                            {change.after.subscriptionRecord.planCode ??
+                              "未配置"}{" "}
+                            · 周期：
                             {change.after.subscriptionRecord.subscriptionType ||
                               "未配置"}{" "}
                             · 月配额{" "}
@@ -1487,6 +1536,12 @@ export function UserGroupManagement({
                             ·{" "}
                             {change.after.subscriptionRecord.paymentStatus ||
                               "未配置"}
+                          </p>
+                        ) : null}
+                        {change.after?.subscriptionRecord?.planCode ===
+                        "CUSTOM" ? (
+                          <p className="text-xs text-[var(--color-text-muted)]">
+                            保留既有节点授权、访问范围与计费倍率。
                           </p>
                         ) : null}
                         {isPlanChange ? (
