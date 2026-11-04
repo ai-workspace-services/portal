@@ -42,7 +42,7 @@ function ServiceCard({
   isChinese: boolean;
 }) {
   const content = (
-    <div className="group flex h-full flex-col justify-between rounded-[1.6rem] border border-slate-900/10 bg-[#fcfbf8] p-5 transition duration-200 hover:-translate-y-[1px] hover:bg-white">
+    <div className="group flex h-full flex-col justify-between rounded-[1.6rem] border border-slate-900/10 bg-[#fcfbf8] p-5 transition duration-200 hover:-translate-y-[1px] hover:bg-white dark:bg-surface">
       <div className="space-y-4">
         <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-900/[0.04] text-primary">
           <service.icon className="h-5 w-5" aria-hidden />
@@ -235,7 +235,7 @@ export default function ServicesPage() {
 
   return (
     <PublicPageShell>
-      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
+      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10 dark:bg-[linear-gradient(180deg,var(--color-surface),var(--color-surface-muted))]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <PublicPageIntro
             eyebrow={isChinese ? "更多服务" : "More services"}
@@ -279,7 +279,7 @@ export default function ServicesPage() {
                 : "Every entry now follows the same card grammar: pale surface, fine border, light shadow, and clear hierarchy."}
             </p>
           </div>
-          <span className="inline-flex w-fit rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-700">
+          <span className="inline-flex w-fit rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-surface">
             {services.length} {isChinese ? "个入口" : "entries"}
           </span>
         </div>

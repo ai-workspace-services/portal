@@ -252,7 +252,7 @@ export function XWorkmateAssistantShell({
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-lg transition",
                 prompt.trim()
-                  ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
+                  ? "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
                   : "bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)]",
               )}
             >

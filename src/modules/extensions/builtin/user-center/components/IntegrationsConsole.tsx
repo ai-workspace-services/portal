@@ -322,7 +322,7 @@ export function IntegrationsConsole({
               // 跨 boundary（console → workspace）只能整页跳转
               window.location.assign("/xworkmate");
             }}
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-foreground)] dark:bg-[var(--color-action)]"
           >
             打开 XWorkmate
             <ArrowRight className="h-4 w-4" />

@@ -40,7 +40,7 @@ export default function CardGrid({ sections }: { sections: Section[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-900/10 bg-[#fcfbf8] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-900/10 bg-[#fcfbf8] p-4 sm:flex-row sm:items-center sm:justify-between dark:bg-surface">
         <div className="flex flex-wrap gap-2">
           <select
             className="rounded-full border border-slate-900/10 bg-white px-4 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-900/15"
@@ -72,7 +72,7 @@ export default function CardGrid({ sections }: { sections: Section[] }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-3">
                   {section.root ? (
-                    <span className="inline-flex w-fit items-center rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600">
+                    <span className="inline-flex w-fit items-center rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-surface">
                       {formatSegmentLabel(section.root)}
                     </span>
                   ) : null}

@@ -80,7 +80,7 @@ export default function HeroBannerClient({ hero, solutions }: HeroBannerClientPr
           ) : null}
           {heroCopy.bodyHtml ? (
             <div
-              className="prose max-w-none text-sm text-slate-800 sm:text-base"
+              className="prose max-w-none text-sm text-slate-800 sm:text-base dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: heroCopy.bodyHtml }}
             />
           ) : null}

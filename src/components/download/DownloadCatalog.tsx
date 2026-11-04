@@ -130,8 +130,8 @@ export default function DownloadCatalog({ catalog }: DownloadCatalogProps) {
                 onClick={() => setActiveProductId(product.id)}
                 className={`flex min-w-[9.5rem] flex-1 items-center justify-center gap-2 rounded-[7px] px-4 py-3 text-sm font-semibold transition sm:min-w-0 ${
                   active
-                    ? "bg-white text-heading shadow-[var(--shadow-sm)]"
-                    : "text-text-muted hover:bg-white/65 hover:text-heading"
+                    ? "bg-white text-heading shadow-[var(--shadow-sm)] dark:bg-primary-muted"
+                    : "text-text-muted hover:bg-white/65 hover:text-heading dark:hover:bg-surface-hover"
                 }`}
               >
                 <PackageIcon className="h-4 w-4 shrink-0" aria-hidden />

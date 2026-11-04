@@ -559,12 +559,12 @@ function ConversationWorkspace({
   const canSend = Boolean(prompt.trim() || files.length) && !isSubmitting;
 
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden bg-white text-[#1f2430]">
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-white text-[#1f2430] dark:text-text">
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-[#eef1f5] px-3">
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-[#eef1f5] px-3 dark:border-surface-border">
           <SidebarRevealButton />
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#17181c]">
-            <PlayCircle className="size-4 text-[#075ecc]" />
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#17181c] dark:text-text">
+            <PlayCircle className="size-4 text-[#075ecc] dark:text-primary" />
             对话工作流
           </span>
           {isGuest ? (
@@ -574,7 +574,7 @@ function ConversationWorkspace({
             </span>
           ) : null}
           <div className="ml-auto flex items-center gap-2">
-            <span className="hidden h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] px-2.5 text-xs text-[#566174] sm:inline-flex">
+            <span className="hidden h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] px-2.5 text-xs text-[#566174] sm:inline-flex dark:border-surface-border dark:text-text-muted">
               <Menu className="size-3.5" />
               渲染
               <ChevronDown className="size-3.5" />
@@ -590,14 +590,14 @@ function ConversationWorkspace({
               onClick={() => setRightPanelOpen((open) => !open)}
               aria-label={rightPanelOpen ? "收起制品面板" : "展开制品面板"}
               aria-pressed={rightPanelOpen}
-              className="hidden size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] hover:text-[#17181c] lg:grid"
+              className="hidden size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] hover:text-[#17181c] lg:grid dark:text-text-muted dark:hover:bg-surface-muted dark:hover:text-text"
             >
               <PaneToggleIcon side="right" />
             </button>
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-4 py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-4 py-6 dark:bg-surface">
           <div className="mx-auto flex w-full max-w-[760px] flex-col gap-4">
             {messages.length === 0 ? (
               bridgeStatus === "error" ? (
@@ -616,7 +616,7 @@ function ConversationWorkspace({
           </div>
         </div>
 
-        <div className="shrink-0 bg-[#f8fafc] px-4 pb-4 pt-2">
+        <div className="shrink-0 bg-[#f8fafc] px-4 pb-4 pt-2 dark:bg-surface">
           <div className="mx-auto max-w-[860px]">
             {lastError && messages.length > 0 ? (
               <div className="mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
@@ -634,7 +634,7 @@ function ConversationWorkspace({
               </div>
             ) : null}
 
-            <div className="rounded-2xl border border-[#e1e6ed] bg-white p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition focus-within:border-[#9cc0ef]">
+            <div className="rounded-2xl border border-[#e1e6ed] bg-white p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition focus-within:border-[#9cc0ef] dark:border-surface-border dark:focus-within:border-[color:var(--color-primary-border)]">
               <div className="flex flex-wrap items-center gap-1.5">
                 <DropdownMenu.Root>
                   <DropdownMenu.Trigger asChild>
@@ -648,7 +648,7 @@ function ConversationWorkspace({
                         className={menuItemClass}
                         onSelect={() => document.getElementById("xworkmate-file-input")?.click()}
                       >
-                        <Paperclip className="size-4 text-[#697386]" />
+                        <Paperclip className="size-4 text-[#697386] dark:text-text-muted" />
                         添加照片和文件
                       </DropdownMenu.Item>
                     </DropdownMenu.Content>
@@ -673,7 +673,7 @@ function ConversationWorkspace({
                     <DropdownMenu.Content align="start" sideOffset={6} className={cn(menuClass, "w-[360px]")}>
                       {BUILTIN_PLUGIN_GROUPS.map((group) => (
                         <DropdownMenu.Group key={group.category}>
-                          <DropdownMenu.Label className="px-2.5 pb-1 pt-2 text-xs text-[#8a93a2]">
+                          <DropdownMenu.Label className="px-2.5 pb-1 pt-2 text-xs text-[#8a93a2] dark:text-text-subtle">
                             {group.category}
                           </DropdownMenu.Label>
                           {group.items.map((plugin) => {
@@ -696,10 +696,10 @@ function ConversationWorkspace({
                                   <plugin.icon className="size-3.5" />
                                 </span>
                                 <span className="shrink-0 font-medium">{plugin.name}</span>
-                                <span className="min-w-0 flex-1 truncate text-xs text-[#8a93a2]">
+                                <span className="min-w-0 flex-1 truncate text-xs text-[#8a93a2] dark:text-text-subtle">
                                   {plugin.desc}
                                 </span>
-                                {selected ? <Check className="size-4 text-[#075ecc]" /> : null}
+                                {selected ? <Check className="size-4 text-[#075ecc] dark:text-primary" /> : null}
                               </DropdownMenu.CheckboxItem>
                             );
                           })}
@@ -712,7 +712,7 @@ function ConversationWorkspace({
                 <RoleMenu role={role} onChange={setRole} locked={botRolesLocked} />
 
                 <span
-                  className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[#697386]"
+                  className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[#697386] dark:text-text-muted"
                   title="模型：由 Bridge 默认路由"
                 >
                   <Zap className="size-4" />
@@ -753,7 +753,7 @@ function ConversationWorkspace({
               <textarea
                 id="xworkmate-composer"
                 ref={composerRef}
-                className="mt-2 h-[88px] w-full resize-none bg-transparent px-1 text-sm leading-6 outline-none placeholder:text-[#9aa3b2]"
+                className="mt-2 h-[88px] w-full resize-none bg-transparent px-1 text-sm leading-6 outline-none placeholder:text-[#9aa3b2] dark:placeholder:text-text-subtle"
                 placeholder="输入需求、补充上下文，XWorkmate 会沿用当前任务上下文持续处理。"
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
@@ -768,7 +768,7 @@ function ConversationWorkspace({
                     disabled={!canSend}
                     onClick={() => void submit(true)}
                     title="放到后台由 Bot 团队执行，结果在会话中查看"
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d7dde6] bg-white px-3 text-sm text-[#3d4553] transition hover:bg-[#f6f8fb] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d7dde6] bg-white px-3 text-sm text-[#3d4553] transition hover:bg-[#f6f8fb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-border dark:text-text dark:hover:bg-surface"
                   >
                     <Send className="size-3.5" />
                     交给 Bot 团队
@@ -779,7 +779,7 @@ function ConversationWorkspace({
                   data-testid="send-button"
                   disabled={!canSend}
                   onClick={() => void submit(false)}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] dark:bg-[var(--color-action)] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] dark:hover:bg-[var(--color-action-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -795,31 +795,31 @@ function ConversationWorkspace({
       </section>
 
       {rightPanelOpen ? (
-        <aside className="hidden w-[320px] shrink-0 flex-col border-l border-[#eef1f5] bg-white p-3 lg:flex">
+        <aside className="hidden w-[320px] shrink-0 flex-col border-l border-[#eef1f5] bg-white p-3 lg:flex dark:border-surface-border">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="truncate text-sm font-medium text-[#17181c]">
+              <h2 className="truncate text-sm font-medium text-[#17181c] dark:text-text">
                 {activeTask?.title || "未命名对话"}
               </h2>
-              <p className="text-xs text-[#8a93a2]">当前任务工作路径</p>
+              <p className="text-xs text-[#8a93a2] dark:text-text-subtle">当前任务工作路径</p>
             </div>
             <button
               type="button"
               onClick={() => void checkBridge()}
               aria-label="刷新 Bridge 状态"
-              className="grid size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6]"
+              className="grid size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] dark:text-text-muted dark:hover:bg-surface-muted"
             >
               <RefreshCw className="size-4" />
             </button>
           </div>
-          <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#e4e8ef] px-2.5 py-2 text-xs text-[#566174]">
+          <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#e4e8ef] px-2.5 py-2 text-xs text-[#566174] dark:border-surface-border dark:text-text-muted">
             <Cloud className="size-3.5 shrink-0" />
             <span className="truncate">{workingDirectory || "未设置"}</span>
             <Copy className="ml-auto size-3.5 shrink-0" />
           </div>
-          <div className="mt-3 flex rounded-lg bg-[#f3f5f8] p-1 text-xs">
-            <span className="rounded-md bg-white px-3 py-1 text-[#17181c] shadow-sm">全部文件</span>
-            <span className="px-3 py-1 text-[#697386]">预览</span>
+          <div className="mt-3 flex rounded-lg bg-[#f3f5f8] p-1 text-xs dark:bg-surface-muted">
+            <span className="rounded-md bg-white px-3 py-1 text-[#17181c] shadow-sm dark:text-text">全部文件</span>
+            <span className="px-3 py-1 text-[#697386] dark:text-text-muted">预览</span>
           </div>
 
           <div className="flex min-h-0 flex-1 items-center justify-center text-center">
@@ -828,9 +828,9 @@ function ConversationWorkspace({
                 {currentFiles.map((file, index) => (
                   <div
                     key={`${file.name ?? file.path ?? "file"}-${index}`}
-                    className="flex items-center gap-2 rounded-lg border border-[#e4e8ef] px-3 py-2 text-left"
+                    className="flex items-center gap-2 rounded-lg border border-[#e4e8ef] px-3 py-2 text-left dark:border-surface-border"
                   >
-                    <File className="size-4 text-[#697386]" />
+                    <File className="size-4 text-[#697386] dark:text-text-muted" />
                     <span className="min-w-0 flex-1 truncate text-sm">
                       {file.name ?? file.path ?? file.url ?? "未命名文件"}
                     </span>
@@ -840,13 +840,13 @@ function ConversationWorkspace({
             ) : (
               <div>
                 <Folder className="mx-auto size-8 text-[#c5ccd6]" />
-                <div className="mt-3 text-sm text-[#3d4553]">暂无文件</div>
-                <p className="mt-1 text-xs text-[#8a93a2]">当前会话还没有可展示的制品。</p>
+                <div className="mt-3 text-sm text-[#3d4553] dark:text-text">暂无文件</div>
+                <p className="mt-1 text-xs text-[#8a93a2] dark:text-text-subtle">当前会话还没有可展示的制品。</p>
               </div>
             )}
           </div>
 
-          <div className="rounded-lg bg-[#f6f8fb] px-2.5 py-1.5 text-eyebrow text-[#697386]">
+          <div className="rounded-lg bg-[#f6f8fb] px-2.5 py-1.5 text-eyebrow text-[#697386] dark:bg-surface dark:text-text-muted">
             Bridge: {bridgeStatus}
             {bridgeVersion ? ` · ${bridgeVersion.slice(0, 12)}` : ""}
           </div>
@@ -857,9 +857,9 @@ function ConversationWorkspace({
 }
 
 const menuClass =
-  "z-50 min-w-[220px] rounded-xl border border-[#e4e8ef] bg-white p-1 shadow-[0_12px_32px_rgba(15,23,42,0.12)]";
+  "z-50 min-w-[220px] rounded-xl border border-[#e4e8ef] bg-white p-1 shadow-[0_12px_32px_rgba(15,23,42,0.12)] dark:border-surface-border";
 const menuItemClass =
-  "flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-[#3d4553] outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[highlighted]:bg-[#f0f3f7]";
+  "flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-[#3d4553] outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[highlighted]:bg-[#f0f3f7] dark:text-text dark:data-[highlighted]:bg-surface-muted";
 
 function ConnectionChip({
   status,
@@ -878,7 +878,7 @@ function ConnectionChip({
       onClick={onRetry}
       data-testid="connection-chip"
       title={version ? `Bridge ${version}` : "重新检查 Bridge 连接"}
-      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] px-2.5 text-xs text-[#566174] transition hover:bg-[#f6f8fb]"
+      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] px-2.5 text-xs text-[#566174] transition hover:bg-[#f6f8fb] dark:border-surface-border dark:text-text-muted dark:hover:bg-surface"
     >
       <span
         className={cn(
@@ -895,14 +895,14 @@ function ConnectionChip({
 
 function ConnectBridgeCard({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <div className="mx-auto mt-6 w-full max-w-[560px] rounded-2xl border border-[#e4e8ef] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="mx-auto mt-6 w-full max-w-[560px] rounded-2xl border border-[#e4e8ef] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)] dark:border-surface-border">
       <div className="flex items-start gap-4">
         <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
           <Plug className="size-5" />
         </div>
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-[#17181c]">先连接 Bridge</h1>
-          <p className="mt-1 text-sm leading-6 text-[#697386]">
+          <h1 className="text-lg font-semibold text-[#17181c] dark:text-text">先连接 Bridge</h1>
+          <p className="mt-1 text-sm leading-6 text-[#697386] dark:text-text-muted">
             XWorkmate 通过 Bridge 调用模型与工具。连接恢复后即可开始对话或运行任务。
           </p>
           {error ? (
@@ -911,7 +911,7 @@ function ConnectBridgeCard({ error, onRetry }: { error: string; onRetry: () => v
           <button
             type="button"
             onClick={onRetry}
-            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6]"
+            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] dark:bg-[var(--color-action)] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] dark:hover:bg-[var(--color-action-hover)]"
           >
             <RefreshCw className="size-4" />
             重新连接
@@ -924,20 +924,20 @@ function ConnectBridgeCard({ error, onRetry }: { error: string; onRetry: () => v
 
 function StartCard({ onStart }: { onStart: () => void }) {
   return (
-    <div className="mx-auto mt-6 w-full max-w-[560px] rounded-2xl border border-[#e4e8ef] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="mx-auto mt-6 w-full max-w-[560px] rounded-2xl border border-[#e4e8ef] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)] dark:border-surface-border">
       <div className="flex items-start gap-4">
-        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-[#075ecc]">
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-[#075ecc] dark:text-primary">
           <Pencil className="size-5" />
         </div>
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-[#17181c]">开始对话或运行任务</h1>
-          <p className="mt-1 text-sm leading-6 text-[#697386]">
+          <h1 className="text-lg font-semibold text-[#17181c] dark:text-text">开始对话或运行任务</h1>
+          <p className="mt-1 text-sm leading-6 text-[#697386] dark:text-text-muted">
             输入需求，连接模型与工具，让 XWorkmate 帮你把想法推进到结果。Chat 直接回答；其他角色交给 Bot 团队执行。
           </p>
           <button
             type="button"
             onClick={onStart}
-            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6]"
+            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] dark:bg-[var(--color-action)] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] dark:hover:bg-[var(--color-action-hover)]"
           >
             <Pencil className="size-4" />
             开始输入
@@ -951,11 +951,11 @@ function StartCard({ onStart }: { onStart: () => void }) {
 function MessageBubble({ message }: { message: ConversationMessage }) {
   if (message.role === "note") {
     return (
-      <div className="mx-auto flex items-center gap-2 rounded-full border border-[#e4e8ef] bg-white px-3 py-1.5 text-xs text-[#566174]">
-        <Bot className="size-3.5 text-[#075ecc]" />
+      <div className="mx-auto flex items-center gap-2 rounded-full border border-[#e4e8ef] bg-white px-3 py-1.5 text-xs text-[#566174] dark:border-surface-border dark:text-text-muted">
+        <Bot className="size-3.5 text-[#075ecc] dark:text-primary" />
         <span>{message.text}</span>
         {message.link ? (
-          <Link href={message.link.href} className="text-[#075ecc] underline underline-offset-2">
+          <Link href={message.link.href} className="text-[#075ecc] underline underline-offset-2 dark:text-primary">
             {message.link.label}
           </Link>
         ) : null}
@@ -969,13 +969,13 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
         className={cn(
           "max-w-[88%] rounded-2xl px-4 py-2.5 text-sm leading-6",
           isUser
-            ? "rounded-br-md bg-[#075ecc] text-white"
-            : "rounded-bl-md border border-[#e4e8ef] bg-white text-[#252a34]",
+            ? "rounded-br-md bg-[#075ecc] dark:bg-[var(--color-action)] text-white"
+            : "rounded-bl-md border border-[#e4e8ef] bg-white text-[#252a34] dark:border-surface-border dark:text-text",
           message.error && "border-red-200 bg-red-50 text-red-700",
         )}
       >
         {message.header ? (
-          <div className="mb-1 flex items-center gap-1.5 text-xs text-[#697386]">
+          <div className="mb-1 flex items-center gap-1.5 text-xs text-[#697386] dark:text-text-muted">
             <Bot className="size-3.5" />
             {message.header}
           </div>
@@ -989,7 +989,7 @@ function MessageBubble({ message }: { message: ConversationMessage }) {
         {message.link ? (
           <Link
             href={message.link.href}
-            className="mt-1 inline-block text-xs text-[#075ecc] underline underline-offset-2"
+            className="mt-1 inline-block text-xs text-[#075ecc] underline underline-offset-2 dark:text-primary"
           >
             {message.link.label}
           </Link>
@@ -1017,16 +1017,16 @@ function RoleMenu({
           type="button"
           data-testid="role-button"
           aria-label={`角色：${current.label}`}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] bg-white px-2.5 text-sm text-[#3d4553] transition hover:bg-[#f6f8fb]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#e4e8ef] bg-white px-2.5 text-sm text-[#3d4553] transition hover:bg-[#f6f8fb] dark:border-surface-border dark:text-text dark:hover:bg-surface"
         >
-          <Icon className="size-4 text-[#075ecc]" />
+          <Icon className="size-4 text-[#075ecc] dark:text-primary" />
           {current.label}
-          <ChevronDown className="size-3.5 text-[#8a93a2]" />
+          <ChevronDown className="size-3.5 text-[#8a93a2] dark:text-text-subtle" />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content align="start" sideOffset={6} className={cn(menuClass, "w-[280px]")}>
-          <DropdownMenu.Label className="px-2.5 pb-1 pt-1.5 text-xs text-[#8a93a2]">
+          <DropdownMenu.Label className="px-2.5 pb-1 pt-1.5 text-xs text-[#8a93a2] dark:text-text-subtle">
             Chat ⟶ Worker ⟶ Engineer ⟶ Architect ⟷ Researcher ⟶ Specialist
           </DropdownMenu.Label>
           {ASSISTANT_ROLES.map((option) => {
@@ -1041,11 +1041,11 @@ function RoleMenu({
               >
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium">{option.label}</span>
-                  <span className="block truncate text-xs text-[#8a93a2]">
+                  <span className="block truncate text-xs text-[#8a93a2] dark:text-text-subtle">
                     {optionLocked ? "登录账号后可交给 Bot 团队" : option.description}
                   </span>
                 </span>
-                {option.value === role ? <Check className="size-4 text-[#075ecc]" /> : null}
+                {option.value === role ? <Check className="size-4 text-[#075ecc] dark:text-primary" /> : null}
               </DropdownMenu.Item>
             );
           })}
@@ -1067,8 +1067,8 @@ const ComposerIconButton = forwardRef<
       title={label}
       {...rest}
       className={cn(
-        "grid size-8 place-items-center rounded-lg border border-[#e4e8ef] bg-white text-[#697386] transition hover:bg-[#f6f8fb] hover:text-[#17181c]",
-        active && "border-[#b9d3f5] bg-[#eef5fe] text-[#075ecc]",
+        "grid size-8 place-items-center rounded-lg border border-[#e4e8ef] bg-white text-[#697386] transition hover:bg-[#f6f8fb] hover:text-[#17181c] dark:border-surface-border dark:text-text-muted dark:hover:bg-surface dark:hover:text-text",
+        active && "border-[#b9d3f5] bg-[#eef5fe] text-[#075ecc] dark:border-[color:var(--color-primary-border)] dark:bg-primary-muted dark:text-primary",
         className,
       )}
     >
@@ -1087,7 +1087,7 @@ function Chip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex max-w-[280px] items-center gap-1.5 rounded-lg border border-[#e4e8ef] bg-[#f8fafc] px-2 py-1 text-xs text-[#566174]">
+    <span className="inline-flex max-w-[280px] items-center gap-1.5 rounded-lg border border-[#e4e8ef] bg-[#f8fafc] px-2 py-1 text-xs text-[#566174] dark:border-surface-border dark:bg-surface dark:text-text-muted">
       {icon}
       <span className="truncate">{label}</span>
       <button type="button" onClick={onRemove} aria-label={`移除 ${label}`}>

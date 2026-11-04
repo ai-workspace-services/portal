@@ -1841,7 +1841,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                         />
                         <span className="flex items-start justify-between gap-3">
                           <span
-                            className={`rounded-[8px] p-2 ${selected ? "bg-[var(--color-primary)] text-white" : "bg-[var(--color-primary-muted)] text-[var(--color-primary)]"}`}
+                            className={`rounded-[8px] p-2 ${selected ? "bg-[var(--color-primary)] text-white dark:bg-[var(--color-action)]" : "bg-[var(--color-primary-muted)] text-[var(--color-primary)]"}`}
                           >
                             <Icon className="h-4 w-4" />
                           </span>

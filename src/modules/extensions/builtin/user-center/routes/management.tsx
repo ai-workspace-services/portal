@@ -661,7 +661,7 @@ export default function UserCenterManagementRoute() {
             <button
               type="button"
               onClick={() => setActiveTab("groups")}
-              className="inline-flex h-9 items-center rounded-md bg-[var(--color-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
+              className="inline-flex h-9 items-center rounded-md bg-[var(--color-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
             >
               + 创建用户
             </button>

@@ -25,7 +25,7 @@ export function PublicPageShell({
     <div className="relative min-h-screen bg-background text-text transition-colors duration-150">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0))]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0))] dark:bg-[linear-gradient(180deg,var(--gradient-app-via),transparent)]"
       />
       <div className="relative">
         <MarketingNav />

@@ -57,8 +57,8 @@ const PROVIDERS: ProviderCredit[] = [
     expiry: "2026-10-24",
     focus: "GKE / AI / BigQuery",
     strategy: "加速消耗",
-    color: "#2563eb",
-    tint: "#eff6ff",
+    color: "var(--finops-blue, #2563eb)",
+    tint: "var(--finops-blue-muted, #eff6ff)",
   },
   {
     id: "azure",
@@ -70,8 +70,8 @@ const PROVIDERS: ProviderCredit[] = [
     expiry: "2026-10-14",
     focus: "AKS / OpenAI / DevOps",
     strategy: "实验与学习",
-    color: "#0ea5e9",
-    tint: "#f0f9ff",
+    color: "var(--finops-sky, #0ea5e9)",
+    tint: "var(--finops-sky-muted, #f0f9ff)",
   },
   {
     id: "aws",
@@ -83,8 +83,8 @@ const PROVIDERS: ProviderCredit[] = [
     expiry: "待确认",
     focus: "EC2 / S3 / RDS",
     strategy: "核心实验",
-    color: "#f97316",
-    tint: "#fff7ed",
+    color: "var(--finops-orange, #f97316)",
+    tint: "var(--finops-orange-muted, #fff7ed)",
   },
   {
     id: "akamai",
@@ -96,8 +96,8 @@ const PROVIDERS: ProviderCredit[] = [
     expiry: "2026-12-01",
     focus: "AI Gateway / DB / VPS",
     strategy: "稳定工作负载",
-    color: "#0f9f8c",
-    tint: "#f0fdfa",
+    color: "var(--finops-teal, #0f9f8c)",
+    tint: "var(--finops-teal-muted, #f0fdfa)",
   },
 ];
 
@@ -183,7 +183,7 @@ export default function FinOpsRoute() {
   };
 
   return (
-    <div className="space-y-5 pb-2">
+    <div className="finops-workspace space-y-5 pb-2">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-text-subtle)]">
@@ -407,30 +407,30 @@ export default function FinOpsRoute() {
               >
                 <defs>
                   <linearGradient id="actualBurn" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#0f9f8c" stopOpacity={0.35} />
+                    <stop offset="0%" stopColor="var(--finops-teal, #0f9f8c)" stopOpacity={0.35} />
                     <stop
                       offset="100%"
-                      stopColor="#0f9f8c"
+                      stopColor="var(--finops-teal, #0f9f8c)"
                       stopOpacity={0.02}
                     />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   vertical={false}
-                  stroke="#e2e8f0"
+                  stroke="var(--finops-grid, #e2e8f0)"
                   strokeDasharray="3 3"
                 />
                 <XAxis
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "#64748b", fontSize: "var(--fs-eyebrow)" }}
+                  tick={{ fill: "var(--finops-muted, #64748b)", fontSize: "var(--fs-eyebrow)" }}
                   dy={10}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "#64748b", fontSize: "var(--fs-eyebrow)" }}
+                  tick={{ fill: "var(--finops-muted, #64748b)", fontSize: "var(--fs-eyebrow)" }}
                   tickFormatter={(value) => `$${value}`}
                 />
                 <Tooltip
@@ -454,7 +454,7 @@ export default function FinOpsRoute() {
                   type="monotone"
                   dataKey="required"
                   name="建议消耗"
-                  stroke="#2563eb"
+                  stroke="var(--finops-blue, #2563eb)"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   fill="transparent"
@@ -463,7 +463,7 @@ export default function FinOpsRoute() {
                   type="monotone"
                   dataKey="actual"
                   name="实际消耗"
-                  stroke="#0f9f8c"
+                  stroke="var(--finops-teal, #0f9f8c)"
                   strokeWidth={2.5}
                   fill="url(#actualBurn)"
                 />
@@ -488,7 +488,7 @@ export default function FinOpsRoute() {
           <button
             type="button"
             onClick={() => setShowDetails(true)}
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-lime-500 px-4 py-2.5 text-sm font-semibold text-lime-950 transition hover:bg-lime-400 focus:outline-none focus:ring-2 focus:ring-lime-600 focus:ring-offset-2"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-lime-500 px-4 py-2.5 text-sm font-semibold text-lime-950 transition hover:bg-lime-400 dark:bg-primary dark:text-white dark:hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-lime-600 focus:ring-offset-2"
           >
             查看 3 项行动 <ArrowRight className="h-4 w-4" />
           </button>

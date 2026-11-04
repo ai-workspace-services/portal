@@ -19,7 +19,7 @@ export default function CopyButton({ text, label }: Props) {
     <button
       type="button"
       onClick={handleClick}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-900/10 bg-white text-slate-600 transition hover:border-slate-900/15 hover:bg-[#fcfbf8]"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-900/10 bg-white text-slate-600 transition hover:border-slate-900/15 hover:bg-[#fcfbf8] dark:hover:bg-surface"
       title={label}
       aria-label={label}
     >

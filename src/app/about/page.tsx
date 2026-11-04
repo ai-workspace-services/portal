@@ -41,7 +41,7 @@ export default function AboutPage() {
 
   return (
     <PublicPageShell>
-      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
+      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10 dark:bg-[linear-gradient(180deg,var(--color-surface),var(--color-surface-muted))]">
         <div className="grid gap-6">
           <PublicPageIntro
             title={content.title}

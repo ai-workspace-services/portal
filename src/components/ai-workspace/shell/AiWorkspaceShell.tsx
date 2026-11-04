@@ -19,14 +19,14 @@ export function AiWorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="relative flex h-full overflow-hidden bg-[#f4f5f7] text-sm text-slate-900">
+    <div className="relative flex h-full overflow-hidden bg-[#f4f5f7] text-sm text-slate-900 dark:bg-surface">
       {!shell.sidebarHidden ? (
         <div className="hidden h-full md:block">
           <Sidebar onHide={() => shell.setSidebarHidden(true)} />
         </div>
       ) : null}
       <main className="min-w-0 flex-1 overflow-hidden p-0 pb-[68px] md:p-2 md:pb-2">
-        <div className="flex h-full min-h-0 overflow-hidden bg-white md:rounded-[14px] md:border md:border-[#e4e8ef] md:shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+        <div className="flex h-full min-h-0 overflow-hidden bg-white md:rounded-[14px] md:border md:border-[#e4e8ef] md:shadow-[0_4px_20px_rgba(15,23,42,0.04)] dark:md:border-surface-border">
           {children}
         </div>
       </main>
@@ -84,7 +84,7 @@ function MobileTab({
       href={href}
       className={cn(
         "flex flex-col items-center gap-0.5 rounded-xl px-4 py-1 text-eyebrow font-medium",
-        selected ? "bg-blue-50 text-[#075ecc]" : "text-slate-600",
+        selected ? "bg-blue-50 text-[#075ecc] dark:text-primary" : "text-slate-600",
       )}
     >
       <Icon className="size-5" />

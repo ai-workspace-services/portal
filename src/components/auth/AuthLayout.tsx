@@ -36,7 +36,7 @@ type AuthLayoutProps = {
 };
 
 export const AUTH_INPUT_CLASS =
-  "tactile-control w-full rounded-[12px] px-4 py-3 text-slate-900 transition focus:border-slate-900/15 focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400";
+  "tactile-control w-full rounded-[12px] px-4 py-3 text-slate-900 transition focus:border-slate-900/15 focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:focus:border-ring dark:focus:ring-ring";
 
 export const AUTH_HINT_PANEL_CLASS =
   "rounded-[14px] border border-slate-900/8 bg-white/82 px-4 py-3 text-sm leading-6 text-slate-600 shadow-[var(--shadow-soft)]";
@@ -51,10 +51,10 @@ export const AUTH_TEXT_LINK_CLASS =
   "font-semibold text-primary transition hover:text-primary-hover";
 
 export const AUTH_CHECKBOX_CLASS =
-  "h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30";
+  "h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30 dark:accent-primary dark:focus:ring-ring";
 
 export const AUTH_CODE_INPUT_CLASS =
-  "tactile-control h-12 w-full rounded-[12px] text-center text-lg font-semibold text-slate-900 transition focus:border-slate-900/15 focus:outline-none focus:ring-2 focus:ring-primary/15";
+  "tactile-control h-12 w-full rounded-[12px] text-center text-lg font-semibold text-slate-900 transition focus:border-slate-900/15 focus:outline-none focus:ring-2 focus:ring-primary/15 dark:focus:border-ring dark:focus:ring-ring";
 
 function AuthLayoutTab({
   href,
@@ -104,7 +104,7 @@ function AuthSocialButton({
         "inline-flex min-h-10 items-center justify-center gap-3 rounded-[12px] px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
         disabled
           ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400 focus-visible:outline-slate-200"
-          : "border border-slate-900/8 bg-white text-slate-800 shadow-[var(--shadow-soft)] hover:bg-[#fcfbf8] focus-visible:outline-slate-300",
+          : "border border-slate-900/8 bg-white text-slate-800 shadow-[var(--shadow-soft)] hover:bg-[#fcfbf8] focus-visible:outline-slate-300 dark:hover:bg-surface",
       )}
       aria-disabled={disabled}
       tabIndex={disabled ? -1 : undefined}
@@ -135,11 +135,11 @@ export function AuthLayout({
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-text transition-colors duration-150">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0))]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0))] dark:bg-[linear-gradient(180deg,var(--gradient-app-via),transparent)]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] bg-[radial-gradient(circle_at_top_left,rgba(37,78,219,0.08),transparent_36%),radial-gradient(circle_at_top_right,rgba(245,211,170,0.32),transparent_38%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] bg-[radial-gradient(circle_at_top_left,rgba(37,78,219,0.08),transparent_36%),radial-gradient(circle_at_top_right,rgba(245,211,170,0.32),transparent_38%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(37,78,219,0.08),transparent_36%),radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--color-primary-muted)_55%,transparent),transparent_38%)]"
       />
 
       <main

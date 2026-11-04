@@ -100,7 +100,7 @@ export default async function DocVersionPage({
   return (
     <div className="flex gap-6 xl:gap-8">
       <article className="min-w-0 flex-1 space-y-6">
-        <section className="rounded-[1rem] border border-slate-900/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,248,250,0.98))] p-5 shadow-[var(--shadow-soft)] lg:p-6">
+        <section className="rounded-[1rem] border border-slate-900/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,248,250,0.98))] p-5 shadow-[var(--shadow-soft)] lg:p-6 dark:bg-[linear-gradient(180deg,var(--color-surface-elevated),var(--color-surface-muted))]">
           <DocsBreadcrumbs items={breadcrumbs} />
           <PublicPageIntro
             eyebrow={isChinese ? "文档中心" : "Documentation"}

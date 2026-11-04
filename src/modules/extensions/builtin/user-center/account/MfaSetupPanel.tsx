@@ -468,7 +468,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                 <button
                   type="button"
                   onClick={openDialog}
-                  className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)]"
+                  className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
                 >
                   {displayStatus?.totpEnabled ? copy.summary.manage : copy.summary.bind}
                 </button>
@@ -803,7 +803,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
                           <button
                             type="submit"
                             disabled={isVerifying}
-                            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
+                            className="inline-flex w-full items-center justify-center rounded-lg bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-70 dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
                           >
                             {isVerifying ? copy.verifying : copy.verify}
                           </button>

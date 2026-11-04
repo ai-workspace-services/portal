@@ -110,7 +110,7 @@ export default function UserCenterAiAggregatorRoute() {
       </nav>
 
       {/* ── 顶层控制面概览 ── */}
-      <section className="rounded-[1.8rem] border border-slate-900/10 bg-gradient-to-br from-white via-[#fbfaf7] to-[#f4f0ea] p-6 shadow-sm">
+      <section className="rounded-[1.8rem] border border-slate-900/10 bg-gradient-to-br from-white via-[#fbfaf7] to-[#f4f0ea] p-6 shadow-sm dark:via-surface dark:to-surface-muted">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2.5">

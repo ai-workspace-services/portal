@@ -151,7 +151,7 @@ export default function AccountGettingStarted({
           </p>
           <a
             href="#connections"
-            className="mt-5 inline-flex items-center gap-2 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
+            className="mt-5 inline-flex items-center gap-2 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
           >
             <QrCode className="h-4 w-4" />
             查看 VLESS 二维码

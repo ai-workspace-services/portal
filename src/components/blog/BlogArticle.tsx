@@ -140,7 +140,7 @@ export default function BlogArticle({ html, toc, language }: BlogArticleProps) {
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,46rem)_13.5rem] lg:justify-center lg:gap-10 xl:gap-14">
       {readableToc.length > 0 ? (
-        <details className="mb-6 rounded-2xl border border-slate-900/10 bg-[#fbfcff] p-4 lg:hidden">
+        <details className="mb-6 rounded-2xl border border-slate-900/10 bg-[#fbfcff] p-4 lg:hidden dark:bg-surface">
           <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900">
             {language === "zh" ? "查看文章目录" : "View article contents"}
           </summary>
@@ -160,7 +160,7 @@ export default function BlogArticle({ html, toc, language }: BlogArticleProps) {
       />
       {readableToc.length > 0 ? (
         <aside className="hidden lg:block">
-          <div className="sticky top-[calc(var(--app-shell-nav-offset)+1.5rem)] rounded-2xl border border-slate-900/10 bg-[#fbfcff]/95 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+          <div className="sticky top-[calc(var(--app-shell-nav-offset)+1.5rem)] rounded-2xl border border-slate-900/10 bg-[#fbfcff]/95 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] dark:bg-surface/95">
             <TableOfContents
               items={readableToc}
               language={language}

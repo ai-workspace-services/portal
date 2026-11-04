@@ -207,7 +207,7 @@ export default function UserCenterAccountRoute() {
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)] dark:bg-[var(--color-action)]">
                   <Activity className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>

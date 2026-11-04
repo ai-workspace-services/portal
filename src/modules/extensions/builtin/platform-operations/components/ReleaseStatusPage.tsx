@@ -32,7 +32,7 @@ const WORKFLOW_URL =
 const COLORS: Record<ReleaseState, string> = {
   success: "bg-blue-600 text-white",
   failed: "bg-red-600 text-white",
-  pending: "bg-amber-400 text-slate-900",
+  pending: "bg-amber-400 text-slate-900 dark:text-[#0f172a]",
   skipped: "bg-slate-200 text-slate-600",
   unknown:
     "border border-dashed border-slate-400 bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]",

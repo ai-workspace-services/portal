@@ -1411,13 +1411,13 @@ export function OpenClawAssistantPane({
                       className={cn(
                         "max-w-[84%] rounded-[var(--radius-lg)] px-3 py-2.5 shadow-[var(--shadow-sm)]",
                         isUser
-                          ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+                          ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] dark:bg-[var(--color-action)]"
                           : "border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-[var(--color-text)]",
                       )}
                     >
                       <div
                         className={cn(
-                          "prose prose-sm max-w-none break-words whitespace-pre-wrap",
+                          "prose dark:prose-invert prose-sm max-w-none break-words whitespace-pre-wrap",
                           isUser ? "prose-invert" : "",
                         )}
                         dangerouslySetInnerHTML={{ __html: message.html }}
@@ -1443,7 +1443,7 @@ export function OpenClawAssistantPane({
                 <div className="flex justify-start">
                   <div className="max-w-[84%] rounded-[var(--radius-lg)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-[var(--color-text)] shadow-[var(--shadow-sm)]">
                     <div
-                      className="prose prose-sm max-w-none break-words whitespace-pre-wrap"
+                      className="prose dark:prose-invert prose-sm max-w-none break-words whitespace-pre-wrap"
                       dangerouslySetInnerHTML={{
                         __html: renderMarkdown(streamingText),
                       }}
@@ -1470,7 +1470,7 @@ export function OpenClawAssistantPane({
                 className={cn(
                   "min-h-9 rounded-[12px] px-3 py-1.5 text-xs font-semibold transition",
                   assistantMode === option.value
-                    ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+                    ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] dark:bg-[var(--color-action)]"
                     : "border border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)] hover:border-[color:var(--color-primary-border)]",
                 )}
               >

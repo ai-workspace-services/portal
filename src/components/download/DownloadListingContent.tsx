@@ -90,7 +90,7 @@ export default function DownloadListingContent({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_20px_48px_rgba(15,23,42,0.05)] lg:p-7">
+      <section className="rounded-[2rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_20px_48px_rgba(15,23,42,0.05)] lg:p-7 dark:bg-[linear-gradient(180deg,var(--color-surface),var(--color-surface-muted))]">
         <Breadcrumbs items={breadcrumbItems} />
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
           <div className="space-y-3">

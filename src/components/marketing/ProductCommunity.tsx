@@ -52,7 +52,7 @@ const Poster = forwardRef<HTMLDivElement, { config: ProductConfig; lang: 'zh' | 
                 {lang === 'zh' ? '立即开始加速' : 'Start accelerating now'}
               </p>
             </div>
-            <div ref={posterQrRef} className="rounded-2xl border border-slate-200 bg-white p-4" />
+            <div ref={posterQrRef} className="rounded-2xl border border-slate-200 bg-white p-4 dark:bg-[#fff]" />
           </div>
         </div>
       </div>

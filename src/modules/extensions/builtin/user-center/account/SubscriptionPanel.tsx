@@ -195,7 +195,7 @@ export default function SubscriptionPanel({
               setPortalLoading(false);
             }
           }}
-          className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-primary-strong)] disabled:cursor-not-allowed disabled:opacity-70 dark:bg-[var(--color-action)]"
           disabled={portalLoading}
         >
           {portalLoading ? copy.openingBilling : copy.manageBilling}
@@ -218,7 +218,7 @@ export default function SubscriptionPanel({
             type="button"
             className={`rounded-full px-3 py-1 font-medium transition-colors ${
               activeTab === tab.key
-                ? "bg-[var(--color-primary)] text-white shadow"
+                ? "bg-[var(--color-primary)] text-white shadow dark:bg-[var(--color-action)]"
                 : "text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"
             }`}
             onClick={() => setActiveTab(tab.key)}
@@ -233,7 +233,7 @@ export default function SubscriptionPanel({
         <div className="mt-4">
           <div className="mb-3 flex items-center gap-2">
             <span
-              className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]"
+              className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] dark:bg-[var(--color-action)]"
               aria-hidden="true"
             />
             <h3 className="text-sm font-semibold text-[var(--color-heading)]">
@@ -295,7 +295,7 @@ export default function SubscriptionPanel({
                 aria-label={copy.monthlyQuota}
               >
                 <div
-                  className="h-full rounded-full bg-[var(--color-primary)] transition-all"
+                  className="h-full rounded-full bg-[var(--color-primary)] transition-all dark:bg-[var(--color-action)]"
                   style={{
                     width: `${
                       typeof usageSummary.usagePercent === "number"
@@ -368,7 +368,7 @@ export default function SubscriptionPanel({
             <div>
               <div className="mb-1 flex items-center gap-2">
                 <span
-                  className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]"
+                  className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] dark:bg-[var(--color-action)]"
                   aria-hidden="true"
                 />
                 <h3 className="text-sm font-semibold text-[var(--color-heading)]">
@@ -441,7 +441,7 @@ export default function SubscriptionPanel({
         <div className="mt-6">
           <div className="mb-3 flex items-center gap-2">
             <span
-              className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]"
+              className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] dark:bg-[var(--color-action)]"
               aria-hidden="true"
             />
             <h3 className="text-sm font-semibold text-[var(--color-heading)]">

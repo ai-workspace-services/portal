@@ -32,7 +32,7 @@ export default function ReferralPromoSection({
         compact ? "px-4 py-14 sm:px-6 sm:py-20" : "px-4 py-16 sm:px-6 sm:py-24"
       }
     >
-      <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-blue-200/80 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#eef2ff_100%)] p-6 shadow-[0_20px_60px_rgba(37,99,235,0.12)] sm:p-10 lg:p-12">
+      <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-blue-200/80 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#eef2ff_100%)] p-6 shadow-[0_20px_60px_rgba(37,99,235,0.12)] sm:p-10 lg:p-12 dark:bg-[linear-gradient(135deg,var(--color-primary-muted)_0%,var(--color-surface)_52%,var(--color-surface-muted)_100%)]">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-14">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-700">

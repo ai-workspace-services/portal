@@ -712,3 +712,137 @@
     margin-top: 6px;
   }
 }
+
+/* Dark theme */
+:global(html.dark) .page {
+  color: var(--color-heading);
+  background: var(--color-surface);
+}
+:global(html.dark) .primary {
+  background: var(--color-action);
+  border: 1px solid var(--color-action);
+}
+:global(html.dark) .secondary,
+:global(html.dark) .button {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-surface-border-strong);
+}
+:global(html.dark) .primary:hover {
+  background: var(--color-action-hover);
+}
+:global(html.dark) .secondary:hover,
+:global(html.dark) .button:hover {
+  background: var(--color-surface-muted);
+}
+:global(html.dark) .heroMeta {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .eyebrow {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+:global(html.dark) .subtitle {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .reward {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-surface-border);
+}
+:global(html.dark) .rewardTag {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+:global(html.dark) .reward strong {
+  color: var(--color-primary);
+}
+:global(html.dark) .reward p {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .heroBody {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .showcase figcaption {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .panel {
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+}
+:global(html.dark) .muted {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .inputs input,
+:global(html.dark) .inputs select {
+  border: 1px solid var(--color-surface-border-strong);
+  background: var(--color-surface);
+  color: var(--color-heading);
+}
+:global(html.dark) .checkbox {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .checkbox input {
+  accent-color: var(--color-primary);
+}
+:global(html.dark) .estimate strong {
+  color: var(--color-primary);
+}
+:global(html.dark) .estimate b {
+  color: var(--color-primary);
+}
+:global(html.dark) .estimate p {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .calculatorNote {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .steps article p {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .stepIcon {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+:global(html.dark) .faq details p,
+:global(html.dark) .terms p {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .terms {
+  background: var(--color-surface-muted);
+}
+:global(html.dark) .footer {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .centerTitle p {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .stat {
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface-muted);
+}
+:global(html.dark) .stat span {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .stat strong {
+  color: var(--color-primary);
+}
+:global(html.dark) .linkBox input {
+  border: 1px solid var(--color-surface-border-strong);
+}
+:global(html.dark) .table th {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+:global(html.dark) .badge {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+:global(html.dark) .empty {
+  border: 1px dashed var(--color-surface-border);
+  color: var(--color-text-muted);
+}
+:global(html.dark) .error {
+  color: var(--color-danger);
+  background: var(--color-danger-muted);
+  border: 1px solid var(--color-surface-border);
+}

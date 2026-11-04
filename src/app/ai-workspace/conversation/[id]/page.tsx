@@ -135,17 +135,17 @@ export default function ConversationPage() {
   return (
     <div className="relative flex min-w-0 flex-1 overflow-hidden bg-white">
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-[60px] shrink-0 items-center gap-2 border-b border-[#e8ebf0] bg-white px-3 sm:px-5">
+        <header className="flex min-h-[60px] shrink-0 items-center gap-2 border-b border-[#e8ebf0] bg-white px-3 sm:px-5 dark:border-surface-border">
           <SidebarRevealButton />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-sm font-bold sm:text-base">
               {sessionId ? sessionTitle(snapshot) : "新对话"}
             </h1>
-            <div className="mt-1 flex items-center gap-2 text-eyebrow text-[#7b8494]">
+            <div className="mt-1 flex items-center gap-2 text-eyebrow text-[#7b8494] dark:text-text-subtle">
               <span
                 className={cn(
                   "inline-flex items-center gap-1 font-semibold",
-                  active ? "text-[#248b51]" : "text-[#697386]",
+                  active ? "text-[#248b51] dark:text-success" : "text-[#697386] dark:text-text-muted",
                 )}
               >
                 {active ? (
@@ -161,12 +161,12 @@ export default function ConversationPage() {
               {events.length ? <span>· seq {events.at(-1)?.seq}</span> : null}
             </div>
           </div>
-          <div className="hidden items-center gap-1 rounded-full border border-[#e1e6ed] bg-[#f8fafc] p-1 text-xs sm:flex">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#075ecc] px-3 py-1.5 font-semibold text-white">
+          <div className="hidden items-center gap-1 rounded-full border border-[#e1e6ed] bg-[#f8fafc] p-1 text-xs sm:flex dark:border-surface-border dark:bg-surface">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#075ecc] dark:bg-[var(--color-action)] px-3 py-1.5 font-semibold text-white">
               <PlayCircle className="size-3.5" />
               对话工作流
             </span>
-            <span className="inline-flex items-center gap-1 px-2 text-[#667085]">
+            <span className="inline-flex items-center gap-1 px-2 text-[#667085] dark:text-text-muted">
               <Menu className="size-3.5" />
               渲染
             </span>
@@ -174,7 +174,7 @@ export default function ConversationPage() {
           <button
             type="button"
             onClick={() => setRightPanelOpen((value) => !value)}
-            className="ml-2 inline-flex items-center gap-1 rounded-lg border border-[#dfe4eb] px-2.5 py-2 text-xs font-semibold text-[#566174] hover:bg-[#f6f8fb]"
+            className="ml-2 inline-flex items-center gap-1 rounded-lg border border-[#dfe4eb] px-2.5 py-2 text-xs font-semibold text-[#566174] hover:bg-[#f6f8fb] dark:border-surface-border dark:text-text-muted dark:hover:bg-surface"
             aria-label="切换任务上下文"
           >
             <PaneToggleIcon side="right" className="size-4" />
@@ -182,7 +182,7 @@ export default function ConversationPage() {
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-3 py-5 sm:px-6 sm:py-8">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-3 py-5 sm:px-6 sm:py-8 dark:bg-surface">
           <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
             {!sessionId ? <NewConversation /> : null}
             {loading ? <LoadingHistory /> : null}
@@ -197,10 +197,10 @@ export default function ConversationPage() {
               />
             ) : null}
             {!loading && !error && sessionId && !messages.length ? (
-              <div className="m-auto rounded-2xl border border-dashed border-[#d7dde6] bg-white px-8 py-10 text-center">
-                <Cloud className="mx-auto size-8 text-[#a0a8b5]" />
+              <div className="m-auto rounded-2xl border border-dashed border-[#d7dde6] bg-white px-8 py-10 text-center dark:border-surface-border">
+                <Cloud className="mx-auto size-8 text-[#a0a8b5] dark:text-text-subtle" />
                 <p className="mt-3 font-semibold">会话已恢复</p>
-                <p className="mt-1 text-xs text-[#7b8494]">
+                <p className="mt-1 text-xs text-[#7b8494] dark:text-text-subtle">
                   暂无可显示的消息事件，新的终端消息会自动同步到这里。
                 </p>
               </div>
@@ -219,8 +219,8 @@ export default function ConversationPage() {
                       className={cn(
                         "max-w-[92%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm sm:max-w-[82%]",
                         message.role === "user"
-                          ? "rounded-br-md bg-[#075ecc] text-white"
-                          : "rounded-bl-md border border-[#e4e8ef] bg-white text-[#252a34]",
+                          ? "rounded-br-md bg-[#075ecc] dark:bg-[var(--color-action)] text-white"
+                          : "rounded-bl-md border border-[#e4e8ef] bg-white text-[#252a34] dark:border-surface-border dark:text-text",
                       )}
                     >
                       <p className="whitespace-pre-wrap break-words">
@@ -231,7 +231,7 @@ export default function ConversationPage() {
                           "mt-2 block text-eyebrow",
                           message.role === "user"
                             ? "text-blue-100"
-                            : "text-[#8a93a2]",
+                            : "text-[#8a93a2] dark:text-text-subtle",
                         )}
                       >
                         #{message.seq} · {formatTime(message.createdAt)}
@@ -244,14 +244,14 @@ export default function ConversationPage() {
           </div>
         </div>
 
-        <footer className="shrink-0 border-t border-[#e8ebf0] bg-white px-3 py-3 sm:px-6 sm:py-4">
+        <footer className="shrink-0 border-t border-[#e8ebf0] bg-white px-3 py-3 sm:px-6 sm:py-4 dark:border-surface-border">
           <div className="mx-auto max-w-3xl">
             <ChatInputArea
               sessionId={sessionId}
               onSubmitted={handleSubmitted}
             />
           </div>
-          <p className="mt-2 text-center text-eyebrow text-[#8a93a2]">
+          <p className="mt-2 text-center text-eyebrow text-[#8a93a2] dark:text-text-subtle">
             会话和任务状态由 Bridge 持久化，并在所有终端按事件序号同步
           </p>
         </footer>
@@ -275,13 +275,13 @@ export default function ConversationPage() {
 function NewConversation() {
   return (
     <div className="m-auto max-w-lg text-center">
-      <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eaf2fd] text-[#075ecc]">
+      <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#eaf2fd] text-[#075ecc] dark:bg-primary-muted dark:text-primary">
         <MessageLogo />
       </div>
       <h2 className="mt-5 text-2xl font-black tracking-[0.12em] sm:text-3xl">
         XWORKMATE
       </h2>
-      <p className="mt-3 text-sm leading-6 text-[#697386]">
+      <p className="mt-3 text-sm leading-6 text-[#697386] dark:text-text-muted">
         输入需求开始任务。Portal 仅展示和调用，历史上下文将由 Bridge
         保存并同步到桌面端、移动端和 Web。
       </p>
@@ -291,8 +291,8 @@ function NewConversation() {
 
 function LoadingHistory() {
   return (
-    <div className="m-auto flex items-center gap-3 rounded-xl border border-[#e4e8ef] bg-white px-5 py-4 text-sm text-[#697386]">
-      <RefreshCw className="size-4 animate-spin text-[#075ecc]" />
+    <div className="m-auto flex items-center gap-3 rounded-xl border border-[#e4e8ef] bg-white px-5 py-4 text-sm text-[#697386] dark:border-surface-border dark:text-text-muted">
+      <RefreshCw className="size-4 animate-spin text-[#075ecc] dark:text-primary" />
       正在恢复快照与有序事件…
     </div>
   );

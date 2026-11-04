@@ -261,3 +261,69 @@
     padding: 24px;
   }
 }
+
+/* Dark theme */
+:global(html.dark) .page {
+  background: var(--color-surface);
+  color: var(--color-heading);
+}
+:global(html.dark) .page h1,
+:global(html.dark) .page h2,
+:global(html.dark) .page h3 {
+  color: var(--color-heading);
+}
+:global(html.dark) .hero {
+  background: var(--color-surface-muted);
+}
+:global(html.dark) .eyebrow {
+  color: var(--color-primary);
+}
+:global(html.dark) .lead {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .card {
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+}
+:global(html.dark) .icon {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+:global(html.dark) .number {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .cardTitle {
+  color: var(--color-heading);
+}
+:global(html.dark) .description {
+  color: var(--color-text-muted);
+}
+:global(html.dark) .textLink {
+  color: var(--color-primary);
+}
+:global(html.dark) .solutionSection {
+  background: var(--color-surface-muted);
+}
+:global(html.dark) .solutionCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+}
+:global(html.dark) .solutionMark {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+:global(html.dark) .primaryLink,
+:global(html.dark) .secondaryLink {
+  border: 1px solid var(--color-surface-border-strong);
+}
+:global(html.dark) .page .primaryLink {
+  background: var(--color-action);
+  border-color: var(--color-action);
+}
+:global(html.dark) .page .secondaryLink {
+  color: var(--color-heading);
+  background: var(--color-surface);
+}
+:global(html.dark) .page .primaryLink:hover {
+  background: var(--color-action-hover);
+}

@@ -103,7 +103,7 @@ function QrPreview({ item, qrAltSuffix }: QrPreviewProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-2xl border border-brand-border bg-white p-3 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <div className="relative overflow-hidden rounded-2xl border border-brand-border bg-white p-3 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:bg-[#fff]">
         <div className="relative aspect-square w-full">
           {item.qrImage ? (
             <Image
@@ -124,7 +124,7 @@ function QrPreview({ item, qrAltSuffix }: QrPreviewProps) {
               aria-hidden
             >
               {pattern!.flat().map((isFilled, index) => (
-                <span key={`${item.slug}-${index}`} className={`block ${isFilled ? 'bg-brand-navy' : 'bg-brand-surface'}`} />
+                <span key={`${item.slug}-${index}`} className={`block ${isFilled ? 'bg-brand-navy' : 'bg-brand-surface dark:bg-[#f5f8ff]'}`} />
               ))}
             </div>
           )}
@@ -150,7 +150,7 @@ function InfoCard({ item }: { item: ContactItemContent }) {
         {item.description ? <p className="mt-1 text-xs text-brand-heading/70">{item.description}</p> : null}
         {item.bodyHtml ? (
           <div
-            className="prose prose-sm mt-2 max-w-none text-brand-heading/80 [&_a]:text-brand [&_a]:no-underline hover:[&_a]:underline"
+            className="prose prose-sm mt-2 max-w-none text-brand-heading/80 [&_a]:text-brand [&_a]:no-underline hover:[&_a]:underline dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: item.bodyHtml }}
           />
         ) : null}
@@ -237,7 +237,7 @@ export default function ContactPanelClient({ panel, className }: ContactPanelCli
           <div className="flex-1 overflow-y-auto">
             {localizedPanel.bodyHtml ? (
               <div
-                className="prose prose-sm px-6 pt-4 text-brand-heading/80"
+                className="prose prose-sm px-6 pt-4 text-brand-heading/80 dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: localizedPanel.bodyHtml }}
               />
             ) : null}

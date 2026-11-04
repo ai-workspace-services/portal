@@ -111,7 +111,7 @@ export default function OpsPlanCatalog() {
                     setSelected("gift");
                     setNotice("选择档位后编辑并保存为新版本草稿。");
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white dark:bg-[var(--color-action)]"
                 >
                   <Plus size={16} />
                   新建套餐
@@ -653,7 +653,7 @@ function CatalogEditor({
         <button
           disabled={!canWrite || saving || existing?.active}
           onClick={() => void save()}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
         >
           {saving && <Loader2 size={15} className="animate-spin" />}
           保存当前档位草稿

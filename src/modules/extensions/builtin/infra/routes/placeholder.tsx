@@ -156,7 +156,7 @@ function StatusPill({
             ? "bg-emerald-500"
             : tone === "danger"
               ? "bg-rose-500"
-              : "bg-[var(--color-primary)]",
+              : "bg-[var(--color-primary)] dark:bg-[var(--color-action)]",
         )}
       />
       {label}
@@ -279,7 +279,7 @@ function ObservabilityWorkspace({
             {monitorCards.map((card) => (
               <div
                 key={card.label}
-                className="rounded-[18px] border border-[color:var(--color-surface-border)] bg-[linear-gradient(180deg,rgba(240,244,255,0.56),rgba(255,255,255,0.9))] p-4"
+                className="rounded-[18px] border border-[color:var(--color-surface-border)] bg-[linear-gradient(180deg,rgba(240,244,255,0.56),rgba(255,255,255,0.9))] p-4 dark:bg-[linear-gradient(180deg,var(--color-surface-muted),var(--color-surface-elevated))]"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-subtle)]">
                   {card.label}
@@ -298,7 +298,7 @@ function ObservabilityWorkspace({
         <SectionShell
           title="分析"
           eyebrow="Analysis"
-          className="bg-[linear-gradient(180deg,rgba(247,250,255,0.96),rgba(255,255,255,0.92))]"
+          className="bg-[linear-gradient(180deg,rgba(247,250,255,0.96),rgba(255,255,255,0.92))] dark:bg-[linear-gradient(180deg,var(--gradient-app-via),var(--color-surface-elevated))]"
         >
           {assistantState.errorMessage ? (
             <div className="mb-4 rounded-[18px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -364,7 +364,7 @@ function ObservabilityWorkspace({
                     </p>
                   </div>
                   <div
-                    className="prose prose-sm max-w-none break-words whitespace-pre-wrap text-[var(--color-text)]"
+                    className="prose prose-sm max-w-none break-words whitespace-pre-wrap text-[var(--color-text)] dark:prose-invert"
                     dangerouslySetInnerHTML={{ __html: message.html }}
                   />
                 </div>
@@ -493,7 +493,7 @@ export default function PlaceholderPage() {
                 </p>
                 <Link
                   href="/panel/api"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)]"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] dark:bg-[var(--color-action)]"
                 >
                   打开接口集成
                   <ArrowRight className="h-4 w-4" />
@@ -537,13 +537,13 @@ export default function PlaceholderPage() {
                         className={cn(
                           "max-w-[88%] rounded-[22px] px-5 py-4 shadow-[var(--shadow-sm)]",
                           isUser
-                            ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+                            ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] dark:bg-[var(--color-action)]"
                             : "border border-[color:var(--color-surface-border)] bg-white text-[var(--color-text)]",
                         )}
                       >
                         <div
                           className={cn(
-                            "prose prose-sm max-w-none break-words whitespace-pre-wrap",
+                            "prose dark:prose-invert prose-sm max-w-none break-words whitespace-pre-wrap",
                             isUser ? "prose-invert" : "",
                           )}
                           dangerouslySetInnerHTML={{ __html: message.html }}
@@ -557,7 +557,7 @@ export default function PlaceholderPage() {
                   <div className="flex justify-start">
                     <div className="max-w-[88%] rounded-[22px] border border-[color:var(--color-surface-border)] bg-white px-5 py-4 shadow-[var(--shadow-sm)]">
                       <div
-                        className="prose prose-sm max-w-none break-words whitespace-pre-wrap"
+                        className="prose dark:prose-invert prose-sm max-w-none break-words whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{
                           __html: assistantState.streamingHtml,
                         }}

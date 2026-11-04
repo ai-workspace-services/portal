@@ -270,7 +270,7 @@ export default function UserManagementWorkspace({
                         </td>
                         <td className="px-3 py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-semibold text-white">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-semibold text-white dark:bg-[var(--color-action)]">
                               {initials(user)}
                             </span>
                             <span className="min-w-0">
@@ -358,7 +358,7 @@ export default function UserManagementWorkspace({
             <button type="button" className="text-[var(--color-text-subtle)]">
               ‹
             </button>
-            <span className="rounded-md bg-[var(--color-primary)] px-2.5 py-1 text-white">
+            <span className="rounded-md bg-[var(--color-primary)] px-2.5 py-1 text-white dark:bg-[var(--color-action)]">
               1
             </span>
             <span>2</span>
@@ -393,7 +393,7 @@ export default function UserManagementWorkspace({
             </header>
             <div className="px-5 py-4">
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary)] text-lg font-semibold text-white">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-primary)] text-lg font-semibold text-white dark:bg-[var(--color-action)]">
                   {initials(selectedUser)}
                 </span>
                 <div>

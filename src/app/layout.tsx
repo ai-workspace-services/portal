@@ -104,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const siteUrl = PLATFORM_SITE_URL
 
   return (
-    <html {...htmlAttributes}>
+    <html {...htmlAttributes} style={{ colorScheme: 'light' }} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#6366f1" />

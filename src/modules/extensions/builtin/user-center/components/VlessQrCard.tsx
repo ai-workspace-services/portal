@@ -280,7 +280,7 @@ export default function VlessQrCard({
               type="button"
               onClick={() => setPreferredTransport(transport)}
               className={`rounded-md px-3 py-1 text-eyebrow font-semibold uppercase tracking-wide transition-colors ${preferredTransport === transport
-                ? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]'
+                ? 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)] dark:bg-[var(--color-action)]'
                 : 'bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-border)]'
                 }`}
             >
@@ -365,7 +365,7 @@ export default function VlessQrCard({
                 type="button"
                 onClick={handleDownloadQr}
                 disabled={!isReady}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
               >
                 <Download className="h-4 w-4" />
                 {copy.downloadQr}

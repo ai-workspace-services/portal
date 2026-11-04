@@ -98,9 +98,9 @@ export default function XWorkmateProductView({
               style={{
                 borderRadius: 16,
                 overflow: "hidden",
-                border: "1px solid rgba(18, 33, 59, 0.1)",
+                border: "1px solid var(--product-media-border, rgba(18, 33, 59, 0.1))",
                 boxShadow: "0 24px 48px -12px rgba(18, 33, 59, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04)",
-                background: "#ffffff",
+                background: "var(--product-media-background, #ffffff)",
               }}
             >
               <Image
@@ -194,7 +194,7 @@ export default function XWorkmateProductView({
             <p className={styles.note}>{c.diagnostics.privacyNote}</p>
           </div>
           <figure className={styles.diagnosticImage}>
-            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(18, 33, 59, 0.1)", background: "#ffffff", boxShadow: "0 16px 32px -8px rgba(18, 33, 59, 0.1)" }}>
+            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--product-media-border, rgba(18, 33, 59, 0.1))", background: "var(--product-media-background, #ffffff)", boxShadow: "0 16px 32px -8px rgba(18, 33, 59, 0.1)" }}>
               <Image
                 src={c.diagnostics.image}
                 alt={c.diagnostics.imageAlt}
@@ -228,7 +228,7 @@ export default function XWorkmateProductView({
               {c.guide.note}
             </p>
           </div>
-          <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid rgba(18, 33, 59, 0.1)", background: "#ffffff", boxShadow: "0 12px 24px -8px rgba(18, 33, 59, 0.08)" }}>
+          <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--product-media-border, rgba(18, 33, 59, 0.1))", background: "var(--product-media-background, #ffffff)", boxShadow: "0 12px 24px -8px rgba(18, 33, 59, 0.08)" }}>
             <Image
               src={c.guide.image}
               alt={c.guide.imageAlt}

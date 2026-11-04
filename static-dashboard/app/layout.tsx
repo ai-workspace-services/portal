@@ -31,7 +31,7 @@ export default function StaticDashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh">
+    <html lang="zh" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body className="bg-[var(--color-background)] text-[var(--color-text)]">
         <StaticProviders>{children}</StaticProviders>
       </body>

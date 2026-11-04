@@ -318,7 +318,7 @@ function Donut({ automatic, manual }: { automatic: number; manual: number }) {
       </div>
       <div className="space-y-1 text-xs text-[var(--color-text-muted)]">
         <p>
-          <i className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-primary)]" />
+          <i className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-primary)] dark:bg-[var(--color-action)]" />
           自动（规则）{automatic}
         </p>
         <p>
@@ -751,7 +751,7 @@ export function UserGroupManagement({
               type="button"
               onClick={exportMembers}
               disabled={!onSubscriptionRecordsExport}
-              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
+              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
             >
               <Download className="h-4 w-4" />
               导出订阅清单
@@ -876,7 +876,7 @@ export function UserGroupManagement({
                 selectedQuotaUserIds.size === 0 ||
                 !batchQuotaGroup
               }
-              className="rounded-md bg-[var(--color-primary)] px-3 py-1.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-[var(--color-primary)] px-3 py-1.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)]"
             >
               预览并批量修改套餐
             </button>
@@ -985,7 +985,7 @@ export function UserGroupManagement({
                 type="button"
                 disabled={!canEditRoles || !selectedUser}
                 onClick={() => changeGroup(segment)}
-                className="inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
               >
                 <UsersRound className="h-4 w-4" />
                 手动调整分组
@@ -1229,7 +1229,7 @@ export function UserGroupManagement({
                       pending.has(selectedUser.id) ||
                       Boolean(validFrom && validUntil && validUntil < validFrom)
                     }
-                    className="mt-3 rounded-md bg-[var(--color-primary)] px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    className="mt-3 rounded-md bg-[var(--color-primary)] px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)]"
                   >
                     保存有效期
                   </button>
@@ -1306,7 +1306,7 @@ export function UserGroupManagement({
               <button
                 type="submit"
                 disabled={creating}
-                className="w-fit rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                className="w-fit rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
               >
                 {creating ? "创建中…" : "创建用户"}
               </button>
@@ -1591,7 +1591,7 @@ export function UserGroupManagement({
                   disabled={
                     planGroupDialog.busy || !planGroupDialog.reason.trim()
                   }
-                  className="rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  className="rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
                 >
                   {planGroupDialog.busy ? "生成预览中…" : "生成预览"}
                 </button>
@@ -1600,7 +1600,7 @@ export function UserGroupManagement({
                   type="button"
                   onClick={() => void confirmPlanGroupChange()}
                   disabled={planGroupDialog.busy}
-                  className="rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  className="rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
                 >
                   {planGroupDialog.busy ? "应用中…" : "确认并应用"}
                 </button>
