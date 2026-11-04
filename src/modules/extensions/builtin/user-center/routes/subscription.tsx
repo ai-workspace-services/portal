@@ -54,6 +54,7 @@ import {
   XdsStat,
 } from "@/components/ui/xds";
 
+import RenewalPlanChange from "../account/RenewalPlanChange";
 import BillingOptionsPanel from "../account/BillingOptionsPanel";
 import SubscriptionStatusCard from "../account/SubscriptionStatusCard";
 import {
@@ -461,6 +462,12 @@ export default function UserCenterSubscriptionRoute() {
                       : undefined
                   }
                 />
+                {records.some(
+                  (record) =>
+                    record.provider === "stripe" &&
+                    record.kind === "subscription" &&
+                    record.status === "active",
+                ) && <RenewalPlanChange />}
                 <XdsAlert
                   tone="info"
                   icon={<Info className="h-4 w-4" />}
