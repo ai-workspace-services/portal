@@ -1,5 +1,5 @@
 "use client";
-import { Moon, Sun } from "lucide-react";
+import { LayoutGrid, LayoutList, Moon, Sun } from "lucide-react";
 import { Github, Linkedin, Twitter } from "@/components/icons/brand";
 import BoundaryLink from "@/components/common/BoundaryLink";
 import AiResourceLinks from "@/components/marketing/AiResourceLinks";
@@ -93,11 +93,11 @@ export default function Footer() {
             title={viewToggleLabel}
             className={`group flex h-8 w-8 items-center justify-center rounded-[8px] border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${controlButtonClassName}`}
           >
-            <span
-              className={`material-symbols-outlined text-xl ${themeIconClassName}`}
-            >
-              {view === "classic" ? "view_quilt" : "view_cozy"}
-            </span>
+            {view === "classic" ? (
+              <LayoutGrid className={`h-4 w-4 ${themeIconClassName}`} aria-hidden />
+            ) : (
+              <LayoutList className={`h-4 w-4 ${themeIconClassName}`} aria-hidden />
+            )}
           </button>
           <button
             type="button"
