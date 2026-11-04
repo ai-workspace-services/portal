@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-03",
+  "updatedAt": "2026-11-04",
   "books": [
     {
       "slug": "it-history",
@@ -50,9 +50,9 @@
     {
       "slug": "platform-engineering",
       "title": "图解平台工程 · 云中立实践",
-      "version": "v0.9.13",
-      "pdf": "https://drive.google.com/file/d/1u8X1Y6gl-Ipop8eLnGjqnh0nNpsys7l8/view?usp=drivesdk",
-      "sizeMB": 25.3,
+      "version": "v0.9.18",
+      "pdf": "https://drive.google.com/file/d/1zIMw-K_cppDddF5Vwvb3SELC6Aga64cO/view?usp=drivesdk",
+      "sizeMB": 26.9,
       "source": "https://drive.google.com/file/d/1KFNJNoaFd5URsKILZmZZDpaa5Rh-2jue/view?usp=drivesdk",
       "readme": "https://drive.google.com/file/d/10OWVYjTTLVHIa78Dkhev7mCj6G44gk7_/view?usp=drivesdk",
       "tags": [
@@ -64,9 +64,9 @@
     {
       "slug": "ai-native",
       "title": "AI-Native 超级个体 · 新时代游戏",
-      "version": "v0.9.5",
-      "pdf": "https://drive.google.com/file/d/1ks3Ob4VmAZp7NRthss8Oo4BsgZveVfpR/view?usp=drivesdk",
-      "sizeMB": 7.1,
+      "version": "v0.9.6",
+      "pdf": "https://drive.google.com/file/d/1Vk6PWzAWbHiIOXArRz2UtTWBLIqvan6A/view?usp=drivesdk",
+      "sizeMB": 7.2,
       "source": "https://drive.google.com/file/d/15zpxeWHFZes9Sa30D3XBvMx0EyJfiRbT/view?usp=drivesdk",
       "readme": "https://drive.google.com/file/d/1BKucQJVB6NBnn_vfAuYwtiX-3dl8Kzws/view?usp=drivesdk",
       "tags": [
