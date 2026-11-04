@@ -149,7 +149,7 @@ export default function ProductMatrixClient({ solutions }: ProductMatrixClientPr
               ) : null}
               {activeSolution.bodyHtml ? (
                 <div
-                  className="prose max-w-none text-sm text-brand-heading/90 [&_strong]:text-brand-navy"
+                  className="prose max-w-none text-sm text-brand-heading/90 [&_strong]:text-brand-navy dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: activeSolution.bodyHtml }}
                 />
               ) : null}

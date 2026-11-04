@@ -164,7 +164,7 @@ export default function HeroProductTabs({ items }: HeroProductTabsProps) {
         ) : null}
         {activeItem.bodyHtml ? (
           <div
-            className="prose mt-5 max-w-none text-sm text-slate-800 [&_strong]:text-slate-900"
+            className="prose mt-5 max-w-none text-sm text-slate-800 [&_strong]:text-slate-900 dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: activeItem.bodyHtml }}
           />
         ) : null}

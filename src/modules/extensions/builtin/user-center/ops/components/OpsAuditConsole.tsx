@@ -182,7 +182,7 @@ export default function OpsAuditConsole() {
           <FilterField label="开始日期" type="date" value={draft.from} onChange={(value) => updateDraft("from", value)} />
           <FilterField label="结束日期" type="date" value={draft.to} onChange={(value) => updateDraft("to", value)} />
           <div className="flex items-end gap-2">
-            <button type="submit" className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)]">
+            <button type="submit" className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]">
               <Search className="h-4 w-4" />筛选
             </button>
             <button type="button" onClick={resetFilters} className="rounded-lg border border-[color:var(--color-surface-border)] px-3 py-2.5 text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]">

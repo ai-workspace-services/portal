@@ -325,7 +325,7 @@ export function AiWorkspacePage({
   };
 
   return (
-    <main className="flex h-full min-h-0 w-full overflow-hidden bg-[#f7f8fa] text-[#1f2430]">
+    <main className="flex h-full min-h-0 w-full overflow-hidden bg-[#f7f8fa] text-[#1f2430] dark:bg-surface dark:text-text">
       <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
         <div className="flex h-full min-h-0 flex-col p-4">
           <div className="mb-4 flex items-center gap-3 text-xs font-bold text-slate-600">
@@ -345,7 +345,7 @@ export function AiWorkspacePage({
           </div>
 
           <button
-            className="mt-4 flex h-9 items-center justify-center gap-3 rounded-md bg-[#0d63c7] text-sm font-bold text-white shadow-sm"
+            className="mt-4 flex h-9 items-center justify-center gap-3 rounded-md bg-[#0d63c7] dark:bg-[var(--color-action)] text-sm font-bold text-white shadow-sm"
             type="button"
             onClick={createTask}
           >
@@ -411,7 +411,7 @@ export function AiWorkspacePage({
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col border-r border-slate-200 bg-[#f8fafc]">
+      <section className="flex min-w-0 flex-1 flex-col border-r border-slate-200 bg-[#f8fafc] dark:bg-surface">
         <header className="flex h-14 shrink-0 items-center justify-end gap-3 border-b border-slate-200 bg-white px-3">
           <ToolbarPill>
             <Menu className="h-4 w-4" />
@@ -435,7 +435,7 @@ export function AiWorkspacePage({
               输入需求后即可开始执行，结果会回到当前会话并同步到任务页。
             </p>
             <button
-              className="mt-4 inline-flex items-center gap-3 rounded-lg bg-[#0d63c7] px-3 py-2.5 text-sm font-bold text-white"
+              className="mt-4 inline-flex items-center gap-3 rounded-lg bg-[#0d63c7] dark:bg-[var(--color-action)] px-3 py-2.5 text-sm font-bold text-white"
               type="button"
               onClick={() =>
                 document.getElementById("xworkmate-composer")?.focus()
@@ -461,7 +461,7 @@ export function AiWorkspacePage({
           ) : null}
         </div>
 
-        <div className="shrink-0 border-t border-slate-100 bg-[#f8fafc] px-4 pb-4 pt-3">
+        <div className="shrink-0 border-t border-slate-100 bg-[#f8fafc] px-4 pb-4 pt-3 dark:bg-surface">
           <div className="mx-auto max-w-[1000px]">
             <div className="mb-3 flex items-center gap-2">
               <label className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500">
@@ -549,7 +549,7 @@ export function AiWorkspacePage({
                 </ToolbarPill>
               </div>
               <button
-                className="inline-flex h-8 items-center gap-2 rounded-md bg-[#0d63c7] px-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-8 items-center gap-2 rounded-md bg-[#0d63c7] dark:bg-[var(--color-action)] px-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isSubmitting}
                 type="button"
                 onClick={submitPrompt}

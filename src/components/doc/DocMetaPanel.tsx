@@ -22,7 +22,7 @@ export default function DocMetaPanel({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-3 py-1 text-xs font-semibold text-slate-600"
+              className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-surface"
             >
               {tag}
             </span>

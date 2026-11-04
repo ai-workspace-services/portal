@@ -56,7 +56,7 @@ export default function CommunityFeed({ posts = [] }: CommunityFeedProps) {
 
   return (
     <section
-      className={clsx('bg-[#f6f7f9]', designTokens.spacing.section.homepage)}
+      className={clsx('bg-[#f6f7f9] dark:bg-surface', designTokens.spacing.section.homepage)}
       aria-labelledby="community-feed"
     >
       <div className={clsx(designTokens.layout.container, 'flex flex-col gap-6 sm:gap-8')}>
@@ -71,7 +71,7 @@ export default function CommunityFeed({ posts = [] }: CommunityFeedProps) {
               </h2>
               <p className="text-sm text-slate-600 sm:text-base">{data.subtitle}</p>
             </div>
-            <Link href="/blogs" className="text-sm font-semibold text-[#3467e9] hover:text-[#2957cf]">
+            <Link href="/blogs" className="text-sm font-semibold text-[#3467e9] hover:text-[#2957cf] dark:text-primary dark:hover:text-primary">
               {data.cta} →
             </Link>
           </div>
@@ -106,7 +106,7 @@ export default function CommunityFeed({ posts = [] }: CommunityFeedProps) {
               </div>
               <Link
                 href={`/blogs/${post.slug}`}
-                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#3467e9] hover:text-[#2957cf]"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#3467e9] hover:text-[#2957cf] dark:text-primary dark:hover:text-primary"
               >
                 {language === 'zh' ? '查看详情' : 'View details'}
                 <span aria-hidden>→</span>

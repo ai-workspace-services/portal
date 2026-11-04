@@ -137,13 +137,13 @@ export default function BlogList({ posts, categories }: BlogListProps) {
   const getPillClass = (isActive: boolean) =>
     isActive
       ? "border-slate-900/10 bg-slate-950 text-white"
-      : "border-transparent bg-transparent text-slate-700 hover:border-slate-900/10 hover:bg-[#fcfbf8]";
+      : "border-transparent bg-transparent text-slate-700 hover:border-slate-900/10 hover:bg-[#fcfbf8] dark:hover:bg-surface";
   const getPillCountClass = (isActive: boolean) =>
-    isActive ? "bg-white/20 text-white" : "bg-[#f8f4ec] text-slate-700";
+    isActive ? "bg-white/20 text-white" : "bg-[#f8f4ec] text-slate-700 dark:bg-surface";
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <section className="overflow-hidden rounded-[1.65rem] border border-slate-900/10 bg-[linear-gradient(135deg,#ffffff_0%,#fbfaf7_62%,#f1f5fb_100%)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
+      <section className="overflow-hidden rounded-[1.65rem] border border-slate-900/10 bg-[linear-gradient(135deg,#ffffff_0%,#fbfaf7_62%,#f1f5fb_100%)] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10 dark:bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-background-muted)_62%,var(--color-surface-muted)_100%)]">
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-end">
           <PublicPageIntro
             eyebrow={isChinese ? "博客与动态" : "Editorial notes"}
@@ -169,7 +169,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
             <div className="mt-3">
               <SearchComponent
                 className="max-w-none"
-                inputClassName="w-full rounded-full border border-slate-900/10 bg-[#fcfbf8] py-3 pl-5 pr-12 text-sm text-slate-700 shadow-none focus:border-slate-900/15 focus:bg-white focus:ring-2 focus:ring-primary/15"
+                inputClassName="w-full rounded-full border border-slate-900/10 bg-[#fcfbf8] py-3 pl-5 pr-12 text-sm text-slate-700 shadow-none focus:border-slate-900/15 focus:bg-white focus:ring-2 focus:ring-primary/15 dark:bg-surface"
                 buttonClassName="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950 text-white transition hover:bg-primary"
               />
             </div>
@@ -257,7 +257,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
           </div>
 
           {featuredPost ? (
-            <article className="group relative overflow-hidden rounded-[1.5rem] border border-primary/12 bg-[linear-gradient(135deg,#ffffff_0%,#f8faff_56%,#edf3ff_100%)] p-6 text-slate-900 shadow-[0_22px_50px_rgba(15,23,42,0.07)] sm:p-8 lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(15rem,0.65fr)] lg:gap-10 lg:p-9">
+            <article className="group relative overflow-hidden rounded-[1.5rem] border border-primary/12 bg-[linear-gradient(135deg,#ffffff_0%,#f8faff_56%,#edf3ff_100%)] p-6 text-slate-900 shadow-[0_22px_50px_rgba(15,23,42,0.07)] sm:p-8 lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(15rem,0.65fr)] lg:gap-10 lg:p-9 dark:bg-[linear-gradient(135deg,var(--color-surface)_0%,var(--color-background-muted)_56%,var(--color-primary-muted)_100%)]">
               <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/12 blur-3xl" />
               <div className="relative flex flex-col">
                 <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
@@ -311,7 +311,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                   className="group flex h-full flex-col rounded-[1.25rem] border border-slate-900/10 bg-white/88 p-5 shadow-[0_12px_28px_rgba(15,23,42,0.035)] transition duration-200 hover:-translate-y-[2px] hover:border-primary/20 hover:bg-white hover:shadow-[0_18px_34px_rgba(15,23,42,0.07)] sm:p-6"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className="rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600">
+                    <span className="rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-surface">
                       {post.category?.label ?? "Blog"}
                     </span>
                     {post.date ? (
@@ -342,7 +342,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                         {post.tags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-2.5 py-1 text-eyebrow font-medium text-slate-600"
+                            className="rounded-full border border-slate-900/10 bg-[#fcfbf8] px-2.5 py-1 text-eyebrow font-medium text-slate-600 dark:bg-surface"
                           >
                             {tag}
                           </span>
@@ -378,7 +378,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
               "rounded-full border px-4 py-2 text-sm font-semibold transition " +
               (currentPage === 1
                 ? "pointer-events-none border-slate-900/8 bg-white text-slate-300"
-                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]")
+                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8] dark:hover:bg-surface")
             }
             aria-disabled={currentPage === 1}
           >
@@ -394,7 +394,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
                   "rounded-full border px-4 py-2 text-sm font-semibold transition " +
                   (pageNumber === currentPage
                     ? "border-slate-900/10 bg-slate-950 text-white"
-                    : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]")
+                    : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8] dark:hover:bg-surface")
                 }
                 aria-current={pageNumber === currentPage ? "page" : undefined}
               >
@@ -409,7 +409,7 @@ export default function BlogList({ posts, categories }: BlogListProps) {
               "rounded-full border px-4 py-2 text-sm font-semibold transition " +
               (currentPage === totalPages
                 ? "pointer-events-none border-slate-900/8 bg-white text-slate-300"
-                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8]")
+                : "border-slate-900/10 bg-white text-slate-700 hover:border-slate-900/15 hover:bg-[#fcfbf8] dark:hover:bg-surface")
             }
             aria-disabled={currentPage === totalPages}
           >

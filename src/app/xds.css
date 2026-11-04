@@ -842,3 +842,95 @@
 .xds-mnav-mobile .xds-mnav-repo { display: inline-flex; width: auto; margin-top: var(--sp-2); }
 
 .xds-vless-selected-node { grid-column: 1 / -1; min-width: 0; color: var(--text-secondary); font-size: var(--fs-caption); overflow-wrap: anywhere; }
+
+/* Shared dark palette. */
+html.dark .xds {
+  --action-bg: var(--blue-500);
+  --action-hover: var(--blue-600);
+  --action-active: var(--blue-700);
+  --success-fill: var(--success);
+}
+html.dark .xds {
+  --gray-0: var(--color-surface);
+  --gray-25: var(--color-surface-elevated);
+  --gray-50: var(--color-background);
+  --gray-100: var(--color-surface-muted);
+  --gray-200: var(--color-surface-border);
+  --gray-300: var(--color-surface-border-strong);
+  --gray-400: var(--color-text-subtle);
+  --gray-500: var(--color-text-subtle);
+  --gray-600: var(--color-text-muted);
+  --gray-700: var(--color-text);
+  --gray-800: var(--color-heading);
+
+  --blue-50: var(--color-primary-muted);
+  --blue-100: var(--color-primary-border);
+  --blue-200: var(--color-primary-border);
+  --blue-300: var(--color-primary);
+  --blue-500: var(--color-primary);
+  --blue-600: var(--color-primary-hover);
+  --blue-700: var(--color-primary-hover);
+  --action-bg: var(--color-action);
+  --action-hover: var(--color-action-hover);
+  --action-active: var(--color-action);
+
+  --success: var(--color-success);
+  --success-fill: var(--color-success-fill);
+  --success-bg: var(--color-success-muted);
+  --success-border: var(--color-success-muted);
+  --warning: var(--color-warning);
+  --warning-bg: var(--color-warning-muted);
+  --warning-border: var(--color-warning-muted);
+  --danger: var(--color-danger);
+  --danger-bg: var(--color-danger-muted);
+  --danger-border: var(--color-danger-muted);
+
+  --text-primary: var(--color-text);
+  --bg-hover: var(--color-surface-hover);
+  --focus-ring: 0 0 0 3px var(--color-focus);
+  --shadow-overlay: var(--shadow-sm);
+  --shadow-modal: var(--shadow-md);
+}
+html.dark .xds-btn-primary {
+  background: var(--action-bg);
+  border-color: var(--action-bg);
+}
+html.dark .xds-btn-primary:hover {
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+}
+html.dark .xds-btn-primary:active {
+  background: var(--action-active);
+}
+html.dark .xds-step.xds-is-done .xds-step-num {
+  background: var(--success-fill);
+  border-color: var(--success-fill);
+}
+html.dark .xds-step.xds-is-active .xds-step-num {
+  background: var(--action-bg);
+  border-color: var(--action-bg);
+}
+html.dark .xds-rail-item.xds-is-active {
+  background: var(--action-bg);
+}
+html.dark .xds-topbar {
+  background: var(--color-surface-translucent);
+}
+html.dark .xds-avatar {
+  background: var(--action-bg);
+}
+html.dark .xds-mnav {
+  background: var(--color-surface-elevated);
+}
+html.dark .xds-logo-mark {
+  background: var(--action-bg);
+}
+html.dark .xds-qr.xds-qr-ready {
+  background: #fff;
+}
+html.dark .xds-qr {
+  background: var(--bg-sunken);
+}
+html.dark .xds-mnav-avatar {
+  background: var(--action-bg);
+}

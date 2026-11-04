@@ -39,11 +39,6 @@ function persistPreference(preference: ThemePreference) {
     return
   }
 
-  if (preference === 'system') {
-    window.localStorage.removeItem(STORAGE_KEY)
-    return
-  }
-
   window.localStorage.setItem(STORAGE_KEY, preference)
 }
 
@@ -76,7 +71,7 @@ export type ThemeActions = {
 }
 
 export const useThemeStore = create<ThemeState & ThemeActions>((set, get) => ({
-  ...buildThemeState('system', resolveSystemTheme()),
+  ...buildThemeState('light', 'light'),
   hydrate: (initialPreference) => {
     const preference = readStoredPreference(initialPreference)
     const resolvedTheme = preference === 'system' ? resolveSystemTheme() : preference

@@ -66,7 +66,7 @@ export default function EmailSuppressionPanel() {
         <button
           type="submit"
           disabled={busy}
-          className="min-h-11 rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="min-h-11 rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
         >
           {t.addSuppression}
         </button>

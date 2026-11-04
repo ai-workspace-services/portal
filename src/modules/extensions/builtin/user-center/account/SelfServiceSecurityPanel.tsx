@@ -365,7 +365,7 @@ export default function SelfServiceSecurityPanel() {
             type="button"
             onClick={() => void resetWithEmailCode()}
             disabled={saving}
-            className="mt-2 rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="mt-2 rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
           >
             {zh ? "用邮箱验证码重置" : "Reset with email code"}
           </button>

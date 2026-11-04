@@ -299,7 +299,7 @@ export default function BillingOptionsPanel({
               setMode(value);
               setMessage(null);
             }}
-            className={`rounded-md px-3 py-2 text-sm font-semibold transition ${mode === value ? "bg-[var(--color-primary)] text-white" : "text-[var(--color-text-subtle)] hover:bg-[var(--color-surface)]"}`}
+            className={`rounded-md px-3 py-2 text-sm font-semibold transition ${mode === value ? "bg-[var(--color-primary)] text-white dark:bg-[var(--color-action)]" : "text-[var(--color-text-subtle)] hover:bg-[var(--color-surface)]"}`}
           >
             {label}
           </button>
@@ -421,7 +421,7 @@ export default function BillingOptionsPanel({
               <button
                 type="button"
                 disabled={Boolean(submitting) || purchasePending !== false}
-                className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm text-white disabled:opacity-50"
+                className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
                 onClick={async () => {
                   if (!confirmation || submitting) return;
                   setSubmitting(confirmation.payload.planId);
@@ -558,7 +558,7 @@ export default function BillingOptionsPanel({
                         "subscription",
                       )
                     }
-                    className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)]"
                   >
                     {plan.planId === selectedPlanId
                       ? zh
@@ -649,7 +649,7 @@ export default function BillingOptionsPanel({
                   setCustomAmount("");
                   setMessage(null);
                 }}
-                className={`rounded-md border px-4 py-2 text-sm font-medium ${currency === value ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]" : "border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)]"}`}
+                className={`rounded-md border px-4 py-2 text-sm font-medium ${currency === value ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)] dark:bg-[var(--color-action)]/5" : "border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)]"}`}
               >
                 {value === "CNY" ? "人民币 CNY" : "美元 USD"}
               </button>
@@ -673,7 +673,7 @@ export default function BillingOptionsPanel({
                       setCustomAmount("");
                       setMessage(null);
                     }}
-                    className={`rounded-md border px-3 py-3 text-sm font-semibold ${selectedOption?.planId === option.planId ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]" : "border-[color:var(--color-surface-border)] text-[var(--color-heading)]"}`}
+                    className={`rounded-md border px-3 py-3 text-sm font-semibold ${selectedOption?.planId === option.planId ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)] dark:bg-[var(--color-action)]/5" : "border-[color:var(--color-surface-border)] text-[var(--color-heading)]"}`}
                   >
                     {label}
                     {!matches ? (
@@ -731,7 +731,7 @@ export default function BillingOptionsPanel({
               onClick={() =>
                 selectedOption && handleCheckout(selectedOption, "payg")
               }
-              className="rounded-md bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)]"
             >
               {submitting
                 ? zh

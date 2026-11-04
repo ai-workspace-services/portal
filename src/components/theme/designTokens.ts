@@ -4,7 +4,7 @@ type ButtonVariant = 'primary' | 'secondary'
 
 export const designTokens = {
   colors: {
-    primary: 'text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus-visible:outline-[var(--color-primary)]',
+    primary: 'text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] focus-visible:outline-[var(--color-primary)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]',
     accent: 'text-[var(--color-primary)]',
     accentHover: 'text-[var(--color-primary-hover)]',
     textPrimary: 'text-[var(--color-text)]',
@@ -14,7 +14,7 @@ export const designTokens = {
     surface: 'bg-white',
     surfaceAlt: 'bg-[var(--color-surface-muted)]',
     background: 'bg-[var(--color-background)]',
-    gradient: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(242,245,248,0.86))]',
+    gradient: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(242,245,248,0.86))] dark:bg-[linear-gradient(180deg,var(--color-surface-elevated),var(--color-surface-muted))]',
   },
   layout: {
     container: 'max-w-7xl mx-auto px-6 md:px-10',
@@ -32,9 +32,9 @@ export const designTokens = {
     } satisfies Record<PageVariant, string>,
     background: {
       homepage:
-        'bg-[linear-gradient(160deg,rgba(242,245,248,0.94),rgba(255,255,255,0.92),rgba(232,240,251,0.72))]',
+        'bg-[linear-gradient(160deg,rgba(242,245,248,0.94),rgba(255,255,255,0.92),rgba(232,240,251,0.72))] dark:bg-[linear-gradient(160deg,var(--gradient-app-from),var(--gradient-app-via),var(--gradient-app-to))]',
       product:
-        'bg-[linear-gradient(180deg,rgba(242,245,248,0.92),rgba(255,255,255,0.96))]',
+        'bg-[linear-gradient(180deg,rgba(242,245,248,0.92),rgba(255,255,255,0.96))] dark:bg-[linear-gradient(180deg,var(--gradient-app-from),var(--color-surface-elevated))]',
     } satisfies Record<PageVariant, string>,
   },
   effects: {
@@ -58,7 +58,7 @@ export const designTokens = {
     base: 'inline-flex items-center justify-center font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]',
     palette: {
       primary:
-        'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]',
+        'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]',
       secondary:
         'border border-[color:var(--color-surface-border)] bg-white/88 text-[var(--color-primary)] hover:bg-[var(--color-surface-muted)]',
     } satisfies Record<ButtonVariant, string>,

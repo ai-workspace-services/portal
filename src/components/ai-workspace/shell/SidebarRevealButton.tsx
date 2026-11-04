@@ -13,7 +13,7 @@ export function SidebarRevealButton({ className }: { className?: string }) {
   const shell = useOptionalWorkspaceShell();
   if (!shell) return null;
   const buttonClass =
-    "grid size-8 shrink-0 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] hover:text-[#17181c]";
+    "grid size-8 shrink-0 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] hover:text-[#17181c] dark:text-text-muted dark:hover:bg-surface-muted dark:hover:text-text";
   return (
     <>
       <button

@@ -144,7 +144,7 @@ export default function UserOverview({
             <button
               type="button"
               onClick={handleGoToSetup}
-              className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition-colors hover:bg-[var(--color-primary-hover)]"
+              className="inline-flex items-center justify-center rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] transition-colors hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
             >
               {copy.lockBanner.action}
             </button>

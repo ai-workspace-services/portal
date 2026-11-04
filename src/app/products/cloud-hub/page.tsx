@@ -385,7 +385,7 @@ export default function GlobalMeshPage() {
                         const val = col.vals[rowIdx];
                         const isSelected =
                           activeCell.rowIdx === rowIdx && activeCell.col.id === col.id;
-                        let dotBg = "bg-[#edf0f2] dark:bg-slate-800";
+                        let dotBg = "bg-[#edf0f2] dark:bg-slate-800 dark:bg-surface-muted";
                         if (val === 1) dotBg = "bg-[#5383e8] dark:bg-blue-500";
                         else if (val === 0.5) dotBg = "bg-[#9bbcf7] dark:bg-blue-900";
 
@@ -426,7 +426,7 @@ export default function GlobalMeshPage() {
                 <div className="flex items-center gap-4">
                   <span className="font-medium text-slate-800 dark:text-slate-200">状态说明：</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-[3px] bg-[#edf0f2] dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+                    <span className="w-3 h-3 rounded-[3px] bg-[#edf0f2] dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:bg-surface-muted" />
                     <span>未覆盖/无</span>
                   </div>
                   <div className="flex items-center gap-1.5">

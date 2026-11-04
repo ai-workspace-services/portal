@@ -22,10 +22,10 @@ export default function AuthenticatorInstallHelp() {
       >
         <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-[color:var(--color-primary-border)] bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-sm)]">
           <QrCode className="h-9 w-9" strokeWidth={1.5} />
-          <span className="mfa-scan-line absolute inset-x-1 top-2 h-0.5 rounded-full bg-[var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]" />
+          <span className="mfa-scan-line absolute inset-x-1 top-2 h-0.5 rounded-full bg-[var(--color-primary)] shadow-[0_0_8px_var(--color-primary)] dark:bg-[var(--color-action)]" />
         </div>
 
-        <span className="mfa-transfer-dot absolute left-[43%] top-1/2 h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+        <span className="mfa-transfer-dot absolute left-[43%] top-1/2 h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] dark:bg-[var(--color-action)]" />
 
         <div className="mfa-phone-float relative flex h-[76px] w-11 flex-col items-center rounded-[11px] border-2 border-[color:var(--color-primary-border)] bg-[var(--color-surface)] px-1 pt-2 shadow-[var(--shadow-sm)]">
           <span className="absolute top-1 h-0.5 w-2 rounded-full bg-[color:var(--color-primary-border)]" />
@@ -35,7 +35,7 @@ export default function AuthenticatorInstallHelp() {
           />
           <span className="mt-1.5 h-1 w-6 rounded-full bg-[var(--color-primary-muted)]" />
           <span className="mt-1 h-1 w-4 rounded-full bg-[var(--color-primary-muted)]" />
-          <span className="mt-2 h-1.5 w-6 rounded-sm bg-[var(--color-primary)]/20" />
+          <span className="mt-2 h-1.5 w-6 rounded-sm bg-[var(--color-primary)]/20 dark:bg-[var(--color-action)]/20" />
         </div>
       </div>
 

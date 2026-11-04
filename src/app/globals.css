@@ -1060,7 +1060,7 @@ button {
 }
 
 @media (max-width: 1023px) {
-  .mobile-home-shell {
+  html:not(.dark) .mobile-home-shell {
     --color-background: #fbfaf7;
     --color-background-muted: #f4f1eb;
     --color-surface: #fffdfa;
@@ -1096,3 +1096,168 @@ html.dark .ebook-cover-light { display: none; }
 html.dark .ebook-cover-dark { display: block; }
 html.dark .ebook-card { background: #1b1e26; border-color: rgba(255,255,255,.08); }
 html.dark .ebook-card h3, html.dark li.ebook-card { color: #f1f5f9; }
+
+/* Shared dark palette. */
+html.dark body {
+  background-image:
+    radial-gradient(
+      circle at top left,
+      rgba(91, 141, 239, 0.08),
+      transparent 24%
+    ),
+    linear-gradient(180deg, var(--gradient-app-via), transparent);
+}
+html.dark .hero-shell {
+  background: var(--color-surface);
+}
+html.dark .hero-eyebrow {
+  color: var(--color-primary);
+}
+html.dark .hero-title {
+  color: var(--color-heading);
+}
+html.dark .hero-title-accent {
+  color: var(--color-primary);
+}
+html.dark .hero-tagline {
+  color: var(--color-text);
+}
+html.dark .hero-description {
+  color: var(--color-text-muted);
+}
+html.dark .hero-attribution {
+  color: var(--color-text-muted);
+}
+html.dark .hero-button-secondary {
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+  background: var(--color-surface-translucent);
+}
+html.dark .hero-button-secondary:hover {
+  background: var(--color-surface-hover);
+}
+html.dark .hero-node-note {
+  border: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+html.dark .hero-product {
+  background: var(--hex-edge, var(--color-surface-border));
+  color: var(--color-text);
+}
+html.dark .hero-product::before {
+  background: var(
+    --hex-fill,
+    linear-gradient(
+      150deg,
+      var(--color-surface-muted),
+      var(--color-surface-hover)
+    )
+  );
+}
+html.dark .hero-product-icon {
+  color: var(--color-primary);
+}
+html.dark .hero-capability {
+  background: var(--color-surface-border);
+  color: var(--color-text);
+}
+html.dark .hero-capability::before {
+  background: var(--color-surface);
+}
+html.dark .hero-capability-icon {
+  color: var(--color-primary);
+}
+@layer components {
+  html.dark .tactile-button-soft {
+    background: var(--color-surface-translucent);
+  }
+  html.dark .tactile-button-primary {
+    background: var(--color-action);
+  }
+  html.dark .tactile-button-primary:hover {
+    background: var(--color-action-hover);
+  }
+  html.dark .tactile-button-subtle {
+    background: var(--color-surface-translucent);
+  }
+  html.dark .tactile-control {
+    border: 1px solid var(--color-surface-border-strong);
+    background: var(--color-surface);
+    box-shadow: inset 0 1px 0 var(--color-divider);
+  }
+  html.dark .tactile-control:focus-visible {
+    border-color: var(--color-ring);
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+  html.dark .tactile-control::placeholder {
+    color: var(--color-text-subtle);
+  }
+  html.dark .public-doc-prose p,
+  html.dark .public-doc-prose li {
+    color: var(--color-text-muted);
+  }
+  html.dark .public-doc-prose strong {
+    color: var(--color-heading);
+  }
+  html.dark .public-doc-prose code {
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-surface-muted);
+    color: var(--color-heading);
+  }
+  html.dark .public-doc-prose pre {
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-surface-muted);
+  }
+  html.dark .public-doc-prose blockquote {
+    color: var(--color-text);
+  }
+  html.dark .public-doc-prose table {
+    border: 1px solid var(--color-surface-border);
+  }
+  html.dark .public-doc-prose th,
+  html.dark .public-doc-prose td {
+    border-bottom: 1px solid var(--color-surface-border);
+  }
+  html.dark .public-doc-prose th {
+    background: var(--color-surface-muted);
+    color: var(--color-heading);
+  }
+  html.dark .public-doc-prose img {
+    border: 1px solid var(--color-surface-border);
+  }
+  html.dark .blog-mermaid-fallback {
+    color: var(--color-text-muted);
+  }
+}
+html.dark .hero-button-primary {
+  background: var(--color-action);
+}
+html.dark .hero-button-primary:hover {
+  background: var(--color-action-hover);
+}
+html.dark .hero-product-featured {
+  --hex-edge: var(--color-primary-border);
+  --hex-fill: var(--color-primary-muted);
+  color: var(--color-heading);
+}
+
+html.dark .finops-workspace {
+  --finops-blue: var(--color-primary);
+  --finops-sky: var(--color-info);
+  --finops-orange: var(--color-warning);
+  --finops-teal: var(--color-success);
+  --finops-blue-muted: var(--color-primary-muted);
+  --finops-sky-muted: var(--color-info-muted);
+  --finops-orange-muted: var(--color-warning-muted);
+  --finops-teal-muted: var(--color-success-muted);
+  --finops-grid: var(--color-surface-border);
+  --finops-muted: var(--color-text-subtle);
+}
+
+html.dark .finops-workspace .recharts-default-tooltip {
+  background: var(--color-surface-elevated) !important;
+  border-color: var(--color-surface-border) !important;
+  color: var(--color-text);
+}

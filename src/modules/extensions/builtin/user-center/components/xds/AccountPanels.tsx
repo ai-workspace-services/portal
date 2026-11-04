@@ -223,14 +223,14 @@ export function OnboardingProgress({
                 style={
                   step.done
                     ? {
-                        background: "var(--success)",
-                        borderColor: "var(--success)",
+                        background: "var(--success-fill, var(--success))",
+                        borderColor: "var(--success-fill, var(--success))",
                         color: "#fff",
                       }
                     : i === activeIndex
                       ? {
-                          background: "var(--blue-500)",
-                          borderColor: "var(--blue-500)",
+                          background: "var(--action-bg, var(--blue-500))",
+                          borderColor: "var(--action-bg, var(--blue-500))",
                           color: "#fff",
                         }
                       : undefined
@@ -500,7 +500,7 @@ export function VlessConnectionCard({
           <code>{node.address}</code>
         </div>
       ) : null}
-      <div className="xds-qr">
+      <div className={qr && uri ? "xds-qr xds-qr-ready" : "xds-qr"}>
         {qr && uri ? (
           <Image
             src={qr}

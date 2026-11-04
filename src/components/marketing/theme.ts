@@ -34,7 +34,7 @@ export const marketingTheme = {
   },
   cta: {
     primary:
-      "inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-[var(--color-primary-hover)]",
+      "inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-[var(--color-action-hover)]",
     secondary:
       "inline-flex items-center justify-center gap-2 rounded-full border border-slate-900/12 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-primary/30 hover:text-primary",
   },

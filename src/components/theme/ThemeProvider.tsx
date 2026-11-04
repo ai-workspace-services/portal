@@ -42,7 +42,7 @@ export interface ThemeProviderProps {
   initialPreference?: ThemePreference
 }
 
-export function ThemeProvider({ children, initialPreference = 'system' }: ThemeProviderProps) {
+export function ThemeProvider({ children, initialPreference = 'light' }: ThemeProviderProps) {
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme)
   const hydrate = useThemeStore((state) => state.hydrate)
   const setSystemTheme = useThemeStore((state) => state.setSystemTheme)

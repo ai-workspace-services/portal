@@ -374,8 +374,8 @@ export function AiWorkspaceOverview(): ReactNode {
   );
 
   return (
-    <main className="flex h-full min-h-0 flex-col bg-[#fbfcfe] text-[#17181c]">
-      <header className="flex min-h-[72px] shrink-0 items-stretch border-b border-[#e4e8ef] pl-14 pr-3 md:px-5 lg:px-8">
+    <main className="flex h-full min-h-0 flex-col bg-[#fbfcfe] text-[#17181c] dark:bg-surface dark:text-text">
+      <header className="flex min-h-[72px] shrink-0 items-stretch border-b border-[#e4e8ef] pl-14 pr-3 md:px-5 lg:px-8 dark:border-surface-border">
         <div
           role="tablist"
           aria-label="工作台视图"
@@ -389,23 +389,23 @@ export function AiWorkspaceOverview(): ReactNode {
               aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "relative shrink-0 px-4 text-body font-semibold text-[#586174] outline-none transition-colors lg:px-6 lg:text-base",
-                activeTab === tab.id && "font-bold text-[#1260cc]",
+                "relative shrink-0 px-4 text-body font-semibold text-[#586174] outline-none transition-colors lg:px-6 lg:text-base dark:text-text-muted",
+                activeTab === tab.id && "font-bold text-[#1260cc] dark:text-primary",
               )}
             >
               {tab.label}
               {activeTab === tab.id ? (
-                <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#1260cc]" />
+                <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[#1260cc] dark:bg-[var(--color-action)]" />
               ) : null}
             </button>
           ))}
         </div>
         <div className="ml-3 flex shrink-0 items-center gap-3">
-          <div className="hidden text-right text-xs text-[#697386] xl:block">
+          <div className="hidden text-right text-xs text-[#697386] xl:block dark:text-text-muted">
             <div
               className={cn(
                 "font-semibold",
-                error ? "text-[#b42318]" : "text-[#1260cc]",
+                error ? "text-[#b42318] dark:text-danger" : "text-[#1260cc] dark:text-primary",
               )}
             >
               {error
@@ -422,7 +422,7 @@ export function AiWorkspaceOverview(): ReactNode {
                 : error || "正在连接会话服务…"}
             </div>
           </div>
-          <div className="flex rounded-xl bg-[#f3f5f8] p-1">
+          <div className="flex rounded-xl bg-[#f3f5f8] p-1 dark:bg-surface-muted">
             {(
               [
                 ["all", "全部"],
@@ -435,9 +435,9 @@ export function AiWorkspaceOverview(): ReactNode {
                 type="button"
                 onClick={() => setActivityWindow(value)}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-semibold text-[#667085] transition-colors",
+                  "rounded-lg px-3 py-2 text-sm font-semibold text-[#667085] transition-colors dark:text-text-muted",
                   activityWindow === value &&
-                    "bg-white text-[#1260cc] shadow-sm",
+                    "bg-white text-[#1260cc] shadow-sm dark:text-primary",
                 )}
               >
                 {label}
@@ -456,9 +456,9 @@ export function AiWorkspaceOverview(): ReactNode {
 
       <div className="min-h-0 flex-1 overflow-auto p-5 lg:p-8">
         {catalog?.pinnedTasks?.length ? (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-100 bg-[#f4f8fe] px-4 py-3 text-xs text-[#1260cc]">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-100 bg-[#f4f8fe] px-4 py-3 text-xs text-[#1260cc] dark:bg-primary-muted dark:text-primary">
             <div className="flex items-center gap-2 font-medium">
-              <span className="flex size-2 rounded-full bg-[#1260cc] animate-pulse" />
+              <span className="flex size-2 rounded-full bg-[#1260cc] dark:bg-[var(--color-action)] animate-pulse" />
               <span>
                 跨 Agent 任务中枢已就绪：已同步{" "}
                 <strong>{catalog.pinnedTasks.length}</strong> 个置顶任务与{" "}
@@ -467,7 +467,7 @@ export function AiWorkspaceOverview(): ReactNode {
             </div>
             <Link
               href="/ai-workspace/tasks"
-              className="font-bold text-[#075ecc] hover:underline"
+              className="font-bold text-[#075ecc] hover:underline dark:text-primary"
             >
               打开任务中枢 →
             </Link>
@@ -616,14 +616,14 @@ function ModelAnalysis({
         {metrics.map(([label, value, Icon]) => (
           <div
             key={label}
-            className="rounded-xl border border-[#e4e8ef] bg-white p-4"
+            className="rounded-xl border border-[#e4e8ef] bg-white p-4 dark:border-surface-border"
           >
             <div className="flex items-start gap-3">
-              <span className="grid size-8 place-items-center rounded-lg bg-[#f1f5fb] text-[#1260cc]">
+              <span className="grid size-8 place-items-center rounded-lg bg-[#f1f5fb] text-[#1260cc] dark:bg-primary-muted dark:text-primary">
                 <Icon className="size-4.5" />
               </span>
               <div>
-                <p className="text-sm font-medium text-[#5e687a]">{label}</p>
+                <p className="text-sm font-medium text-[#5e687a] dark:text-text-muted">{label}</p>
                 <p className="mt-1 text-2xl font-bold tracking-tight">
                   {value}
                 </p>
@@ -652,10 +652,10 @@ function MetricGrid({ metrics }: { metrics: string[][] }) {
       {metrics.map(([label, value]) => (
         <div
           key={label}
-          className="min-h-[102px] rounded-xl border border-[#e4e8ef] bg-white p-4"
+          className="min-h-[102px] rounded-xl border border-[#e4e8ef] bg-white p-4 dark:border-surface-border"
         >
-          <p className="text-sm font-semibold text-[#697386]">{label}</p>
-          <p className="mt-3 text-2xl font-bold tracking-tight text-[#17181c]">
+          <p className="text-sm font-semibold text-[#697386] dark:text-text-muted">{label}</p>
+          <p className="mt-3 text-2xl font-bold tracking-tight text-[#17181c] dark:text-text">
             {value}
           </p>
         </div>
@@ -691,14 +691,14 @@ function ActivityHeatmap({ sessions }: { sessions: ServerSession[] }) {
     return `${date.getMonth() + 1}月`;
   });
   return (
-    <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white px-4 py-4 lg:px-5">
-      <div className="ml-12 grid grid-cols-12 gap-1 text-center text-xs font-medium text-[#697386]">
+    <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white px-4 py-4 lg:px-5 dark:border-surface-border">
+      <div className="ml-12 grid grid-cols-12 gap-1 text-center text-xs font-medium text-[#697386] dark:text-text-muted">
         {months.map((month, index) => (
           <span key={`${month}-${index}`}>{month}</span>
         ))}
       </div>
       <div className="mt-3 flex min-w-[900px] gap-3 overflow-hidden">
-        <div className="flex h-[116px] w-9 shrink-0 flex-col justify-around text-xs text-[#697386]">
+        <div className="flex h-[116px] w-9 shrink-0 flex-col justify-around text-xs text-[#697386] dark:text-text-muted">
           <span>Mon</span>
           <span>Wed</span>
           <span>Fri</span>
@@ -710,18 +710,18 @@ function ActivityHeatmap({ sessions }: { sessions: ServerSession[] }) {
               title={date.toLocaleDateString("zh-CN")}
               className={cn(
                 "aspect-square min-h-[11px] rounded-[3px]",
-                level === 0 && "bg-[#edf1f6]",
-                level === 1 && "bg-[#c8dafa]",
+                level === 0 && "bg-[#edf1f6] dark:bg-surface-muted",
+                level === 1 && "bg-[#c8dafa] dark:bg-primary-muted",
                 level === 2 && "bg-[#8eb3ef]",
                 level === 3 && "bg-[#4c86dd]",
-                level === 4 && "bg-[#185fc6]",
+                level === 4 && "bg-[#185fc6] dark:bg-[var(--color-action)]",
               )}
             />
           ))}
         </div>
       </div>
-      <div className="mt-4 flex items-center text-xs text-[#697386]">
-        <span className="font-medium text-[#1260cc]">了解我们如何统计贡献</span>
+      <div className="mt-4 flex items-center text-xs text-[#697386] dark:text-text-muted">
+        <span className="font-medium text-[#1260cc] dark:text-primary">了解我们如何统计贡献</span>
         <span className="ml-auto">Less</span>
         <div className="mx-2 flex gap-1">
           {["#edf1f6", "#c8dafa", "#8eb3ef", "#4c86dd", "#185fc6"].map(
@@ -765,7 +765,7 @@ function TokenTrend({ sessions }: { sessions: ServerSession[] }) {
   const max = Math.max(1, ...months.map((month) => month.input + month.output));
   return (
     <AnalyticsCard title="Tokens 使用趋势（按月）">
-      <div className="flex h-[290px] items-end gap-3 border-b border-[#e7ebf1] px-2 pt-5">
+      <div className="flex h-[290px] items-end gap-3 border-b border-[#e7ebf1] px-2 pt-5 dark:border-surface-border">
         {months.map((month) => {
           const inputHeight = Math.max(2, (month.input / max) * 220);
           const outputHeight = Math.max(2, (month.output / max) * 220);
@@ -779,17 +779,17 @@ function TokenTrend({ sessions }: { sessions: ServerSession[] }) {
                 style={{ height: outputHeight }}
               />
               <div
-                className="w-full max-w-6 bg-[#2f73d7]"
+                className="w-full max-w-6 bg-[#2f73d7] dark:bg-[var(--color-action)]"
                 style={{ height: inputHeight }}
               />
-              <span className="mt-2 text-eyebrow text-[#697386]">
+              <span className="mt-2 text-eyebrow text-[#697386] dark:text-text-muted">
                 {month.label}
               </span>
             </div>
           );
         })}
       </div>
-      <div className="mt-4 flex gap-6 text-xs text-[#5e687a]">
+      <div className="mt-4 flex gap-6 text-xs text-[#5e687a] dark:text-text-muted">
         <Legend color="#2f73d7" label="输入 Tokens" />
         <Legend color="#9fc1f2" label="输出 Tokens" />
       </div>
@@ -809,7 +809,7 @@ function ModelShare({ sessions }: { sessions: ServerSession[] }) {
   ];
   return (
     <AnalyticsCard title="模型使用份额（全部）">
-      <div className="grid grid-cols-[1.5fr_1fr_1fr_.7fr] border-b border-[#e7ebf1] pb-3 text-xs font-semibold text-[#697386]">
+      <div className="grid grid-cols-[1.5fr_1fr_1fr_.7fr] border-b border-[#e7ebf1] pb-3 text-xs font-semibold text-[#697386] dark:border-surface-border dark:text-text-muted">
         <span>模型</span>
         <span>输入</span>
         <span>输出</span>
@@ -829,10 +829,10 @@ function ModelShare({ sessions }: { sessions: ServerSession[] }) {
                 />
                 <span className="truncate">{model.model}</span>
               </span>
-              <span className="text-[#586174]">
+              <span className="text-[#586174] dark:text-text-muted">
                 {formatTokens(model.input)}
               </span>
-              <span className="text-[#586174]">
+              <span className="text-[#586174] dark:text-text-muted">
                 {formatTokens(model.output)}
               </span>
               <span className="text-right font-medium">
@@ -856,7 +856,7 @@ function AnalyticsCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-[#e4e8ef] bg-white p-5">
+    <section className="rounded-xl border border-[#e4e8ef] bg-white p-5 dark:border-surface-border">
       <h2 className="text-base font-bold">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
@@ -884,11 +884,11 @@ function SessionTable({
   showInputOutput?: boolean;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white">
+    <section className="overflow-hidden rounded-xl border border-[#e4e8ef] bg-white dark:border-surface-border">
       <h2 className="px-5 py-4 text-base font-bold">{title}</h2>
-      <div className="overflow-x-auto border-t border-[#e7ebf1]">
+      <div className="overflow-x-auto border-t border-[#e7ebf1] dark:border-surface-border">
         <table className="w-full min-w-[1040px] table-fixed text-left text-sm">
-          <thead className="bg-[#fafbfc] text-xs font-semibold text-[#697386]">
+          <thead className="bg-[#fafbfc] text-xs font-semibold text-[#697386] dark:bg-surface dark:text-text-muted">
             <tr>
               <th className="w-[110px] px-5 py-3">状态</th>
               <th className="w-[270px] px-3 py-3">TaskThread</th>
@@ -906,32 +906,32 @@ function SessionTable({
             {sessions.map((session) => (
               <tr
                 key={`${session.namespaceId}-${session.sessionId}`}
-                className="transition-colors hover:bg-[#fafcff]"
+                className="transition-colors hover:bg-[#fafcff] dark:hover:bg-surface"
               >
                 <td className="px-5 py-3">
                   <Status state={session.state} />
                 </td>
                 <td className="px-3 py-3">
                   <p className="truncate font-semibold">{session.title}</p>
-                  <p className="mt-0.5 truncate text-xs text-[#7b8494]">
+                  <p className="mt-0.5 truncate text-xs text-[#7b8494] dark:text-text-subtle">
                     {session.sessionId}
                   </p>
                 </td>
-                <td className="truncate px-3 py-3 text-[#586174]">
+                <td className="truncate px-3 py-3 text-[#586174] dark:text-text-muted">
                   {session.projectLabel}
                 </td>
-                <td className="truncate px-3 py-3 text-[#586174]">
+                <td className="truncate px-3 py-3 text-[#586174] dark:text-text-muted">
                   {session.model || "—"}
                 </td>
-                <td className="px-3 py-3 text-[#586174]">
+                <td className="px-3 py-3 text-[#586174] dark:text-text-muted">
                   {showInputOutput
                     ? `${formatTokens(session.inputTokens)} / ${formatTokens(session.outputTokens)}`
                     : formatTokens(session.inputTokens + session.outputTokens)}
                 </td>
-                <td className="px-3 py-3 text-[#586174]">
+                <td className="px-3 py-3 text-[#586174] dark:text-text-muted">
                   {formatInteger(session.artifactCount)}
                 </td>
-                <td className="px-3 py-3 text-[#586174]">
+                <td className="px-3 py-3 text-[#586174] dark:text-text-muted">
                   {formatDate(session.updatedAt)}
                 </td>
                 <td className="px-3 py-3">
@@ -943,7 +943,7 @@ function SessionTable({
                           )}`
                         : `/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`
                     }
-                    className="rounded-lg border border-[#dce2ea] px-3 py-1.5 text-xs font-semibold hover:bg-[#f6f8fb]"
+                    className="rounded-lg border border-[#dce2ea] px-3 py-1.5 text-xs font-semibold hover:bg-[#f6f8fb] dark:border-surface-border dark:hover:bg-surface"
                   >
                     查看
                   </Link>
@@ -976,7 +976,7 @@ function SessionDetail({
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="mt-1 text-sm text-[#697386]">{subtitle}</p>
+        <p className="mt-1 text-sm text-[#697386] dark:text-text-muted">{subtitle}</p>
       </div>
       <SessionTable
         title="全部记录"
@@ -1008,12 +1008,12 @@ function ProjectsDetail({
       {sharedProjects.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#17181c]">
+            <h2 className="text-base font-bold text-[#17181c] dark:text-text">
               跨 Agent 共享工程 ({sharedProjects.length})
             </h2>
             <Link
               href="/ai-workspace/tasks"
-              className="text-xs font-semibold text-[#1260cc] hover:underline"
+              className="text-xs font-semibold text-[#1260cc] hover:underline dark:text-primary"
             >
               在任务中枢中管理 →
             </Link>
@@ -1022,18 +1022,18 @@ function ProjectsDetail({
             {sharedProjects.map((proj) => (
               <div
                 key={proj.key}
-                className="rounded-xl border border-[#e4e8ef] bg-white p-5 shadow-xs"
+                className="rounded-xl border border-[#e4e8ef] bg-white p-5 shadow-xs dark:border-surface-border"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc]">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc] dark:bg-primary-muted dark:text-primary">
                       <Archive className="size-4" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-bold text-sm text-[#17181c]">
+                      <h3 className="truncate font-bold text-sm text-[#17181c] dark:text-text">
                         {proj.name}
                       </h3>
-                      <p className="mt-0.5 truncate font-mono text-eyebrow text-[#7b8494]">
+                      <p className="mt-0.5 truncate font-mono text-eyebrow text-[#7b8494] dark:text-text-subtle">
                         {formatLocation(proj.scope, proj.location)}
                       </p>
                     </div>
@@ -1042,21 +1042,21 @@ function ProjectsDetail({
                     {proj.sources.map((s) => (
                       <span
                         key={s}
-                        className="rounded bg-[#f0f3f7] px-1.5 py-0.5 text-eyebrow font-mono font-semibold uppercase text-[#566174]"
+                        className="rounded bg-[#f0f3f7] px-1.5 py-0.5 text-eyebrow font-mono font-semibold uppercase text-[#566174] dark:bg-surface-muted dark:text-text-muted"
                       >
                         {s}
                       </span>
                     ))}
                   </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-[#edf0f4] pt-3 text-xs">
-                  <span className="text-[#8a93a2]">
+                <div className="mt-4 flex items-center justify-between border-t border-[#edf0f4] pt-3 text-xs dark:border-surface-border">
+                  <span className="text-[#8a93a2] dark:text-text-subtle">
                     {sessions.filter((s) => s.projectLabel === proj.name).length}{" "}
                     个关联工作项
                   </span>
                   <Link
                     href={`/ai-workspace/tasks?project=${encodeURIComponent(proj.name)}`}
-                    className="font-semibold text-[#075ecc] hover:underline"
+                    className="font-semibold text-[#075ecc] hover:underline dark:text-primary"
                   >
                     查看任务 →
                   </Link>
@@ -1070,8 +1070,8 @@ function ProjectsDetail({
       {/* 工作目录与专项 */}
       <div className="space-y-3">
         <div>
-          <h2 className="text-base font-bold text-[#17181c]">工作目录与专项</h2>
-          <p className="mt-0.5 text-xs text-[#697386]">
+          <h2 className="text-base font-bold text-[#17181c] dark:text-text">工作目录与专项</h2>
+          <p className="mt-0.5 text-xs text-[#697386] dark:text-text-muted">
             按服务端工作目录聚合 TaskThread 与 Artifact
           </p>
         </div>
@@ -1083,15 +1083,15 @@ function ProjectsDetail({
             return (
               <div
                 key={project}
-                className="rounded-xl border border-[#e4e8ef] bg-white p-5"
+                className="rounded-xl border border-[#e4e8ef] bg-white p-5 dark:border-surface-border"
               >
                 <div className="flex items-center gap-3">
-                  <span className="grid size-9 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc]">
+                  <span className="grid size-9 place-items-center rounded-lg bg-[#edf4ff] text-[#1260cc] dark:bg-primary-muted dark:text-primary">
                     <Archive className="size-4.5" />
                   </span>
                   <h3 className="truncate font-bold">{project}</h3>
                 </div>
-                <p className="mt-4 text-sm text-[#697386]">
+                <p className="mt-4 text-sm text-[#697386] dark:text-text-muted">
                   {items.length} 个工作项 ·{" "}
                   {items.reduce((sum, item) => sum + item.artifactCount, 0)}{" "}
                   个产物
@@ -1124,21 +1124,21 @@ function InboxDetail({
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">收件箱</h1>
-        <p className="mt-1 text-sm text-[#697386]">服务端归档产物与最近记录</p>
+        <p className="mt-1 text-sm text-[#697386] dark:text-text-muted">服务端归档产物与最近记录</p>
       </div>
-      <section className="divide-y divide-[#edf0f4] rounded-xl border border-[#e4e8ef] bg-white">
+      <section className="divide-y divide-[#edf0f4] rounded-xl border border-[#e4e8ef] bg-white dark:border-surface-border">
         {artifacts.map(({ path, session }) => (
           <Link
             key={`${session.sessionId}-${path}`}
             href={`/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`}
-            className="flex items-center gap-3 px-5 py-4 hover:bg-[#fafcff]"
+            className="flex items-center gap-3 px-5 py-4 hover:bg-[#fafcff] dark:hover:bg-surface"
           >
-            <FileText className="size-5 text-[#1260cc]" />
+            <FileText className="size-5 text-[#1260cc] dark:text-primary" />
             <span className="min-w-0 flex-1">
               <strong className="block truncate text-sm">
                 {path.split("/").at(-1)}
               </strong>
-              <span className="mt-1 block truncate text-xs text-[#697386]">
+              <span className="mt-1 block truncate text-xs text-[#697386] dark:text-text-muted">
                 {session.title} · {path}
               </span>
             </span>
@@ -1155,10 +1155,10 @@ function InboxDetail({
 
 function Status({ state }: { state: SessionState }) {
   const visual = {
-    running: ["进行中", "bg-[#25a244]", "text-[#217a37]"],
-    waiting: ["等待中", "bg-[#e6a817]", "text-[#936700]"],
-    completed: ["已完成", "bg-[#1769d2]", "text-[#1260cc]"],
-    cancelled: ["已取消", "bg-[#a8afb9]", "text-[#697386]"],
+    running: ["进行中", "bg-[#25a244]", "text-[#217a37] dark:text-success"],
+    waiting: ["等待中", "bg-[#e6a817]", "text-[#936700] dark:text-warning"],
+    completed: ["已完成", "bg-[#1769d2] dark:bg-[var(--color-action)]", "text-[#1260cc] dark:text-primary"],
+    cancelled: ["已取消", "bg-[#a8afb9]", "text-[#697386] dark:text-text-muted"],
   }[state];
   return (
     <span
@@ -1175,7 +1175,7 @@ function Status({ state }: { state: SessionState }) {
 
 function EmptyData({ label }: { label: string }) {
   return (
-    <div className="grid min-h-32 place-items-center px-5 text-sm text-[#8a93a2]">
+    <div className="grid min-h-32 place-items-center px-5 text-sm text-[#8a93a2] dark:text-text-subtle">
       {label}
     </div>
   );
@@ -1185,7 +1185,7 @@ function ErrorBanner({ message }: { message: string }) {
   return (
     <div
       role="alert"
-      className="mb-4 rounded-xl border border-[#f0d5d2] bg-[#fff8f7] px-4 py-3 text-sm text-[#a54841]"
+      className="mb-4 rounded-xl border border-[#f0d5d2] bg-[#fff8f7] px-4 py-3 text-sm text-[#a54841] dark:border-danger-muted dark:bg-danger-muted dark:text-danger"
     >
       {message}
     </div>

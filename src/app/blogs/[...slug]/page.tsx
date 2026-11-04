@@ -102,7 +102,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   return (
     <PublicPageShell>
       <div className="space-y-6">
-        <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10">
+        <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10 dark:bg-[linear-gradient(180deg,var(--color-surface),var(--color-surface-muted))]">
           <Link
             href="/blogs"
             className="inline-flex rounded-full border border-slate-900/10 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900/15 hover:text-primary"
@@ -142,7 +142,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             {post.tags?.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600"
+                className="rounded-full border border-slate-900/10 bg-[#f8f4ec] px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-surface"
               >
                 {tag}
               </span>

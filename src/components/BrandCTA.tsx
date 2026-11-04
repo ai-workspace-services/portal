@@ -26,7 +26,7 @@ export default function BrandCTA({
 
   return (
     <section
-      className={`flex flex-col gap-5 rounded-[1.75rem] border border-slate-900/10 bg-[#fcfbf8] ${
+      className={`flex flex-col gap-5 rounded-[1.75rem] border border-slate-900/10 bg-[#fcfbf8] dark:bg-surface ${
         isCompact
           ? "p-4 sm:flex-row sm:items-center"
           : "p-5 sm:flex-row sm:items-center"

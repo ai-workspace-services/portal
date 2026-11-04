@@ -148,7 +148,7 @@ export function XWorkmateProfileRoute({
   );
 
   return (
-    <div className="min-h-[calc(100vh-var(--app-shell-nav-offset))] bg-[linear-gradient(180deg,#f4f7fd_0%,#f6f8fb_32%,#f3f5f8_100%)] px-4 py-5 md:px-6">
+    <div className="min-h-[calc(100vh-var(--app-shell-nav-offset))] bg-[linear-gradient(180deg,#f4f7fd_0%,#f6f8fb_32%,#f3f5f8_100%)] px-4 py-5 md:px-6 dark:bg-[linear-gradient(180deg,var(--gradient-app-from)_0%,var(--gradient-app-via)_32%,var(--gradient-app-to)_100%)]">
       <div className="mx-auto max-w-6xl">
         <XWorkmateProfileEditor
           payload={profile}

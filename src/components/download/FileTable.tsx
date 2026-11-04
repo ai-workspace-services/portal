@@ -51,7 +51,7 @@ export default function FileTable({
     <div className="space-y-4">
       {showBreadcrumbs ? <Breadcrumbs items={breadcrumb} /> : null}
 
-      <div className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-900/10 bg-[#fcfbf8] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-900/10 bg-[#fcfbf8] p-4 sm:flex-row sm:items-center sm:justify-between dark:bg-surface">
         <select
           className="rounded-full border border-slate-900/10 bg-white px-4 py-2 text-sm text-slate-700 outline-none transition focus:border-slate-900/15"
           value={sort}
@@ -73,7 +73,7 @@ export default function FileTable({
 
       <div className="overflow-x-auto rounded-[1.6rem] border border-slate-900/10 bg-white/92 shadow-[0_14px_30px_rgba(15,23,42,0.04)]">
         <table className="min-w-full text-sm">
-          <thead className="bg-[#fcfbf8] text-slate-600">
+          <thead className="bg-[#fcfbf8] text-slate-600 dark:bg-surface">
             <tr className="border-b border-slate-900/10">
               <th className="px-4 py-3 text-left font-semibold">
                 {t.headers.name}

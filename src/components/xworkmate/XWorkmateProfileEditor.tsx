@@ -315,7 +315,7 @@ export function XWorkmateProfileEditor({
               type="button"
               onClick={saveProfile}
               disabled={saving || !payload.canEditIntegrations}
-              className="inline-flex h-11 items-center gap-2 rounded-[14px] bg-[var(--color-primary)] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(51,102,255,0.28)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-[14px] bg-[var(--color-primary)] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(51,102,255,0.28)] transition hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
             >
               {saving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

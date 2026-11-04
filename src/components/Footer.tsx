@@ -39,7 +39,7 @@ export default function Footer() {
   };
 
   const footerClassName = isDark
-    ? "border-[color:var(--color-surface-border)] bg-[linear-gradient(135deg,rgba(23,28,40,0.96),rgba(30,36,51,0.94))] text-[var(--color-text-muted)] shadow-[var(--shadow-md)]"
+    ? "border-[color:var(--color-surface-border)] bg-[linear-gradient(135deg,rgba(23,28,40,0.96),rgba(30,36,51,0.94))] text-[var(--color-text-muted)] shadow-[var(--shadow-md)] dark:bg-[linear-gradient(135deg,var(--color-surface-elevated),var(--color-surface-muted))]"
     : "border-[color:var(--color-surface-border)] bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(242,245,248,0.95))] text-[var(--color-text-muted)] shadow-[var(--shadow-md)]";
   const linkClassName = isDark
     ? "transition-colors hover:text-white"
@@ -53,7 +53,7 @@ export default function Footer() {
   const themeIconClassName = isDark ? "text-slate-300" : "text-slate-500";
   const moonClassName = isDark ? "text-white" : "text-slate-500";
   const sunClassName = isDark ? "text-slate-500" : "text-amber-500";
-  const thumbClassName = isDark ? "bg-white" : "bg-slate-900";
+  const thumbClassName = isDark ? "bg-white dark:bg-foreground" : "bg-slate-900";
 
   return (
     <footer

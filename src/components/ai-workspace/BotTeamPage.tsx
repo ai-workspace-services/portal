@@ -102,11 +102,11 @@ export function BotTeamPage() {
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-white">
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-[#eef1f5] px-3">
+      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-[#eef1f5] px-3 dark:border-surface-border">
         <SidebarRevealButton />
-        <Bot className="size-4 text-[#075ecc]" />
-        <h1 className="text-sm font-medium text-[#17181c]">Bot 团队</h1>
-        <span className="hidden text-xs text-[#8a93a2] sm:inline">
+        <Bot className="size-4 text-[#075ecc] dark:text-primary" />
+        <h1 className="text-sm font-medium text-[#17181c] dark:text-text">Bot 团队</h1>
+        <span className="hidden text-xs text-[#8a93a2] sm:inline dark:text-text-subtle">
           离线、后台与定时任务由 DS Bot 团队执行
         </span>
         <button
@@ -114,15 +114,15 @@ export function BotTeamPage() {
           onClick={() => void load()}
           disabled={needsLogin}
           aria-label="刷新 Bot 团队任务"
-          className="ml-auto grid size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6]"
+          className="ml-auto grid size-8 place-items-center rounded-lg text-[#697386] transition hover:bg-[#edf1f6] dark:text-text-muted dark:hover:bg-surface-muted"
         >
           <RefreshCw className={cn("size-4", loading && "animate-spin")} />
         </button>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-4 py-6">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-4 py-6 dark:bg-surface">
         <div className="mx-auto w-full max-w-[760px] space-y-5">
-          <section className="rounded-2xl border border-[#e1e6ed] bg-white p-4 shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
+          <section className="rounded-2xl border border-[#e1e6ed] bg-white p-4 shadow-[0_4px_18px_rgba(15,23,42,0.04)] dark:border-surface-border">
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="角色">
               {ROLE_CHOICES.map((choice) => (
                 <button
@@ -136,8 +136,8 @@ export function BotTeamPage() {
                   className={cn(
                     "h-8 rounded-lg border px-3 text-sm transition",
                     role === choice.value
-                      ? "border-[#b9d3f5] bg-[#eef5fe] text-[#075ecc]"
-                      : "border-[#e4e8ef] text-[#566174] hover:bg-[#f6f8fb]",
+                      ? "border-[#b9d3f5] bg-[#eef5fe] text-[#075ecc] dark:border-[color:var(--color-primary-border)] dark:bg-primary-muted dark:text-primary"
+                      : "border-[#e4e8ef] text-[#566174] hover:bg-[#f6f8fb] dark:border-surface-border dark:text-text-muted dark:hover:bg-surface",
                   )}
                 >
                   {choice.label}
@@ -148,7 +148,7 @@ export function BotTeamPage() {
               value={text}
               onChange={(event) => setText(event.target.value)}
               placeholder="描述要在后台完成的任务，Bot 团队会持续执行并把结果写回会话。"
-              className="mt-3 h-[88px] w-full resize-none bg-transparent px-1 text-sm leading-6 outline-none placeholder:text-[#9aa3b2]"
+              className="mt-3 h-[88px] w-full resize-none bg-transparent px-1 text-sm leading-6 outline-none placeholder:text-[#9aa3b2] dark:placeholder:text-text-subtle"
             />
             {submitError ? (
               <p role="alert" className="mb-2 text-xs text-red-600">
@@ -161,7 +161,7 @@ export function BotTeamPage() {
                 data-testid="bot-team-submit"
                 disabled={!text.trim() || submitting || needsLogin || !user}
                 onClick={() => void handOff()}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#075ecc] dark:bg-[var(--color-action)] px-3.5 text-sm font-medium text-white transition hover:bg-[#0452b6] dark:hover:bg-[var(--color-action-hover)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                 交给 Bot 团队
@@ -170,13 +170,13 @@ export function BotTeamPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 px-1 text-xs font-medium text-[#8a93a2]">任务</h2>
+            <h2 className="mb-2 px-1 text-xs font-medium text-[#8a93a2] dark:text-text-subtle">任务</h2>
             {needsLogin ? (
-              <div className="rounded-xl border border-dashed border-[#d7dde6] bg-white px-6 py-8 text-center">
-                <p className="text-sm text-[#3d4553]">登录账号后使用 Bot 团队</p>
+              <div className="rounded-xl border border-dashed border-[#d7dde6] bg-white px-6 py-8 text-center dark:border-surface-border">
+                <p className="text-sm text-[#3d4553] dark:text-text">登录账号后使用 Bot 团队</p>
                 <BoundaryLink
                   href="/login?returnTo=%2Fai-workspace%2Fbot-team"
-                  className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d7dde6] px-3 text-sm text-[#3d4553] hover:bg-[#f6f8fb]"
+                  className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#d7dde6] px-3 text-sm text-[#3d4553] hover:bg-[#f6f8fb] dark:border-surface-border dark:text-text dark:hover:bg-surface"
                 >
                   <LogIn className="size-4" />
                   登录 / 注册
@@ -191,29 +191,29 @@ export function BotTeamPage() {
                 {loadError}，点击重试
               </button>
             ) : sessions.length === 0 && !loading ? (
-              <div className="rounded-xl border border-dashed border-[#d7dde6] bg-white px-6 py-8 text-center text-sm text-[#697386]">
+              <div className="rounded-xl border border-dashed border-[#d7dde6] bg-white px-6 py-8 text-center text-sm text-[#697386] dark:border-surface-border dark:text-text-muted">
                 还没有交给 Bot 团队的任务。
               </div>
             ) : (
-              <ul className="divide-y divide-[#eef1f5] overflow-hidden rounded-xl border border-[#e4e8ef] bg-white">
+              <ul className="divide-y divide-[#eef1f5] overflow-hidden rounded-xl border border-[#e4e8ef] bg-white dark:border-surface-border">
                 {sessions.map((session) => (
                   <li key={`${session.namespaceId}-${session.sessionId}`}>
                     <Link
                       href={`/ai-workspace/conversation/${encodeURIComponent(session.sessionId)}`}
-                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#f8fafc]"
+                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-[#f8fafc] dark:hover:bg-surface"
                     >
-                      <Bot className="size-4 shrink-0 text-[#697386]" />
+                      <Bot className="size-4 shrink-0 text-[#697386] dark:text-text-muted" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm text-[#17181c]">
+                        <span className="block truncate text-sm text-[#17181c] dark:text-text">
                           {session.title?.trim() || "未命名任务"}
                         </span>
-                        <span className="block text-xs text-[#8a93a2]">
+                        <span className="block text-xs text-[#8a93a2] dark:text-text-subtle">
                           {sessionStatusLabel(session)}
                           {session.taskRun?.state ? ` · ${session.taskRun.state}` : ""}
                         </span>
                       </span>
                       {sessionTime(session) ? (
-                        <span className="shrink-0 text-xs text-[#8a93a2]">
+                        <span className="shrink-0 text-xs text-[#8a93a2] dark:text-text-subtle">
                           {formatRelativeTime(sessionTime(session))}
                         </span>
                       ) : null}

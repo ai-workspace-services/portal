@@ -6,12 +6,14 @@
  */
 
 import typography from '@tailwindcss/typography'
+import darkPalette from './config/tailwind-dark-palette.mjs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
 const tailwindConfig = {
+  darkMode: 'selector',
   // 扫描的源文件路径
   content: {
     files: [
@@ -172,6 +174,7 @@ const tailwindConfig = {
   // 插件
   plugins: [
     typography,
+    darkPalette,
   ],
 }
 

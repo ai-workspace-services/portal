@@ -55,7 +55,7 @@ export default function CompanyPage() {
 
   return (
     <PublicPageShell>
-      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10 mb-8">
+      <section className="rounded-[2.4rem] border border-slate-900/10 bg-[linear-gradient(180deg,#ffffff,#faf7f2)] p-6 shadow-[0_22px_50px_rgba(15,23,42,0.05)] sm:p-8 lg:p-10 mb-8 dark:bg-[linear-gradient(180deg,var(--color-surface),var(--color-surface-muted))]">
         <PublicPageIntro
           title={content.title}
           titleClassName="editorial-display text-5xl tracking-[-0.06em] sm:text-6xl"
