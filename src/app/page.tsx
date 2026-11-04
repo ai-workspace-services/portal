@@ -10,7 +10,6 @@ import ControlPlaneSection from "@/components/marketing/ControlPlaneSection";
 import ProofSection from "@/components/marketing/ProofSection";
 import PricingTeaser from "@/components/marketing/PricingTeaser";
 import FinalCta from "@/components/marketing/FinalCta";
-import BuiltByBadge from "@/components/marketing/BuiltByBadge";
 import ReferralPromoSection from "@/components/referrals/ReferralPromoSection";
 import referralContent from "@/data/content/referral.json";
 import type { ReferralContent } from "@/lib/referral-content";
@@ -34,7 +33,6 @@ export default function HomePage() {
         <PricingTeaser />
         <ReferralPromoSection content={referralCopy} />
         <FinalCta />
-        <BuiltByBadge />
       </main>
       <div className="mx-auto w-full max-w-6xl px-6 pb-10 lg:px-8">
         <Footer />
