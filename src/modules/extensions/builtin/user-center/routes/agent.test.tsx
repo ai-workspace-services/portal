@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { afterEach, expect, it, vi } from "vitest";
 
@@ -117,4 +117,82 @@ it("redirects /panel/management?tab=agents to /panel/agent", async () => {
     ManagementPage({ searchParams: Promise.resolve({ tab: "agents" }) }),
   ).rejects.toThrow("NEXT_REDIRECT:/panel/agent");
   expect(mocks.redirect).toHaveBeenCalledWith("/panel/agent");
+});
+
+it("denies access to ordinary users on /panel/agent", () => {
+  mocks.user = { id: "regular-user", role: "user" };
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <UserCenterAgentRoute />
+    </SWRConfig>,
+  );
+  expect(screen.getByText("权限不足")).toBeTruthy();
+  expect(
+    screen.queryByRole("region", { name: "Agent 分组与集中配置管理" }),
+  ).toBeNull();
+});
+
+it("enables centralized Free grant management for administrators", async () => {
+  mocks.user = { id: "admin-account", isAdmin: true, role: "admin" };
+  mocks.fetchPools.mockResolvedValueOnce([]);
+  const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo) => {
+    const url = String(input);
+    if (url.includes("/agents/inventory")) {
+      return {
+        ok: true,
+        json: async () => ({
+          agents: [
+            {
+              id: "custom-jp-node",
+              name: "Custom JP Node",
+              resourceClass: "custom",
+              status: "healthy",
+            },
+          ],
+        }),
+      };
+    }
+    if (url.includes("/agents/grants")) {
+      return {
+        ok: true,
+        json: async () => ({
+          grants: [
+            {
+              nodeId: "custom-jp-node",
+              email: "member@example.com",
+              status: "active",
+              state: "active",
+              expiresAt: "2026-11-14T00:00:00Z",
+              createdAt: "2026-11-07T00:00:00Z",
+              reason: "Approved partnership",
+            },
+          ],
+        }),
+      };
+    }
+    return { ok: true, json: async () => ({ agents: [] }) };
+  });
+  vi.stubGlobal("fetch", fetchMock);
+
+  render(
+    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+      <UserCenterAgentRoute />
+    </SWRConfig>,
+  );
+
+  expect(await screen.findByText("Custom JP Node")).toBeTruthy();
+
+  // Open modal via top toolbar button
+  const manageBtn = screen.getByRole("button", {
+    name: "临时 Free 白名单管理",
+  });
+  fireEvent.click(manageBtn);
+
+  expect(
+    await screen.findByRole("dialog", {
+      name: "Custom 节点临时 Free 白名单管理",
+    }),
+  ).toBeTruthy();
+  expect(await screen.findByText("member@example.com")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "确认发放" })).toBeTruthy();
 });

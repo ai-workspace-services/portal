@@ -74,8 +74,8 @@ export const userCenterExtension: DashboardExtension = {
     {
       id: "agents",
       path: "/panel/agent",
-      label: "区域入口池",
-      description: "查看区域入口与 pool 数量",
+      label: "Agents",
+      description: "Agent 分组与集中配置管理",
       icon: Server,
       loader: () => import("./routes/agent"),
       guard: { requireLogin: true, roles: ["admin", "operator"] },
@@ -83,8 +83,8 @@ export const userCenterExtension: DashboardExtension = {
       sidebar: { section: "admin", order: 9 },
       featureFlag: {
         id: "user-center.agent",
-        title: "区域入口池",
-        description: "启用管理员区域入口页面。",
+        title: "Agent 节点管理",
+        description: "启用管理员 Agent 节点与集中配置管理页面。",
         envVar: "NEXT_PUBLIC_FEATURE_AGENT_MODULE",
         defaultEnabled: true,
       },
