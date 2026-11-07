@@ -65,6 +65,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
   const logout = useUserStore((state) => state.logout)
 
   const [status, setStatus] = useState<TotpStatus | null>(null)
+  const [initialStatusLoaded, setInitialStatusLoaded] = useState(false)
   const [secret, setSecret] = useState('')
   const [uri, setUri] = useState('')
   const [issuer, setIssuer] = useState('')
@@ -135,6 +136,8 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
       }
     } catch (err) {
       console.warn('Failed to fetch MFA status', err)
+    } finally {
+      setInitialStatusLoaded(true)
     }
   }, [])
 
@@ -326,6 +329,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
   useEffect(() => {
     if (
       (setupRequested || isDialogOpen) &&
+      initialStatusLoaded &&
       !displayStatus?.totpEnabled &&
       !secret &&
       !isProvisioning &&
@@ -335,6 +339,7 @@ export default function MfaSetupPanel({ showSummary = true }: MfaSetupPanelProps
     }
   }, [
     displayStatus?.totpEnabled,
+    initialStatusLoaded,
     handleProvision,
     hasPendingMfa,
     isDialogOpen,
