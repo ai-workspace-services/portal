@@ -27,6 +27,9 @@ type Agent = {
 
 const copy = {
   zh: {
+    title: "Agent 分组与集中配置管理",
+    description:
+      "按 Free、Shared、Plus、Pro、Custom 分组集中查看边缘 Agent 节点身份、健康状态、最近心跳与配置同步回执。",
     status: {
       healthy: "正常",
       unhealthy: "异常",
@@ -45,6 +48,9 @@ const copy = {
     retry: "重试",
   },
   en: {
+    title: "Agent grouping & centralized configuration",
+    description:
+      "Inspect edge Agent node identities, health status, recent heartbeats, and configuration sync across Free, Shared, Plus, Pro, and Custom resource classes.",
     status: {
       healthy: "Healthy",
       unhealthy: "Unhealthy",
@@ -100,7 +106,18 @@ export default function AgentInventory({
     value ? formatter.format(new Date(value)) : "—";
 
   return (
-    <div className="space-y-4 px-4 py-4 sm:px-5">
+    <section
+      aria-label={t.title}
+      className="space-y-4 rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-4 py-4 sm:px-5"
+    >
+      <div>
+        <h2 className="text-lg font-semibold text-[var(--color-heading)]">
+          {t.title}
+        </h2>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+          {t.description}
+        </p>
+      </div>
       <div
         className="flex flex-wrap items-center gap-2"
         role="group"
@@ -186,6 +203,6 @@ export default function AgentInventory({
           </table>
         </div>
       )}
-    </div>
+    </section>
   );
 }

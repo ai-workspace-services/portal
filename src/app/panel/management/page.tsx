@@ -11,10 +11,12 @@ type ManagementPageProps = {
 export default async function ManagementPage({
   searchParams,
 }: ManagementPageProps) {
-  const showAgents = (await searchParams).tab === "agents";
+  if ((await searchParams).tab === "agents") {
+    redirect("/panel/agent");
+  }
   try {
     const Component = await resolveExtensionRouteComponent("/panel/management");
-    return <Component showAgents={showAgents} />;
+    return <Component />;
   } catch (error) {
     if (error instanceof Error && error.message.includes("disabled")) {
       redirect("/panel");
