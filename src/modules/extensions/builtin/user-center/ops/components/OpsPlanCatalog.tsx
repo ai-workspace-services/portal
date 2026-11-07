@@ -21,10 +21,8 @@ import { buildPlanUpsertBody, type BillingPlan } from "../planUpsert";
 import {
   CATALOG_FAMILIES,
   partitionCatalog,
-  policyFor,
   quotaFromGB,
   quotaToGB,
-  type CatalogPolicy,
   type Family,
   type FamilyId,
 } from "../planCatalog";
@@ -74,11 +72,20 @@ export default function OpsPlanCatalog() {
   const [showArchived, setShowArchived] = useState(false);
   const [notice, setNotice] = useState("");
   const canWrite = Boolean(
+    user?.isRoot ||
     user?.isAdmin ||
     user?.permissions?.includes("*") ||
     user?.permissions?.includes("admin.billing.money.write"),
   );
-  const family = families.find((f) => f.id === selected);
+  const [individual, setIndividual] = useState<BillingPlan | null>(null);
+  const family = individual
+    ? {
+        ...CATALOG_FAMILIES[0],
+        id: "free" as const,
+        name: individual.displayName || individual.planId,
+        variants: [individual],
+      }
+    : families.find((f) => f.id === selected);
   return (
     <div className="space-y-4 pb-8">
       <div
@@ -108,8 +115,15 @@ export default function OpsPlanCatalog() {
               {canWrite && (
                 <button
                   onClick={() => {
-                    setSelected("gift");
-                    setNotice("选择档位后编辑并保存为新版本草稿。");
+                    setIndividual({
+                      planId: "",
+                      kind: "subscription",
+                      packageName: "custom",
+                      displayName: "新套餐",
+                      includedQuotaBytes: 0,
+                      active: false,
+                    });
+                    setNotice("");
                   }}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white dark:bg-[var(--color-action)]"
                 >
@@ -141,6 +155,7 @@ export default function OpsPlanCatalog() {
                     type="button"
                     aria-pressed={selected === f.id}
                     onClick={() => {
+                      setIndividual(null);
                       setSelected(f.id);
                       setNotice("");
                     }}
@@ -162,12 +177,26 @@ export default function OpsPlanCatalog() {
                         {f.description}
                       </span>
                       <span className="mt-3 block text-sm text-[var(--color-text-subtle)]">
-                        {f.summary}
+                        {persisted.length
+                          ? persisted
+                              .map(
+                                (p) =>
+                                  `${p.displayName || p.planId} · ${quotaToGB(p.includedQuotaBytes)} GB`,
+                              )
+                              .join(" / ")
+                          : "待配置"}
                       </span>
                     </span>
                     <span className="hidden shrink-0 text-right sm:block">
                       <span className="block text-sm font-semibold text-[var(--color-heading)]">
-                        {f.price}
+                        {persisted.length
+                          ? persisted
+                              .map(
+                                (p) =>
+                                  `${p.priceCurrency || "CNY"} ${(p.priceAmount || 0) / 100} / ${p.priceUnit || "免费"}`,
+                              )
+                              .join(" · ")
+                          : "待配置"}
                       </span>
                       <span
                         className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${published ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
@@ -207,12 +236,14 @@ export default function OpsPlanCatalog() {
               />
             </button>
             <p className="ml-6 text-xs leading-5 text-[var(--color-text-subtle)]">
-              旧版本独立保留，已有订阅、价格映射与折扣不覆盖。
+              选择目录记录可编辑其价格、额度和发布状态。
             </p>
             {showArchived && (
               <div className="mt-3 divide-y divide-[color:var(--color-surface-border)]">
                 {legacy.map((p) => (
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => setIndividual(p)}
                     key={p.planId}
                     className="flex flex-wrap justify-between gap-2 py-3 text-sm"
                   >
@@ -223,9 +254,9 @@ export default function OpsPlanCatalog() {
                       </small>
                     </span>
                     <span className="text-xs text-[var(--color-text-muted)]">
-                      {p.active ? "仍在服务 · 保留兼容" : "已下架"}
+                      {p.active ? "已发布 · 编辑" : "草稿 · 编辑"}
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -233,21 +264,29 @@ export default function OpsPlanCatalog() {
         </section>
         {family && (
           <CatalogEditor
-            key={family.id}
+            key={individual ? `individual-${individual.planId}` : family.id}
             family={family}
             plans={data?.plans ?? []}
             canWrite={canWrite}
-            onClose={() => setSelected(null)}
+            onClose={() => {
+              setIndividual(null);
+              setSelected(null);
+            }}
             onSaved={async (message) => {
-              await mutate();
+              const refreshed = await mutate();
+              if (individual?.planId)
+                setIndividual(
+                  refreshed?.plans.find(
+                    (p) => p.planId === individual.planId,
+                  ) || null,
+                );
               setNotice(message);
             }}
           />
         )}
       </div>
       <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
-        新规则使用独立版本保存。价格映射、额度周期及 VPS
-        分流完成服务端核验后再发布；保存草稿不会变更在用订阅。
+        套餐价格与配额保存后可重新读取核对。账户额度以账户用量接口为准。
       </p>
       {notice && (
         <p
@@ -267,8 +306,13 @@ type EditState = {
   quotaGB: string;
   amount: string;
   stripePriceId: string;
-  policy: CatalogPolicy;
+  planId: string;
+  kind: string;
+  packageName: string;
   reason: string;
+  active: boolean;
+  currency: string;
+  unit: string;
 };
 function formFor(plan: BillingPlan): EditState {
   return {
@@ -276,8 +320,13 @@ function formFor(plan: BillingPlan): EditState {
     quotaGB: quotaToGB(plan.includedQuotaBytes),
     amount: String((plan.priceAmount ?? 0) / 100),
     stripePriceId: plan.stripePriceId ?? "",
-    policy: { ...policyFor(plan) },
+    planId: plan.planId,
+    kind: plan.kind,
+    packageName: plan.packageName || "custom",
     reason: "",
+    active: plan.active ?? false,
+    currency: plan.priceCurrency || "CNY",
+    unit: plan.priceUnit || "month",
   };
 }
 function CatalogEditor({
@@ -301,53 +350,25 @@ function CatalogEditor({
   const existing = plans.find((p) => p.planId === plan.planId);
   const patch = <K extends keyof EditState>(key: K, value: EditState[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
-  const policy = <K extends keyof CatalogPolicy>(
-    key: K,
-    value: CatalogPolicy[K],
-  ) => setDraft((d) => ({ ...d, policy: { ...d.policy, [key]: value } }));
   const save = async () => {
     setError("");
     try {
-      if (!draft.name.trim() || !draft.reason.trim())
+      if (!draft.planId.trim() || !draft.name.trim() || !draft.reason.trim())
         throw new Error("请填写名称与操作原因。");
       const bytes = quotaFromGB(draft.quotaGB);
       if (
-        family.id === "gift" &&
-        (Number(draft.quotaGB) < 5 || Number(draft.quotaGB) > 50)
+        !/^\d+(\.\d{1,2})?$/.test(draft.amount) ||
+        !Number.isSafeInteger(Math.round(Number(draft.amount) * 100))
       )
-        throw new Error("每份临时流量包须为 5–50 GB。");
-      if (
-        family.id === "gift" &&
-        (!Number.isSafeInteger(draft.policy.quantity ?? 1) ||
-          (draft.policy.quantity ?? 1) < 1)
-      )
-        throw new Error("创建份数必须是正整数。");
-      if (!/^\d+(\.\d{1,2})?$/.test(draft.amount))
-        throw new Error("价格最多支持两位小数。");
+        throw new Error("价格须为有效金额，最多支持两位小数。");
       if (draft.stripePriceId && !draft.stripePriceId.startsWith("price_"))
         throw new Error("请填写有效的 Stripe Price ID。");
-      if (
-        draft.policy.minimumDays !== undefined &&
-        (draft.policy.minimumDays < 30 ||
-          (draft.policy.maximumDays ?? 0) > 90 ||
-          draft.policy.minimumDays > (draft.policy.maximumDays ?? 0))
-      )
-        throw new Error("内测有效期须为 30–90 天，起始天数不能大于结束天数。");
-      if (
-        family.id === "payg" &&
-        (!(draft.policy.cnyPerGB! > 0) || !(draft.policy.usdTrafficGB! > 0))
-      )
-        throw new Error("人民币单价与每美元 GB 数必须大于 0。");
-      if (existing?.active)
-        throw new Error(
-          "已发布版本请先通过价格与权益审核，创建新版本后再变更；此处仅保存草稿。",
-        );
       const body = buildPlanUpsertBody(
         {
-          planId: plan.planId,
+          planId: draft.planId,
           displayName: draft.name,
-          kind: plan.kind,
-          packageName: plan.packageName ?? family.id,
+          kind: draft.kind,
+          packageName: draft.packageName,
           stripePriceId: draft.stripePriceId,
           includedQuotaBytes: String(bytes),
           trialDays: String(plan.trialDays ?? 0),
@@ -355,18 +376,18 @@ function CatalogEditor({
             CATALOG_FAMILIES.findIndex((f) => f.id === family.id) * 10 +
               variantIndex,
           ),
-          active: false,
+          active: draft.active,
           reason: draft.reason,
         },
         existing ?? plan,
       );
       body.priceAmount = Math.round(Number(draft.amount) * 100);
-      body.priceCurrency = body.priceAmount ? "CNY" : "";
-      body.priceUnit = body.priceAmount ? plan.priceUnit : "";
-      body.features = { ...plan.features, catalog_policy: draft.policy };
+      body.priceCurrency = body.priceAmount ? draft.currency : "";
+      body.priceUnit = body.priceAmount ? draft.unit : "";
+      body.features = { ...plan.features };
       setSaving(true);
       const response = await fetch(
-        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(plan.planId)}`,
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(draft.planId.trim())}`,
         {
           method: "PUT",
           credentials: "include",
@@ -377,10 +398,14 @@ function CatalogEditor({
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         throw new Error(
-          typeof data?.error === "string" ? data.error : "保存失败，请重试。",
+          typeof data?.message === "string"
+            ? data.message
+            : "保存失败，请重试。",
         );
       }
-      await onSaved(`${draft.name} 草稿已保存；在用订阅未变更。`);
+      await onSaved(
+        `${draft.name} ${draft.active ? "已发布" : "已保存为草稿或停用"}。`,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存失败。");
     } finally {
@@ -437,6 +462,32 @@ function CatalogEditor({
             <h3 className="text-sm font-semibold text-[var(--color-heading)]">
               基本信息
             </h3>
+            {existing ? (
+              <p className="break-all text-xs">{existing.planId}</p>
+            ) : (
+              <Field
+                label="套餐 ID"
+                value={draft.planId}
+                onChange={(v) => patch("planId", v)}
+              />
+            )}
+            <label className="block text-sm">
+              类型
+              <select
+                className={inputClass}
+                value={draft.kind}
+                onChange={(e) => patch("kind", e.target.value)}
+              >
+                <option value="subscription">订阅</option>
+                <option value="trial">试用</option>
+                <option value="paygo_topup">固定金额充值</option>
+              </select>
+            </label>
+            <Field
+              label="计费套餐名"
+              value={draft.packageName}
+              onChange={(v) => patch("packageName", v)}
+            />
             <Field
               label="套餐名称"
               value={draft.name}
@@ -445,169 +496,59 @@ function CatalogEditor({
             <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
               <span>状态</span>
               <span className="rounded-full bg-slate-100 px-2 py-1 text-xs">
-                {existing?.active ? "已发布 · 只读" : "新版本草稿"}
+                {existing?.active ? "已发布" : "草稿"}
               </span>
             </div>
           </section>
-          {(family.id === "plus" || family.id === "pro") && (
-            <Section title="收费">
-              <Field
-                label={
-                  plan.priceUnit === "year"
-                    ? "年付价格（元 / 年）"
-                    : "月付价格（元 / 月）"
-                }
-                value={draft.amount}
-                type="number"
-                onChange={(v) => patch("amount", v)}
+          <Section title="价格与配额">
+            <Field
+              label="价格"
+              type="number"
+              value={draft.amount}
+              onChange={(v) => patch("amount", v)}
+            />
+            <label className="block text-sm">
+              币种
+              <select
+                className={inputClass}
+                value={draft.currency}
+                onChange={(e) => patch("currency", e.target.value)}
+              >
+                <option value="CNY">CNY</option>
+                <option value="USD">USD</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              计价单位
+              <select
+                className={inputClass}
+                value={draft.unit}
+                onChange={(e) => patch("unit", e.target.value)}
+              >
+                <option value="month">月</option>
+                <option value="year">年</option>
+                <option value="once">次</option>
+                <option value="gb">GB</option>
+              </select>
+            </label>
+            <Field
+              label="账户配额（GB）"
+              type="number"
+              value={draft.quotaGB}
+              onChange={(v) => patch("quotaGB", v)}
+            />
+            <p className="text-xs text-[var(--color-text-muted)]">
+              额度耗尽后暂停。发布后，可在账号处置台选择邮箱指派此套餐。已导入的自定义配额按账户记录生效。
+            </p>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={draft.active}
+                onChange={(e) => patch("active", e.target.checked)}
               />
-              {family.id === "plus" && plan.priceUnit === "year" && (
-                <>
-                  <Field
-                    label="年付常规价格（元 / 年）"
-                    value={String(
-                      (draft.policy.regularAnnualAmount ?? 24000) / 100,
-                    )}
-                    type="number"
-                    onChange={(v) =>
-                      policy("regularAnnualAmount", Math.round(Number(v) * 100))
-                    }
-                  />
-                  <Field
-                    label="优惠截止日期"
-                    value={draft.policy.promotionEnds ?? "2026-12-31"}
-                    type="date"
-                    onChange={(v) => policy("promotionEnds", v)}
-                  />
-                  <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
-                    2027-01-01 起新订阅按常规价格，原订阅保留折扣。
-                  </p>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={draft.policy.grandfatherDiscount ?? true}
-                      onChange={(e) =>
-                        policy("grandfatherDiscount", e.target.checked)
-                      }
-                    />
-                    保留老用户折扣
-                  </label>
-                </>
-              )}
-            </Section>
-          )}
-          {family.id === "payg" ? (
-            <Section title="按量单价">
-              <Field
-                label="人民币（元 / GB）"
-                type="number"
-                value={String(draft.policy.cnyPerGB ?? 1)}
-                onChange={(v) => policy("cnyPerGB", Number(v))}
-              />
-              <Field
-                label="美元（GB / 美元）"
-                type="number"
-                value={String(draft.policy.usdTrafficGB ?? 7)}
-                onChange={(v) => policy("usdTrafficGB", Number(v))}
-              />
-              <p className="text-xs text-[var(--color-text-subtle)]">
-                双币种独立计费，不兑换汇率。
-              </p>
-            </Section>
-          ) : family.id === "beta" ? (
-            <Section title="有效期限">
-              <div className="grid grid-cols-2 gap-3">
-                <Field
-                  label="最短天数"
-                  type="number"
-                  value={String(draft.policy.minimumDays ?? 30)}
-                  onChange={(v) => policy("minimumDays", Number(v))}
-                />
-                <Field
-                  label="最长天数"
-                  type="number"
-                  value={String(draft.policy.maximumDays ?? 90)}
-                  onChange={(v) => policy("maximumDays", Number(v))}
-                />
-              </div>
-              <p className="text-sm text-[var(--color-text-muted)]">
-                不限流量 · 按账户设置有效期
-              </p>
-            </Section>
-          ) : (
-            <Section title={family.id === "gift" ? "赠送额度" : "高速流量"}>
-              <Field
-                min={family.id === "gift" ? 5 : 0}
-                max={family.id === "gift" ? 50 : undefined}
-                label={
-                  plan.priceUnit === "year"
-                    ? "年付高速流量（GB）"
-                    : "流量额度（GB）"
-                }
-                type="number"
-                value={draft.quotaGB}
-                onChange={(v) => patch("quotaGB", v)}
-              />
-              <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
-                {family.id === "free"
-                  ? "新注册默认 1 GB，可申请到 5 GB。"
-                  : family.id === "gift"
-                    ? "仅赠送，自然月到期，不支持退款。"
-                    : plan.priceUnit === "year"
-                      ? "年度额度按订阅年累计使用。"
-                      : "每月重置高速额度。"}
-              </p>
-              {family.id === "gift" && (
-                <div className="space-y-3">
-                  <Field
-                    label="创建份数"
-                    type="number"
-                    min={1}
-                    value={String(draft.policy.quantity ?? 1)}
-                    onChange={(v) => policy("quantity", Number(v))}
-                  />
-                  <p className="text-xs text-[var(--color-text-subtle)]">
-                    每份 5–50 GB · 本批总额度{" "}
-                    {Number(draft.quotaGB || 0) * (draft.policy.quantity ?? 1)}{" "}
-                    GB · 自然月到期
-                  </p>
-                  <p className="text-xs text-[var(--color-text-subtle)]">
-                    管理员与获授权运营分发；批次数量在库存服务确认后生效。
-                  </p>
-                </div>
-              )}
-              {family.id === "free" && (
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={draft.policy.registrationDefault ?? false}
-                    onChange={(e) =>
-                      policy("registrationDefault", e.target.checked)
-                    }
-                  />
-                  新注册默认档位
-                </label>
-              )}
-              {(family.id === "plus" || family.id === "pro") && (
-                <label className="block space-y-1.5 text-sm text-[var(--color-text-muted)]">
-                  <span>高速额度耗尽后</span>
-                  <select
-                    className={inputClass}
-                    value={draft.policy.fallback}
-                    onChange={(e) =>
-                      policy(
-                        "fallback",
-                        e.target.value as CatalogPolicy["fallback"],
-                      )
-                    }
-                  >
-                    <option value="vps_pool">VPS 流量池</option>
-                    <option value="pause">暂停访问</option>
-                  </select>
-                </label>
-              )}
-            </Section>
-          )}
+              发布并开放应用
+            </label>
+          </Section>
           <details className="border-t border-[color:var(--color-surface-border)] pt-3">
             <summary className="cursor-pointer text-xs text-[var(--color-text-subtle)]">
               更多设置（Stripe 映射等）
@@ -651,12 +592,12 @@ function CatalogEditor({
           取消
         </button>
         <button
-          disabled={!canWrite || saving || existing?.active}
+          disabled={!canWrite || saving}
           onClick={() => void save()}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
         >
           {saving && <Loader2 size={15} className="animate-spin" />}
-          保存当前档位草稿
+          保存并应用设置
         </button>
       </footer>
     </aside>

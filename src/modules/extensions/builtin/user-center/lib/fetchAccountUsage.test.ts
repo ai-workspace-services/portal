@@ -53,6 +53,29 @@ describe("fetchAccountUsage", () => {
     });
   });
 
+  it("uses the effective quota instead of stale catalog metadata, including zero", async () => {
+    for (const quota of [0, 1024 ** 4]) {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            accountUuid: "custom-account",
+            totalBytes: 0,
+            includedQuotaBytes: quota,
+            currentPlan: {
+              planId: "CUSTOM",
+              displayName: "Custom",
+              assigned: true,
+              maxTrafficBytes: 5 * 1024 ** 3,
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+      const result = await fetchAccountUsageSummary();
+      expect(result.currentPlan?.maxTrafficBytes).toBe(quota);
+    }
+  });
+
   it("loads the authoritative policy snapshot from the account api", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
       new Response(
@@ -71,17 +94,15 @@ describe("fetchAccountUsage", () => {
   });
 
   it("treats only an explicitly missing policy snapshot as a cacheable empty state", async () => {
-    const fetcher = vi
-      .spyOn(global, "fetch")
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            error: "policy_not_found",
-            message: "account policy snapshot is not available",
-          }),
-          { status: 404 },
-        ),
-      );
+    const fetcher = vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          error: "policy_not_found",
+          message: "account policy snapshot is not available",
+        }),
+        { status: 404 },
+      ),
+    );
     await expect(fetchAccountPolicy()).resolves.toBeNull();
     expect(fetcher).toHaveBeenCalledTimes(1);
   });

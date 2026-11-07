@@ -1,10 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { BarChart3, Mail, ShieldCheck, UsersRound, Video } from "lucide-react";
+import {
+  BarChart3,
+  Mail,
+  Server,
+  ShieldCheck,
+  UsersRound,
+  Video,
+} from "lucide-react";
 
 import Card from "../components/Card";
+import AgentInventory from "../management/components/AgentInventory";
 import EmailManagementPanel from "../management/components/EmailManagementPanel";
 import { emailCopy } from "@/lib/email-preferences";
 import TrendChart, {
@@ -82,7 +92,14 @@ async function jsonFetcher<T>(
   return (await response.json()) as T;
 }
 
-export default function UserCenterManagementRoute() {
+type ManagementTab = "users" | "permissions" | "groups" | "homepage" | "email";
+
+export default function UserCenterManagementRoute({
+  showAgents = false,
+}: {
+  showAgents?: boolean;
+} = {}) {
+  const router = useRouter();
   const { language } = useLanguage();
   const t = translations[language].userCenter;
   const user = useUserStore((state) => state.user);
@@ -103,6 +120,8 @@ export default function UserCenterManagementRoute() {
     [user],
   );
   const canAccess = accessDecision.allowed;
+  const canViewAgents =
+    accessDecision.userRole === "admin" || accessDecision.userRole === "operator";
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
   const canCreateCustomUser = Boolean(user?.isRoot);
@@ -139,33 +158,38 @@ export default function UserCenterManagementRoute() {
   const [homepageVideoError, setHomepageVideoError] = useState<
     string | undefined
   >();
-  const [activeTab, setActiveTab] = useState<
-    "users" | "permissions" | "groups" | "homepage" | "email"
-  >("users");
+  const [managementTab, setManagementTab] = useState<ManagementTab>("users");
+  const activeTab = showAgents && canViewAgents ? "agents" : managementTab;
 
+  function setActiveTab(tab: ManagementTab) {
+    setManagementTab(tab);
+    if (showAgents) router.replace("/panel/management", { scroll: false });
+  }
+
+  const loadUsers = canAccess && activeTab !== "agents";
   const metricsSWR = useSWR<UserMetricsResponse>(
-    canAccess ? `${ADMIN_API_BASE}/users/metrics` : null,
+    loadUsers ? `${ADMIN_API_BASE}/users/metrics` : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
     },
   );
   const settingsSWR = useSWR<AdminSettingsResponse>(
-    canAccess ? `${ADMIN_API_BASE}/settings` : null,
+    loadUsers ? `${ADMIN_API_BASE}/settings` : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
     },
   );
   const usersSWR = useSWR<ManagedUser[]>(
-    canAccess ? "/api/users" : null,
+    loadUsers ? "/api/users" : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
     },
   );
   const homepageVideoSWR = useSWR<HomepageVideoSettingsResponse>(
-    canAccess ? `${ADMIN_API_BASE}/homepage-video` : null,
+    loadUsers ? `${ADMIN_API_BASE}/homepage-video` : null,
     jsonFetcher,
     {
       revalidateOnFocus: false,
@@ -645,27 +669,31 @@ export default function UserCenterManagementRoute() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-[var(--color-heading)]">
-              用户管理
+              {activeTab === "agents" ? "Agents" : "用户管理"}
             </h1>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-              查看、管理和操作系统用户
-            </p>
+            {activeTab !== "agents" && (
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                查看、管理和操作系统用户
+              </p>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex h-9 items-center rounded-md border border-[color:var(--color-surface-border)] px-3 text-sm font-medium text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-hover)]"
-            >
-              导出用户
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("groups")}
-              className="inline-flex h-9 items-center rounded-md bg-[var(--color-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
-            >
-              + 创建用户
-            </button>
-          </div>
+          {activeTab !== "agents" && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="inline-flex h-9 items-center rounded-md border border-[color:var(--color-surface-border)] px-3 text-sm font-medium text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-hover)]"
+              >
+                导出用户
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("groups")}
+                className="inline-flex h-9 items-center rounded-md bg-[var(--color-primary)] px-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] dark:bg-[var(--color-action)] dark:hover:bg-[var(--color-action-hover)]"
+              >
+                + 创建用户
+              </button>
+            </div>
+          )}
         </div>
         <nav
           className="-mb-4 flex gap-1 overflow-x-auto"
@@ -686,8 +714,27 @@ export default function UserCenterManagementRoute() {
               {label}
             </button>
           ))}
+          {canViewAgents && (
+            <Link
+              href="/panel/management?tab=agents"
+              scroll={false}
+              aria-current={activeTab === "agents" ? "page" : undefined}
+              className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium transition ${
+                activeTab === "agents"
+                  ? "border-[var(--color-primary)] text-[var(--color-primary)]"
+                  : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-heading)]"
+              }`}
+            >
+              <Server aria-hidden="true" className="h-4 w-4" />
+              Agents
+            </Link>
+          )}
         </nav>
       </header>
+
+      {activeTab === "agents" && user && (
+        <AgentInventory accountId={user.id} language={language} />
+      )}
 
       {activeTab === "users" ? (
         <>

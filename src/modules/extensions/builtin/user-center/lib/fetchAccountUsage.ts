@@ -67,6 +67,7 @@ export type AccountPlanSummary = {
   unlimited: boolean;
   assigned: boolean;
   source:
+    | "subscription_import"
     | "account_entitlement"
     | "account_billing_profile"
     | "local_catalog_default";
@@ -161,8 +162,23 @@ async function requestJSON<T>(url: string): Promise<T> {
   return payload as T;
 }
 
-export function fetchAccountUsageSummary(): Promise<AccountUsageSummary> {
-  return requestJSON<AccountUsageSummary>("/api/account/usage/summary");
+export async function fetchAccountUsageSummary(): Promise<AccountUsageSummary> {
+  const usage = await requestJSON<AccountUsageSummary>(
+    "/api/account/usage/summary",
+  );
+  // Metering's effective allowance takes precedence over catalog display metadata.
+  if (
+    usage.currentPlan?.assigned &&
+    typeof usage.includedQuotaBytes === "number" &&
+    Number.isFinite(usage.includedQuotaBytes) &&
+    usage.includedQuotaBytes >= 0
+  ) {
+    usage.currentPlan = {
+      ...usage.currentPlan,
+      maxTrafficBytes: usage.includedQuotaBytes,
+    };
+  }
+  return usage;
 }
 
 export async function fetchAccountPolicy(): Promise<AccountPolicy | null> {
