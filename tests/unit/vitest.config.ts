@@ -12,6 +12,7 @@ export default defineConfig({
       "./**/*.test.{ts,tsx}",
       "./**/__tests__/**/*.{ts,tsx}",
     ],
+    exclude: ["**/.next/**", "**/node_modules/**"],
     environmentOptions: {
       jsdom: {
         url: "http://localhost",
