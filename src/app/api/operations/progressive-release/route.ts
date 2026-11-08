@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { RAW_ROUTES_CATALOG } from "@/modules/extensions/builtin/platform-operations/data/routesCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -28,16 +29,19 @@ export interface RouteApiItem {
   id: string;
   order: number;
   type: "frontend" | "api";
+  categoryKey: string;
+  categoryName: string;
+  categoryEnName: string;
   service: "Console" | "Accounts" | "Billing";
   serviceDomain: string;
   path: string;
   description: string;
-  method: "GET" | "POST";
+  method: string;
   expectedHttp: number;
   observedHttp: number;
   latencyMs: number;
   freshnessSec: number;
-  result: "PASS" | "FAIL";
+  result: "PASS" | "FAIL" | "NO DATA";
 }
 
 export interface ProgressiveReleasePayload {
@@ -92,253 +96,19 @@ export interface ProgressiveReleasePayload {
   updatedAtUtc: string;
 }
 
-// 基础前端路由与微服务 API 清单定义
+// 全量前端路由与微服务 API 清单定义（181 项资产完整映射）
 function getDefaultRoutesAndApis(
   environment: "PROD" | "SIT",
   freshnessSec = 8
 ): RouteApiItem[] {
-  return [
-    {
-      id: "fe-operations",
-      order: 1,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/panel/operations",
-      description: "平台运维中心与渐进发布门禁验证看板",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 38 : 45,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "fe-agent",
-      order: 2,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/panel/agent",
-      description: "智能体应用编排、会话拓扑与纳管配置",
-      method: "GET",
-      expectedHttp: 307,
-      observedHttp: 307,
-      latencyMs: environment === "PROD" ? 14 : 22,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "fe-workspaces",
-      order: 3,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/panel/workspaces",
-      description: "云端工作空间协同与隔离资源组管理",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 42 : 58,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "fe-settings",
-      order: 4,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/panel/settings",
-      description: "系统偏好设置、个性化主题与团队治理",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 35 : 48,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "fe-login",
-      order: 5,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/login",
-      description: "统一安全认证、SSO 单点登录与权限接入网关",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 95 : 128,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "fe-pricing",
-      order: 6,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/pricing",
-      description: "订阅计划、算力规格与价格阶梯总览",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 40 : 52,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "fe-about",
-      order: 7,
-      type: "frontend",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/about",
-      description: "平台云原生架构说明与多环境发布元数据",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 32 : 44,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-console-release",
-      order: 8,
-      type: "api",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/api/operations/progressive-release",
-      description: "Console 渐进式发布指标与门禁聚合分析 API",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 28 : 36,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-console-healthz",
-      order: 9,
-      type: "api",
-      service: "Console",
-      serviceDomain: "console.svc.plus",
-      path: "/healthz",
-      description: "Console 容器应用存活探针 (Kubernetes Liveness)",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 22 : 31,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-accounts-healthz",
-      order: 10,
-      type: "api",
-      service: "Accounts",
-      serviceDomain: "accounts.svc.plus",
-      path: "/healthz",
-      description: "Accounts 统一身份认证微服务存活探针",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 106 : 85,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-accounts-readyz",
-      order: 11,
-      type: "api",
-      service: "Accounts",
-      serviceDomain: "accounts.svc.plus",
-      path: "/readyz",
-      description: "Accounts 数据库链接与就绪探针 (Readiness)",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 94 : 76,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-accounts-ping",
-      order: 12,
-      type: "api",
-      service: "Accounts",
-      serviceDomain: "accounts.svc.plus",
-      path: "/api/ping",
-      description: "Accounts 微服务网络往返延迟与心跳探针",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 14 : 26,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-accounts-billing-plans",
-      order: 13,
-      type: "api",
-      service: "Accounts",
-      serviceDomain: "accounts.svc.plus",
-      path: "/api/billing/plans",
-      description: "Accounts 计费套餐与权益同步网关接口",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 67 : 89,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-billing-healthz",
-      order: 14,
-      type: "api",
-      service: "Billing",
-      serviceDomain: "billing.svc.plus",
-      path: "/healthz",
-      description: "Billing 账单与结算中心微服务存活探针",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 16 : 28,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-billing-readyz",
-      order: 15,
-      type: "api",
-      service: "Billing",
-      serviceDomain: "billing.svc.plus",
-      path: "/readyz",
-      description: "Billing 账单交易引擎与数据存储就绪探针",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 12 : 24,
-      freshnessSec,
-      result: "PASS",
-    },
-    {
-      id: "api-billing-ping",
-      order: 16,
-      type: "api",
-      service: "Billing",
-      serviceDomain: "billing.svc.plus",
-      path: "/api/ping",
-      description: "Billing 微服务延迟探测与网关通信心跳",
-      method: "GET",
-      expectedHttp: 200,
-      observedHttp: 200,
-      latencyMs: environment === "PROD" ? 20 : 34,
-      freshnessSec,
-      result: "PASS",
-    },
-  ];
+  return RAW_ROUTES_CATALOG.map((item) => ({
+    ...item,
+    latencyMs:
+      environment === "PROD"
+        ? Math.max(10, Math.round(item.latencyMs * 0.85))
+        : item.latencyMs,
+    freshnessSec,
+  }));
 }
 
 // 对应设计原型图的高精度基准 Mock 数据（优雅回退）

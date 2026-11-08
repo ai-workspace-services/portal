@@ -19,6 +19,12 @@ import {
   Globe,
   Server,
   ArrowUpDown,
+  Folder,
+  FolderOpen,
+  FolderKanban,
+  Cpu,
+  BookOpen,
+  ChevronsUpDown,
 } from "lucide-react";
 import type {
   ProgressiveReleasePayload,
@@ -107,10 +113,42 @@ export default function ProgressiveReleaseValidation({
   const p = data;
   const isGateBlocked = p?.gateStatus.status === "BLOCKED";
 
-  // 过滤后的全量路由与 API 清单
-  const filteredRoutesAndApis = useMemo(() => {
+  // 一级节点折叠状态 (frontend / api)
+  const [expandedRoots, setExpandedRoots] = useState<Record<string, boolean>>({
+    frontend: true,
+    api: true,
+  });
+
+  // 二级大类折叠状态 (categoryKey)
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  // 树状分组结构接口
+  interface TreeCategory {
+    key: string;
+    name: string;
+    enName: string;
+    type: "frontend" | "api";
+    items: RouteApiItem[];
+    totalCount: number;
+    passCount: number;
+    failCount: number;
+  }
+
+  interface TreeRoot {
+    type: "frontend" | "api";
+    title: string;
+    enTitle: string;
+    categories: TreeCategory[];
+    totalCount: number;
+    passCount: number;
+    failCount: number;
+  }
+
+  // 过滤并构造树状结构数据 (前端/后端 -> 大类 -> 路由/接口)
+  const treeData = useMemo<TreeRoot[]>(() => {
     const list: RouteApiItem[] = p?.allRoutesAndApis || [];
-    return list.filter((item) => {
+
+    const filterItem = (item: RouteApiItem) => {
       if (routesFilter === "frontend" && item.type !== "frontend") return false;
       if (routesFilter === "api" && item.type !== "api") return false;
       if (searchQuery.trim()) {
@@ -119,11 +157,140 @@ export default function ProgressiveReleaseValidation({
           item.path.toLowerCase().includes(q) ||
           item.description.toLowerCase().includes(q) ||
           item.service.toLowerCase().includes(q) ||
-          item.serviceDomain.toLowerCase().includes(q)
+          item.serviceDomain.toLowerCase().includes(q) ||
+          (item.categoryName && item.categoryName.toLowerCase().includes(q)) ||
+          (item.categoryEnName && item.categoryEnName.toLowerCase().includes(q)) ||
+          (item.method && item.method.toLowerCase().includes(q))
         );
       }
       return true;
-    });
+    };
+
+    const feItems = list.filter((i) => i.type === "frontend" && filterItem(i));
+    const beItems = list.filter((i) => i.type === "api" && filterItem(i));
+
+    const resolveCategoryMeta = (item: RouteApiItem, rootType: "frontend" | "api") => {
+      if (item.categoryKey && item.categoryName) {
+        return {
+          key: item.categoryKey,
+          name: item.categoryName,
+          enName: item.categoryEnName || item.categoryKey,
+        };
+      }
+      if (rootType === "frontend") {
+        if (item.path.startsWith("/panel"))
+          return { key: "fe-panel", name: "平台运维与控制台", enName: "Panel & Operations" };
+        if (item.path.startsWith("/ai-workspace"))
+          return { key: "fe-workspace", name: "智能体与工作空间", enName: "AI Workspace & Studio" };
+        if (item.path === "/" || item.path === "/about" || item.path === "/prices" || item.path.startsWith("/products"))
+          return { key: "fe-portal", name: "产品、服务与门户", enName: "Portal, Products & Services" };
+        if (item.path.startsWith("/docs") || item.path.startsWith("/blogs") || item.path.startsWith("/download"))
+          return { key: "fe-docs", name: "知识库、文档与博客", enName: "Docs, Knowledge & Blogs" };
+        if (item.path === "/login" || item.path === "/register" || item.path.startsWith("/email"))
+          return { key: "fe-auth", name: "统一身份认证与用户中心", enName: "Auth & User Center" };
+        if (item.path.startsWith("/cloud_iac") || item.path.startsWith("/xworkmate"))
+          return { key: "fe-edge", name: "边缘套件与基础设施工具", enName: "Edge Suites & Cloud IaC" };
+        return { key: "fe-support", name: "客户支持与服务条款", enName: "Support, Legal & System" };
+      } else {
+        if (
+          item.path.startsWith("/api/operations") ||
+          item.path === "/healthz" ||
+          item.path === "/api/ping" ||
+          item.service === "Billing" ||
+          item.service === "Accounts"
+        ) {
+          return { key: "be-ops", name: "运维监控与发布门禁", enName: "Operations & Progressive Release" };
+        }
+        if (
+          item.path.startsWith("/api/auth/stripe") ||
+          item.path.startsWith("/api/auth/subscriptions") ||
+          item.path.startsWith("/api/admin/billing") ||
+          item.path === "/api/billing/plans"
+        ) {
+          return { key: "be-billing", name: "商业化、计费与订阅", enName: "Billing, Payments & Subscriptions" };
+        }
+        if (item.path.startsWith("/api/auth/mfa")) {
+          return { key: "be-mfa", name: "MFA 多因素安全认证", enName: "Multi-Factor Authentication" };
+        }
+        if (item.path.startsWith("/api/admin")) {
+          return { key: "be-admin", name: "平台治理与管理控制台", enName: "Admin & Governance Platform" };
+        }
+        if (
+          item.path.startsWith("/api/agent") ||
+          item.path.startsWith("/api/ai-workspace") ||
+          item.path.startsWith("/api/task")
+        ) {
+          return { key: "be-agent", name: "AI 智能体与工作空间", enName: "AI Workspace & Agent Runtime" };
+        }
+        if (item.path.startsWith("/api/xconnect") || item.path.startsWith("/api/xworkmate")) {
+          return { key: "be-edge", name: "边缘协同与互联网络", enName: "Edge Connect & Collaboration" };
+        }
+        if (item.path.startsWith("/api/auth") || item.path.startsWith("/api/account")) {
+          return { key: "be-auth", name: "身份认证与用户账户", enName: "Authentication & Account Management" };
+        }
+        return { key: "be-content", name: "文档检索、营销与集成服务", enName: "Docs, Content & Integrations" };
+      }
+    };
+
+    const groupByCategory = (items: RouteApiItem[], rootType: "frontend" | "api"): TreeCategory[] => {
+      const map = new Map<string, { meta: { key: string; name: string; enName: string }; items: RouteApiItem[] }>();
+      for (const item of items) {
+        const meta = resolveCategoryMeta(item, rootType);
+        if (!map.has(meta.key)) {
+          map.set(meta.key, { meta, items: [] });
+        }
+        map.get(meta.key)!.items.push({
+          ...item,
+          categoryKey: meta.key,
+          categoryName: meta.name,
+          categoryEnName: meta.enName,
+        });
+      }
+
+      const groups: TreeCategory[] = [];
+      map.forEach(({ meta, items: catItems }) => {
+        const passCount = catItems.filter((i) => i.result === "PASS").length;
+        const failCount = catItems.filter((i) => i.result === "FAIL").length;
+        groups.push({
+          key: meta.key,
+          name: meta.name,
+          enName: meta.enName,
+          type: rootType,
+          items: catItems,
+          totalCount: catItems.length,
+          passCount,
+          failCount,
+        });
+      });
+      return groups;
+    };
+
+    const roots: TreeRoot[] = [];
+    if (routesFilter === "all" || routesFilter === "frontend") {
+      roots.push({
+        type: "frontend",
+        title: "前端页面路由 (Frontend Pages & Routes)",
+        enTitle: "Frontend Web Console Pages",
+        categories: groupByCategory(feItems, "frontend"),
+        totalCount: feItems.length,
+        passCount: feItems.filter((i) => i.result === "PASS").length,
+        failCount: feItems.filter((i) => i.result === "FAIL").length,
+      });
+    }
+
+    if (routesFilter === "all" || routesFilter === "api") {
+      roots.push({
+        type: "api",
+        title: "后端服务与微服务 API (Backend Services & APIs)",
+        enTitle: "Backend Microservices & Gateway Endpoints",
+        categories: groupByCategory(beItems, "api"),
+        totalCount: beItems.length,
+        passCount: beItems.filter((i) => i.result === "PASS").length,
+        failCount: beItems.filter((i) => i.result === "FAIL").length,
+      });
+    }
+
+    return roots;
   }, [p?.allRoutesAndApis, routesFilter, searchQuery]);
 
   const frontendCount = useMemo(
@@ -134,6 +301,47 @@ export default function ProgressiveReleaseValidation({
     () => (p?.allRoutesAndApis || []).filter((i) => i.type === "api").length,
     [p?.allRoutesAndApis]
   );
+
+  const toggleRoot = (type: "frontend" | "api") => {
+    setExpandedRoots((prev) => ({ ...prev, [type]: !prev[type] }));
+  };
+
+  const toggleCategory = (key: string) => {
+    setExpandedCategories((prev) => ({ ...prev, [key]: prev[key] === false ? true : false }));
+  };
+
+  const handleExpandAll = () => {
+    setExpandedRoots({ frontend: true, api: true });
+    const next: Record<string, boolean> = {};
+    for (const root of treeData) {
+      for (const cat of root.categories) {
+        next[cat.key] = true;
+      }
+    }
+    setExpandedCategories(next);
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedRoots({ frontend: false, api: false });
+    const next: Record<string, boolean> = {};
+    for (const root of treeData) {
+      for (const cat of root.categories) {
+        next[cat.key] = false;
+      }
+    }
+    setExpandedCategories(next);
+  };
+
+  const getCategoryIcon = (key: string) => {
+    if (key.includes("panel") || key.includes("ops")) return <Layers className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />;
+    if (key.includes("workspace") || key.includes("agent")) return <Cpu className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />;
+    if (key.includes("portal") || key.includes("edge")) return <Globe className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />;
+    if (key.includes("docs") || key.includes("content")) return <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />;
+    if (key.includes("auth") || key.includes("mfa")) return <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
+    if (key.includes("admin")) return <FolderKanban className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />;
+    if (key.includes("billing")) return <Database className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />;
+    return <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />;
+  };
 
   return (
     <div className="w-full min-w-0 bg-white dark:bg-[#0f141f] text-slate-800 dark:text-slate-100 font-sans antialiased p-3 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
@@ -638,7 +846,7 @@ export default function ProgressiveReleaseValidation({
         </div>
       </div>
 
-      {/* 补充底部可折叠表格：展示 Web Console 前端全量路由与后端服务 API 接口状态 */}
+      {/* 全量路由与后端服务 API 清单：三级分组树状展示 (Collapsible Routes & APIs Matrix) */}
       <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all">
         {/* 折叠标题栏 */}
         <div
@@ -649,7 +857,7 @@ export default function ProgressiveReleaseValidation({
             <button
               type="button"
               className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
-              aria-label={isRoutesCollapsed ? "展开表格" : "折叠表格"}
+              aria-label={isRoutesCollapsed ? "展开全量资产树" : "折叠全量资产树"}
             >
               {isRoutesCollapsed ? (
                 <ChevronRight className="w-4 h-4 text-slate-500" />
@@ -662,21 +870,23 @@ export default function ProgressiveReleaseValidation({
                 Web Console 前端全量路由与后端服务 API 接口清单
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
-                (Full Routing &amp; Microservice APIs Matrix)
+                (Full Routing &amp; Microservice APIs Matrix • 前端 / 后端 / 大类 / 子组件三级树状展示)
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {/* 统计指标胶囊 */}
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 font-medium">
-              {frontendCount} Frontend Routes
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 font-medium flex items-center gap-1">
+              <Globe className="w-2.5 h-2.5" />
+              {frontendCount} 前端路由 (7 大类)
             </span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 font-medium">
-              {apiCount} Backend APIs
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 font-medium flex items-center gap-1">
+              <Server className="w-2.5 h-2.5" />
+              {apiCount} 后端服务与探针 (8 大类)
             </span>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 font-medium flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
               All 100% Online
             </span>
           </div>
@@ -684,155 +894,331 @@ export default function ProgressiveReleaseValidation({
 
         {/* 展开内容区 */}
         {!isRoutesCollapsed && (
-          <div className="p-3.5 space-y-3">
-            {/* 过滤控制栏 */}
+          <div className="p-3.5 space-y-4">
+            {/* 顶部工具栏：过滤 Tab、快捷操作、搜索框 */}
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                <button
-                  type="button"
-                  onClick={() => setRoutesFilter("all")}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                    routesFilter === "all"
-                      ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  All ({p?.allRoutesAndApis?.length ?? 16})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRoutesFilter("frontend")}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                    routesFilter === "frontend"
-                      ? "bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  <Globe className="w-3 h-3" />
-                  Frontend ({frontendCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRoutesFilter("api")}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                    routesFilter === "api"
-                      ? "bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  <Server className="w-3 h-3" />
-                  Backend APIs ({apiCount})
-                </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {/* 分组过滤 Tab */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setRoutesFilter("all")}
+                    className={
+                      routesFilter === "all"
+                        ? "px-2.5 py-1 rounded text-xs font-medium transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                        : "px-2.5 py-1 rounded text-xs font-medium transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    }
+                  >
+                    All ({p?.allRoutesAndApis?.length ?? 181})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRoutesFilter("frontend")}
+                    className={
+                      routesFilter === "frontend"
+                        ? "px-2.5 py-1 rounded text-xs font-medium transition-colors bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs flex items-center gap-1"
+                        : "px-2.5 py-1 rounded text-xs font-medium transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1"
+                    }
+                  >
+                    <Globe className="w-3 h-3" />
+                    Frontend ({frontendCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRoutesFilter("api")}
+                    className={
+                      routesFilter === "api"
+                        ? "px-2.5 py-1 rounded text-xs font-medium transition-colors bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-xs flex items-center gap-1"
+                        : "px-2.5 py-1 rounded text-xs font-medium transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1"
+                    }
+                  >
+                    <Server className="w-3 h-3" />
+                    Backend APIs ({apiCount})
+                  </button>
+                </div>
+
+                {/* 展开全部 / 折叠全部按钮 */}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={handleExpandAll}
+                    className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-medium transition-colors"
+                  >
+                    展开全部
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCollapseAll}
+                    className="px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-medium transition-colors"
+                  >
+                    折叠全部
+                  </button>
+                </div>
               </div>
 
-              {/* 搜索框 */}
-              <div className="relative min-w-[220px]">
+              {/* 实时搜索框 */}
+              <div className="relative min-w-[260px]">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="搜索路由路径、服务或描述..."
-                  className="w-full pl-8 pr-3 py-1 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="按路径、模块大类、服务或描述搜索..."
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans"
                 />
               </div>
             </div>
 
-            {/* 详细表格 */}
-            <div className="overflow-x-auto scrollbar-thin rounded-lg border border-slate-200 dark:border-slate-800">
-              <table className="w-full border-collapse text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800 text-[11px]">
-                    <th className="py-2.5 px-3 w-10">#</th>
-                    <th className="py-2.5 px-3 w-28">Type</th>
-                    <th className="py-2.5 px-3 w-28">Service</th>
-                    <th className="py-2.5 px-3">Path / Route</th>
-                    <th className="py-2.5 px-3">Description</th>
-                    <th className="py-2.5 px-3 w-16">Method</th>
-                    <th className="py-2.5 px-3 w-20">Expected</th>
-                    <th className="py-2.5 px-3 w-20">Observed</th>
-                    <th className="py-2.5 px-3 w-28">Latency</th>
-                    <th className="py-2.5 px-3 w-24">Result</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {filteredRoutesAndApis.map((item, idx) => {
-                    const isFrontend = item.type === "frontend";
-                    const isPass = item.result === "PASS";
+            {/* 三级分组树状展示区 */}
+            <div className="space-y-4">
+              {treeData.map((root) => {
+                const isRootExpanded =
+                  searchQuery.trim().length > 0 || expandedRoots[root.type] !== false;
+                const isFrontend = root.type === "frontend";
 
-                    return (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
-                      >
-                        <td className="py-2 px-3 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
-                        <td className="py-2 px-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider inline-flex items-center gap-1 ${
-                              isFrontend
-                                ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40"
-                                : "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40"
-                            }`}
-                          >
-                            {isFrontend ? <Globe className="w-2.5 h-2.5" /> : <Server className="w-2.5 h-2.5" />}
-                            {isFrontend ? "Frontend" : "API"}
-                          </span>
-                        </td>
-                        <td className="py-2 px-3">
-                          <span className="font-medium text-slate-800 dark:text-slate-200">{item.service}</span>
-                          <span className="block text-[10px] text-slate-400 font-mono">{item.serviceDomain}</span>
-                        </td>
-                        <td className="py-2 px-3 font-mono text-slate-900 dark:text-white font-medium">
-                          {item.path}
-                        </td>
-                        <td className="py-2 px-3 text-slate-600 dark:text-slate-300 text-[11px]">
-                          {item.description}
-                        </td>
-                        <td className="py-2 px-3 font-mono text-slate-600 dark:text-slate-400 text-[11px]">
-                          {item.method}
-                        </td>
-                        <td className="py-2 px-3 font-mono text-slate-500 dark:text-slate-400">
-                          {item.expectedHttp}
-                        </td>
-                        <td className="py-2 px-3 font-mono">
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${
-                              item.observedHttp === item.expectedHttp
-                                ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300"
-                                : "bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-300"
-                            }`}
-                          >
-                            {item.observedHttp}
-                          </span>
-                        </td>
-                        <td className="py-2 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">
-                          {item.latencyMs} ms
-                          <span className="text-[10px] text-slate-400 block font-sans">
-                            {item.freshnessSec}s ago
-                          </span>
-                        </td>
-                        <td className="py-2 px-3">
-                          {isPass ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              PASS
-                            </span>
+                const rootBg = isFrontend
+                  ? "bg-blue-50/70 hover:bg-blue-50 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
+                  : "bg-purple-50/70 hover:bg-purple-50 dark:bg-purple-950/20 dark:hover:bg-purple-950/30";
+
+                const rootIconBg = isFrontend
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300"
+                  : "bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300";
+
+                const rootPassBadge =
+                  root.failCount === 0
+                    ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40"
+                    : "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40";
+
+                return (
+                  <div
+                    key={root.type}
+                    className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/40 shadow-xs"
+                  >
+                    {/* 一级节点 (Level 1: 前端 / 后端) */}
+                    <div
+                      onClick={() => toggleRoot(root.type)}
+                      className={"flex flex-wrap items-center justify-between gap-3 p-3 cursor-pointer select-none transition-colors border-b border-slate-200 dark:border-slate-800 " + rootBg}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors"
+                          aria-label={isRootExpanded ? "折叠大类" : "展开大类"}
+                        >
+                          {isRootExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold text-[11px]">
-                              <XCircle className="w-3.5 h-3.5" />
-                              FAIL
-                            </span>
+                            <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </button>
+                        <div
+                          className={"w-7 h-7 rounded-lg flex items-center justify-center " + rootIconBg}
+                        >
+                          {isFrontend ? <Globe className="w-4 h-4" /> : <Server className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>{root.title}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                            {root.enTitle}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium">
+                          {root.categories.length} 个功能大类
+                        </span>
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium font-mono">
+                          {root.totalCount} 项
+                        </span>
+                        <span
+                          className={"text-[11px] px-2 py-0.5 rounded-full font-medium " + rootPassBadge}
+                        >
+                          {root.passCount}/{root.totalCount} PASS
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 二级节点容器 (Level 2: 各功能大类) */}
+                    {isRootExpanded && (
+                      <div className="p-3 space-y-3">
+                        {root.categories.map((cat) => {
+                          const isCatExpanded =
+                            searchQuery.trim().length > 0 || expandedCategories[cat.key] !== false;
+
+                          const catPassBadge =
+                            cat.failCount === 0
+                              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40"
+                              : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40";
+
+                          return (
+                            <div
+                              key={cat.key}
+                              className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-850 shadow-xs"
+                            >
+                              {/* 二级节点标题栏 */}
+                              <div
+                                onClick={() => toggleCategory(cat.key)}
+                                className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-50/70 hover:bg-slate-100/60 dark:bg-slate-800/40 dark:hover:bg-slate-800/70 cursor-pointer select-none transition-colors border-b border-slate-200 dark:border-slate-800/80"
+                              >
+                                <div className="flex items-center gap-2 pl-1">
+                                  <button
+                                    type="button"
+                                    className="p-0.5 rounded text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                  >
+                                    {isCatExpanded ? (
+                                      <ChevronDown className="w-3.5 h-3.5" />
+                                    ) : (
+                                      <ChevronRight className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                  <div className="w-6 h-6 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                    {getCategoryIcon(cat.key)}
+                                  </div>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                                      {cat.name}
+                                    </span>
+                                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                                      {cat.enName}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                                      ({cat.key})
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 pr-1" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
+                                    {cat.totalCount} 项
+                                  </span>
+                                  <span
+                                    className={"text-[11px] px-2 py-0.5 rounded-full font-medium " + catPassBadge}
+                                  >
+                                    {cat.passCount}/{cat.totalCount} PASS
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* 三级节点 (Level 3: 子组件 / 路由与 API 接口条目清单) */}
+                              {isCatExpanded && (
+                                <div className="overflow-x-auto scrollbar-thin">
+                                  <table className="w-full border-collapse text-left text-xs">
+                                    <thead>
+                                      <tr className="bg-slate-50/40 dark:bg-slate-800/20 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800 text-[11px]">
+                                        <th className="py-2 px-3 w-10">#</th>
+                                        <th className="py-2 px-3 w-20">Method</th>
+                                        <th className="py-2 px-3 w-64">Path / Route</th>
+                                        <th className="py-2 px-3 w-28">Service</th>
+                                        <th className="py-2 px-3">Description</th>
+                                        <th className="py-2 px-3 w-20">Expected</th>
+                                        <th className="py-2 px-3 w-20">Observed</th>
+                                        <th className="py-2 px-3 w-28">Latency</th>
+                                        <th className="py-2 px-3 w-24">Result</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                      {cat.items.map((item, idx) => {
+                                        const isPass = item.result === "PASS";
+                                        const methodFirst = item.method.split(",")[0].trim().toUpperCase();
+                                        const isGet = methodFirst === "GET";
+                                        const isPost = methodFirst === "POST";
+                                        const isPut = methodFirst === "PUT";
+                                        const isDelete = methodFirst === "DELETE";
+
+                                        const methodBadgeClass = isGet
+                                          ? "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/40"
+                                          : isPost
+                                          ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40"
+                                          : isPut
+                                          ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40"
+                                          : isDelete
+                                          ? "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/40"
+                                          : "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/40";
+
+                                        const observedBadgeClass =
+                                          item.observedHttp === item.expectedHttp
+                                            ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300"
+                                            : "bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-300";
+
+                                        return (
+                                          <tr
+                                            key={item.id}
+                                            className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors font-mono"
+                                          >
+                                            <td className="py-2 px-3 text-slate-400 text-[11px]">{idx + 1}</td>
+                                            <td className="py-2 px-3">
+                                              <span
+                                                className={"px-1.5 py-0.5 rounded text-[10px] font-bold border tracking-wider " + methodBadgeClass}
+                                              >
+                                                {item.method}
+                                              </span>
+                                            </td>
+                                            <td className="py-2 px-3 font-semibold text-slate-900 dark:text-white text-xs">
+                                              {item.path}
+                                            </td>
+                                            <td className="py-2 px-3 font-sans">
+                                              <span className="font-medium text-slate-800 dark:text-slate-200">
+                                                {item.service}
+                                              </span>
+                                              <span className="block text-[10px] text-slate-400 font-mono">
+                                                {item.serviceDomain}
+                                              </span>
+                                            </td>
+                                            <td className="py-2 px-3 font-sans text-slate-600 dark:text-slate-300 text-[11px]">
+                                              {item.description}
+                                            </td>
+                                            <td className="py-2 px-3 text-slate-500 dark:text-slate-400 text-xs">
+                                              {item.expectedHttp}
+                                            </td>
+                                            <td className="py-2 px-3 text-xs">
+                                              <span
+                                                className={"px-1.5 py-0.5 rounded font-bold " + observedBadgeClass}
+                                              >
+                                                {item.observedHttp}
+                                              </span>
+                                            </td>
+                                            <td className="py-2 px-3 text-[11px] text-slate-600 dark:text-slate-300">
+                                              {item.latencyMs} ms
+                                              <span className="text-[10px] text-slate-400 block font-sans">
+                                                {item.freshnessSec}s ago
+                                              </span>
+                                            </td>
+                                            <td className="py-2 px-3 font-sans">
+                                              {isPass ? (
+                                                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
+                                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                                  PASS
+                                                </span>
+                                              ) : (
+                                                <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold text-[11px]">
+                                                  <XCircle className="w-3.5 h-3.5" />
+                                                  FAIL
+                                                </span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
+
     </div>
   );
 }

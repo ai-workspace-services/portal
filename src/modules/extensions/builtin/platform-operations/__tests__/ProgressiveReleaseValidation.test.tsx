@@ -120,6 +120,9 @@ describe("ProgressiveReleaseValidation Component", () => {
           id: "fe-operations",
           order: 1,
           type: "frontend",
+          categoryKey: "fe-panel",
+          categoryName: "平台运维与控制台",
+          categoryEnName: "Panel & Operations",
           service: "Console",
           serviceDomain: "console.svc.plus",
           path: "/panel/operations",
@@ -135,6 +138,9 @@ describe("ProgressiveReleaseValidation Component", () => {
           id: "fe-agent",
           order: 2,
           type: "frontend",
+          categoryKey: "fe-panel",
+          categoryName: "平台运维与控制台",
+          categoryEnName: "Panel & Operations",
           service: "Console",
           serviceDomain: "console.svc.plus",
           path: "/panel/agent",
@@ -147,17 +153,38 @@ describe("ProgressiveReleaseValidation Component", () => {
           result: "PASS",
         },
         {
-          id: "api-accounts-billing-plans",
-          order: 13,
+          id: "be-billing-plans",
+          order: 3,
           type: "api",
-          service: "Accounts",
-          serviceDomain: "accounts.svc.plus",
+          categoryKey: "be-billing",
+          categoryName: "商业化、计费与订阅",
+          categoryEnName: "Billing, Payments & Subscriptions",
+          service: "Console",
+          serviceDomain: "console.svc.plus",
           path: "/api/billing/plans",
-          description: "Accounts 计费套餐与权益同步网关接口",
+          description: "标准商业化计费方案与规格参数公开展现",
           method: "GET",
           expectedHttp: 200,
           observedHttp: 200,
-          latencyMs: 67,
+          latencyMs: 35,
+          freshnessSec: 8,
+          result: "PASS",
+        },
+        {
+          id: "be-operations-release",
+          order: 4,
+          type: "api",
+          categoryKey: "be-ops",
+          categoryName: "运维监控与发布门禁",
+          categoryEnName: "Operations & Progressive Release",
+          service: "Console",
+          serviceDomain: "console.svc.plus",
+          path: "/api/operations/progressive-release",
+          description: "渐进式发布指标看板与多环境门禁决策 API",
+          method: "GET",
+          expectedHttp: 200,
+          observedHttp: 200,
+          latencyMs: 28,
           freshnessSec: 8,
           result: "PASS",
         },
@@ -221,5 +248,13 @@ describe("ProgressiveReleaseValidation Component", () => {
     expect(screen.getByText(/Full Routing & Microservice APIs Matrix/i)).toBeTruthy();
     expect(screen.getByText(/Frontend \(/i)).toBeTruthy();
     expect(screen.getByText(/Backend APIs \(/i)).toBeTruthy();
+
+    // 验证三级树状分组结构 (Root -> Category -> Route/API Item)
+    expect(screen.getByText(/前端页面路由 \(Frontend Pages & Routes\)/i)).toBeTruthy();
+    expect(screen.getByText(/后端服务与微服务 API \(Backend Services & APIs\)/i)).toBeTruthy();
+    expect(screen.getAllByText(/平台运维与控制台/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/商业化、计费与订阅/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/\/panel\/operations/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/\/api\/operations\/progressive-release/i).length).toBeGreaterThanOrEqual(1);
   });
 });
