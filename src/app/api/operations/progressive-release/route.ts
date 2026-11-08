@@ -19,10 +19,11 @@ export interface EndpointProbeStatus {
 export interface FlaggerReleaseStatus {
   service: "Console" | "Accounts" | "Billing";
   serviceDomain: string;
-  phase: "Progressing" | "Succeeded" | "Failed";
+  phase: "Progressing" | "Succeeded" | "Failed" | "Not configured";
   weight: number | null; // percentage e.g. 20
-  primaryTrafficPct: number;
-  candidateTrafficPct: number;
+  primaryTrafficPct: number | null;
+  candidateTrafficPct: number | null;
+  message?: string;
 }
 
 export interface RouteApiItem {
@@ -198,10 +199,10 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
       serviceDomain: "accounts.svc.plus",
       endpoint: "/api/billing/plans",
       expectedHttp: 200,
-      observedHttp: 200,
-      p95LatencyMs: 67,
+      observedHttp: 503,
+      p95LatencyMs: 1204,
       freshnessSec: 8,
-      result: "PASS",
+      result: "FAIL",
     },
     {
       id: "billing-healthz",
@@ -251,10 +252,10 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
       formattedTimeRange: `Last 15 minutes (${startUtc} – ${endUtc} UTC)`,
     },
     gateStatus: {
-      status: "ALLOWED",
-      failedChecks: 0,
+      status: "BLOCKED",
+      failedChecks: 1,
       totalChecks: 10,
-      summary: "All 10/10 checks passed (Gate Clear)",
+      summary: "1 / 10 checks failed",
     },
     serviceMatrix: {
       services: [
@@ -304,7 +305,7 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
             "Accounts:/healthz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 106 },
             "Accounts:/readyz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 94 },
             "Accounts:/api/ping": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 14 },
-            "Accounts:/api/billing/plans": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 67 },
+            "Accounts:/api/billing/plans": { isRelevant: true, result: "FAIL", httpCode: 503, p95LatencyMs: 1204 },
             "Billing:/healthz": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
             "Billing:/readyz": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
             "Billing:/api/ping": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
@@ -332,26 +333,26 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
       {
         service: "Console",
         serviceDomain: "console.svc.plus",
-        phase: environment === "PROD" ? "Succeeded" : "Progressing",
-        weight: environment === "PROD" ? 0 : 20,
-        primaryTrafficPct: environment === "PROD" ? 100 : 80,
-        candidateTrafficPct: environment === "PROD" ? 0 : 20,
+        phase: "Progressing",
+        weight: 20,
+        primaryTrafficPct: 80,
+        candidateTrafficPct: 20,
       },
       {
         service: "Accounts",
         serviceDomain: "accounts.svc.plus",
-        phase: environment === "PROD" ? "Succeeded" : "Progressing",
-        weight: environment === "PROD" ? 0 : 10,
-        primaryTrafficPct: environment === "PROD" ? 100 : 90,
-        candidateTrafficPct: environment === "PROD" ? 0 : 10,
+        phase: "Progressing",
+        weight: 10,
+        primaryTrafficPct: 90,
+        candidateTrafficPct: 10,
       },
       {
         service: "Billing",
         serviceDomain: "billing.svc.plus",
-        phase: "Succeeded",
-        weight: 0,
-        primaryTrafficPct: 100,
-        candidateTrafficPct: 0,
+        phase: environment === "SIT" ? "Progressing" : "Succeeded",
+        weight: environment === "SIT" ? 10 : 0,
+        primaryTrafficPct: environment === "SIT" ? 90 : 100,
+        candidateTrafficPct: environment === "SIT" ? 10 : 0,
       },
     ],
     endpoints,
@@ -376,9 +377,13 @@ async function queryVictoriaMetrics(query: string, timeoutMs = 4000) {
     process.env.OBSERVABILITY_URL ||
     process.env.NEXT_PUBLIC_OBSERVABILITY_URL ||
     "https://observability.svc.plus";
-  const authUser = process.env.OBSERVABILITY_AUTH_USER || "observability";
+  const authUser =
+    process.env.OBSERVABILITY_AUTH_USER ||
+    process.env.OBSERVABILITY_AUTH_USERNAME ||
+    "observability";
   const authPass =
     process.env.OBSERVABILITY_AUTH_PASSWORD ||
+    process.env.OBSERVABILITY_AUTH_PASS ||
     "Bearer uTvryFvAbz6M5sRtmTaSTQY6otLZ95hneBsWqXu+35I=";
 
   const headers: Record<string, string> = {
@@ -550,8 +555,12 @@ export async function GET(req: NextRequest) {
       for (const item of flaggerStatusResults) {
         const name = (item?.metric?.name || "").replace("web-saas-", "").toLowerCase();
         const code = Number(item?.value?.[1]);
+        // Flagger Prometheus flagger_canary_status 指标规范：
+        // 0: Initializing / Progressing (金丝雀分析推进中)
+        // 1: Initialized / Succeeded (发布成功已晋升 / 稳定态)
+        // 2: Failed (分析失败)
         const phase: "Progressing" | "Succeeded" | "Failed" =
-          code === 2 ? "Progressing" : code === 3 ? "Failed" : "Succeeded";
+          code === 0 ? "Progressing" : code === 2 ? "Failed" : "Succeeded";
         flaggerMap.set(name, { phase, weight: 0 });
       }
     }
@@ -561,8 +570,9 @@ export async function GET(req: NextRequest) {
         const workload = (item?.metric?.workload || "").replace("web-saas-", "").toLowerCase();
         const val = Number(item?.value?.[1]);
         if (!isNaN(val) && !workload.includes("-primary")) {
-          const prev = flaggerMap.get(workload) || { phase: "Succeeded", weight: 0 };
-          flaggerMap.set(workload, { ...prev, weight: val });
+          const prev = flaggerMap.get(workload) || { phase: val > 0 ? "Progressing" : "Succeeded", weight: 0 };
+          const phase = val > 0 ? "Progressing" : prev.phase;
+          flaggerMap.set(workload, { ...prev, phase, weight: val });
         }
       }
     }
@@ -574,11 +584,10 @@ export async function GET(req: NextRequest) {
       if (info) {
         let weight = info.weight;
         let phase = info.phase;
-        // SIT 环境中如果处于 Progressing 且权重未被调整，默认遵循当前渐进权重
-        if (phase === "Progressing" && weight === 0) {
-          weight = svcName === "Console" ? 20 : 10;
+        if (weight > 0) {
+          phase = "Progressing";
         }
-        const candidateTrafficPct = phase === "Succeeded" ? 0 : weight;
+        const candidateTrafficPct = phase === "Progressing" ? weight : 0;
         const primaryTrafficPct = 100 - candidateTrafficPct;
         return {
           service: svcName,
@@ -589,8 +598,22 @@ export async function GET(req: NextRequest) {
           candidateTrafficPct,
         };
       }
+
+      // 如果未配置金丝雀
+      if (svcName === "Billing") {
+        return {
+          service: "Billing",
+          serviceDomain: domain,
+          phase: "Not configured",
+          weight: null,
+          primaryTrafficPct: null,
+          candidateTrafficPct: null,
+          message: "No canary configured for this service",
+        };
+      }
+
       // 默认平滑降级（PROD Succeeded, SIT Progressing）
-      const isSucceeded = envParam === "PROD" || svcName === "Billing";
+      const isSucceeded = envParam === "PROD";
       const candPct = isSucceeded ? 0 : svcName === "Console" ? 20 : 10;
       return {
         service: svcName,
