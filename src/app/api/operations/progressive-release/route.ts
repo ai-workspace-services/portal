@@ -626,19 +626,6 @@ export async function GET(req: NextRequest) {
         };
       }
 
-      // 如果未配置金丝雀
-      if (svcName === "Billing") {
-        return {
-          service: "Billing",
-          serviceDomain: domain,
-          phase: "Not configured",
-          weight: null,
-          primaryTrafficPct: null,
-          candidateTrafficPct: null,
-          message: "No canary configured for this service",
-        };
-      }
-
       // 默认平滑降级（PROD Succeeded, SIT Progressing）
       const isSucceeded = envParam === "PROD";
       const candPct = isSucceeded ? 0 : svcName === "Console" ? 20 : 10;
