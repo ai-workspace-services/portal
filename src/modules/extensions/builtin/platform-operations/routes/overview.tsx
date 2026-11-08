@@ -11,31 +11,31 @@ export default function PlatformOperationsOverviewRoute() {
   return (
     <div className="w-full space-y-4">
       {/* 顶部视图切换导航 Tab */}
-      <div className="flex items-center justify-between border-b border-[#20273a] pb-2">
+      <div className="flex items-center justify-between border-b border-[color:var(--color-surface-border)] pb-2">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setActiveTab("validation")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === "validation"
-                ? "bg-[#1e2538] text-white border border-[#2e3a57] shadow-sm"
-                : "text-[#94a3b8] hover:text-white hover:bg-[#141824]"
+                ? "bg-[var(--color-surface)] text-[var(--color-text)] border border-[color:var(--color-surface-border)] shadow-[var(--shadow-sm)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-[#3b82f6]" />
+            <Activity className="w-3.5 h-3.5 text-[var(--color-primary)]" />
             <span>Progressive Release Validation</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("snapshots")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === "snapshots"
-                ? "bg-[#1e2538] text-white border border-[#2e3a57] shadow-sm"
-                : "text-[#94a3b8] hover:text-white hover:bg-[#141824]"
+                ? "bg-[var(--color-surface)] text-[var(--color-text)] border border-[color:var(--color-surface-border)] shadow-[var(--shadow-sm)]"
+                : "text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-[#94a3b8]" />
+            <Layers className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
             <span>Snapshot Operations & Plans</span>
           </button>
         </div>

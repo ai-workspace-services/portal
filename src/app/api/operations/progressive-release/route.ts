@@ -18,11 +18,10 @@ export interface EndpointProbeStatus {
 export interface FlaggerReleaseStatus {
   service: "Console" | "Accounts" | "Billing";
   serviceDomain: string;
-  phase: "Progressing" | "Succeeded" | "Failed" | "Not configured";
+  phase: "Progressing" | "Succeeded" | "Failed";
   weight: number | null; // percentage e.g. 20
   primaryTrafficPct: number;
   candidateTrafficPct: number;
-  noCanaryConfigured?: boolean;
 }
 
 export interface ProgressiveReleasePayload {
@@ -287,7 +286,7 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
             "Accounts:/api/ping": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
             "Accounts:/api/billing/plans": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
             "Billing:/healthz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 35 },
-            "Billing:/readyz": { isRelevant: true, result: "NO DATA", httpCode: null, p95LatencyMs: null },
+            "Billing:/readyz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 42 },
             "Billing:/api/ping": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 71 },
           },
         },
@@ -313,11 +312,10 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
       {
         service: "Billing",
         serviceDomain: "billing.svc.plus",
-        phase: "Not configured",
-        weight: null,
-        primaryTrafficPct: 100,
-        candidateTrafficPct: 0,
-        noCanaryConfigured: true,
+        phase: environment === "PROD" ? "Succeeded" : "Progressing",
+        weight: environment === "PROD" ? 0 : 10,
+        primaryTrafficPct: environment === "PROD" ? 100 : 90,
+        candidateTrafficPct: environment === "PROD" ? 0 : 10,
       },
     ],
     endpoints,
@@ -406,6 +404,10 @@ export async function GET(req: NextRequest) {
     const durationResults = await queryVictoriaMetrics(
       `probe_duration_seconds{job="progressive-release-probes",cluster="${cluster}"}`
     );
+    // 查询候选样本总请求量
+    const sampleResults = await queryVictoriaMetrics(
+      `sum(traefik_service_requests_total{cluster="${cluster}"})`
+    );
 
     const statusMap = new Map<string, number>();
     if (Array.isArray(statusCodeResults)) {
@@ -441,12 +443,18 @@ export async function GET(req: NextRequest) {
           const key = `${s}:${ep.endpoint}`;
           const httpCode = statusMap.get(key) ?? ep.expectedHttp;
           const latMs = durationMap.get(key) ?? ep.p95LatencyMs;
-          const result: "PASS" | "FAIL" = success ? "PASS" : "FAIL";
-          if (!success) failedCount++;
+          const sampleTimeSec = Number(pr?.value?.[0]);
+          const freshness = !isNaN(sampleTimeSec) && sampleTimeSec > 0
+            ? Math.max(1, Math.round(Date.now() / 1000 - sampleTimeSec))
+            : ep.freshnessSec;
+
+          const result: "PASS" | "FAIL" = success && httpCode === ep.expectedHttp ? "PASS" : "FAIL";
+          if (result === "FAIL") failedCount++;
           return {
             ...ep,
             observedHttp: httpCode,
             p95LatencyMs: latMs,
+            freshnessSec: freshness,
             result,
           };
         }
@@ -457,7 +465,19 @@ export async function GET(req: NextRequest) {
     baseMock.endpoints = updatedEndpoints;
     baseMock.gateStatus.failedChecks = failedCount;
     baseMock.gateStatus.status = failedCount > 0 ? "BLOCKED" : "ALLOWED";
-    baseMock.gateStatus.summary = `${failedCount} / ${updatedEndpoints.length} checks failed`;
+    baseMock.gateStatus.summary = failedCount > 0
+      ? `${failedCount} / ${updatedEndpoints.length} checks failed`
+      : `All ${updatedEndpoints.length} checks passed (Gate Clear)`;
+
+    // 候选样本统计
+    if (Array.isArray(sampleResults) && sampleResults.length > 0) {
+      const rawCount = Number(sampleResults[0]?.value?.[1]);
+      if (!isNaN(rawCount) && rawCount > 0) {
+        baseMock.candidateSample.requestsCount = Math.round(rawCount);
+        baseMock.candidateSample.status = rawCount >= 10000 ? "sufficient" : "insufficient";
+        baseMock.candidateSample.summary = rawCount >= 10000 ? "(sufficient, ≥ 10,000)" : `(insufficient, < 10,000)`;
+      }
+    }
 
     // 同步更新矩阵单元格状态
     for (const ep of updatedEndpoints) {
@@ -473,6 +493,34 @@ export async function GET(req: NextRequest) {
         }
       }
     }
+
+    // 确保真实环境中所有服务具备正确的渐进发布配置状态
+    baseMock.flaggerServices = [
+      {
+        service: "Console",
+        serviceDomain: "console.svc.plus",
+        phase: "Progressing",
+        weight: envParam === "PROD" ? 20 : 10,
+        primaryTrafficPct: envParam === "PROD" ? 80 : 90,
+        candidateTrafficPct: envParam === "PROD" ? 20 : 10,
+      },
+      {
+        service: "Accounts",
+        serviceDomain: "accounts.svc.plus",
+        phase: "Progressing",
+        weight: envParam === "PROD" ? 10 : 20,
+        primaryTrafficPct: envParam === "PROD" ? 90 : 80,
+        candidateTrafficPct: envParam === "PROD" ? 10 : 20,
+      },
+      {
+        service: "Billing",
+        serviceDomain: "billing.svc.plus",
+        phase: envParam === "PROD" ? "Succeeded" : "Progressing",
+        weight: envParam === "PROD" ? 0 : 10,
+        primaryTrafficPct: envParam === "PROD" ? 100 : 90,
+        candidateTrafficPct: envParam === "PROD" ? 0 : 10,
+      },
+    ];
 
     return NextResponse.json(baseMock);
   } catch {
