@@ -171,9 +171,9 @@ export default function AgentInventory({
     }));
 
   const allAgents = [...inventoryAgents, ...teamAgents];
-  const customNodeIds = allAgents
-    .filter((a) => a.resourceClass === "custom")
-    .map((a) => a.nodeId || a.id);
+  const customNodeIds = inventoryAgents.flatMap((agent) =>
+    agent.resourceClass === "custom" && agent.nodeId ? [agent.nodeId] : [],
+  );
 
   const agents = allAgents.filter(
     (agent) => filter === "all" || agent.resourceClass === filter,
@@ -358,11 +358,11 @@ export default function AgentInventory({
                     {date(agent.lastSync)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
-                    {agent.resourceClass === "custom" ? (
+                    {agent.resourceClass === "custom" && agent.nodeId ? (
                       <button
                         type="button"
                         onClick={() => {
-                          setSelectedCustomNodeId(agent.nodeId || agent.id);
+                          setSelectedCustomNodeId(agent.nodeId);
                           setIsGrantsModalOpen(true);
                         }}
                         className="rounded border border-amber-500/40 px-2 py-1 text-xs text-amber-600 transition hover:bg-amber-500/10 dark:text-amber-400"
@@ -396,14 +396,15 @@ export default function AgentInventory({
         </div>
       )}
 
-      <AgentFreeGrantsModal
-        isOpen={isGrantsModalOpen}
-        onClose={() => setIsGrantsModalOpen(false)}
-        initialNodeId={selectedCustomNodeId}
-        customNodeIds={customNodeIds}
-        canManage={canManage}
-        language={language}
-      />
+      {isGrantsModalOpen && (
+        <AgentFreeGrantsModal
+          onClose={() => setIsGrantsModalOpen(false)}
+          initialNodeId={selectedCustomNodeId}
+          customNodeIds={customNodeIds}
+          canManage={canManage}
+          language={language}
+        />
+      )}
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { afterEach, expect, it, vi } from "vitest";
 
@@ -132,10 +132,11 @@ it("denies access to ordinary users on /panel/agent", () => {
   ).toBeNull();
 });
 
-it("enables centralized Free grant management for administrators", async () => {
+it("submits Accounts-compatible durations when administrators issue or renew Free grants", async () => {
   mocks.user = { id: "admin-account", isAdmin: true, role: "admin" };
   mocks.fetchPools.mockResolvedValueOnce([]);
-  const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo) => {
+  const submissions = vi.fn();
+  const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo, init?: RequestInit) => {
     const url = String(input);
     if (url.includes("/agents/inventory")) {
       return {
@@ -143,8 +144,14 @@ it("enables centralized Free grant management for administrators", async () => {
         json: async () => ({
           agents: [
             {
-              id: "custom-jp-node",
+              id: "custom-jp-agent",
+              nodeId: "custom-jp-node",
               name: "Custom JP Node",
+              resourceClass: "custom",
+              status: "healthy",
+            },
+            {
+              id: "unbound-custom-agent",
               resourceClass: "custom",
               status: "healthy",
             },
@@ -153,6 +160,10 @@ it("enables centralized Free grant management for administrators", async () => {
       };
     }
     if (url.includes("/agents/grants")) {
+      if (init?.method === "POST") {
+        submissions(JSON.parse(String(init.body)));
+        return { ok: true, json: async () => ({ success: true }) };
+      }
       return {
         ok: true,
         json: async () => ({
@@ -162,7 +173,7 @@ it("enables centralized Free grant management for administrators", async () => {
               email: "member@example.com",
               status: "active",
               state: "active",
-              expiresAt: "2026-11-14T00:00:00Z",
+              expiresAt: "2026-11-11T00:00:00Z",
               createdAt: "2026-11-07T00:00:00Z",
               reason: "Approved partnership",
             },
@@ -194,5 +205,47 @@ it("enables centralized Free grant management for administrators", async () => {
     }),
   ).toBeTruthy();
   expect(await screen.findByText("member@example.com")).toBeTruthy();
-  expect(screen.getByRole("button", { name: "确认发放" })).toBeTruthy();
+
+  const duration = screen.getByRole<HTMLSelectElement>("combobox", {
+    name: "有效期限",
+  });
+  expect(Array.from(duration.options, (option) => option.value)).toEqual([
+    "1", "2", "3", "4", "5",
+  ]);
+  expect(duration).toHaveValue("3");
+
+  const form = within(screen.getByRole("dialog"));
+  const nodeSelect = form.getByRole("combobox", { name: "目标节点 ID" });
+  expect(nodeSelect).toHaveValue("custom-jp-node");
+  expect(within(nodeSelect).getAllByRole("option")).toHaveLength(1);
+  fireEvent.change(form.getByRole("textbox", { name: "目标用户" }), {
+    target: { value: "new-member@example.com" },
+  });
+  fireEvent.change(form.getByRole("textbox", { name: "申请 / 审计原因" }), {
+    target: { value: "Initial access" },
+  });
+  fireEvent.click(form.getByRole("button", { name: "确认发放" }));
+  expect(submissions).toHaveBeenNthCalledWith(1, {
+    nodeId: "custom-jp-node",
+    email: "new-member@example.com",
+    expiresInDays: 3,
+    reason: "Initial access",
+  });
+
+  await waitFor(() => expect(form.getByRole("textbox", { name: "目标用户" })).toHaveValue(""));
+  fireEvent.change(duration, { target: { value: "5" } });
+  fireEvent.change(form.getByRole("textbox", { name: "目标用户" }), {
+    target: { value: "member@example.com" },
+  });
+  fireEvent.change(form.getByRole("textbox", { name: "申请 / 审计原因" }), {
+    target: { value: "Renew access" },
+  });
+  fireEvent.click(form.getByRole("button", { name: "确认发放" }));
+  expect(submissions).toHaveBeenNthCalledWith(2, {
+    nodeId: "custom-jp-node",
+    email: "member@example.com",
+    expiresInDays: 5,
+    reason: "Renew access",
+  });
+  await waitFor(() => expect(duration).toHaveValue("3"));
 });

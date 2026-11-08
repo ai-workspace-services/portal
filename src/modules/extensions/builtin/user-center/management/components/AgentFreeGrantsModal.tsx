@@ -9,6 +9,9 @@ import {
   type AgentFreeGrant,
 } from "../../lib/agentFreeGrants";
 
+const GRANT_DURATION_DAYS = [1, 2, 3, 4, 5];
+const DEFAULT_GRANT_DURATION_DAYS = 3;
+
 const copy = {
   zh: {
     modalTitle: "Custom 节点临时 Free 白名单管理",
@@ -18,13 +21,11 @@ const copy = {
       "当前为只读模式（Operator 权限）。仅系统管理员与 Root 可发放或撤销白名单。",
     issueSectionTitle: "发放临时 Free 白名单",
     nodeId: "目标节点 ID",
-    nodeIdPlaceholder: "例如 custom-jp-01",
+    selectNode: "请选择已绑定的 Custom 节点",
+    noBoundNodes: "当前没有已绑定的 Custom 节点可供发放或续期。",
     targetUser: "目标用户",
     targetUserPlaceholder: "输入用户邮箱或账号 ID",
     expiresInDays: "有效期限",
-    days7: "7 天",
-    days14: "14 天",
-    days30: "30 天",
     reason: "申请 / 审计原因",
     reasonPlaceholder: "请输入审批或发放原因（必填）",
     submit: "确认发放",
@@ -61,13 +62,11 @@ const copy = {
       "Read-only mode (Operator permission). Only Root and Administrators can issue or revoke grants.",
     issueSectionTitle: "Issue Temporary Free Grant",
     nodeId: "Target Node ID",
-    nodeIdPlaceholder: "e.g. custom-jp-01",
+    selectNode: "Select a bound Custom node",
+    noBoundNodes: "No bound Custom nodes are available for issuing or renewing grants.",
     targetUser: "Target User",
     targetUserPlaceholder: "Enter user email or account ID",
     expiresInDays: "Validity Period",
-    days7: "7 Days",
-    days14: "14 Days",
-    days30: "30 Days",
     reason: "Audit Reason",
     reasonPlaceholder: "Reason for issuing grant (required)",
     submit: "Issue Grant",
@@ -99,14 +98,12 @@ const copy = {
 };
 
 export default function AgentFreeGrantsModal({
-  isOpen,
   onClose,
   initialNodeId,
   customNodeIds = [],
   canManage,
   language = "zh",
 }: {
-  isOpen: boolean;
   onClose: () => void;
   initialNodeId?: string;
   customNodeIds?: string[];
@@ -116,30 +113,34 @@ export default function AgentFreeGrantsModal({
   const t = language === "zh" ? copy.zh : copy.en;
   const [nodeId, setNodeId] = useState(initialNodeId || (customNodeIds[0] ?? ""));
   const [targetUser, setTargetUser] = useState("");
-  const [expiresInDays, setExpiresInDays] = useState(7);
+  const [expiresInDays, setExpiresInDays] = useState(DEFAULT_GRANT_DURATION_DAYS);
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   const { data, error, isLoading, mutate } = useSWR(
-    isOpen ? ["admin-agent-free-grants"] : null,
+    ["admin-agent-free-grants"],
     () => fetchAgentFreeGrants(),
     { refreshInterval: 15_000 },
   );
 
-  if (!isOpen) return null;
-
   const grants = data?.grants ?? [];
+  const nodeIsAvailable = customNodeIds.includes(nodeId);
   const formatter = new Intl.DateTimeFormat(language, {
     dateStyle: "medium",
     timeStyle: "short",
+  });
+  const durationFormatter = new Intl.NumberFormat(language, {
+    style: "unit",
+    unit: "day",
+    unitDisplay: "long",
   });
   const formatDate = (val?: string) => (val ? formatter.format(new Date(val)) : "—");
 
   async function handleIssue(e: React.FormEvent) {
     e.preventDefault();
-    if (!canManage || !nodeId.trim() || !targetUser.trim() || !reason.trim()) {
+    if (!canManage || !nodeIsAvailable || !targetUser.trim() || !reason.trim()) {
       return;
     }
     setIsSubmitting(true);
@@ -156,6 +157,7 @@ export default function AgentFreeGrantsModal({
       });
       setActionSuccess(language === "zh" ? "白名单发放成功" : "Grant issued successfully");
       setTargetUser("");
+      setExpiresInDays(DEFAULT_GRANT_DURATION_DAYS);
       setReason("");
       await mutate();
     } catch (err) {
@@ -241,7 +243,12 @@ export default function AgentFreeGrantsModal({
         )}
 
         {/* Issue grant form */}
-        {canManage && (
+        {canManage && customNodeIds.length === 0 && (
+          <p className="mt-5 text-sm text-[var(--color-text-muted)]">
+            {t.noBoundNodes}
+          </p>
+        )}
+        {canManage && customNodeIds.length > 0 && (
           <form
             onSubmit={handleIssue}
             className="mt-5 space-y-4 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface-hover)]/40 p-4"
@@ -254,30 +261,22 @@ export default function AgentFreeGrantsModal({
                 <label className="block text-xs font-medium text-[var(--color-text-muted)]">
                   {t.nodeId}
                 </label>
-                {customNodeIds.length > 0 ? (
-                  <select
-                    value={nodeId}
-                    onChange={(e) => setNodeId(e.target.value)}
-                    aria-label={t.nodeId}
-                    className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm"
-                  >
-                    {customNodeIds.map((id) => (
-                      <option key={id} value={id}>
-                        {id}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={nodeId}
-                    onChange={(e) => setNodeId(e.target.value)}
-                    placeholder={t.nodeIdPlaceholder}
-                    aria-label={t.nodeId}
-                    required
-                    className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm"
-                  />
-                )}
+                <select
+                  value={nodeIsAvailable ? nodeId : ""}
+                  onChange={(e) => setNodeId(e.target.value)}
+                  aria-label={t.nodeId}
+                  required
+                  className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm"
+                >
+                  <option value="" disabled hidden>
+                    {t.selectNode}
+                  </option>
+                  {customNodeIds.map((id) => (
+                    <option key={id} value={id}>
+                      {id}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--color-text-muted)]">
@@ -303,9 +302,11 @@ export default function AgentFreeGrantsModal({
                   aria-label={t.expiresInDays}
                   className="mt-1 w-full rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm"
                 >
-                  <option value={7}>{t.days7}</option>
-                  <option value={14}>{t.days14}</option>
-                  <option value={30}>{t.days30}</option>
+                  {GRANT_DURATION_DAYS.map((days) => (
+                    <option key={days} value={days}>
+                      {durationFormatter.format(days)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -326,7 +327,7 @@ export default function AgentFreeGrantsModal({
             <div className="flex justify-end">
               <button
                 type="submit"
-                disabled={isSubmitting || !nodeId.trim() || !targetUser.trim() || !reason.trim()}
+                disabled={isSubmitting || !nodeIsAvailable || !targetUser.trim() || !reason.trim()}
                 className="rounded-md bg-[var(--color-primary)] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
                 {isSubmitting ? t.submitting : t.submit}

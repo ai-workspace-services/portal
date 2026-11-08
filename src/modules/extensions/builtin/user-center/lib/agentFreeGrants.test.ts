@@ -63,7 +63,7 @@ describe("agentFreeGrants API client", () => {
     const res = await upsertAgentFreeGrant({
       nodeId: "custom-jp-01",
       email: "test@example.com",
-      expiresInDays: 7,
+      expiresInDays: 5,
       reason: "Audit approve",
     });
     expect(res.success).toBe(true);
@@ -75,7 +75,7 @@ describe("agentFreeGrants API client", () => {
         body: JSON.stringify({
           nodeId: "custom-jp-01",
           email: "test@example.com",
-          expiresInDays: 7,
+          expiresInDays: 5,
           reason: "Audit approve",
         }),
       }),
