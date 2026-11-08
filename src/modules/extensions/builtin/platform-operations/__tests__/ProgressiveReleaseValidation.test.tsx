@@ -115,6 +115,53 @@ describe("ProgressiveReleaseValidation Component", () => {
           result: "PASS",
         },
       ],
+      allRoutesAndApis: [
+        {
+          id: "fe-operations",
+          order: 1,
+          type: "frontend",
+          service: "Console",
+          serviceDomain: "console.svc.plus",
+          path: "/panel/operations",
+          description: "平台运维中心与渐进发布门禁验证看板",
+          method: "GET",
+          expectedHttp: 200,
+          observedHttp: 200,
+          latencyMs: 38,
+          freshnessSec: 8,
+          result: "PASS",
+        },
+        {
+          id: "fe-agent",
+          order: 2,
+          type: "frontend",
+          service: "Console",
+          serviceDomain: "console.svc.plus",
+          path: "/panel/agent",
+          description: "智能体应用编排、会话拓扑与纳管配置",
+          method: "GET",
+          expectedHttp: 307,
+          observedHttp: 307,
+          latencyMs: 14,
+          freshnessSec: 8,
+          result: "PASS",
+        },
+        {
+          id: "api-accounts-billing-plans",
+          order: 13,
+          type: "api",
+          service: "Accounts",
+          serviceDomain: "accounts.svc.plus",
+          path: "/api/billing/plans",
+          description: "Accounts 计费套餐与权益同步网关接口",
+          method: "GET",
+          expectedHttp: 200,
+          observedHttp: 200,
+          latencyMs: 67,
+          freshnessSec: 8,
+          result: "PASS",
+        },
+      ],
       candidateSample: {
         requestsCount: 34862,
         summary: "(sufficient, ≥ 10,000)",
@@ -166,5 +213,13 @@ describe("ProgressiveReleaseValidation Component", () => {
     // 验证底部 Callout
     expect(screen.getByText(/Gate rule:/i)).toBeTruthy();
     expect(screen.getByText(/34,862 requests/i)).toBeTruthy();
+
+    // 验证底部可折叠表格：全量前端路由与后端 API 清单
+    expect(
+      screen.getByText(/Web Console 前端全量路由与后端服务 API 接口清单/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/Full Routing & Microservice APIs Matrix/i)).toBeTruthy();
+    expect(screen.getByText(/Frontend \(/i)).toBeTruthy();
+    expect(screen.getByText(/Backend APIs \(/i)).toBeTruthy();
   });
 });
