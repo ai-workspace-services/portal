@@ -417,13 +417,40 @@ async function queryVictoriaMetrics(query: string, timeoutMs = 4000) {
   }
 }
 
+function getCorsHeaders(req: NextRequest): Record<string, string> {
+  const origin = req.headers.get("origin") || "";
+  const isAllowed =
+    origin.endsWith(".svc.plus") ||
+    origin === "http://localhost:3000" ||
+    origin === "https://console.svc.plus" ||
+    origin === "https://observability.svc.plus";
+  if (isAllowed) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-Account-Session",
+      "Access-Control-Allow-Credentials": "true",
+    };
+  }
+  return {};
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: getCorsHeaders(req),
+  });
+}
+
 export async function GET(req: NextRequest) {
+  const corsHeaders = getCorsHeaders(req);
   const searchParams = req.nextUrl.searchParams;
-  const envParam = (searchParams.get("environment") || "PROD").toUpperCase() as "PROD" | "SIT";
+  const rawEnv = (searchParams.get("environment") || "PROD").toUpperCase();
+  const envParam: "PROD" | "SIT" = rawEnv.includes("SIT") ? "SIT" : "PROD";
   const forceMock = searchParams.get("mock") === "true";
 
   if (forceMock) {
-    return NextResponse.json(getMockPayload(envParam));
+    return NextResponse.json(getMockPayload(envParam), { headers: corsHeaders });
   }
 
   try {
@@ -437,7 +464,7 @@ export async function GET(req: NextRequest) {
     // 如果无法获取上游真实数据，优雅降级返回样本数据
     if (!probeResults || !Array.isArray(probeResults) || probeResults.length === 0) {
       const mockPayload = getMockPayload(envParam);
-      return NextResponse.json(mockPayload);
+      return NextResponse.json(mockPayload, { headers: corsHeaders });
     }
 
     // 2. 实时查询 HTTP 状态码与实测延迟
@@ -650,8 +677,8 @@ export async function GET(req: NextRequest) {
     }
     basePayload.allRoutesAndApis = routesAndApis;
 
-    return NextResponse.json(basePayload);
+    return NextResponse.json(basePayload, { headers: corsHeaders });
   } catch {
-    return NextResponse.json(getMockPayload(envParam));
+    return NextResponse.json(getMockPayload(envParam), { headers: corsHeaders });
   }
 }

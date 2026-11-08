@@ -1,9 +1,28 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { GET } from "./route";
+import { GET, OPTIONS } from "./route";
 
 describe("Progressive Release API Route", () => {
+  it("handles OPTIONS request and returns appropriate CORS headers for observability.svc.plus", async () => {
+    const req = new NextRequest("http://localhost:3000/api/operations/progressive-release", {
+      method: "OPTIONS",
+      headers: { Origin: "https://observability.svc.plus" },
+    });
+    const res = await OPTIONS(req);
+    expect(res.status).toBe(204);
+    expect(res.headers.get("access-control-allow-origin")).toBe("https://observability.svc.plus");
+    expect(res.headers.get("access-control-allow-methods")).toContain("GET");
+  });
+
+  it("returns CORS headers on GET request when Origin is present", async () => {
+    const req = new NextRequest("http://localhost:3000/api/operations/progressive-release?mock=true&environment=PROD", {
+      headers: { Origin: "https://observability.svc.plus" },
+    });
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("access-control-allow-origin")).toBe("https://observability.svc.plus");
+  });
   it("returns sample mock data when mock parameter is set to true", async () => {
     const req = new NextRequest("http://localhost:3000/api/operations/progressive-release?mock=true&environment=PROD");
     const res = await GET(req);
