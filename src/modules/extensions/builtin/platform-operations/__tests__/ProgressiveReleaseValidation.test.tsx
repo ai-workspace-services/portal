@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 describe("ProgressiveReleaseValidation Component", () => {
-  it("renders the dashboard title, KPI cards, and service matrix", async () => {
+  it("renders the dashboard title, KPI cards, service matrix, and complete Billing canary status", async () => {
     // Mock fetch for the API
     const mockPayload = {
       environment: "PROD",
@@ -24,6 +24,36 @@ describe("ProgressiveReleaseValidation Component", () => {
         totalChecks: 10,
         summary: "1 / 10 checks failed",
       },
+      serviceMatrix: {
+        services: [
+          { name: "Console", domain: "console.svc.plus", color: "#283457", endpoints: ["/healthz", "/login", "/panel/agent"] },
+          { name: "Accounts", domain: "accounts.svc.plus", color: "#302d54", endpoints: ["/healthz", "/readyz", "/api/ping", "/api/billing/plans"] },
+          { name: "Billing", domain: "billing.svc.plus", color: "#4a3c22", endpoints: ["/healthz", "/readyz", "/api/ping"] },
+        ],
+        rows: [
+          {
+            service: "Console",
+            domain: "console.svc.plus",
+            cells: {
+              "Console:/healthz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 38 },
+            },
+          },
+          {
+            service: "Accounts",
+            domain: "accounts.svc.plus",
+            cells: {
+              "Accounts:/api/billing/plans": { isRelevant: true, result: "FAIL", httpCode: 503, p95LatencyMs: 1204 },
+            },
+          },
+          {
+            service: "Billing",
+            domain: "billing.svc.plus",
+            cells: {
+              "Billing:/healthz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 35 },
+            },
+          },
+        ],
+      },
       flaggerServices: [
         {
           service: "Console",
@@ -32,6 +62,22 @@ describe("ProgressiveReleaseValidation Component", () => {
           weight: 20,
           primaryTrafficPct: 80,
           candidateTrafficPct: 20,
+        },
+        {
+          service: "Accounts",
+          serviceDomain: "accounts.svc.plus",
+          phase: "Progressing",
+          weight: 10,
+          primaryTrafficPct: 90,
+          candidateTrafficPct: 10,
+        },
+        {
+          service: "Billing",
+          serviceDomain: "billing.svc.plus",
+          phase: "Succeeded",
+          weight: 0,
+          primaryTrafficPct: 100,
+          candidateTrafficPct: 0,
         },
       ],
       endpoints: [
@@ -56,6 +102,17 @@ describe("ProgressiveReleaseValidation Component", () => {
           p95LatencyMs: 1207,
           freshnessSec: 10,
           result: "FAIL",
+        },
+        {
+          id: "billing-healthz",
+          order: 8,
+          service: "Billing",
+          endpoint: "/healthz",
+          expectedHttp: 200,
+          observedHttp: 200,
+          p95LatencyMs: 63,
+          freshnessSec: 9,
+          result: "PASS",
         },
       ],
       candidateSample: {
@@ -92,9 +149,14 @@ describe("ProgressiveReleaseValidation Component", () => {
     // 验证 Service 矩阵表头
     expect(screen.getByText("Service × Endpoint Status")).toBeTruthy();
 
-    // 验证 Flagger 进度卡
+    // 验证 Flagger 进度卡包含所有 3 项服务（包括 Billing 的 Succeeded 状态与双色流量比例）
     expect(screen.getByText("Flagger (Progressive Release)")).toBeTruthy();
     expect(screen.getByText("Primary 80% | Candidate 20%")).toBeTruthy();
+    expect(screen.getByText("Primary 100% | Candidate 0%")).toBeTruthy();
+    expect(screen.getByText("Succeeded")).toBeTruthy();
+    // 确保不再存在 "Not configured"
+    expect(screen.queryByText("Not configured")).toBeNull();
+    expect(screen.queryByText("No canary configured for this service")).toBeNull();
 
     // 验证 10 项端点详情表
     const billingEndpoints = screen.getAllByText("/api/billing/plans");

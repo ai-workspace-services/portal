@@ -24,7 +24,7 @@ describe("Progressive Release API Route", () => {
     expect(failedEndpoint.observedHttp).toBe(503);
     expect(failedEndpoint.result).toBe("FAIL");
 
-    // 检查 Flagger Traffic 分布
+    // 检查 Flagger Traffic 分布 (Console)
     const consoleFlagger = data.flaggerServices.find(
       (f: { service: string }) => f.service === "Console"
     );
@@ -32,12 +32,22 @@ describe("Progressive Release API Route", () => {
     expect(consoleFlagger.primaryTrafficPct).toBe(80);
     expect(consoleFlagger.candidateTrafficPct).toBe(20);
 
+    // 检查 Billing 是否具备完整渐进发布配置（杜绝 Not configured）
+    const billingFlagger = data.flaggerServices.find(
+      (f: { service: string }) => f.service === "Billing"
+    );
+    expect(billingFlagger).toBeDefined();
+    expect(billingFlagger.phase).toBe("Succeeded");
+    expect(billingFlagger.weight).toBe(0);
+    expect(billingFlagger.primaryTrafficPct).toBe(100);
+    expect(billingFlagger.candidateTrafficPct).toBe(0);
+
     // 检查样本统计
     expect(data.candidateSample.requestsCount).toBe(34862);
     expect(data.candidateSample.status).toBe("sufficient");
   });
 
-  it("supports SIT environment parameter", async () => {
+  it("supports SIT environment parameter with active canary billing", async () => {
     const req = new NextRequest("http://localhost:3000/api/operations/progressive-release?mock=true&environment=SIT");
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -45,5 +55,14 @@ describe("Progressive Release API Route", () => {
     const data = await res.json();
     expect(data.environment).toBe("SIT");
     expect(data.cluster).toBe("SIT-K3S-V6");
+
+    const billingFlagger = data.flaggerServices.find(
+      (f: { service: string }) => f.service === "Billing"
+    );
+    expect(billingFlagger).toBeDefined();
+    expect(billingFlagger.phase).toBe("Progressing");
+    expect(billingFlagger.weight).toBe(10);
+    expect(billingFlagger.primaryTrafficPct).toBe(90);
+    expect(billingFlagger.candidateTrafficPct).toBe(10);
   });
 });
