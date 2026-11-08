@@ -616,6 +616,7 @@ export default function ProgressiveReleaseValidation({
             </thead>
             <tbody className="divide-y divide-[var(--color-surface-border)]">
               {(p?.flaggerServices || []).map((fs) => {
+                const isNotConfigured = fs.phase === "Not configured" || fs.weight === null;
                 const isProgressing = fs.phase === "Progressing";
                 const isSucceeded = fs.phase === "Succeeded";
                 const isFailed = fs.phase === "Failed";
@@ -642,26 +643,33 @@ export default function ProgressiveReleaseValidation({
                       </span>
                     </td>
                     <td className="py-3 px-3 font-mono font-medium text-[var(--color-heading)]">
-                      {fs.weight !== null && fs.weight !== undefined ? `${fs.weight}%` : "0%"}
+                      {isNotConfigured ? "—" : `${fs.weight}%`}
                     </td>
                     <td className="py-3 px-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-3.5 w-48 sm:w-64 bg-[var(--color-surface-muted)] border border-[color:var(--color-surface-border)] rounded overflow-hidden flex">
-                          <div
-                            className="h-full bg-emerald-500 transition-all duration-500"
-                            style={{ width: `${fs.primaryTrafficPct}%` }}
-                            title={`Primary ${fs.primaryTrafficPct}%`}
-                          ></div>
-                          <div
-                            className="h-full bg-blue-500 transition-all duration-500"
-                            style={{ width: `${fs.candidateTrafficPct}%` }}
-                            title={`Candidate ${fs.candidateTrafficPct}%`}
-                          ></div>
+                      {isNotConfigured ? (
+                        <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)]">
+                          <Info className="w-3.5 h-3.5 shrink-0 text-[var(--color-text-subtle)]" />
+                          <span>{fs.message || "No canary configured for this service"}</span>
                         </div>
-                        <span className="text-[11px] font-mono text-[var(--color-text-muted)]">
-                          Primary {fs.primaryTrafficPct}% &nbsp;|&nbsp; Candidate {fs.candidateTrafficPct}%
-                        </span>
-                      </div>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <div className="h-3.5 w-48 sm:w-64 bg-[var(--color-surface-muted)] border border-[color:var(--color-surface-border)] rounded overflow-hidden flex">
+                            <div
+                              className="h-full bg-emerald-500 transition-all duration-500"
+                              style={{ width: `${fs.primaryTrafficPct ?? 100}%` }}
+                              title={`Primary ${fs.primaryTrafficPct ?? 100}%`}
+                            ></div>
+                            <div
+                              className="h-full bg-blue-500 transition-all duration-500"
+                              style={{ width: `${fs.candidateTrafficPct ?? 0}%` }}
+                              title={`Candidate ${fs.candidateTrafficPct ?? 0}%`}
+                            ></div>
+                          </div>
+                          <span className="text-[11px] font-mono text-[var(--color-text-muted)]">
+                            Primary {fs.primaryTrafficPct ?? 100}% &nbsp;|&nbsp; Candidate {fs.candidateTrafficPct ?? 0}%
+                          </span>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
