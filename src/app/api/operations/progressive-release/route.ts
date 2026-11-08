@@ -341,8 +341,10 @@ async function queryVictoriaMetrics(query: string, timeoutMs = 4000) {
     process.env.OBSERVABILITY_URL ||
     process.env.NEXT_PUBLIC_OBSERVABILITY_URL ||
     "https://observability.svc.plus";
-  const authUser = process.env.OBSERVABILITY_AUTH_USER || "observability-query-reader";
-  const authPass = process.env.OBSERVABILITY_AUTH_PASSWORD || "";
+  const authUser = process.env.OBSERVABILITY_AUTH_USER || "observability";
+  const authPass =
+    process.env.OBSERVABILITY_AUTH_PASSWORD ||
+    "Bearer uTvryFvAbz6M5sRtmTaSTQY6otLZ95hneBsWqXu+35I=";
 
   const headers: Record<string, string> = {
     Accept: "application/json",
@@ -388,7 +390,7 @@ export async function GET(req: NextRequest) {
     // 尝试向 VictoriaMetrics 实时拉取真实拨测数据
     const cluster = envParam === "PROD" ? "PROD-K3S-V6" : "SIT-K3S-V6";
     const probeResults = await queryVictoriaMetrics(
-      `probe_success{cluster="${cluster}"}`
+      `probe_success{job="progressive-release-probes",cluster="${cluster}"}`
     );
 
     // 如果无法获取上游真实数据，优雅降级返回原型图样本数据
@@ -399,27 +401,27 @@ export async function GET(req: NextRequest) {
 
     // 查询状态码与延迟
     const statusCodeResults = await queryVictoriaMetrics(
-      `probe_http_status_code{cluster="${cluster}"}`
+      `probe_http_status_code{job="progressive-release-probes",cluster="${cluster}"}`
     );
     const durationResults = await queryVictoriaMetrics(
-      `probe_duration_seconds{cluster="${cluster}"}`
+      `probe_duration_seconds{job="progressive-release-probes",cluster="${cluster}"}`
     );
 
     const statusMap = new Map<string, number>();
     if (Array.isArray(statusCodeResults)) {
       for (const item of statusCodeResults) {
-        const instance = item?.metric?.instance || "";
+        const key = `${(item?.metric?.service || "").toLowerCase()}:${item?.metric?.route || ""}`;
         const val = Number(item?.value?.[1]);
-        if (instance && !isNaN(val)) statusMap.set(instance, val);
+        if (!isNaN(val)) statusMap.set(key, val);
       }
     }
 
     const durationMap = new Map<string, number>();
     if (Array.isArray(durationResults)) {
       for (const item of durationResults) {
-        const instance = item?.metric?.instance || "";
+        const key = `${(item?.metric?.service || "").toLowerCase()}:${item?.metric?.route || ""}`;
         const val = Number(item?.value?.[1]);
-        if (instance && !isNaN(val)) durationMap.set(instance, Math.round(val * 1000));
+        if (!isNaN(val)) durationMap.set(key, Math.round(val * 1000));
       }
     }
 
@@ -429,13 +431,16 @@ export async function GET(req: NextRequest) {
 
     let failedCount = 0;
     const updatedEndpoints = baseMock.endpoints.map((ep) => {
-      // 匹配实例
+      // 匹配服务与路由
       for (const pr of probeResults) {
+        const s = (pr?.metric?.service || "").toLowerCase();
+        const r = pr?.metric?.route || "";
         const instance = pr?.metric?.instance || "";
-        if (instance.includes(ep.endpoint)) {
+        if (s === ep.service.toLowerCase() && (r === ep.endpoint || instance.includes(ep.endpoint))) {
           const success = Number(pr?.value?.[1]) === 1;
-          const httpCode = statusMap.get(instance) ?? ep.expectedHttp;
-          const latMs = durationMap.get(instance) ?? ep.p95LatencyMs;
+          const key = `${s}:${ep.endpoint}`;
+          const httpCode = statusMap.get(key) ?? ep.expectedHttp;
+          const latMs = durationMap.get(key) ?? ep.p95LatencyMs;
           const result: "PASS" | "FAIL" = success ? "PASS" : "FAIL";
           if (!success) failedCount++;
           return {
@@ -453,6 +458,21 @@ export async function GET(req: NextRequest) {
     baseMock.gateStatus.failedChecks = failedCount;
     baseMock.gateStatus.status = failedCount > 0 ? "BLOCKED" : "ALLOWED";
     baseMock.gateStatus.summary = `${failedCount} / ${updatedEndpoints.length} checks failed`;
+
+    // 同步更新矩阵单元格状态
+    for (const ep of updatedEndpoints) {
+      const cellKey = `${ep.service}:${ep.endpoint}`;
+      for (const row of baseMock.serviceMatrix.rows) {
+        if (row.service === ep.service && row.cells[cellKey]) {
+          row.cells[cellKey] = {
+            isRelevant: true,
+            result: ep.result,
+            httpCode: ep.observedHttp,
+            p95LatencyMs: ep.p95LatencyMs,
+          };
+        }
+      }
+    }
 
     return NextResponse.json(baseMock);
   } catch {

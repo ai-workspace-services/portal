@@ -25,7 +25,7 @@ export default function ProgressiveReleaseValidation({
   initialEnvironment = "PROD",
 }: Props) {
   const [environment, setEnvironment] = useState<"PROD" | "SIT">(initialEnvironment);
-  const [dataSourceMode, setDataSourceMode] = useState<"live" | "mock">("mock");
+  const [dataSourceMode, setDataSourceMode] = useState<"live" | "mock">("live");
   const [data, setData] = useState<ProgressiveReleasePayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string>("");
