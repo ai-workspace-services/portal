@@ -199,10 +199,10 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
       serviceDomain: "accounts.svc.plus",
       endpoint: "/api/billing/plans",
       expectedHttp: 200,
-      observedHttp: 503,
-      p95LatencyMs: 1204,
+      observedHttp: 200,
+      p95LatencyMs: 18,
       freshnessSec: 8,
-      result: "FAIL",
+      result: "PASS",
     },
     {
       id: "billing-healthz",
@@ -252,10 +252,10 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
       formattedTimeRange: `Last 15 minutes (${startUtc} – ${endUtc} UTC)`,
     },
     gateStatus: {
-      status: "BLOCKED",
-      failedChecks: 1,
+      status: "PASSED",
+      failedChecks: 0,
       totalChecks: 10,
-      summary: "1 / 10 checks failed",
+      summary: "10 / 10 checks passed",
     },
     serviceMatrix: {
       services: [
@@ -305,7 +305,7 @@ function getMockPayload(environment: "PROD" | "SIT" = "PROD"): ProgressiveReleas
             "Accounts:/healthz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 106 },
             "Accounts:/readyz": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 94 },
             "Accounts:/api/ping": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 14 },
-            "Accounts:/api/billing/plans": { isRelevant: true, result: "FAIL", httpCode: 503, p95LatencyMs: 1204 },
+            "Accounts:/api/billing/plans": { isRelevant: true, result: "PASS", httpCode: 200, p95LatencyMs: 18 },
             "Billing:/healthz": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
             "Billing:/readyz": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
             "Billing:/api/ping": { isRelevant: false, result: "PASS", httpCode: null, p95LatencyMs: null },
