@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-03",
+  "updatedAt": "2026-11-09",
   "books": [
     {
       "slug": "it-history",
@@ -35,10 +35,10 @@
     {
       "slug": "overseas-first-step",
       "title": "出海第一步 · 一人公司合规全流程",
-      "version": "v1.2",
-      "pdf": "https://drive.google.com/file/d/16s76XzW-m_NGSR2JsY8mrsVv49m4s-GZ/view?usp=drivesdk",
+      "version": "v1.3",
+      "pdf": "https://drive.google.com/file/d/1Y_-r7kKkC9w7iTrTGOX6fA0LJ4oQuFj4/view?usp=drivesdk",
       "sizeMB": 2.6,
-      "source": "https://drive.google.com/file/d/1uCSc466CLd9dFdC4M0fOBweTmNcd618G/view?usp=drivesdk",
+      "source": "https://drive.google.com/file/d/1DElYsBnnLqUt12mZqqQVSnp8GYFaslyH/view?usp=drivesdk",
       "readme": "https://drive.google.com/file/d/1HiKCXp6QyXO7DuK_rm0zTz2VapIk4LI7/view?usp=drivesdk",
       "tags": [
         "出海",
@@ -50,9 +50,9 @@
     {
       "slug": "platform-engineering",
       "title": "图解平台工程 · 云中立实践",
-      "version": "v0.9.13",
-      "pdf": "https://drive.google.com/file/d/1u8X1Y6gl-Ipop8eLnGjqnh0nNpsys7l8/view?usp=drivesdk",
-      "sizeMB": 25.3,
+      "version": "v0.9.20",
+      "pdf": "https://drive.google.com/file/d/1KLVu3EJY0MHh_UIYZG20X0SdoSTmwwOo/view?usp=drivesdk",
+      "sizeMB": 27.5,
       "source": "https://drive.google.com/file/d/1KFNJNoaFd5URsKILZmZZDpaa5Rh-2jue/view?usp=drivesdk",
       "readme": "https://drive.google.com/file/d/10OWVYjTTLVHIa78Dkhev7mCj6G44gk7_/view?usp=drivesdk",
       "tags": [
@@ -64,9 +64,9 @@
     {
       "slug": "ai-native",
       "title": "AI-Native 超级个体 · 新时代游戏",
-      "version": "v0.9.5",
-      "pdf": "https://drive.google.com/file/d/1ks3Ob4VmAZp7NRthss8Oo4BsgZveVfpR/view?usp=drivesdk",
-      "sizeMB": 7.1,
+      "version": "v0.9.6",
+      "pdf": "https://drive.google.com/file/d/1Vk6PWzAWbHiIOXArRz2UtTWBLIqvan6A/view?usp=drivesdk",
+      "sizeMB": 7.2,
       "source": "https://drive.google.com/file/d/15zpxeWHFZes9Sa30D3XBvMx0EyJfiRbT/view?usp=drivesdk",
       "readme": "https://drive.google.com/file/d/1BKucQJVB6NBnn_vfAuYwtiX-3dl8Kzws/view?usp=drivesdk",
       "tags": [
@@ -94,9 +94,9 @@
     {
       "slug": "observer-season-1",
       "title": "独立开发观察者计划：AI × 可观测 SaaS 首季",
-      "version": "v0.1-r4",
-      "pdf": "https://drive.google.com/file/d/1wgYSMHk8J1ePkX9S6bRd8hoC4INW8WLt/view?usp=drivesdk",
-      "sizeMB": 7.1,
+      "version": "v0.1-r5",
+      "pdf": "https://drive.google.com/file/d/1TWH4qKqxZnt_F-WYAJpgTLU6TmYtMGVu/view?usp=drivesdk",
+      "sizeMB": 9.9,
       "source": "https://drive.google.com/file/d/1rtNyt-wA0MQwagPwxJ0vVhVQSJbaa2BH/view?usp=drivesdk",
       "readme": "https://drive.google.com/file/d/1wE7bMpJFUZ7Gve4zPfB4Jk-fbdB1HLcH/view?usp=drivesdk",
       "tags": [
@@ -125,8 +125,8 @@
     {
       "slug": "cny-overseas-card-routes",
       "title": "人民币海外卡三条路线攻略",
-      "version": "v1.1",
-      "pdf": "https://drive.google.com/file/d/197gS3oRpKPgU4PUBOXQhHkjS_LZGu6vS/view?usp=drivesdk",
+      "version": "v1.2",
+      "pdf": "https://drive.google.com/file/d/1B1fhb9eltiAZzv6JdCje9-luW5X7qTOw/view?usp=drivesdk",
       "sizeMB": 0.9,
       "source": "https://github.com/ai-workspace-services/ebooks/tree/main/books/cny-overseas-card-routes",
       "readme": "https://github.com/ai-workspace-services/ebooks/blob/main/books/cny-overseas-card-routes/README.md",
