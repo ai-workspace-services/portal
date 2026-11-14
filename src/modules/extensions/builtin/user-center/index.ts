@@ -250,13 +250,11 @@ export const userCenterExtension: DashboardExtension = {
       redirect: { unauthenticated: "/login", forbidden: "/panel" },
       sidebar: { section: "admin", order: 11, hidden: true },
     },
-    ...["billing/plans", "billing/ledger", "audit", "system", "crawler-protection"].map((suffix) => ({
+    ...["billing/plans", "billing/ledger", "audit", "system"].map((suffix) => ({
       id: `ops-${suffix.replace("/", "-")}`,
       path: `/panel/ops/${suffix}`,
       label:
-        suffix === "crawler-protection"
-          ? "爬虫防护"
-          : suffix === "audit"
+        suffix === "audit"
           ? "审计与系统"
           : suffix === "system"
             ? "系统管理"
