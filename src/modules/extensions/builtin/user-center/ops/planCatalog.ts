@@ -1,25 +1,8 @@
 import type { BillingPlan } from "./planUpsert";
 
 export const GB = 1024 ** 3;
-export type FamilyId = "free" | "plus" | "pro" | "payg" | "beta" | "gift";
-export type CatalogPolicy = {
-  family: FamilyId;
-  quotaCycle: "natural_month" | "subscription_year" | "none";
-  fallback: "vps_pool" | "pause";
-  promotionEnds?: string;
-  regularAnnualAmount?: number;
-  grandfatherDiscount?: boolean;
-  registrationDefault?: boolean;
-  cnyPerGB?: number;
-  usdTrafficGB?: number;
-  minimumDays?: number;
-  maximumDays?: number;
-  giftOnly?: boolean;
-  quantity?: number;
-  legacyExpiresAt?: string;
-  transitionTargetPlanId?: string;
-  paidProtection?: boolean;
-};
+export type FamilyId = "free" | "plus" | "pro" | "custom";
+
 export type Family = {
   id: FamilyId;
   name: string;
@@ -29,120 +12,232 @@ export type Family = {
   variants: BillingPlan[];
 };
 
-const variant = (
-  family: FamilyId,
-  id: string,
-  name: string,
-  quota: number,
-  amount = 0,
-  unit = "",
-  extra: Partial<CatalogPolicy> = {},
-): BillingPlan => ({
-  planId: id,
-  displayName: name,
-  kind: "subscription",
-  packageName: family === "beta" ? "unlimited-beta" : family,
-  includedQuotaBytes: quota * GB,
-  active: false,
-  priceAmount: amount,
-  priceCurrency: amount ? "CNY" : "",
-  priceUnit: unit,
-  features: {
-    catalog_policy: {
-      family,
-      quotaCycle: unit === "year" ? "subscription_year" : "natural_month",
-      fallback: "pause",
-      ...extra,
-    },
-  },
-});
+const FAMILY_SET = new Set<FamilyId>(["free", "plus", "pro", "custom"]);
 
-// New editions are separate drafts: opening this editor never overwrites a
-// legacy Price mapping or propagates a new default quota to existing users.
+export function inferFamilyId(plan: BillingPlan): FamilyId | null {
+  const kind = (plan.kind || "").toLowerCase().trim();
+  if (kind === "trial" || kind === "paygo_topup") return null;
+  const featureFamily =
+    typeof plan.features?.family === "string"
+      ? plan.features.family.toLowerCase().trim()
+      : "";
+  if (FAMILY_SET.has(featureFamily as FamilyId)) {
+    return featureFamily as FamilyId;
+  }
+  const pkg = (plan.packageName || "").toLowerCase().trim();
+  if (FAMILY_SET.has(pkg as FamilyId)) {
+    return pkg as FamilyId;
+  }
+  const upperId = (plan.planId || "").toUpperCase().trim();
+  if (upperId === "FREE" || upperId.startsWith("FREE-")) return "free";
+  if (upperId === "PLUS" || upperId.startsWith("PLUS-")) return "plus";
+  if (upperId === "PRO" || upperId.startsWith("PRO-")) return "pro";
+  if (upperId === "CUSTOM" || upperId.startsWith("CUSTOM-")) return "custom";
+  return null;
+}
+
 export const CATALOG_FAMILIES: Family[] = [
   {
     id: "free",
     name: "Free",
-    description: "免费额度，按需申请提升。",
-    summary: "1 GB / 3 GB / 5 GB · 新注册默认 1 GB",
+    description: "基础免费额度，登录即可使用。",
+    summary: "5 GB / 月 · 共享资源池",
     price: "免费",
     variants: [
-      variant("free", "FREE-1GB-2026", "Free · 1 GB", 1, 0, "", {
-        registrationDefault: true,
-      }),
-      variant("free", "FREE-3GB-2026", "Free · 3 GB", 3),
-      variant("free", "FREE-5GB-2026", "Free · 5 GB", 5),
+      {
+        planId: "FREE",
+        displayName: "Free",
+        kind: "subscription",
+        packageName: "free",
+        includedQuotaBytes: 5 * GB,
+        active: false,
+        priceAmount: 0,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+        features: {
+          family: "free",
+          tier_rank: 0,
+          quota_cycle: "natural_month",
+          dunning: { policy: "none", grace_days: 3 },
+          comparison_matrix: {
+            resources: "共享资源池",
+            exit_ip: "共享出口",
+          },
+        },
+      },
     ],
   },
   {
     id: "plus",
     name: "Plus",
-    description: "月付或年付，额度耗尽后暂停。",
-    summary: "20 GB / 月 · 240 GB / 年",
-    price: "¥20 / 月 · 年付优惠 ¥200",
+    description: "订阅用户流量套餐，30 天/月周期，3 天欠款宽限期。",
+    summary: "30 GB / 月 · 共享资源池",
+    price: "¥30 / 月",
     variants: [
-      variant("plus", "PLUS-MONTHLY-2026", "Plus 月付", 20, 2000, "month"),
-      variant("plus", "PLUS-YEARLY-2026", "Plus 年付", 240, 20000, "year", {
-        promotionEnds: "2026-12-31",
-        regularAnnualAmount: 24000,
-        grandfatherDiscount: true,
-      }),
+      {
+        planId: "PLUS-MONTHLY-2026",
+        displayName: "Plus",
+        kind: "subscription",
+        packageName: "plus",
+        includedQuotaBytes: 30 * GB,
+        active: false,
+        priceAmount: 3000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+        features: {
+          family: "plus",
+          tier_rank: 10,
+          audience: "订阅用户",
+          quota_cycle: "natural_month",
+          dunning: { policy: "downgrade_to_free", grace_days: 3 },
+          comparison_matrix: {
+            resources: "共享资源池",
+            exit_ip: "共享出口",
+          },
+        },
+      },
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    description: "按账户配额计量，额度耗尽后暂停。",
-    summary: "50 GB / 月 · 600 GB / 年",
-    price: "¥50 / 月 · ¥500 / 年",
+    description: "Pro 专属资源池，50 GB/月，3 天欠款宽限期。",
+    summary: "50 GB / 月 · PRO专属资源池",
+    price: "¥50 / 月",
     variants: [
-      variant("pro", "PRO-MONTHLY-2026", "Pro 月付", 50, 5000, "month"),
-      variant("pro", "PRO-YEARLY-2026", "Pro 年付", 600, 50000, "year"),
+      {
+        planId: "PRO-MONTHLY-2026",
+        displayName: "Pro",
+        kind: "subscription",
+        packageName: "pro",
+        includedQuotaBytes: 50 * GB,
+        active: false,
+        priceAmount: 5000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+        features: {
+          family: "pro",
+          tier_rank: 20,
+          audience: "订阅用户",
+          highlight: true,
+          quota_cycle: "natural_month",
+          dunning: { policy: "downgrade_to_free", grace_days: 3 },
+          comparison_matrix: {
+            resources: "PRO专属资源池",
+            exit_ip: "Pro专属节点",
+          },
+        },
+      },
     ],
   },
   {
-    id: "payg",
-    name: "Pay As You Go",
-    description: "按流量独立扣费，人民币与美元不兑换。",
-    summary: "¥1 / GB · $1 / 7 GB",
-    price: "按量计费",
+    id: "custom",
+    name: "Custom 定制",
+    description: "定制节点（独享IP/节点）与 AI 工具咨询/电脑环境配置。",
+    summary: "定制节点 ¥80/月 · AI 工具咨询 ¥100/小时/次",
+    price: "¥80/月 · ¥100/小时/次",
     variants: [
-      variant("payg", "PAYG-2026", "Pay As You Go", 0, 0, "", {
-        quotaCycle: "none",
-        cnyPerGB: 1,
-        usdTrafficGB: 7,
-      }),
+      {
+        planId: "CUSTOM-NODE-MONTHLY-2026",
+        displayName: "定制节点",
+        kind: "subscription",
+        packageName: "custom",
+        includedQuotaBytes: 0,
+        active: false,
+        priceAmount: 8000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+        features: {
+          family: "custom",
+          tier_rank: 30,
+          checkout_mode: "subscription",
+          audience: "订阅用户",
+          quota_label: "独享IP · 独享节点",
+          dunning: { policy: "downgrade_to_free", grace_days: 3 },
+          comparison_matrix: {
+            resources: "独享节点",
+            exit_ip: "独享IP",
+            ip_changes: "每个月免费更换一次，再次更换10元/次",
+          },
+        },
+      },
+      {
+        planId: "CUSTOM-AI-CONSULT-2026",
+        displayName: "AI 工具咨询，电脑环境配置",
+        kind: "service",
+        packageName: "custom",
+        includedQuotaBytes: 0,
+        active: false,
+        priceAmount: 10000,
+        priceCurrency: "CNY",
+        priceUnit: "once",
+        features: {
+          family: "custom",
+          tier_rank: 30,
+          checkout_mode: "payment",
+          price_unit_label: "小时/次",
+          audience: "面向非订阅用户的付费服务",
+          description:
+            "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统",
+          dunning: { policy: "none", grace_days: 3 },
+          comparison_matrix: {
+            support:
+              "MacOS / Windows / Linux / IOS / Android（不支持国产华为纯血鸿蒙系统）",
+          },
+        },
+      },
     ],
   },
 ];
-export function policyFor(plan: BillingPlan): CatalogPolicy {
-  return plan.features?.catalog_policy as CatalogPolicy;
-}
+
 export function quotaToGB(bytes?: number): string {
   if (bytes === undefined) return "0";
   if (!Number.isSafeInteger(bytes) || bytes < 0) return "";
   return String(bytes / GB);
 }
+
 export function quotaFromGB(value: string): number {
   if (!value.trim()) throw new Error("请填写高速流量（GB）。");
-  const gb = Number(value),
-    bytes = Math.round(gb * GB);
-  if (!Number.isFinite(gb) || gb < 0 || !Number.isSafeInteger(bytes))
+  const gb = Number(value);
+  const bytes = Math.round(gb * GB);
+  if (!Number.isFinite(gb) || gb < 0 || !Number.isSafeInteger(bytes)) {
     throw new Error("请输入有效且不超出范围的 GB 数值。");
+  }
   return bytes;
 }
+
 export function partitionCatalog(plans: BillingPlan[]) {
-  const ids = new Set(
-    CATALOG_FAMILIES.flatMap((f) => f.variants.map((p) => p.planId)),
-  );
+  const familyBuckets: Record<FamilyId, BillingPlan[]> = {
+    free: [],
+    plus: [],
+    pro: [],
+    custom: [],
+  };
+  const legacy: BillingPlan[] = [];
+
+  for (const plan of plans) {
+    const fam = inferFamilyId(plan);
+    if (fam) {
+      familyBuckets[fam].push(plan);
+    } else {
+      legacy.push(plan);
+    }
+  }
+
   return {
-    families: CATALOG_FAMILIES.map((f) => ({
-      ...f,
-      variants: f.variants.map(
+    families: CATALOG_FAMILIES.map((f) => {
+      const persisted = familyBuckets[f.id];
+      const mergedTemplates = f.variants.map(
         (template) =>
-          plans.find((p) => p.planId === template.planId) ?? template,
-      ),
-    })),
-    legacy: plans.filter((p) => !ids.has(p.planId)),
+          persisted.find((p) => p.planId === template.planId) ?? template,
+      );
+      const templateIds = new Set(f.variants.map((v) => v.planId));
+      const extras = persisted.filter((p) => !templateIds.has(p.planId));
+      return {
+        ...f,
+        variants: [...mergedTemplates, ...extras],
+      };
+    }),
+    legacy,
   };
 }

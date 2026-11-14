@@ -9,45 +9,52 @@ import {
 
 describe("catalog unit boundary and version preservation", () => {
   it("roundtrips valid GB values through existing byte API", () => {
-    for (const value of [0, 1, 3, 5, 20, 50, 240, 600, 1.5]) {
+    for (const value of [0, 1, 3, 5, 20, 30, 50, 1.5]) {
       expect(quotaFromGB(String(value))).toBe(value * GB);
       expect(quotaToGB(value * GB)).toBe(String(value));
     }
-    for (const value of ["", "-1", "Infinity", "bad", "1e30"])
+    for (const value of ["", "-1", "Infinity", "bad", "1e30"]) {
       expect(() => quotaFromGB(value)).toThrow();
+    }
     expect(quotaToGB(Number.MAX_VALUE)).toBe("");
   });
-  it("never mutates or treats legacy active subscriptions as archived", () => {
-    const legacy = {
-      planId: "PLUS",
-      kind: "subscription",
+
+  it("partitions only the 4 families and routes trial/payg into legacy", () => {
+    const trialPlan = {
+      planId: "FREE-3GB-2026",
+      kind: "trial",
+      packageName: "free",
       active: true,
-      stripePriceId: "price_legacy",
-      includedQuotaBytes: 20 * GB,
+      includedQuotaBytes: 3 * GB,
     };
-    const snapshot = JSON.stringify(legacy);
-    const result = partitionCatalog([legacy]);
-    expect(result.legacy).toEqual([legacy]);
-    expect(JSON.stringify(legacy)).toBe(snapshot);
-    expect(result.families).toHaveLength(4);
-    expect(result.families.map((f) => f.id)).not.toContain("beta");
-    expect(result.families.map((f) => f.id)).not.toContain("gift");
+    const paygPlan = {
+      planId: "PAYG-TOPUP-50",
+      kind: "paygo_topup",
+      packageName: "payg",
+      active: true,
+    };
+    const result = partitionCatalog([trialPlan, paygPlan]);
+    expect(result.legacy).toEqual([trialPlan, paygPlan]);
+    expect(result.families.map((f) => f.id)).toEqual([
+      "free",
+      "plus",
+      "pro",
+      "custom",
+    ]);
     expect(
       result.families.flatMap((f) => f.variants).every((p) => !p.active),
     ).toBe(true);
-    expect(
-      result.families.flatMap((f) => f.variants).some((p) => p.stripePriceId),
-    ).toBe(false);
   });
+
   it("uses persisted edition data without resetting it to template defaults", () => {
     const template = CATALOG_FAMILIES[1].variants[0];
     const saved = {
       ...template,
       displayName: "Reviewed Plus",
-      includedQuotaBytes: 25 * GB,
+      includedQuotaBytes: 30 * GB,
       features: {
-        catalog_policy: { family: "plus" },
-        external: { retain: true },
+        family: "plus",
+        dunning: { grace_days: 3 },
       },
     };
     const result = partitionCatalog([saved]);
