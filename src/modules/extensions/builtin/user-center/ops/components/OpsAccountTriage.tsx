@@ -39,6 +39,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { useUserStore } from "@lib/userStore";
 import OpsAuditConsole from "./OpsAuditConsole";
+import CrawlerProtection from "./CrawlerProtection";
 import OpsPlanCatalog from "./OpsPlanCatalog";
 
 import { ADMIN_API_BASE } from "../../lib/adminApi";
@@ -151,6 +152,7 @@ const navItems = [
   { href: "/panel/ops/billing/plans", label: "套餐与订阅", icon: Package },
   { href: "/panel/ops/billing/ledger", label: "账单与对账", icon: CreditCard },
   { href: "/panel/ops/audit", label: "审计与系统", icon: FileClock },
+  { href: "/panel/ops/crawler-protection", label: "爬虫防护", icon: ShieldCheck },
 ];
 
 async function jsonFetcher<T>(input: RequestInfo): Promise<T> {
@@ -399,6 +401,9 @@ export default function OpsAccountTriage() {
   }
 
   if (!isAccountsRoute) {
+    if (pathname === "/panel/ops/crawler-protection") {
+      return <div className="space-y-5 pb-8"><OpsNavigation active={pathname} /><CrawlerProtection /></div>;
+    }
     if (pathname === "/panel/ops/billing/plans") {
       return <OpsPlanCatalog />;
     }
