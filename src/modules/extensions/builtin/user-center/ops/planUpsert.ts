@@ -1,24 +1,18 @@
 /**
  * The body the ops console sends when publishing a plan.
- *
- * `adminUpsertBillingPlan` (accounts api/billing_plans.go) replaces the whole
- * row -- a field absent from the request is written as its zero value, and the
- * audit trail records that as a deliberate edit. The editor only exposes the
- * packaging fields, so everything else has to be carried forward explicitly or
- * saving one plan quietly destroys its pricing and entitlements.
  */
 
 export type BillingPlan = {
   planId: string;
   stripePriceId?: string;
   displayName?: string;
-  kind: "trial" | "subscription" | "paygo_topup" | string;
+  kind: "subscription" | "service" | string;
   includedQuotaBytes?: number;
   packageName?: string;
-  /** List price in the currency's minor unit; read by /prices. */
+  /** List price in the currency's minor unit; read by /prices and /products/xconnect. */
   priceAmount?: number;
   priceCurrency?: string;
-  /** month | year | once | gb */
+  /** month | year | hour | once */
   priceUnit?: string;
   priceMultipliers?: Record<string, number>;
   features?: Record<string, unknown>;
@@ -34,7 +28,6 @@ export type PlanForm = {
   packageName: string;
   stripePriceId: string;
   includedQuotaBytes: string;
-  trialDays: string;
   sortOrder: string;
   active: boolean;
   reason: string;
@@ -66,19 +59,15 @@ export function buildPlanUpsertBody(
     planId: form.planId.trim(),
     displayName: form.displayName.trim(),
     kind: form.kind,
-    packageName: form.packageName.trim() || "default",
+    packageName: form.packageName.trim() || "custom",
     stripePriceId: form.stripePriceId.trim(),
     includedQuotaBytes: Number(form.includedQuotaBytes),
-    trialDays: Number(form.trialDays),
+    trialDays: 0,
     sortOrder: Number(form.sortOrder),
     active: form.active,
     reason: form.reason.trim(),
   };
 
-  // A new plan has no price to preserve. Sending priceAmount: 0 with an empty
-  // currency is rejected outright once an amount is set, and an amount of 0
-  // with no currency is indistinguishable from "not published" -- so send
-  // neither and let the price be set where prices are managed.
   if (existing?.priceAmount !== undefined) body.priceAmount = existing.priceAmount;
   if (existing?.priceCurrency !== undefined) body.priceCurrency = existing.priceCurrency;
   if (existing?.priceUnit !== undefined) body.priceUnit = existing.priceUnit;

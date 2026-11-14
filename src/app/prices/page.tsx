@@ -10,10 +10,16 @@ import Footer from "../../components/Footer";
 import MarketingNav from "@/components/marketing/MarketingNav";
 import { useLanguage } from "../../i18n/LanguageProvider";
 import {
+  catalogWithFamilyDefaults,
   formatPlanPrice,
+  graceDays,
   isPurchasable,
-  PLAN_COPY,
-  XCONNECT_SUBSCRIPTION_PLAN_IDS,
+  planCheckoutMode,
+  planCtaHref,
+  planCtaMode,
+  planDescription,
+  planFamily,
+  planFeatureList,
   useBillingCatalog,
   XCONNECT_PRODUCT_SLUG,
   type CatalogPlan,
@@ -29,6 +35,7 @@ type PricingCard = {
   key: string;
   productSlug?: string;
   name: string;
+  badge?: string;
   price: string;
   period?: string;
   description: string;
@@ -39,113 +46,86 @@ type PricingCard = {
   billingPlan?: CardBillingPlan;
 };
 
-// billing_plans is the live source of truth for what is purchasable; the
-// display copy lives in @modules/billing/catalog so this page and the user
-// center quote the same numbers for the same planId.
-function useXconnectCards(
+function buildDynamicCards(
   isChinese: boolean,
   catalog: Map<string, CatalogPlan>,
 ): PricingCard[] {
-  return useMemo(() => {
-    const purchasable = (planId: string) => isPurchasable(catalog.get(planId));
-    const priceIdOf = (planId: string) =>
-      catalog.get(planId)?.stripePriceId ?? "";
-    // Copy comes from the shared module, the amount from the catalog. A plan
-    // with no published price reads as "coming soon" rather than borrowing a
-    // number the catalog does not carry.
-    const copyOf = (planId: string) => {
-      const copy = isChinese ? PLAN_COPY[planId].zh : PLAN_COPY[planId].en;
-      const price = formatPlanPrice(catalog.get(planId), isChinese ? "zh" : "en");
+  const locale = isChinese ? "zh" : "en";
+  const plans = catalogWithFamilyDefaults(catalog);
+
+  return plans.map((plan) => {
+    const family = planFamily(plan) ?? "custom";
+    const price = formatPlanPrice(plan, locale);
+    const ctaMode = planCtaMode(plan);
+    const checkoutMode = planCheckoutMode(plan);
+    const purchasable = isPurchasable(plan);
+    const highlight = Boolean(plan.features?.highlight) || family === "pro";
+    const badge =
+      typeof plan.features?.badge === "string" && plan.features.badge.trim()
+        ? plan.features.badge.trim()
+        : highlight
+          ? isChinese
+            ? "推荐"
+            : "Recommended"
+          : undefined;
+    const customCtaLabel =
+      typeof plan.features?.cta_label === "string" &&
+      plan.features.cta_label.trim()
+        ? plan.features.cta_label.trim()
+        : undefined;
+
+    if (ctaMode === "stripe_checkout") {
       return {
-        ...copy,
+        key: plan.planId,
+        productSlug: XCONNECT_PRODUCT_SLUG,
+        name: plan.displayName || plan.planId,
+        badge,
         price: price?.amount ?? (isChinese ? "即将上线" : "Coming soon"),
         period: price?.period || undefined,
+        description: planDescription(plan, locale),
+        features: planFeatureList(plan, locale),
+        highlight,
+        button: purchasable
+          ? customCtaLabel ??
+            (checkoutMode === "payment"
+              ? isChinese
+                ? "使用 Stripe 购买"
+                : "Pay with Stripe"
+              : isChinese
+                ? "使用 Stripe 订阅"
+                : "Subscribe with Stripe")
+          : isChinese
+            ? "即将上线"
+            : "Coming soon",
+        billingPlan: {
+          mode: checkoutMode,
+          planId: plan.planId,
+          stripePriceId: plan.stripePriceId ?? "",
+        },
       };
+    }
+
+    return {
+      key: plan.planId,
+      name: plan.displayName || plan.planId,
+      badge,
+      price: price?.amount ?? (isChinese ? "¥0" : "$0"),
+      period: price?.period || undefined,
+      description: planDescription(plan, locale),
+      features: planFeatureList(plan, locale),
+      highlight,
+      button:
+        customCtaLabel ??
+        (family === "free"
+          ? isChinese
+            ? "免费开始"
+            : "Start for free"
+          : isChinese
+            ? "预约 / 联系我们"
+            : "Contact us"),
+      href: planCtaHref(plan),
     };
-
-    const cards: PricingCard[] = [
-      {
-        key: "xconnect-free",
-        name: isChinese ? "Free" : "Free",
-        price: isChinese ? "¥0" : "$0",
-        description: isChinese
-          ? "登录即可使用：每月 5 GB 高速流量，用完自动降级为标准 VPS 流量，不断线。"
-          : "Sign in to use it: 5 GB of accelerated traffic per month, then a seamless fallback to standard VPS traffic.",
-        features: isChinese
-          ? [
-              "每月 5 GB 高速流量，用完降级 VPS",
-              "Demo 资源卡片：每天 1 次、每次 1 小时",
-              "不承诺 SLA，不提供多端会话持久化",
-            ]
-          : [
-              "5 GB of accelerated traffic per month, then VPS fallback",
-              "Demo resource card: 1 run/day, 1 hour/run",
-              "No SLA, no persisted multi-device sessions",
-            ],
-        button: isChinese ? "免费开始" : "Start for free",
-        href: "/login",
-      },
-      {
-        key: "xconnect-payg",
-        productSlug: XCONNECT_PRODUCT_SLUG,
-        name: isChinese ? "按量付费" : "Pay-As-You-Go",
-        price: isChinese ? "¥1/GB" : "$0.15/GB",
-        description: isChinese
-          ? "预充值账户余额，高速流量按 ¥1/GB 计费，资源卡片明码实价。欠费立即停机，计算资源保留 7 天、对象存储保留 30 天后释放。"
-          : "Top up your balance and pay $0.15/GB for accelerated traffic, with resource cards billed at list price. Suspended immediately on zero balance; compute is kept for 7 days and object storage for 30.",
-        features: isChinese
-          ? [
-              "高速流量 ¥1/GB，按量扣费",
-              "资源服务卡片明码实价",
-              "欠费立即停机，7 天内可恢复",
-            ]
-          : [
-              "Accelerated traffic at $0.15/GB",
-              "Resource cards billed at list price",
-              "Suspends immediately on zero balance, recoverable within 7 days",
-            ],
-        button: isChinese ? "登录后充值" : "Sign in to top up",
-        href: "/panel/subscription",
-      },
-      {
-        key: "xconnect-pro-monthly",
-        productSlug: XCONNECT_PRODUCT_SLUG,
-        ...copyOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[0]),
-        highlight: true,
-        button: purchasable(XCONNECT_SUBSCRIPTION_PLAN_IDS[0])
-          ? isChinese
-            ? "使用 Stripe 订阅"
-            : "Subscribe with Stripe"
-          : isChinese
-            ? "即将上线"
-            : "Coming soon",
-        billingPlan: {
-          mode: "subscription",
-          planId: XCONNECT_SUBSCRIPTION_PLAN_IDS[0],
-          stripePriceId: priceIdOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[0]),
-        },
-      },
-      {
-        key: "xconnect-pro-yearly",
-        productSlug: XCONNECT_PRODUCT_SLUG,
-        ...copyOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[1]),
-        button: purchasable(XCONNECT_SUBSCRIPTION_PLAN_IDS[1])
-          ? isChinese
-            ? "使用 Stripe 订阅"
-            : "Subscribe with Stripe"
-          : isChinese
-            ? "即将上线"
-            : "Coming soon",
-        billingPlan: {
-          mode: "subscription",
-          planId: XCONNECT_SUBSCRIPTION_PLAN_IDS[1],
-          stripePriceId: priceIdOf(XCONNECT_SUBSCRIPTION_PLAN_IDS[1]),
-        },
-      },
-    ];
-
-    return cards;
-  }, [isChinese, catalog]);
+  });
 }
 
 export default function PricesPage() {
@@ -153,68 +133,18 @@ export default function PricesPage() {
   const isChinese = language === "zh";
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const catalog = useBillingCatalog();
-  const xconnectCards = useXconnectCards(isChinese, catalog);
-  const selfHostCard: PricingCard = {
-    key: "open-source",
-    name: isChinese ? "开源自建" : "Open Source (Self-Host)",
-    price: isChinese ? "免费" : "Free",
-    period: isChinese ? "/永久" : "/forever",
-    description: isChinese
-      ? "开源代码，自行部署和运行；从第一天起拥有完整控制权。"
-      : "Open source software you deploy and run yourself, with full control from day one.",
-    features: isChinese
-      ? ["开源代码", "私有化部署", "社区支持"]
-      : ["Open source code", "Self-host deployment", "Community support"],
-    button: isChinese ? "开始自建" : "Start self-hosting",
-    href: "/download",
-  };
 
-  const managedPaygoCard: PricingCard = {
-    key: "managed-paygo",
-    name: isChinese ? "托管服务按量付费" : "Managed Services — Pay as You Go",
-    price: isChinese ? "规格费用 + 20%" : "List price + 20%",
-    description: isChinese
-      ? "按实际使用的资源规格收费，并收取 20% 托管服务费；更多托管服务将持续加入。"
-      : "Pay for the infrastructure you use at its published specification price, plus a 20% managed-service fee. More managed services are on the way.",
-    features: isChinese
-      ? [
-          "按资源规格与实际用量计费",
-          "统一收取 20% 托管服务费",
-          "可随业务增长灵活扩展",
-        ]
-      : [
-          "Billed by resource specification and usage",
-          "A single 20% managed-service fee",
-          "Scale services up as your workload grows",
-        ],
-    button: isChinese ? "登录后按量使用" : "Sign in to use on demand",
-    href: "/panel/subscription",
-    highlight: true,
-  };
+  const cards = useMemo(
+    () => buildDynamicCards(isChinese, catalog),
+    [isChinese, catalog],
+  );
 
-  const customCard: PricingCard = {
-    key: "custom",
-    name: isChinese ? "专属定制" : "Custom",
-    price: isChinese ? "商务洽谈" : "Talk to us",
-    description: isChinese
-      ? "针对合规、SLA 或大规模使用需求，由团队提供专属方案。"
-      : "For compliance, SLA, or high-scale requirements, work with our team on a tailored plan.",
-    features: isChinese
-      ? ["合同级 SLA", "专属交付与支持", "适配企业治理需求"]
-      : [
-          "Contractual SLA",
-          "Dedicated delivery and support",
-          "Enterprise governance options",
-        ],
-    button: isChinese ? "联系我们" : "Contact Sales",
-    href: "/support",
-  };
-
-  const extraCards: PricingCard[] = [
-    selfHostCard,
-    managedPaygoCard,
-    customCard,
-  ];
+  const effectiveGraceDays = useMemo(() => {
+    const firstPaid = [...catalog.values()].find(
+      (plan) => plan.active && planFamily(plan) && planFamily(plan) !== "free",
+    );
+    return graceDays(firstPaid);
+  }, [catalog]);
 
   const handleCheckout = async (card: PricingCard) => {
     if (
@@ -258,9 +188,9 @@ export default function PricesPage() {
           : "border-surface-border bg-surface"
       }`}
     >
-      {card.highlight ? (
+      {card.badge ? (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-eyebrow font-bold uppercase tracking-wider text-white">
-          {isChinese ? "推荐" : "Recommended"}
+          {card.badge}
         </div>
       ) : null}
 
@@ -343,8 +273,8 @@ export default function PricesPage() {
             </h1>
             <p className="text-lg text-text-muted">
               {isChinese
-                ? "先免费开源自建；需要托管时，再按实际用量付费。托管资源按规格费用加收 20% 服务费，更多服务将陆续上线。"
-                : "Start free with self-hosting. When you need managed services, pay only for what you use: published resource pricing plus a 20% service fee. More services are coming."}
+                ? `统一提供 Free、Plus、Pro 与定制（Custom）四个系列方案，实时同步套餐目录。订阅欠费享有 ${effectiveGraceDays} 天宽限期。`
+                : `Four plan families — Free, Plus, Pro, and Custom — synced live from the billing catalog with a ${effectiveGraceDays}-day payment grace period.`}
             </p>
           </div>
 
@@ -357,25 +287,9 @@ export default function PricesPage() {
             </p>
           ) : null}
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {extraCards.map(renderPricingCard)}
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+            {cards.map(renderPricingCard)}
           </div>
-
-          <section className="mt-16">
-            <div className="mx-auto mb-8 max-w-3xl text-center">
-              <h2 className="text-2xl font-bold tracking-tight text-heading sm:text-3xl">
-                {isChinese ? "XConnect 核心套餐" : "XConnect core plans"}
-              </h2>
-              <p className="mt-3 text-sm text-text-muted">
-                {isChinese
-                  ? "从免费体验开始；需要更高的连接与加速额度时，再按用量或套餐升级。"
-                  : "Start with the free experience, then use pay as you go or a plan when you need more connection and acceleration capacity."}
-              </p>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {xconnectCards.map(renderPricingCard)}
-            </div>
-          </section>
 
           <div className="mt-20 max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-surface-border bg-surface px-4 py-2 text-xs font-medium text-text-muted">

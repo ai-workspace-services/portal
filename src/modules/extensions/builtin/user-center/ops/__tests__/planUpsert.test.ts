@@ -9,7 +9,6 @@ const form: PlanForm = {
   packageName: "pro",
   stripePriceId: "price_123",
   includedQuotaBytes: "21474836480",
-  trialDays: "0",
   sortOrder: "30",
   active: true,
   reason: "上架月付",
@@ -80,7 +79,7 @@ describe("buildPlanUpsertBody", () => {
 
     expect(body.planId).toBe("PRO-MONTHLY");
     expect(body.displayName).toBe("Pro");
-    expect(body.packageName).toBe("default");
+    expect(body.packageName).toBe("custom");
     expect(body.reason).toBe("why");
   });
 });

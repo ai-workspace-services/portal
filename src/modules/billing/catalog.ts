@@ -1,41 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatBytes } from "@lib/format";
+
+export type PlanFamilyId = "free" | "plus" | "pro" | "custom";
+
+export const PLAN_FAMILIES: readonly PlanFamilyId[] = [
+  "free",
+  "plus",
+  "pro",
+  "custom",
+] as const;
+
+export const DEFAULT_GRACE_DAYS = 3;
+export const GB_BYTES = 1024 ** 3;
+export const PB_BYTES = 1024 ** 5;
+export const XCONNECT_PRODUCT_SLUG = "xconnect";
+
+export type PlanComparisonMatrix = {
+  resources?: string;
+  exit_ip?: string;
+  ip_changes?: string;
+  support?: string;
+};
+
+export type PlanCtaMode = "free" | "stripe_checkout" | "contact_sales";
+export type PlanCheckoutMode = "subscription" | "payment";
 
 /**
  * The live plan catalog served by accounts (`GET /api/billing/plans`, proxied
  * at `/api/billing/plans`). Mirrors accounts' billingPlanPayload
- * (api/billing_plans.go); only the fields the UI actually reads are declared.
+ * (api/billing_plans.go).
  */
 export type CatalogPlan = {
   planId: string;
   stripePriceId?: string;
   displayName?: string;
-  /** trial | subscription | paygo_topup */
+  /** subscription */
   kind?: string;
+  /** free | plus | pro | custom */
+  packageName?: string;
   includedQuotaBytes?: number;
   /** Explicit maximum traffic in bytes, mirrored from the local accounts catalog. */
   maxTrafficBytes?: number;
-  /** List price in the currency's minor unit (cents, 分). 0 = not published. */
+  /** List price in the currency's minor unit (cents, 分). 0 = free or not published. */
   priceAmount?: number;
   /** ISO 4217, e.g. CNY / USD. */
   priceCurrency?: string;
-  /** month | year | once | gb */
+  /** month | year | hour | once */
   priceUnit?: string;
-  /** Optional operator-managed display features from the local catalog. */
+  /** Operator-managed display features from the local catalog JSONB. */
   features?: Record<string, unknown>;
   active: boolean;
   sortOrder?: number;
 };
 
-/**
- * Marketing copy for the plans we sell, keyed by the catalog's planId.
- *
- * Prices are deliberately absent: the amount comes from the catalog's
- * priceAmount/priceCurrency/priceUnit, so changing a price is an audited
- * catalog edit rather than a frontend deploy. What stays here is the copy the
- * catalog has no column for — name, description, feature bullets.
- */
 export type PlanCopy = {
   name: string;
   description: string;
@@ -43,229 +62,33 @@ export type PlanCopy = {
 };
 
 export type PlanCopyEntry = {
-  /** Checkout mode to send to Stripe. Derived from the plan's commercial shape. */
-  mode: "payment" | "subscription";
+  mode: PlanCheckoutMode;
   zh: PlanCopy;
   en: PlanCopy;
 };
 
-export const XCONNECT_PRODUCT_SLUG = "xconnect";
-export const XCONNECT_SUBSCRIPTION_PLAN_IDS = [
-  "PRO-MONTHLY-V2",
-  "PRO-YEARLY-V2",
-] as const;
-
-export const PLAN_COPY: Record<string, PlanCopyEntry> = {
-  PLUS: {
-    mode: "subscription",
-    zh: {
-      name: "Plus 月度订阅",
-      description: "每月 20GB 流量，适合日常 AI 对话与轻度使用。",
-      features: ["每月 20GB 高速流量", "按月续订"],
-    },
-    en: {
-      name: "Plus Monthly",
-      description: "20GB of monthly traffic for everyday AI conversations.",
-      features: ["20GB monthly traffic", "Renews monthly"],
-    },
-  },
-  "PAYG-TOPUP-50": {
-    mode: "payment",
-    zh: {
-      name: "按量余额充值",
-      description: "按选择的金额一次性充值，进入按量付费余额。",
-      features: [
-        "人民币余额独立记账",
-        "一次性充值，不自动续费",
-        "与有效订阅互斥",
-      ],
-    },
-    en: {
-      name: "Pay-as-you-go balance",
-      description: "Make a one-time top-up for the amount you select.",
-      features: [
-        "CNY balance is recorded separately",
-        "One-time payment; no auto-renewal",
-        "Mutually exclusive with an active subscription",
-      ],
-    },
-  },
-  "PAYG-TOPUP-100": {
-    mode: "payment",
-    zh: {
-      name: "按量余额充值",
-      description: "按选择的金额一次性充值，进入按量付费余额。",
-      features: [
-        "人民币余额独立记账",
-        "一次性充值，不自动续费",
-        "与有效订阅互斥",
-      ],
-    },
-    en: {
-      name: "Pay-as-you-go balance",
-      description: "Make a one-time top-up for the amount you select.",
-      features: [
-        "CNY balance is recorded separately",
-        "One-time payment; no auto-renewal",
-        "Mutually exclusive with an active subscription",
-      ],
-    },
-  },
-  "PAYG-TOPUP-200": {
-    mode: "payment",
-    zh: {
-      name: "按量余额充值",
-      description: "按选择的金额一次性充值，进入按量付费余额。",
-      features: [
-        "人民币余额独立记账",
-        "一次性充值，不自动续费",
-        "与有效订阅互斥",
-      ],
-    },
-    en: {
-      name: "Pay-as-you-go balance",
-      description: "Make a one-time top-up for the amount you select.",
-      features: [
-        "CNY balance is recorded separately",
-        "One-time payment; no auto-renewal",
-        "Mutually exclusive with an active subscription",
-      ],
-    },
-  },
-  "PAYG-TOPUP-USD-20": {
-    mode: "payment",
-    zh: {
-      name: "按量余额充值",
-      description: "一次性充值美元余额，单独记账且不自动兑换。",
-      features: [
-        "美元余额独立记账",
-        "一次性充值，不自动续费",
-        "与有效订阅互斥",
-      ],
-    },
-    en: {
-      name: "Pay-as-you-go balance (USD)",
-      description:
-        "Make a one-time USD top-up; the balance is not automatically converted.",
-      features: [
-        "USD balance is recorded separately",
-        "One-time payment; no auto-renewal",
-        "Mutually exclusive with an active subscription",
-      ],
-    },
-  },
-  "PAYG-TOPUP-USD-50": {
-    mode: "payment",
-    zh: {
-      name: "按量余额充值",
-      description: "一次性充值美元余额，单独记账且不自动兑换。",
-      features: [
-        "美元余额独立记账",
-        "一次性充值，不自动续费",
-        "与有效订阅互斥",
-      ],
-    },
-    en: {
-      name: "Pay-as-you-go balance (USD)",
-      description:
-        "Make a one-time USD top-up; the balance is not automatically converted.",
-      features: [
-        "USD balance is recorded separately",
-        "One-time payment; no auto-renewal",
-        "Mutually exclusive with an active subscription",
-      ],
-    },
-  },
-  "PAYG-TOPUP-USD-100": {
-    mode: "payment",
-    zh: {
-      name: "按量余额充值",
-      description: "一次性充值美元余额，单独记账且不自动兑换。",
-      features: [
-        "美元余额独立记账",
-        "一次性充值，不自动续费",
-        "与有效订阅互斥",
-      ],
-    },
-    en: {
-      name: "Pay-as-you-go balance (USD)",
-      description:
-        "Make a one-time USD top-up; the balance is not automatically converted.",
-      features: [
-        "USD balance is recorded separately",
-        "One-time payment; no auto-renewal",
-        "Mutually exclusive with an active subscription",
-      ],
-    },
-  },
-  "PRO-MONTHLY-V2": {
-    mode: "subscription",
-    zh: {
-      name: "Pro 月付",
-      description: "每月 50GB 高速流量，适合 AI 编程与更频繁的使用。",
-      features: [
-        "每月 50GB 高速流量",
-        "超出部分 ¥1/GB 自动计费",
-        "资源卡片明码实价 + 20% 托管费",
-        "14 天欠费宽限期",
-      ],
-    },
-    en: {
-      name: "Pro Monthly",
-      description:
-        "50GB of accelerated traffic each month for frequent AI use.",
-      features: [
-        "50GB accelerated traffic per month",
-        "Overage auto-billed at ¥1/GB",
-        "Resource cards at list price + 20% managed fee",
-        "14-day grace period on payment failure",
-      ],
-    },
-  },
-  "PRO-YEARLY-V2": {
-    mode: "subscription",
-    zh: {
-      name: "Pro 年付",
-      description: "一次支付，享全年不限流量。",
-      features: [
-        "全年不限流量",
-        "一次性年付，不按月续费",
-        "资源卡片明码实价 + 20% 托管费",
-      ],
-    },
-    en: {
-      name: "Pro Yearly",
-      description: "Pay once for unlimited traffic for the year.",
-      features: [
-        "Unlimited traffic for the year",
-        "One annual payment; no monthly renewal",
-        "Resource cards at list price + 20% managed fee",
-      ],
-    },
-  },
+export type PlanComparisonRow = {
+  planId: string;
+  family: PlanFamilyId;
+  name: string;
+  price: string;
+  quota: string;
+  resources: string;
+  exitIp: string;
+  ipChanges: string;
+  support: string;
+  gracePeriod: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaMode: PlanCtaMode;
 };
 
-/** Order the storefront shows plans in when the catalog omits sortOrder. */
-const SELLABLE_PLAN_ORDER = [
-  "PLUS",
-  "PRO-MONTHLY-V2",
-  "PRO-YEARLY-V2",
-  "PAYG-TOPUP-50",
-  "PAYG-TOPUP-100",
-  "PAYG-TOPUP-200",
-  "PAYG-TOPUP-USD-20",
-  "PAYG-TOPUP-USD-50",
-  "PAYG-TOPUP-USD-100",
-];
-
-/**
- * A plan is offerable only when the catalog says it is active AND carries a
- * Stripe price. Without both, checkout would fail at accounts
- * (`validCheckoutPrice`), so the UI must not present a buy button.
- */
-export function isPurchasable(plan: CatalogPlan | undefined): boolean {
-  return Boolean(plan?.active && plan.stripePriceId);
-}
+const FAMILY_RANK: Record<PlanFamilyId, number> = {
+  free: 0,
+  plus: 10,
+  pro: 20,
+  custom: 30,
+};
 
 const CURRENCY_SYMBOL: Record<string, string> = {
   CNY: "¥",
@@ -276,6 +99,7 @@ const CURRENCY_SYMBOL: Record<string, string> = {
 const UNIT_SUFFIX: Record<string, { zh: string; en: string }> = {
   month: { zh: "/月", en: "/month" },
   year: { zh: "/年", en: "/year" },
+  hour: { zh: "/小时", en: "/hour" },
   gb: { zh: "/GB", en: "/GB" },
   once: { zh: "", en: "" },
 };
@@ -283,13 +107,402 @@ const UNIT_SUFFIX: Record<string, { zh: string; en: string }> = {
 export type FormattedPrice = { amount: string; period: string };
 
 /**
+ * Default aligned 4-family catalog templates used when a family has no active
+ * database row published yet. Operators can override every field in
+ * `/panel/ops/billing/plans` via `/api/admin/billing/plans`.
+ */
+export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
+  {
+    planId: "FREE-MONTHLY-2026",
+    displayName: "Free",
+    kind: "subscription",
+    packageName: "free",
+    includedQuotaBytes: 5 * GB_BYTES,
+    priceAmount: 0,
+    priceCurrency: "CNY",
+    priceUnit: "month",
+    active: false,
+    sortOrder: 0,
+    features: {
+      family: "free",
+      description: "基础免费体验档，登录即可使用。",
+      description_en: "Starter free plan — sign in to connect.",
+      quota_label: "5 GB / 月",
+      quota_label_en: "5 GB / month",
+      marketing_features: [
+        "基础免费流量额度",
+        "共享基础资源池",
+        "可随时升级至 PLUS / PRO / 定制节点",
+      ],
+      marketing_features_en: [
+        "Starter free traffic allowance",
+        "Shared starter resource pool",
+        "Upgrade to PLUS, PRO, or Custom anytime",
+      ],
+      comparison_matrix: {
+        resources: "共享基础资源池",
+        exit_ip: "共享 IP",
+        ip_changes: "—",
+        support: "基础文档与社区支持",
+      },
+      cta_mode: "free",
+      cta_href: "/login",
+    },
+  },
+  {
+    planId: "PLUS-MONTHLY-2026",
+    displayName: "PLUS",
+    kind: "subscription",
+    packageName: "plus",
+    includedQuotaBytes: 30 * GB_BYTES,
+    priceAmount: 3000,
+    priceCurrency: "CNY",
+    priceUnit: "month",
+    active: false,
+    sortOrder: 10,
+    features: {
+      family: "plus",
+      description: "订阅用户 · 30GB 高速流量 · 共享资源池。",
+      description_en:
+        "30 GB monthly accelerated traffic on the shared resource pool.",
+      quota_label: "30 GB / 月",
+      quota_label_en: "30 GB / month",
+      marketing_features: [
+        "每月 30 GB 高速流量",
+        "共享资源池",
+        "3 天欠费宽限期",
+      ],
+      marketing_features_en: [
+        "30 GB accelerated traffic per month",
+        "Shared resource pool",
+        "3-day grace period",
+      ],
+      comparison_matrix: {
+        resources: "共享资源池",
+        exit_ip: "共享 IP",
+        ip_changes: "—",
+        support: "环境维护与技术支持",
+      },
+      cta_mode: "stripe_checkout",
+      dunning: { grace_days: 3 },
+    },
+  },
+  {
+    planId: "PRO-MONTHLY-2026",
+    displayName: "PRO",
+    kind: "subscription",
+    packageName: "pro",
+    includedQuotaBytes: 50 * GB_BYTES,
+    priceAmount: 5000,
+    priceCurrency: "CNY",
+    priceUnit: "month",
+    active: false,
+    sortOrder: 20,
+    features: {
+      family: "pro",
+      highlight: true,
+      badge: "推荐",
+      description: "订阅用户 · 50GB/月高速流量 · PRO专属资源池。",
+      description_en:
+        "50 GB/month accelerated traffic on the dedicated PRO resource pool.",
+      quota_label: "50 GB / 月",
+      quota_label_en: "50 GB / month",
+      marketing_features: [
+        "每月 50 GB 高速流量",
+        "PRO专属资源池",
+        "3 天欠费宽限期",
+      ],
+      marketing_features_en: [
+        "50 GB accelerated traffic per month",
+        "PRO dedicated resource pool",
+        "3-day grace period",
+      ],
+      comparison_matrix: {
+        resources: "PRO专属资源池",
+        exit_ip: "精品 IP 资源",
+        ip_changes: "—",
+        support: "优先环境维护与技术支持",
+      },
+      cta_mode: "stripe_checkout",
+      dunning: { grace_days: 3 },
+    },
+  },
+  {
+    planId: "CUSTOM-NODE-MONTHLY-2026",
+    displayName: "定制节点",
+    kind: "subscription",
+    packageName: "custom",
+    includedQuotaBytes: 1024 * GB_BYTES,
+    priceAmount: 8000,
+    priceCurrency: "CNY",
+    priceUnit: "month",
+    active: false,
+    sortOrder: 30,
+    features: {
+      family: "custom",
+      checkout_mode: "subscription",
+      description:
+        "订阅用户 · 独享IP · 独享节点 · 每个月免费更换一次，再次更换10元/次。",
+      description_en:
+        "Dedicated IP and dedicated node · 1 free IP change per month, then ¥10/change.",
+      quota_label: "独享节点",
+      quota_label_en: "Dedicated node",
+      marketing_features: [
+        "独享IP · 独享节点",
+        "每个月免费更换一次，再次更换10元/次",
+        "3 天欠费宽限期",
+      ],
+      marketing_features_en: [
+        "Dedicated IP · Dedicated node",
+        "1 free IP change per month, then ¥10/change",
+        "3-day grace period",
+      ],
+      comparison_matrix: {
+        resources: "独享节点",
+        exit_ip: "独享IP",
+        ip_changes: "每个月免费更换一次，再次更换10元/次",
+        support: "专属节点维护与技术支持",
+      },
+      cta_mode: "contact_sales",
+      cta_href: "/docs/contact",
+      dunning: { grace_days: 3 },
+    },
+  },
+  {
+    planId: "CUSTOM-AI-CONSULT-2026",
+    displayName: "AI 工具咨询，电脑环境配置",
+    kind: "subscription",
+    packageName: "custom",
+    includedQuotaBytes: 0,
+    priceAmount: 10000,
+    priceCurrency: "CNY",
+    priceUnit: "once",
+    active: false,
+    sortOrder: 31,
+    features: {
+      family: "custom",
+      checkout_mode: "payment",
+      price_unit_label: "小时/次",
+      price_unit_label_en: "hour/session",
+      description:
+        "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统（面向非订阅用户的付费服务）",
+      description_en:
+        "Supported: macOS, Windows, Linux, iOS, Android. Not supported: Huawei HarmonyOS NEXT (paid service for non-subscribers).",
+      quota_label: "按小时/按次服务",
+      quota_label_en: "Per hour / session",
+      marketing_features: [
+        "面向非订阅用户的付费服务（100元/小时/次）",
+        "支持：MacOS Windows Linux IOS Android",
+        "不支持：国产华为纯血鸿蒙系统",
+      ],
+      marketing_features_en: [
+        "Paid consultation for non-subscribers (¥100/hour/session)",
+        "Supported: macOS, Windows, Linux, iOS, Android",
+        "Not supported: Huawei HarmonyOS NEXT",
+      ],
+      comparison_matrix: {
+        resources: "一对一 AI 工具咨询与电脑环境配置",
+        exit_ip: "—",
+        ip_changes: "—",
+        support:
+          "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统",
+      },
+      cta_mode: "contact_sales",
+      cta_href: "/docs/contact",
+      dunning: { grace_days: 3 },
+    },
+  },
+];
+
+function classifyFamilyToken(raw: unknown): PlanFamilyId | "excluded" | null {
+  if (typeof raw !== "string") return null;
+  const token = raw.trim().toLowerCase();
+  if (!token) return null;
+  if (
+    token === "trial" ||
+    token === "payg" ||
+    token === "paygo" ||
+    token === "paygo_topup" ||
+    token === "beta" ||
+    token === "gift" ||
+    token.startsWith("payg-") ||
+    token.startsWith("trial-")
+  ) {
+    return "excluded";
+  }
+  if (token === "free" || /(^|[^a-z])free([^a-z]|$)/.test(token)) {
+    return "free";
+  }
+  if (token === "plus" || /(^|[^a-z])plus([^a-z]|$)/.test(token)) {
+    return "plus";
+  }
+  if (token === "pro" || /(^|[^a-z])pro([^a-z]|$)/.test(token)) {
+    return "pro";
+  }
+  if (
+    token === "custom" ||
+    /custom|team|enterprise|dedicated|consult|定制|独享|专属|咨询/.test(token)
+  ) {
+    return "custom";
+  }
+  return null;
+}
+
+/**
+ * Resolves a plan into one of the 4 supported families (`free | plus | pro | custom`).
+ * Returns `null` for `trial`, `paygo_topup`, `internal_only`, or unrecognized plans.
+ */
+export function planFamily(plan: CatalogPlan | undefined): PlanFamilyId | null {
+  if (!plan) return null;
+  if (plan.kind === "trial" || plan.kind === "paygo_topup") return null;
+  if (plan.features?.internal_only === true) return null;
+
+  const policy = plan.features?.catalog_policy as
+    | Record<string, unknown>
+    | undefined;
+  const candidates = [
+    plan.features?.family,
+    policy?.family,
+    plan.packageName,
+    plan.planId,
+    plan.displayName,
+  ];
+
+  for (const candidate of candidates) {
+    const match = classifyFamilyToken(candidate);
+    if (match === "excluded") return null;
+    if (match) return match;
+  }
+  return null;
+}
+
+export function planTierRank(
+  planOrFamily: CatalogPlan | PlanFamilyId | undefined,
+): number {
+  if (!planOrFamily) return -1;
+  if (typeof planOrFamily === "string") {
+    return FAMILY_RANK[planOrFamily] ?? -1;
+  }
+  const family = planFamily(planOrFamily);
+  return family ? FAMILY_RANK[family] : -1;
+}
+
+/**
+ * Reads the arrears grace period from `plan.features.dunning.grace_days`.
+ * Defaults to 3 days (never 14).
+ */
+export function graceDays(plan: CatalogPlan | undefined): number {
+  const dunning = plan?.features?.dunning as
+    | { grace_days?: unknown }
+    | undefined;
+  const raw = dunning?.grace_days;
+  const parsed =
+    typeof raw === "number"
+      ? raw
+      : typeof raw === "string" && raw.trim() !== ""
+        ? Number(raw)
+        : NaN;
+  if (Number.isFinite(parsed) && parsed > 0 && parsed !== 14) {
+    return Math.round(parsed);
+  }
+  return DEFAULT_GRACE_DAYS;
+}
+
+/**
+ * Guards against Go `math.MaxInt64` (>= 1 PB or unsafe JS integer) and explicit
+ * `fast_lane.mode === "unlimited"`.
+ */
+export function isUnlimitedQuota(plan: CatalogPlan | undefined): boolean {
+  if (!plan) return false;
+  const fastLane = plan.features?.fast_lane as { mode?: string } | undefined;
+  if (fastLane?.mode === "unlimited") return true;
+  const bytes = plan.includedQuotaBytes ?? plan.maxTrafficBytes ?? 0;
+  if (bytes >= PB_BYTES || (bytes > 0 && !Number.isSafeInteger(bytes))) {
+    return true;
+  }
+  return false;
+}
+
+export function formatPlanQuota(
+  plan: CatalogPlan | undefined,
+  locale: "zh" | "en",
+): string {
+  if (!plan) return "";
+  const localizedLabel =
+    locale === "en"
+      ? (plan.features?.quota_label_en ?? plan.features?.quota_label)
+      : (plan.features?.quota_label_zh ?? plan.features?.quota_label);
+  if (typeof localizedLabel === "string" && localizedLabel.trim() !== "") {
+    return localizedLabel.trim();
+  }
+  if (isUnlimitedQuota(plan)) {
+    return locale === "zh" ? "不限流量" : "Unlimited traffic";
+  }
+  const bytes = plan.includedQuotaBytes ?? plan.maxTrafficBytes ?? 0;
+  if (typeof bytes === "number" && Number.isFinite(bytes) && bytes > 0) {
+    return formatBytes(bytes);
+  }
+  return "";
+}
+
+/**
+ * A plan is offerable for Stripe checkout only when the catalog says it is
+ * active AND carries a Stripe price ID.
+ */
+export function isPurchasable(plan: CatalogPlan | undefined): boolean {
+  return Boolean(plan?.active && plan.stripePriceId);
+}
+
+export function planCheckoutMode(
+  plan: CatalogPlan | undefined,
+): PlanCheckoutMode {
+  const explicit = plan?.features?.checkout_mode;
+  if (explicit === "payment" || explicit === "subscription") {
+    return explicit;
+  }
+  const unit = (plan?.priceUnit ?? "").toLowerCase();
+  if (unit === "once" || unit === "hour") {
+    return "payment";
+  }
+  return "subscription";
+}
+
+export function planCtaMode(plan: CatalogPlan | undefined): PlanCtaMode {
+  const explicit = plan?.features?.cta_mode;
+  if (
+    explicit === "free" ||
+    explicit === "stripe_checkout" ||
+    explicit === "contact_sales"
+  ) {
+    return explicit;
+  }
+  const family = planFamily(plan);
+  if (family === "free") return "free";
+  if (family === "custom" && !isPurchasable(plan)) return "contact_sales";
+  return "stripe_checkout";
+}
+
+export function planCtaHref(
+  plan: CatalogPlan | undefined,
+  fallback?: string,
+): string {
+  const rawHref = plan?.features?.cta_href;
+  if (
+    typeof rawHref === "string" &&
+    /^(\/(?!\/)|https:\/\/)/.test(rawHref.trim())
+  ) {
+    return rawHref.trim();
+  }
+  const mode = planCtaMode(plan);
+  if (mode === "free") return fallback ?? "/login";
+  if (mode === "contact_sales") return fallback ?? "/docs/contact";
+  return fallback ?? "/panel/subscription";
+}
+
+/**
  * Renders the catalog's list price. Amounts are stored in the currency's minor
- * unit, so 2000 CNY-cents reads as ¥20.
- *
- * Returns null when the plan publishes no price. Callers must treat that as
- * "not for sale yet" rather than substituting a hardcoded number — showing a
- * price the catalog does not carry is how /prices and the user center ended up
- * quoting different amounts for the same plan.
+ * unit, so 3000 CNY-cents reads as ¥30. Supports custom `features.price_unit_label`
+ * (such as `"小时/次"`).
  */
 export function formatPlanPrice(
   plan: CatalogPlan | undefined,
@@ -301,8 +514,20 @@ export function formatPlanPrice(
   const currency = plan.priceCurrency.toUpperCase();
   const symbol = CURRENCY_SYMBOL[currency] ?? `${currency} `;
   const major = plan.priceAmount / 100;
-  // Whole amounts read as ¥20, not ¥20.00; fractional ones keep both digits.
   const rendered = Number.isInteger(major) ? String(major) : major.toFixed(2);
+
+  const customUnitLabel =
+    locale === "en"
+      ? (plan.features?.price_unit_label_en ?? plan.features?.price_unit_label)
+      : (plan.features?.price_unit_label_zh ?? plan.features?.price_unit_label);
+  if (typeof customUnitLabel === "string" && customUnitLabel.trim() !== "") {
+    const clean = customUnitLabel.trim();
+    return {
+      amount: `${symbol}${rendered}`,
+      period: clean.startsWith("/") ? clean : `/${clean}`,
+    };
+  }
+
   const unit = (plan.priceUnit ?? "").toLowerCase();
   return {
     amount: `${symbol}${rendered}`,
@@ -310,84 +535,520 @@ export function formatPlanPrice(
   };
 }
 
-/**
- * The plans we have display copy for, in storefront order, joined with
- * whatever the live catalog currently says about them. Plans present in the
- * catalog but without copy are skipped rather than rendered with a blank
- * price — an unpriced buy button is worse than no button.
- */
-export function sellablePlans(
-  catalog: Map<string, CatalogPlan>,
-): Array<{ planId: string; copy: PlanCopyEntry; plan?: CatalogPlan }> {
-  return SELLABLE_PLAN_ORDER.filter((planId) => PLAN_COPY[planId]).map(
-    (planId) => ({
-      planId,
-      copy: PLAN_COPY[planId],
-      plan: catalog.get(planId),
-    }),
-  );
+function sanitizeGraceCopy(text: string, days: number): string {
+  return text
+    .replace(/14\s*天欠[费款]宽限期/g, `${days} 天欠费宽限期`)
+    .replace(/14-day grace period/gi, `${days}-day grace period`);
 }
 
-function copyForUnlistedPlan(plan: CatalogPlan): PlanCopyEntry {
-  const mode = plan.kind === "subscription" ? "subscription" : "payment";
-  const featureValues = Object.values(plan.features ?? {}).filter(
-    (value): value is string =>
-      typeof value === "string" && value.trim() !== "",
-  );
-  const name = plan.displayName?.trim() || plan.planId;
-  const description =
-    plan.kind === "subscription"
-      ? "由账户本地权益模型维护的订阅套餐。"
-      : "由账户本地账务模型记录的用量或一次性方案。";
-  const features = featureValues.length > 0 ? featureValues : [description];
+export function planDescription(
+  plan: CatalogPlan | undefined,
+  locale: "zh" | "en",
+): string {
+  if (!plan) return "";
+  const days = graceDays(plan);
+  const raw =
+    locale === "en"
+      ? (plan.features?.description_en ?? plan.features?.description)
+      : (plan.features?.description_zh ?? plan.features?.description);
+  if (typeof raw === "string" && raw.trim() !== "") {
+    return sanitizeGraceCopy(raw.trim(), days);
+  }
+
+  const family = planFamily(plan) ?? "plus";
+  const quota = formatPlanQuota(plan, locale);
+  const matrix = (plan.features?.comparison_matrix ??
+    {}) as PlanComparisonMatrix;
+
+  switch (family) {
+    case "free":
+      return locale === "zh"
+        ? `基础免费体验档${quota ? `（${quota}）` : ""}，登录即可使用。`
+        : `Starter free plan${quota ? ` (${quota})` : ""} — sign in to connect.`;
+    case "plus":
+      return locale === "zh"
+        ? `订阅用户 · ${quota || "30 GB"} 高速流量 · ${matrix.resources || "共享资源池"}。`
+        : `${quota || "30 GB"} accelerated traffic · ${matrix.resources || "Shared resource pool"}.`;
+    case "pro":
+      return locale === "zh"
+        ? `订阅用户 · ${quota || "50 GB"} 高速流量 · ${matrix.resources || "PRO专属资源池"}。`
+        : `${quota || "50 GB"} accelerated traffic · ${matrix.resources || "PRO dedicated resource pool"}.`;
+    case "custom":
+      if (planCheckoutMode(plan) === "payment") {
+        return locale === "zh"
+          ? "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统（面向非订阅用户的付费服务）"
+          : "Supported: macOS, Windows, Linux, iOS, Android. Not supported: Huawei HarmonyOS NEXT (paid service for non-subscribers).";
+      }
+      return locale === "zh"
+        ? "订阅用户 · 独享IP · 独享节点 · 每个月免费更换一次，再次更换10元/次。"
+        : "Dedicated IP & dedicated node · 1 free IP change per month, then ¥10/change.";
+  }
+}
+
+function parseMarketingFeatures(raw: unknown, days: number): string[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => sanitizeGraceCopy(item.trim(), days))
+      .filter(Boolean);
+  }
+  if (typeof raw === "string" && raw.trim() !== "") {
+    return raw
+      .split(/\r?\n/)
+      .map((item) => sanitizeGraceCopy(item.trim(), days))
+      .filter(Boolean);
+  }
+  return [];
+}
+
+export function planFeatureList(
+  plan: CatalogPlan | undefined,
+  locale: "zh" | "en",
+): string[] {
+  if (!plan) return [];
+  const days = graceDays(plan);
+  const explicit =
+    locale === "en"
+      ? (plan.features?.marketing_features_en ??
+        plan.features?.marketing_features ??
+        plan.features?.features)
+      : (plan.features?.marketing_features_zh ??
+        plan.features?.marketing_features ??
+        plan.features?.features);
+  const parsed = parseMarketingFeatures(explicit, days);
+  if (parsed.length > 0) {
+    return parsed;
+  }
+
+  const family = planFamily(plan) ?? "plus";
+  const quota = formatPlanQuota(plan, locale);
+  const matrix = (plan.features?.comparison_matrix ??
+    {}) as PlanComparisonMatrix;
+
+  switch (family) {
+    case "free":
+      return locale === "zh"
+        ? [
+            quota ? `每月 ${quota} 基础流量` : "基础免费流量额度",
+            matrix.resources || "共享基础资源池",
+            "可随时升级至 PLUS / PRO / 定制节点",
+          ]
+        : [
+            quota ? `${quota} starter traffic` : "Starter free traffic",
+            matrix.resources || "Shared starter resource pool",
+            "Upgrade to PLUS, PRO, or Custom anytime",
+          ];
+    case "plus":
+      return locale === "zh"
+        ? [
+            quota ? `每月 ${quota} 高速流量` : "每月 30 GB 高速流量",
+            matrix.resources || "共享资源池",
+            `${days} 天欠费宽限期`,
+          ]
+        : [
+            quota
+              ? `${quota} accelerated traffic`
+              : "30 GB accelerated traffic",
+            matrix.resources || "Shared resource pool",
+            `${days}-day grace period`,
+          ];
+    case "pro":
+      return locale === "zh"
+        ? [
+            quota ? `${quota} 高速流量` : "每月 50 GB 高速流量",
+            matrix.resources || "PRO专属资源池",
+            `${days} 天欠费宽限期`,
+          ]
+        : [
+            quota
+              ? `${quota} accelerated traffic`
+              : "50 GB accelerated traffic",
+            matrix.resources || "PRO dedicated resource pool",
+            `${days}-day grace period`,
+          ];
+    case "custom":
+      if (planCheckoutMode(plan) === "payment") {
+        return locale === "zh"
+          ? [
+              "面向非订阅用户的付费服务（100元/小时/次）",
+              "支持：MacOS Windows Linux IOS Android",
+              "不支持：国产华为纯血鸿蒙系统",
+            ]
+          : [
+              "Paid consultation for non-subscribers (¥100/hour/session)",
+              "Supported: macOS, Windows, Linux, iOS, Android",
+              "Not supported: Huawei HarmonyOS NEXT",
+            ];
+      }
+      return locale === "zh"
+        ? [
+            matrix.exit_ip && matrix.resources
+              ? `${matrix.exit_ip} · ${matrix.resources}`
+              : "独享IP · 独享节点",
+            matrix.ip_changes || "每个月免费更换一次，再次更换10元/次",
+            `${days} 天欠费宽限期`,
+          ]
+        : [
+            matrix.exit_ip && matrix.resources
+              ? `${matrix.exit_ip} · ${matrix.resources}`
+              : "Dedicated IP · Dedicated node",
+            matrix.ip_changes || "1 free IP change per month, then ¥10/change",
+            `${days}-day grace period`,
+          ];
+  }
+}
+
+export function planComparisonRow(
+  plan: CatalogPlan,
+  locale: "zh" | "en",
+): PlanComparisonRow {
+  const family = planFamily(plan) ?? "plus";
+  const price = formatPlanPrice(plan, locale);
+  const quota = formatPlanQuota(plan, locale);
+  const days = graceDays(plan);
+  const matrix = (plan.features?.comparison_matrix ??
+    {}) as PlanComparisonMatrix;
+  const ctaMode = planCtaMode(plan);
+
+  const defaultResources: Record<PlanFamilyId, { zh: string; en: string }> = {
+    free: { zh: "共享基础资源池", en: "Shared starter resource pool" },
+    plus: { zh: "共享资源池", en: "Shared resource pool" },
+    pro: { zh: "PRO专属资源池", en: "PRO dedicated resource pool" },
+    custom:
+      planCheckoutMode(plan) === "payment"
+        ? {
+            zh: "一对一 AI 工具咨询与电脑环境配置",
+            en: "1-on-1 AI tool consultation & environment setup",
+          }
+        : { zh: "独享节点", en: "Dedicated node" },
+  };
+
+  const defaultExitIp: Record<PlanFamilyId, { zh: string; en: string }> = {
+    free: { zh: "共享 IP", en: "Shared IP" },
+    plus: { zh: "共享 IP", en: "Shared IP" },
+    pro: { zh: "精品 IP 资源", en: "Premium IP resources" },
+    custom:
+      planCheckoutMode(plan) === "payment"
+        ? { zh: "—", en: "—" }
+        : { zh: "独享IP", en: "Dedicated IP" },
+  };
+
+  const defaultIpChanges: Record<PlanFamilyId, { zh: string; en: string }> = {
+    free: { zh: "—", en: "—" },
+    plus: { zh: "—", en: "—" },
+    pro: { zh: "—", en: "—" },
+    custom:
+      planCheckoutMode(plan) === "payment"
+        ? { zh: "—", en: "—" }
+        : {
+            zh: "每个月免费更换一次，再次更换10元/次",
+            en: "1 free change/month, then ¥10/change",
+          },
+  };
+
+  const defaultSupport: Record<PlanFamilyId, { zh: string; en: string }> = {
+    free: { zh: "基础文档与社区支持", en: "Documentation & community support" },
+    plus: {
+      zh: "环境维护与技术支持",
+      en: "Environment maintenance & technical support",
+    },
+    pro: {
+      zh: "优先环境维护与技术支持",
+      en: "Priority maintenance & technical support",
+    },
+    custom:
+      planCheckoutMode(plan) === "payment"
+        ? {
+            zh: "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统",
+            en: "Supported: macOS, Windows, Linux, iOS, Android; Not supported: HarmonyOS NEXT",
+          }
+        : {
+            zh: "专属节点维护与技术支持",
+            en: "Dedicated node maintenance & technical support",
+          },
+  };
+
+  const priceDisplay =
+    family === "free" && !price
+      ? locale === "zh"
+        ? "免费"
+        : "Free"
+      : price
+        ? `${price.amount}${price.period}`
+        : family === "custom"
+          ? locale === "zh"
+            ? "按需定制"
+            : "Custom pricing"
+          : locale === "zh"
+            ? "即将上线"
+            : "Coming soon";
+
+  const quotaDisplay =
+    quota ||
+    (planCheckoutMode(plan) === "payment"
+      ? locale === "zh"
+        ? "按小时/按次服务"
+        : "Per hour / session"
+      : family === "custom"
+        ? locale === "zh"
+          ? "独享节点配额"
+          : "Dedicated node allowance"
+        : "—");
+
+  const graceDisplay =
+    family === "free" || planCheckoutMode(plan) === "payment"
+      ? "—"
+      : locale === "zh"
+        ? `${days} 天欠费宽限期`
+        : `${days}-day grace period`;
+
+  const ctaLabel =
+    ctaMode === "free"
+      ? locale === "zh"
+        ? "免费开始"
+        : "Start for free"
+      : ctaMode === "contact_sales"
+        ? locale === "zh"
+          ? "联系定制"
+          : "Contact sales"
+        : locale === "zh"
+          ? "立即订阅"
+          : "Subscribe";
+
+  const ctaHref =
+    ctaMode === "free"
+      ? planCtaHref(plan, "/register")
+      : ctaMode === "contact_sales"
+        ? planCtaHref(plan, "/prices")
+        : "/panel/subscription";
+
   return {
-    mode,
-    zh: { name, description, features },
-    en: { name, description, features },
+    planId: plan.planId,
+    family,
+    name: plan.displayName?.trim() || plan.planId,
+    price: priceDisplay,
+    quota: quotaDisplay,
+    resources: matrix.resources?.trim() || defaultResources[family][locale],
+    exitIp: matrix.exit_ip?.trim() || defaultExitIp[family][locale],
+    ipChanges: matrix.ip_changes?.trim() || defaultIpChanges[family][locale],
+    support: matrix.support?.trim() || defaultSupport[family][locale],
+    gracePeriod: graceDisplay,
+    ctaLabel,
+    ctaHref,
+    ctaMode,
+  };
+}
+
+export function copyForPlan(plan: CatalogPlan): PlanCopyEntry {
+  const name = plan.displayName?.trim() || plan.planId;
+  return {
+    mode: planCheckoutMode(plan),
+    zh: {
+      name,
+      description: planDescription(plan, "zh"),
+      features: planFeatureList(plan, "zh"),
+    },
+    en: {
+      name,
+      description: planDescription(plan, "en"),
+      features: planFeatureList(plan, "en"),
+    },
   };
 }
 
 /**
- * Returns every active account-backed billing plan for the authenticated
- * checkout surface. Unlike the marketing copy map above, this also renders
- * newly-created operator plans (including an unpriced Free plan) so the
- * current entitlement can be explained without a Portal deploy.
+ * Resolves a plan from the catalog map by ID, or synthesizes a minimal plan
+ * record when the user's current plan ID is a legacy identifier not in the map.
  */
-export function billingPlans(
+export function resolveCatalogPlan(
   catalog: Map<string, CatalogPlan>,
-): Array<{ planId: string; copy: PlanCopyEntry; plan: CatalogPlan }> {
-  const known = sellablePlans(catalog);
-  const knownIds = new Set(known.map(({ planId }) => planId));
-  const dynamic = [...catalog.values()]
-    .filter(
-      (plan) =>
-        plan.active && !knownIds.has(plan.planId) && plan.kind !== "trial",
-    )
-    .sort(
-      (left, right) =>
-        (right.sortOrder ?? 0) - (left.sortOrder ?? 0) ||
-        left.planId.localeCompare(right.planId),
-    )
-    .map((plan) => ({
-      planId: plan.planId,
-      copy: copyForUnlistedPlan(plan),
-      plan,
-    }));
-
-  return [
-    ...known.flatMap((offer) =>
-      offer.plan
-        ? [{ planId: offer.planId, copy: offer.copy, plan: offer.plan }]
-        : [],
-    ),
-    ...dynamic,
-  ];
+  planId: string | undefined,
+): CatalogPlan | undefined {
+  if (!planId) return undefined;
+  const found = catalog.get(planId);
+  if (found) return found;
+  const family = classifyFamilyToken(planId);
+  if (!family || family === "excluded") return undefined;
+  return {
+    planId,
+    displayName: planId,
+    kind: "subscription",
+    packageName: family,
+    active: true,
+  };
 }
 
 /**
- * Reads the live catalog. Failures leave the map empty, which renders every
- * plan as "coming soon" — the same state as a catalog that has not been
- * seeded yet, and never a buy button that cannot complete.
+ * Determines whether an existing subscriber on `currentPlan` can upgrade to
+ * `targetPlan` in-place. True when both are paid subscription plans and
+ * `targetPlan` has a higher family tier rank, or is in the same family moving
+ * from monthly to yearly / higher list price.
+ */
+export function canUpgradeSubscription(
+  currentPlan: CatalogPlan | undefined,
+  targetPlan: CatalogPlan | undefined,
+): boolean {
+  if (!currentPlan || !targetPlan) return false;
+  if (currentPlan.planId === targetPlan.planId) return false;
+  const currentFamily = planFamily(currentPlan);
+  const targetFamily = planFamily(targetPlan);
+  if (
+    !currentFamily ||
+    !targetFamily ||
+    currentFamily === "free" ||
+    targetFamily === "free"
+  ) {
+    return false;
+  }
+  if (planCheckoutMode(targetPlan) !== "subscription") {
+    return false;
+  }
+  const currentRank = planTierRank(currentFamily);
+  const targetRank = planTierRank(targetFamily);
+  if (targetRank > currentRank) {
+    return true;
+  }
+  if (targetRank === currentRank) {
+    const currentUnit = (currentPlan.priceUnit ?? "month").toLowerCase();
+    const targetUnit = (targetPlan.priceUnit ?? "month").toLowerCase();
+    if (currentUnit === "month" && targetUnit === "year") {
+      return true;
+    }
+    if ((targetPlan.priceAmount ?? 0) > (currentPlan.priceAmount ?? 0)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function compareCatalogPlans(left: CatalogPlan, right: CatalogPlan): number {
+  const rankDiff = planTierRank(left) - planTierRank(right);
+  if (rankDiff !== 0) return rankDiff;
+  const sortDiff = (left.sortOrder ?? 0) - (right.sortOrder ?? 0);
+  if (sortDiff !== 0) return sortDiff;
+  const unitOrder: Record<string, number> = {
+    month: 0,
+    year: 1,
+    hour: 2,
+    once: 3,
+  };
+  const leftUnit = unitOrder[(left.priceUnit ?? "").toLowerCase()] ?? 4;
+  const rightUnit = unitOrder[(right.priceUnit ?? "").toLowerCase()] ?? 4;
+  if (leftUnit !== rightUnit) return leftUnit - rightUnit;
+  return left.planId.localeCompare(right.planId);
+}
+
+/**
+ * Returns every active billing plan in the 4 supported families (`free`, `plus`,
+ * `pro`, `custom`), filtering out inactive, `trial`, `paygo_topup`, and
+ * `internal_only` rows.
+ */
+export function billingPlans(
+  catalog: Map<string, CatalogPlan>,
+): Array<{
+  planId: string;
+  family: PlanFamilyId;
+  copy: PlanCopyEntry;
+  plan: CatalogPlan;
+}> {
+  return [...catalog.values()]
+    .filter((plan) => plan.active && planFamily(plan) !== null)
+    .sort(compareCatalogPlans)
+    .map((plan) => ({
+      planId: plan.planId,
+      family: planFamily(plan)!,
+      copy: copyForPlan(plan),
+      plan,
+    }));
+}
+
+export function groupCatalogByFamily(
+  catalog: Map<string, CatalogPlan> | CatalogPlan[],
+): Record<PlanFamilyId, CatalogPlan[]> {
+  const list = Array.isArray(catalog) ? catalog : [...catalog.values()];
+  const grouped: Record<PlanFamilyId, CatalogPlan[]> = {
+    free: [],
+    plus: [],
+    pro: [],
+    custom: [],
+  };
+  for (const plan of list) {
+    if (!plan.active) continue;
+    const family = planFamily(plan);
+    if (!family) continue;
+    grouped[family].push(plan);
+  }
+  for (const family of PLAN_FAMILIES) {
+    grouped[family].sort(compareCatalogPlans);
+  }
+  return grouped;
+}
+
+/**
+ * Merges live active catalog plans with the 4-family default templates for any
+ * family not yet published in `/api/billing/plans`.
+ */
+export function catalogWithFamilyDefaults(
+  catalog: Map<string, CatalogPlan>,
+): CatalogPlan[] {
+  const grouped = groupCatalogByFamily(catalog);
+  const result: CatalogPlan[] = [];
+  for (const family of PLAN_FAMILIES) {
+    if (grouped[family].length > 0) {
+      result.push(...grouped[family]);
+    } else {
+      result.push(
+        ...DEFAULT_CATALOG_PLANS.filter((p) => planFamily(p) === family),
+      );
+    }
+  }
+  return result;
+}
+
+export function buildXConnectPlanComparison(
+  catalog: Map<string, CatalogPlan>,
+  locale: "zh" | "en",
+): {
+  columns: PlanComparisonRow[];
+  rows: Array<{ label: string; values: string[] }>;
+} {
+  const plans = catalogWithFamilyDefaults(catalog);
+  const columns = plans.map((plan) => planComparisonRow(plan, locale));
+  const rows = [
+    {
+      label: locale === "zh" ? "价格" : "Price",
+      values: columns.map((c) => c.price),
+    },
+    {
+      label: locale === "zh" ? "流量 / 规格" : "Quota / Scope",
+      values: columns.map((c) => c.quota),
+    },
+    {
+      label: locale === "zh" ? "资源池" : "Resources",
+      values: columns.map((c) => c.resources),
+    },
+    {
+      label: locale === "zh" ? "出口 IP" : "Exit IP",
+      values: columns.map((c) => c.exitIp),
+    },
+    {
+      label: locale === "zh" ? "IP 更换" : "IP changes",
+      values: columns.map((c) => c.ipChanges),
+    },
+    {
+      label: locale === "zh" ? "服务与支持" : "Support",
+      values: columns.map((c) => c.support),
+    },
+    {
+      label: locale === "zh" ? "欠费宽限期" : "Grace period",
+      values: columns.map((c) => c.gracePeriod),
+    },
+  ];
+  return { columns, rows };
+}
+
+/**
+ * Reads the live catalog from `/api/billing/plans` (`cache: "no-store"`).
  */
 export function useBillingCatalog(): Map<string, CatalogPlan> {
   const [catalog, setCatalog] = useState<Map<string, CatalogPlan>>(new Map());
@@ -403,7 +1064,7 @@ export function useBillingCatalog(): Map<string, CatalogPlan> {
         );
       })
       .catch(() => {
-        // Catalog stays empty; callers fall back to "coming soon".
+        // Catalog stays empty; callers fall back to non-purchasable defaults.
       });
     return () => {
       cancelled = true;

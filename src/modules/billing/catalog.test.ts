@@ -1,238 +1,168 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  formatPlanPrice,
-  isPurchasable,
-  PLAN_COPY,
-  XCONNECT_SUBSCRIPTION_PLAN_IDS,
   billingPlans,
-  sellablePlans,
+  buildXConnectPlanComparison,
+  canUpgradeSubscription,
+  catalogWithFamilyDefaults,
+  DEFAULT_CATALOG_PLANS,
+  DEFAULT_GRACE_DAYS,
+  formatPlanPrice,
+  formatPlanQuota,
+  GB_BYTES,
+  graceDays,
+  isPurchasable,
+  isUnlimitedQuota,
+  PB_BYTES,
+  PLAN_FAMILIES,
+  planCheckoutMode,
+  planCtaMode,
+  planFamily,
   type CatalogPlan,
 } from "./catalog";
 
-function catalogOf(...plans: CatalogPlan[]): Map<string, CatalogPlan> {
-  return new Map(plans.map((plan) => [plan.planId, plan]));
-}
-
-describe("billing catalog", () => {
-  it("uses the versioned Stripe catalog IDs for the marketing subscription cards", () => {
-    expect(XCONNECT_SUBSCRIPTION_PLAN_IDS).toEqual([
-      "PRO-MONTHLY-V2",
-      "PRO-YEARLY-V2",
-    ]);
-    for (const planId of XCONNECT_SUBSCRIPTION_PLAN_IDS) {
-      expect(PLAN_COPY[planId]).toBeDefined();
-    }
-  });
-  // The bug this guards: the user center used to render a hardcoded product
-  // list, so it advertised plan IDs that did not exist in billing_plans and
-  // priced them in a different currency from /prices. Every offer must now
-  // come from the catalog.
-  it("offers nothing when the catalog is empty", () => {
-    const offers = sellablePlans(new Map());
-    expect(offers.every((offer) => !isPurchasable(offer.plan))).toBe(true);
-  });
-
-  it("does not offer a plan that is active but has no Stripe price", () => {
-    const catalog = catalogOf({ planId: "PRO-MONTHLY-V2", active: true });
-    const monthly = sellablePlans(catalog).find(
-      (offer) => offer.planId === "PRO-MONTHLY-V2",
-    );
-    expect(monthly).toBeDefined();
-    // Checkout would fail at accounts' validCheckoutPrice, so the UI must not
-    // present a buy button for it.
-    expect(isPurchasable(monthly!.plan)).toBe(false);
-  });
-
-  it("does not offer a plan that has a Stripe price but was delisted", () => {
-    const catalog = catalogOf({
-      planId: "PRO-MONTHLY-V2",
-      active: false,
-      stripePriceId: "price_123",
-    });
-    const monthly = sellablePlans(catalog).find(
-      (offer) => offer.planId === "PRO-MONTHLY-V2",
-    );
-    expect(isPurchasable(monthly!.plan)).toBe(false);
-  });
-
-  it("offers a plan only once it is both active and priced", () => {
-    const catalog = catalogOf({
-      planId: "PRO-MONTHLY-V2",
-      active: true,
-      stripePriceId: "price_123",
-    });
-    const monthly = sellablePlans(catalog).find(
-      (offer) => offer.planId === "PRO-MONTHLY-V2",
-    );
-    expect(isPurchasable(monthly!.plan)).toBe(true);
-    expect(monthly!.plan?.stripePriceId).toBe("price_123");
-  });
-
-  it("ignores catalog entries it has no display copy for", () => {
-    // TRIAL-7D and FREE are real catalog rows but are not sold; rendering them
-    // with a blank price and a buy button would be worse than omitting them.
-    const catalog = catalogOf(
-      { planId: "TRIAL-7D", active: true, stripePriceId: "price_trial" },
-      { planId: "FREE", active: true },
-    );
-    expect(sellablePlans(catalog).map((offer) => offer.planId)).not.toContain(
-      "TRIAL-7D",
-    );
-    expect(sellablePlans(catalog).map((offer) => offer.planId)).not.toContain(
-      "FREE",
-    );
-  });
-
-  it("keeps operator-managed subscription plans visible with live copy", () => {
-    const offers = billingPlans(
-      catalogOf(
-        {
-          planId: "FREE-5GB",
-          displayName: "Free 5GB",
-          kind: "subscription",
-          includedQuotaBytes: 5 * 1024 ** 3,
-          active: true,
-          sortOrder: 30,
-        },
-        {
-          planId: "PLUS-20GB",
-          displayName: "Plus 20GB",
-          kind: "subscription",
-          includedQuotaBytes: 20 * 1024 ** 3,
-          active: true,
-          sortOrder: 20,
-        },
-      ),
-    );
-
-    expect(offers.map((offer) => offer.planId)).toEqual([
-      "FREE-5GB",
-      "PLUS-20GB",
-    ]);
-    expect(offers[0].copy.zh.name).toBe("Free 5GB");
-    expect(offers[1].plan.includedQuotaBytes).toBe(20 * 1024 ** 3);
-    expect(isPurchasable(offers[0].plan)).toBe(false);
-  });
-
-  it("checks out top-ups as one-off payments and subscription plans as subscriptions", () => {
-    // A top-up sent with mode=subscription would create a recurring charge;
-    // a subscription sent with mode=payment would never renew. Both are money
-    // bugs, so the mode is pinned to the plan rather than inferred at the call
-    // site.
-    expect(PLAN_COPY["PAYG-TOPUP-50"].mode).toBe("payment");
-    expect(PLAN_COPY["PAYG-TOPUP-USD-50"].mode).toBe("payment");
-    expect(PLAN_COPY.PLUS.mode).toBe("subscription");
-    expect(PLAN_COPY["PRO-MONTHLY-V2"].mode).toBe("subscription");
-    expect(PLAN_COPY["PRO-YEARLY-V2"].mode).toBe("subscription");
-  });
-
-  it("offers only the current subscription and fixed top-up denominations", () => {
-    const offers = sellablePlans(new Map()).map((offer) => offer.planId);
-
-    expect(offers).toEqual([
-      "PLUS",
-      "PRO-MONTHLY-V2",
-      "PRO-YEARLY-V2",
-      "PAYG-TOPUP-50",
-      "PAYG-TOPUP-100",
-      "PAYG-TOPUP-200",
-      "PAYG-TOPUP-USD-20",
-      "PAYG-TOPUP-USD-50",
-      "PAYG-TOPUP-USD-100",
-    ]);
-    expect(offers).not.toContain("PAYG-TOPUP-500");
-    expect(PLAN_COPY["PRO-YEARLY-V2"].zh.description).toContain("不限流量");
-  });
-
-  it("carries copy for every sellable plan in both languages", () => {
-    for (const [planId, entry] of Object.entries(PLAN_COPY)) {
-      for (const locale of ["zh", "en"] as const) {
-        const copy = entry[locale];
-        expect(copy.name, `${planId}.${locale}.name`).toBeTruthy();
-        expect(
-          copy.description,
-          `${planId}.${locale}.description`,
-        ).toBeTruthy();
-        expect(
-          copy.features.length,
-          `${planId}.${locale}.features`,
-        ).toBeGreaterThan(0);
-      }
-    }
-  });
-});
-
-describe("formatPlanPrice", () => {
-  // Prices used to be hardcoded per page, which is how /prices quoted ¥20 for
-  // a plan the user center quoted as USD 49. The amount now has exactly one
-  // source: the catalog.
-  it("renders minor units as a major-unit amount with a period suffix", () => {
-    const price = formatPlanPrice(
-      {
-        planId: "PRO-MONTHLY-V2",
+describe("four-family billing catalog", () => {
+  it("supports strictly the 4 canonical families and 3-day grace default", () => {
+    expect(PLAN_FAMILIES).toEqual(["free", "plus", "pro", "custom"]);
+    expect(DEFAULT_GRACE_DAYS).toBe(3);
+    expect(graceDays(undefined)).toBe(3);
+    expect(
+      graceDays({
+        planId: "PRO-MONTHLY-2026",
         active: true,
-        priceAmount: 5000,
-        priceCurrency: "CNY",
-        priceUnit: "month",
-      },
-      "zh",
-    );
-    expect(price).toEqual({ amount: "¥50", period: "/月" });
+        features: { dunning: { grace_days: 14 } },
+      }),
+    ).toBe(3);
   });
 
-  it("localizes the period suffix", () => {
-    const price = formatPlanPrice(
-      {
+  it("excludes legacy trial, paygo_topup, and internal_only plans from billingPlans", () => {
+    const catalog = new Map<string, CatalogPlan>([
+      [
+        "FREE-3GB-2026",
+        {
+          planId: "FREE-3GB-2026",
+          kind: "trial",
+          packageName: "free",
+          active: true,
+        },
+      ],
+      [
+        "PAYG-TOPUP-50",
+        {
+          planId: "PAYG-TOPUP-50",
+          kind: "paygo_topup",
+          packageName: "payg",
+          active: true,
+        },
+      ],
+      [
+        "UNLIMITED-BETA",
+        {
+          planId: "UNLIMITED-BETA",
+          kind: "subscription",
+          packageName: "unlimited-beta",
+          active: true,
+          features: { internal_only: true },
+        },
+      ],
+      [
+        "PLUS-MONTHLY-2026",
+        {
+          planId: "PLUS-MONTHLY-2026",
+          displayName: "Plus",
+          kind: "subscription",
+          packageName: "plus",
+          includedQuotaBytes: 30 * GB_BYTES,
+          priceAmount: 3000,
+          priceCurrency: "CNY",
+          priceUnit: "month",
+          stripePriceId: "price_plus_live",
+          active: true,
+        },
+      ],
+    ]);
+
+    const published = billingPlans(catalog);
+    expect(published.map((item) => item.planId)).toEqual(["PLUS-MONTHLY-2026"]);
+    expect(isPurchasable(published[0].plan)).toBe(true);
+  });
+
+  it("handles large/MaxInt64 quotas safely as unlimited", () => {
+    expect(
+      isUnlimitedQuota({
         planId: "PRO-YEARLY-V2",
         active: true,
-        priceAmount: 50000,
-        priceCurrency: "CNY",
-        priceUnit: "year",
-      },
-      "en",
-    );
-    expect(price).toEqual({ amount: "¥500", period: "/year" });
-  });
-
-  it("keeps both decimals when the amount is not whole", () => {
-    const price = formatPlanPrice(
-      {
-        planId: "PAYG-TOPUP-50",
-        active: true,
-        priceAmount: 4999,
-        priceCurrency: "USD",
-        priceUnit: "once",
-      },
-      "en",
-    );
-    expect(price).toEqual({ amount: "$49.99", period: "" });
-  });
-
-  it("falls back to the raw code for a currency with no symbol", () => {
-    const price = formatPlanPrice(
-      {
-        planId: "PRO-MONTHLY",
-        active: true,
-        priceAmount: 1500,
-        priceCurrency: "JPY",
-        priceUnit: "month",
-      },
-      "en",
-    );
-    expect(price?.amount).toBe("JPY 15");
-  });
-
-  it("returns null rather than inventing a price", () => {
-    // No amount, or an amount with no currency to read it in, must not render
-    // as a number — the caller shows "coming soon" instead.
-    expect(formatPlanPrice(undefined, "zh")).toBeNull();
-    expect(formatPlanPrice({ planId: "FREE", active: true }, "zh")).toBeNull();
+        includedQuotaBytes: 9223372036854776000,
+      }),
+    ).toBe(true);
     expect(
-      formatPlanPrice(
-        { planId: "FREE", active: true, priceAmount: 2000 },
+      formatPlanQuota(
+        {
+          planId: "PRO-YEARLY-V2",
+          active: true,
+          includedQuotaBytes: PB_BYTES,
+        },
         "zh",
       ),
-    ).toBeNull();
+    ).toBe("不限流量");
+  });
+
+  it("formats default 4-family aligned plans and AI consult one-time service", () => {
+    const plus = DEFAULT_CATALOG_PLANS.find(
+      (p) => p.planId === "PLUS-MONTHLY-2026",
+    )!;
+    const pro = DEFAULT_CATALOG_PLANS.find(
+      (p) => p.planId === "PRO-MONTHLY-2026",
+    )!;
+    const node = DEFAULT_CATALOG_PLANS.find(
+      (p) => p.planId === "CUSTOM-NODE-MONTHLY-2026",
+    )!;
+    const consult = DEFAULT_CATALOG_PLANS.find(
+      (p) => p.planId === "CUSTOM-AI-CONSULT-2026",
+    )!;
+
+    expect(formatPlanPrice(plus, "zh")).toEqual({ amount: "¥30", period: "/月" });
+    expect(formatPlanPrice(pro, "zh")).toEqual({ amount: "¥50", period: "/月" });
+    expect(formatPlanPrice(node, "zh")).toEqual({ amount: "¥80", period: "/月" });
+    expect(formatPlanPrice(consult, "zh")).toEqual({
+      amount: "¥100",
+      period: "/小时/次",
+    });
+    expect(planCheckoutMode(consult)).toBe("payment");
+    expect(planCtaMode(plus)).toBe("stripe_checkout");
+    expect(planFamily(node)).toBe("custom");
+  });
+
+  it("evaluates subscription upgrades dynamically without hardcoded IDs", () => {
+    const plus: CatalogPlan = {
+      planId: "PLUS-MONTHLY-2026",
+      kind: "subscription",
+      packageName: "plus",
+      priceAmount: 3000,
+      priceCurrency: "CNY",
+      priceUnit: "month",
+      includedQuotaBytes: 30 * GB_BYTES,
+      active: true,
+    };
+    const pro: CatalogPlan = {
+      planId: "PRO-MONTHLY-2026",
+      kind: "subscription",
+      packageName: "pro",
+      priceAmount: 5000,
+      priceCurrency: "CNY",
+      priceUnit: "month",
+      includedQuotaBytes: 50 * GB_BYTES,
+      active: true,
+    };
+    expect(canUpgradeSubscription(plus, pro)).toBe(true);
+    expect(canUpgradeSubscription(pro, plus)).toBe(false);
+  });
+
+  it("builds dynamic XConnect comparison table for all 4 families", () => {
+    const comparison = buildXConnectPlanComparison(new Map(), "zh");
+    expect(comparison.columns.length).toBe(
+      catalogWithFamilyDefaults(new Map()).length,
+    );
+    expect(comparison.rows.some((r) => r.label === "欠费宽限期")).toBe(true);
   });
 });

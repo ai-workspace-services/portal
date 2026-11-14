@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Image from "next/image";
 import {
   Activity,
@@ -16,6 +17,10 @@ import LanguageToggle from "@/components/LanguageToggle";
 import { Github } from "@/components/icons/brand";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { XConnectContent } from "@/lib/xconnectContent";
+import {
+  buildXConnectPlanComparison,
+  useBillingCatalog,
+} from "@modules/billing/catalog";
 import styles from "./XConnectProductView.module.css";
 import ReferralPromoSection from "@/components/referrals/ReferralPromoSection";
 import type { ReferralContent } from "@/lib/referral-content";
@@ -38,6 +43,12 @@ export default function XConnectProductView({
 }) {
   const { language } = useLanguage();
   const c = content[language];
+  const locale = language === "zh" ? "zh" : "en";
+  const catalog = useBillingCatalog();
+  const dynamicPlans = useMemo(
+    () => buildXConnectPlanComparison(catalog, locale),
+    [catalog, locale],
+  );
   return (
     <div className={`xds ${styles.page}`}>
       <header className={styles.header}>
@@ -237,50 +248,69 @@ export default function XConnectProductView({
             </div>
           </div>
         </section>
-        {c.plans ? (
-          <section className={styles.plans} aria-labelledby="plans-title">
-            <h2 id="plans-title">{c.plans.title}</h2>
-            <div className={styles.planTable}>
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col">{c.plans.benefitLabel}</th>
-                    {c.plans.names.map((name) => (
-                      <th scope="col" key={name}>
-                        {name}
-                      </th>
+        <section className={styles.plans} aria-labelledby="plans-title">
+          <h2 id="plans-title">
+            {c.plans?.title ??
+              (locale === "zh"
+                ? "选择适合你的连接方案"
+                : "Choose the right connection plan")}
+          </h2>
+          <div className={styles.planTable}>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">
+                    {c.plans?.benefitLabel ??
+                      (locale === "zh" ? "权益与规格" : "Plan Benefits")}
+                  </th>
+                  {dynamicPlans.columns.map((col) => (
+                    <th scope="col" key={col.planId}>
+                      {col.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {dynamicPlans.rows.map((row) => (
+                  <tr key={row.label}>
+                    <th scope="row">{row.label}</th>
+                    {row.values.map((value, index) => (
+                      <td key={`${row.label}-${dynamicPlans.columns[index]?.planId ?? index}`}>
+                        {value}
+                      </td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {c.plans.rows.map((row) => (
-                    <tr key={row.label}>
-                      <th scope="row">{row.label}</th>
-                      {row.values.map((value, index) => (
-                        <td key={index}>{value}</td>
-                      ))}
-                    </tr>
+                ))}
+                <tr>
+                  <th scope="row">{locale === "zh" ? "立即选择" : "Action"}</th>
+                  {dynamicPlans.columns.map((col) => (
+                    <td key={`${col.planId}-cta`}>
+                      <BoundaryLink href={col.ctaHref}>
+                        {col.ctaLabel}
+                      </BoundaryLink>
+                    </td>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className={styles.planCards}>
-              {c.plans.names.map((name, index) => (
-                <article className={styles.planCard} key={name}>
-                  <h3>{name}</h3>
-                  <dl>
-                    {c.plans?.rows.map((row) => (
-                      <div key={row.label}>
-                        <dt>{row.label}</dt>
-                        <dd>{row.values[index]}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.planCards}>
+            {dynamicPlans.columns.map((col, index) => (
+              <article className={styles.planCard} key={col.planId}>
+                <h3>{col.name}</h3>
+                <dl>
+                  {dynamicPlans.rows.map((row) => (
+                    <div key={`${col.planId}-${row.label}`}>
+                      <dt>{row.label}</dt>
+                      <dd>{row.values[index]}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <BoundaryLink href={col.ctaHref}>{col.ctaLabel}</BoundaryLink>
+              </article>
+            ))}
+          </div>
+        </section>
         {referralContent ? (
           <ReferralPromoSection content={referralContent} compact />
         ) : null}

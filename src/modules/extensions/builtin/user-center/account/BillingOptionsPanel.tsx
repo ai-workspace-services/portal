@@ -13,62 +13,26 @@ import {
   type SubscriptionPreview,
   type StripeCheckoutPayload,
 } from "@components/billing/stripe-client";
+import BoundaryLink from "@components/common/BoundaryLink";
 import Card from "../components/Card";
-import { formatBytes } from "@lib/format";
 import {
   billingPlans,
+  canUpgradeSubscription,
   formatPlanPrice,
+  formatPlanQuota,
+  graceDays,
   isPurchasable,
+  planCheckoutMode,
+  planCtaHref,
+  planCtaMode,
+  planDescription,
+  planFamily,
   useBillingCatalog,
   XCONNECT_PRODUCT_SLUG,
   type CatalogPlan,
 } from "@modules/billing/catalog";
 import { useLanguage } from "@i18n/LanguageProvider";
 import MembershipTierMark from "../components/MembershipTierMark";
-
-type Mode = "subscription" | "payg";
-type Currency = "CNY" | "USD";
-type FixedTopUp = { planId: string; currency: Currency; amountMinor: number };
-
-const TOP_UPS: FixedTopUp[] = [
-  { planId: "PAYG-TOPUP-50", currency: "CNY", amountMinor: 5000 },
-  { planId: "PAYG-TOPUP-100", currency: "CNY", amountMinor: 10000 },
-  { planId: "PAYG-TOPUP-200", currency: "CNY", amountMinor: 20000 },
-  { planId: "PAYG-TOPUP-USD-20", currency: "USD", amountMinor: 2000 },
-  { planId: "PAYG-TOPUP-USD-50", currency: "USD", amountMinor: 5000 },
-  { planId: "PAYG-TOPUP-USD-100", currency: "USD", amountMinor: 10000 },
-];
-
-type PurchaseOption = {
-  planId: string;
-  currency: Currency;
-  amountMinor: number;
-  plan?: CatalogPlan;
-  custom?: boolean;
-};
-
-const CUSTOM_TOPUP_LIMITS: Record<
-  Currency,
-  { min: number; max: number; planId: string }
-> = {
-  CNY: { min: 10, max: 200, planId: "PAYG-CUSTOM-CNY" },
-  USD: { min: 5, max: 100, planId: "PAYG-CUSTOM-USD" },
-};
-
-function matchesTopUpPlan(option: FixedTopUp, plan?: CatalogPlan): boolean {
-  return Boolean(
-    plan?.active &&
-    plan.kind === "paygo_topup" &&
-    plan.priceAmount === option.amountMinor &&
-    plan.priceCurrency?.toUpperCase() === option.currency &&
-    plan.priceUnit?.toLowerCase() === "once",
-  );
-}
-
-function priceLabel(currency: Currency, amountMinor: number): string {
-  const amount = amountMinor / 100;
-  return `${currency === "CNY" ? "¥" : "$"}${amount}`;
-}
 
 export default function BillingOptionsPanel({
   currentPlanId,
@@ -77,15 +41,12 @@ export default function BillingOptionsPanel({
 }) {
   const { language } = useLanguage();
   const zh = language === "zh";
+  const locale = zh ? "zh" : "en";
   const catalog = useBillingCatalog();
   const { mutate } = useSWRConfig();
   const lastPurchase = useRef<
     { pending: boolean; planId?: string } | undefined
   >(undefined);
-  const [mode, setMode] = useState<Mode>("subscription");
-  const [currency, setCurrency] = useState<Currency>("CNY");
-  const [selectedTopUp, setSelectedTopUp] = useState("PAYG-TOPUP-50");
-  const [customAmount, setCustomAmount] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [purchasePending, setPurchasePending] = useState<boolean | null>(null);
@@ -101,8 +62,15 @@ export default function BillingOptionsPanel({
   } | null>(null);
   const [settledPlanId, setSettledPlanId] = useState<string | undefined>();
   const selectedPlanId = settledPlanId ?? currentPlanId;
-  const paidPlan = ["PLUS", "PRO-MONTHLY-V2", "PRO-YEARLY-V2"].includes(
-    selectedPlanId ?? "",
+
+  const currentCatalogPlan = selectedPlanId
+    ? catalog.get(selectedPlanId)
+    : undefined;
+  const currentFamily = planFamily(currentCatalogPlan);
+  const hasPaidSubscription = Boolean(
+    selectedPlanId &&
+    currentFamily !== "free" &&
+    (currentCatalogPlan?.kind ?? "subscription") === "subscription",
   );
 
   useEffect(() => {
@@ -123,8 +91,6 @@ export default function BillingOptionsPanel({
             planId: status.planId,
           };
           if (settled) {
-            // A confirmed payment changes all account read models, including
-            // node access after a previously exhausted Free allowance.
             void mutate((key) => {
               const name = Array.isArray(key) ? key[0] : key;
               return (
@@ -149,7 +115,7 @@ export default function BillingOptionsPanel({
           if (!status.pending) setSettledPlanId(status.planId || undefined);
         }
       } catch {
-        if (active) setPurchasePending(null); // Unknown is never permission to buy again.
+        if (active) setPurchasePending(null);
       }
     };
     void check();
@@ -162,90 +128,31 @@ export default function BillingOptionsPanel({
     };
   }, [currentPlanId, mutate]);
 
-  const subscriptionOptions = useMemo(
+  const catalogOptions = useMemo(
     () =>
       billingPlans(catalog)
-        .filter(
-          ({ plan }) =>
-            plan.kind === "subscription" &&
-            ["PLUS", "PRO-MONTHLY-V2", "PRO-YEARLY-V2"].includes(plan.planId),
-        )
+        .filter(({ family }) => family !== "free")
         .map(({ plan }) => plan),
     [catalog],
   );
 
-  const topUpOptions = useMemo<PurchaseOption[]>(
-    () =>
-      TOP_UPS.filter((option) => option.currency === currency).map(
-        (option) => ({
-          ...option,
-          plan: catalog.get(option.planId),
-        }),
-      ),
-    [catalog, currency],
-  );
-
-  const selectedOption =
-    customAmount.trim() !== ""
-      ? {
-          planId: CUSTOM_TOPUP_LIMITS[currency].planId,
-          currency,
-          amountMinor: Number(customAmount) * 100,
-          custom: true,
-        }
-      : (topUpOptions.find((option) => option.planId === selectedTopUp) ??
-        topUpOptions[0]);
-
-  const customAmountValid =
-    Number.isInteger(Number(customAmount)) &&
-    Number(customAmount) >= CUSTOM_TOPUP_LIMITS[currency].min &&
-    Number(customAmount) <= CUSTOM_TOPUP_LIMITS[currency].max;
-
-  const handleCheckout = async (option: PurchaseOption, checkoutMode: Mode) => {
-    if (
-      checkoutMode === "payg" &&
-      option.custom &&
-      (!customAmountValid ||
-        !Number.isSafeInteger(option.amountMinor) ||
-        option.amountMinor <= 0)
-    ) {
+  const handleCheckout = async (plan: CatalogPlan) => {
+    if (!isPurchasable(plan)) {
       setMessage(
         zh
-          ? `请输入 ${currency === "CNY" ? "¥" : "$"}${CUSTOM_TOPUP_LIMITS[currency].min}–${CUSTOM_TOPUP_LIMITS[currency].max} 的整数金额。`
-          : `Enter a whole amount from ${currency === "CNY" ? "¥" : "$"}${CUSTOM_TOPUP_LIMITS[currency].min} to ${CUSTOM_TOPUP_LIMITS[currency].max}.`,
+          ? "该套餐尚未配置可用的 Stripe 价格。"
+          : "This plan is not configured for Stripe checkout yet.",
       );
       return;
     }
-    if (
-      checkoutMode === "payg" &&
-      !option.custom &&
-      !matchesTopUpPlan(option, option.plan)
-    ) {
-      setMessage(
-        zh
-          ? "该固定档位尚未配置可用的 Stripe 价格。"
-          : "This fixed tier is not configured for checkout yet.",
-      );
-      return;
-    }
-    if (!option.custom && !isPurchasable(option.plan)) {
-      setMessage(
-        zh
-          ? "该固定档位尚未配置可用的 Stripe 价格。"
-          : "This fixed tier is not configured for checkout yet.",
-      );
-      return;
-    }
-    setSubmitting(option.planId);
+    setSubmitting(plan.planId);
     setMessage(null);
+    const checkoutMode = planCheckoutMode(plan);
     try {
       const payload: StripeCheckoutPayload = {
-        planId: option.planId,
-        stripePriceId: option.plan?.stripePriceId ?? "",
-        ...(option.custom
-          ? { amountMinor: option.amountMinor, currency: option.currency }
-          : {}),
-        mode: checkoutMode === "payg" ? "payment" : "subscription",
+        planId: plan.planId,
+        stripePriceId: plan.stripePriceId ?? "",
+        mode: checkoutMode,
         productSlug: XCONNECT_PRODUCT_SLUG,
         sourcePath: "/panel/subscription",
       };
@@ -254,7 +161,7 @@ export default function BillingOptionsPanel({
         setConfirmation({
           quote,
           payload,
-          name: option.plan?.displayName || option.planId,
+          name: plan.displayName || plan.planId,
         });
       } else {
         await startStripeCheckout(payload);
@@ -275,35 +182,13 @@ export default function BillingOptionsPanel({
     <Card className="space-y-5" data-testid="fixed-currency-billing-options">
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-heading)]">
-          {zh ? "升级你的使用方式" : "Choose how you use XConnect"}
+          {zh ? "选择或升级方案" : "Choose or upgrade your plan"}
         </h2>
         <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
           {zh
-            ? "按业务需要，在月度订阅与按量充值之间选择。"
-            : "Choose a monthly plan or a one-time balance top-up."}
+            ? "实时同步套餐目录（Free / Plus / Pro / Custom），订阅欠费保留 3 天宽限期。"
+            : "Synced live from the 4-family billing catalog (Free / Plus / Pro / Custom) with a 3-day payment grace period."}
         </p>
-      </div>
-
-      <div className="grid grid-cols-2 rounded-lg border border-[color:var(--color-surface-border)] p-1">
-        {(
-          [
-            ["subscription", zh ? "订阅套餐" : "Subscription plans"],
-            ["payg", zh ? "按量付费" : "Pay as you go"],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={mode === value}
-            onClick={() => {
-              setMode(value);
-              setMessage(null);
-            }}
-            className={`rounded-md px-3 py-2 text-sm font-semibold transition ${mode === value ? "bg-[var(--color-primary)] text-white dark:bg-[var(--color-action)]" : "text-[var(--color-text-subtle)] hover:bg-[var(--color-surface)]"}`}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       <CheckoutStatusBanner />
@@ -466,101 +351,78 @@ export default function BillingOptionsPanel({
         </p>
       ) : null}
 
-      {mode === "subscription" ? (
-        <div className="space-y-3">
-          <div className="rounded-lg bg-[var(--color-surface)] p-4">
-            <p className="flex items-center gap-2 font-semibold text-[var(--color-heading)]">
-              <MembershipTierMark
-                plan={{
-                  planId: "PLUS-20GB",
-                  displayName: "Plus",
-                  packageName: "plus",
-                }}
-              />
-              Plus · 20 GB/{zh ? "月" : "month"}
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              {zh
-                ? "适合日常 AI 对话与轻度使用。"
-                : "For everyday AI conversations and lighter use."}
-            </p>
-          </div>
-          {subscriptionOptions.length ? (
-            subscriptionOptions.map((plan) => {
-              const price = formatPlanPrice(plan, zh ? "zh" : "en");
-              const ready = isPurchasable(plan);
-              const fastLane = plan.features?.fast_lane as
-                | { mode?: string }
-                | undefined;
-              const unlimited = fastLane?.mode === "unlimited";
-              return (
-                <div
-                  key={plan.planId}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[color:var(--color-surface-border)] p-4"
-                >
-                  <div>
-                    <p className="flex items-center gap-2 font-semibold text-[var(--color-heading)]">
-                      <MembershipTierMark plan={plan} />
-                      {plan.displayName || plan.planId}
+      <div className="space-y-3">
+        {catalogOptions.length ? (
+          catalogOptions.map((plan) => {
+            const price = formatPlanPrice(plan, locale);
+            const quotaText = formatPlanQuota(plan, locale);
+            const description = planDescription(plan, locale);
+            const ready = isPurchasable(plan);
+            const ctaMode = planCtaMode(plan);
+            const checkoutMode = planCheckoutMode(plan);
+            const isCurrent = plan.planId === selectedPlanId;
+            const upgradeEligible =
+              !hasPaidSubscription ||
+              checkoutMode === "payment" ||
+              canUpgradeSubscription(currentCatalogPlan, plan);
+            const cooldownActive =
+              hasPaidSubscription &&
+              checkoutMode === "subscription" &&
+              Boolean(cooldownUntil) &&
+              Date.parse(cooldownUntil!) > Date.now();
+
+            return (
+              <div
+                key={plan.planId}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[color:var(--color-surface-border)] p-4"
+              >
+                <div className="max-w-xl">
+                  <p className="flex items-center gap-2 font-semibold text-[var(--color-heading)]">
+                    <MembershipTierMark plan={plan} />
+                    {plan.displayName || plan.planId}
+                  </p>
+                  <p className="mt-0.5 text-sm text-[var(--color-text-subtle)]">
+                    {price
+                      ? `${price.amount}${price.period}`
+                      : zh
+                        ? "价格待配置"
+                        : "Price not configured"}
+                    {quotaText ? ` · ${quotaText}` : ""}
+                    {checkoutMode === "subscription"
+                      ? ` · ${graceDays(plan)} ${zh ? "天宽限期" : "day grace"}`
+                      : ""}
+                  </p>
+                  {description ? (
+                    <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                      {description}
                     </p>
-                    <p className="text-sm text-[var(--color-text-subtle)]">
-                      {price
-                        ? `${price.amount}${price.period}`
-                        : zh
-                          ? "价格待配置"
-                          : "Price not configured"}
-                      {unlimited
-                        ? ` · ${zh ? "不限流量" : "Unlimited traffic"}`
-                        : typeof plan.includedQuotaBytes === "number" &&
-                            plan.includedQuotaBytes > 0
-                          ? ` · ${formatBytes(plan.includedQuotaBytes)}`
-                          : ""}
-                    </p>
-                  </div>
+                  ) : null}
+                </div>
+
+                {ctaMode === "contact_sales" ? (
+                  <BoundaryLink
+                    href={planCtaHref(plan)}
+                    className="rounded-md border border-[color:var(--color-surface-border)] px-4 py-2 text-sm font-semibold text-[var(--color-heading)] hover:bg-[var(--color-surface)]"
+                  >
+                    {zh ? "联系 / 预约" : "Contact us"}
+                  </BoundaryLink>
+                ) : (
                   <button
                     type="button"
-                    title={
-                      paidPlan &&
-                      plan.planId === "PRO-YEARLY-V2" &&
-                      selectedPlanId !== plan.planId
-                        ? zh
-                          ? "月付转年付将在下一批开放，当前不会创建第二份订阅。"
-                          : "Annual conversion is planned for the next phase; no second subscription will be created."
-                        : undefined
-                    }
                     disabled={
                       !ready ||
                       Boolean(submitting) ||
                       purchasePending !== false ||
                       reviewPending ||
                       Boolean(pendingPlanId) ||
-                      (paidPlan &&
-                        Boolean(cooldownUntil) &&
-                        Date.parse(cooldownUntil!) > Date.now()) ||
-                      (paidPlan &&
-                        !(
-                          selectedPlanId === "PLUS" &&
-                          plan.planId === "PRO-MONTHLY-V2"
-                        )) ||
-                      plan.planId === selectedPlanId
+                      cooldownActive ||
+                      !upgradeEligible ||
+                      isCurrent
                     }
-                    onClick={() =>
-                      handleCheckout(
-                        {
-                          planId: plan.planId,
-                          currency:
-                            plan.priceCurrency?.toUpperCase() === "USD"
-                              ? "USD"
-                              : "CNY",
-                          amountMinor: plan.priceAmount ?? 0,
-                          plan,
-                        },
-                        "subscription",
-                      )
-                    }
+                    onClick={() => void handleCheckout(plan)}
                     className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)]"
                   >
-                    {plan.planId === selectedPlanId
+                    {isCurrent
                       ? zh
                         ? "当前套餐"
                         : "Current plan"
@@ -576,9 +438,7 @@ export default function BillingOptionsPanel({
                             ? zh
                               ? "退款待审核"
                               : "Refund under review"
-                            : paidPlan &&
-                                cooldownUntil &&
-                                Date.parse(cooldownUntil) > Date.now()
+                            : cooldownActive && cooldownUntil
                               ? zh
                                 ? `可于 ${new Date(cooldownUntil).toLocaleString()} 变更`
                                 : `Available ${new Date(cooldownUntil).toLocaleString()}`
@@ -586,173 +446,38 @@ export default function BillingOptionsPanel({
                                 ? zh
                                   ? "跳转中…"
                                   : "Opening…"
-                                : paidPlan && plan.planId === "PRO-YEARLY-V2"
+                                : hasPaidSubscription &&
+                                    checkoutMode === "subscription" &&
+                                    !upgradeEligible
                                   ? zh
-                                    ? "升级为年付（暂未开放）"
-                                    : "Upgrade to annual (not available yet)"
-                                  : paidPlan &&
-                                      !(
-                                        selectedPlanId === "PLUS" &&
-                                        plan.planId === "PRO-MONTHLY-V2"
-                                      )
-                                    ? zh
-                                      ? "暂不支持此变更"
-                                      : "Change unavailable"
-                                    : ready
+                                    ? "暂不支持此变更"
+                                    : "Change unavailable"
+                                  : ready
+                                    ? checkoutMode === "payment"
                                       ? zh
-                                        ? paidPlan
-                                          ? "升级到 Pro"
-                                          : `订阅 ${plan.displayName || plan.planId}`
-                                        : `${paidPlan ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
+                                        ? "立即购买"
+                                        : "Purchase"
                                       : zh
-                                        ? "即将上线"
-                                        : "Coming soon"}
+                                        ? hasPaidSubscription
+                                          ? `升级到 ${plan.displayName || plan.planId}`
+                                          : `订阅 ${plan.displayName || plan.planId}`
+                                        : `${hasPaidSubscription ? "Upgrade to" : "Subscribe to"} ${plan.displayName || plan.planId}`
+                                    : zh
+                                      ? "即将上线"
+                                      : "Coming soon"}
                   </button>
-                </div>
-              );
-            })
-          ) : (
-            <p className="rounded-lg border border-dashed border-[color:var(--color-surface-border)] p-4 text-sm text-[var(--color-text-subtle)]">
-              {zh
-                ? "Plus 价格尚未在套餐目录中上架。"
-                : "Plus is not yet available in the billing catalog."}
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4 rounded-lg border border-[color:var(--color-surface-border)] p-4">
-          <div>
-            <h3 className="font-semibold text-[var(--color-heading)]">
-              {zh ? "自由充值，按需使用" : "Top up once, use as needed"}
-            </h3>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              {zh
-                ? "无月费；可选快捷档或自定义金额，一次性充值，不自动续费。"
-                : "No monthly fee. Choose a preset or custom one-time amount; no auto-renewal."}
-            </p>
-          </div>
-          <div
-            className="flex gap-2"
-            role="group"
-            aria-label={zh ? "充值币种" : "Top-up currency"}
-          >
-            {(["CNY", "USD"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={currency === value}
-                onClick={() => {
-                  setCurrency(value);
-                  setSelectedTopUp(
-                    value === "CNY" ? "PAYG-TOPUP-50" : "PAYG-TOPUP-USD-20",
-                  );
-                  setCustomAmount("");
-                  setMessage(null);
-                }}
-                className={`rounded-md border px-4 py-2 text-sm font-medium ${currency === value ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)] dark:bg-[var(--color-action)]/5" : "border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)]"}`}
-              >
-                {value === "CNY" ? "人民币 CNY" : "美元 USD"}
-              </button>
-            ))}
-          </div>
-          <fieldset>
-            <legend className="mb-2 text-sm font-semibold text-[var(--color-heading)]">
-              {zh ? "选择充值金额" : "Choose a top-up amount"}
-            </legend>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {topUpOptions.map((option) => {
-                const matches = matchesTopUpPlan(option, option.plan);
-                const label = priceLabel(currency, option.amountMinor);
-                return (
-                  <button
-                    key={option.planId}
-                    type="button"
-                    aria-pressed={selectedOption?.planId === option.planId}
-                    onClick={() => {
-                      setSelectedTopUp(option.planId);
-                      setCustomAmount("");
-                      setMessage(null);
-                    }}
-                    className={`rounded-md border px-3 py-3 text-sm font-semibold ${selectedOption?.planId === option.planId ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)] dark:bg-[var(--color-action)]/5" : "border-[color:var(--color-surface-border)] text-[var(--color-heading)]"}`}
-                  >
-                    {label}
-                    {!matches ? (
-                      <span className="mt-1 block text-xs font-normal text-[var(--color-text-subtle)]">
-                        {zh ? "待开通" : "Unavailable"}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
-          <label className="block text-sm font-medium text-[var(--color-heading)]">
-            {zh ? "自定义金额" : "Custom amount"}
-            <span className="mt-1 block text-xs font-normal text-[var(--color-text-subtle)]">
-              {zh
-                ? `最低 ${currency === "CNY" ? "¥10" : "$5"}，最高 ${currency === "CNY" ? "¥200" : "$100"}；仅支持整数。`
-                : `Minimum ${currency === "CNY" ? "¥10" : "$5"}, maximum ${currency === "CNY" ? "¥200" : "$100"}; whole amounts only.`}
-            </span>
-            <div className="mt-2 flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] px-3">
-              <span aria-hidden="true">{currency === "CNY" ? "¥" : "$"}</span>
-              <input
-                type="number"
-                min={CUSTOM_TOPUP_LIMITS[currency].min}
-                max={CUSTOM_TOPUP_LIMITS[currency].max}
-                step={1}
-                inputMode="numeric"
-                value={customAmount}
-                onChange={(event) => {
-                  setCustomAmount(event.target.value);
-                  setMessage(null);
-                }}
-                placeholder={zh ? "输入自定义充值金额" : "Enter an amount"}
-                aria-label={zh ? "自定义充值金额" : "Custom top-up amount"}
-                className="w-full bg-transparent py-2 outline-none"
-              />
-            </div>
-          </label>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-[var(--color-surface)] p-3">
-            <p className="text-sm text-[var(--color-text-subtle)]">
-              {zh
-                ? `本次支付 ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : "—"} · 一次性充值 · 不自动续费`
-                : `Pay ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : "—"} once · no auto-renewal`}
-            </p>
-            <button
-              type="button"
-              disabled={
-                !selectedOption ||
-                (selectedOption.custom
-                  ? !customAmountValid
-                  : !isPurchasable(selectedOption.plan) ||
-                    !matchesTopUpPlan(selectedOption, selectedOption.plan)) ||
-                submitting === selectedOption?.planId
-              }
-              onClick={() =>
-                selectedOption && handleCheckout(selectedOption, "payg")
-              }
-              className="rounded-md bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[var(--color-action)]"
-            >
-              {submitting
-                ? zh
-                  ? "跳转中…"
-                  : "Opening…"
-                : zh
-                  ? `充值 ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : ""}`
-                  : `Top up ${selectedOption ? priceLabel(currency, selectedOption.amountMinor) : ""}`}
-            </button>
-          </div>
-          <p className="text-xs text-[var(--color-text-subtle)]">
-            {currency === "USD"
-              ? zh
-                ? "按量充值与有效订阅互斥；美元余额独立记账、不自动兑换，当前流量费率以人民币配置。"
-                : "PAYG top-ups are mutually exclusive with an active subscription. USD is held separately with no auto-conversion; current traffic rates are configured in CNY."
-              : zh
-                ? "按量充值与有效订阅互斥；按量模式从余额扣费。"
-                : "CNY top-ups are recorded in the ledger and charged at the configured CNY rate."}
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <p className="rounded-lg border border-dashed border-[color:var(--color-surface-border)] p-4 text-sm text-[var(--color-text-subtle)]">
+            {zh
+              ? "套餐目录暂未配置可用方案，请在运营后台 /panel/ops/billing/plans 发布。"
+              : "No plans are currently published in /panel/ops/billing/plans."}
           </p>
-        </div>
-      )}
+        )}
+      </div>
     </Card>
   );
 }
