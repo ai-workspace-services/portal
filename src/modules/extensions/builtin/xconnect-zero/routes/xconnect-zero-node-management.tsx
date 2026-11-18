@@ -29,6 +29,7 @@ import {
 import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
 import { useLanguage } from "@i18n/LanguageProvider";
 import {
+  formatBytes,
   isXConnectZeroAdminOverview,
   xconnectNodeStatusLabel,
   xconnectRoleStatusLabel,
@@ -38,6 +39,7 @@ import {
   type XConnectZeroInvite,
   type XConnectZeroNetwork,
   type XConnectZeroRegistration,
+  type XConnectZeroTelemetry,
 } from "@lib/xconnectZero";
 
 type Page = "overview" | "join" | "configuration";
@@ -297,6 +299,31 @@ async function getRegistrations(): Promise<{
   };
 }
 
+async function getTelemetry(): Promise<XConnectZeroTelemetry | null> {
+  try {
+    const response = await fetch("/api/xconnect-zero/telemetry", {
+      cache: "no-store",
+    }).catch(() => null);
+    if (!response || !response.ok) return null;
+    const body = (await response.json().catch(() => null)) as
+      | XConnectZeroTelemetry
+      | null;
+    return body && typeof body === "object" && body.status === "available"
+      ? body
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function isConnectionModeId(value: unknown): value is ConnectionModeId {
+  return (
+    value === "wg_udp_l3" ||
+    value === "wg_vless_l3" ||
+    value === "wg_vless_l2"
+  );
+}
+
 function Button({
   children,
   onClick,
@@ -382,10 +409,12 @@ function Telemetry({
   title,
   description,
   compact = false,
+  children,
 }: {
   title: string;
   description: string;
   compact?: boolean;
+  children?: ReactNode;
 }): JSX.Element {
   return (
     <section className="rounded-[var(--radius-xl)] border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] shadow-[var(--shadow-sm)]">
@@ -397,11 +426,15 @@ function Telemetry({
           {description}
         </p>
       </div>
-      <div
-        className={`flex items-center justify-center text-sm text-[var(--color-text-muted)] ${compact ? "h-32" : "h-52"}`}
-      >
-        暂无数据
-      </div>
+      {children ? (
+        <div className="p-5">{children}</div>
+      ) : (
+        <div
+          className={`flex items-center justify-center text-sm text-[var(--color-text-muted)] ${compact ? "h-32" : "h-52"}`}
+        >
+          暂无数据
+        </div>
+      )}
     </section>
   );
 }
@@ -416,6 +449,9 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [state, setState] = useState<State>({ kind: "loading" });
   const [resourceState, setResourceState] = useState<ResourceState>("loading");
   const [resourceData, setResourceData] = useState<Resources | null>(null);
+  const [telemetry, setTelemetry] = useState<XConnectZeroTelemetry | null>(
+    null,
+  );
   const [registrationState, setRegistrationState] =
     useState<RegistrationLoadState>("loading");
   const [registrations, setRegistrations] = useState<
@@ -460,7 +496,8 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [roleFilter, setRoleFilter] = useState<"all" | NodeRole>("all");
   const [networkFilter, setNetworkFilter] = useState("all");
   const [platformFilter, setPlatformFilter] = useState<"all" | Platform>("all");
-  const [connectionMode] = useState<ConnectionModeId>("wg_vless_l3");
+  const [connectionMode, setConnectionMode] =
+    useState<ConnectionModeId>("wg_vless_l3");
 
   const networks = useMemo(() => resourceData?.networks ?? [], [resourceData]);
   const selectedNetwork = networks.find((network) => network.id === networkId);
@@ -511,6 +548,7 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     setState({ kind: "loading" });
     setResourceState("loading");
     setResourceData(null);
+    setTelemetry(null);
     setRegistrationState("loading");
     setRegistrations([]);
     setRegistrationsHasMore(false);
@@ -529,16 +567,25 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       setRegistrationState("unavailable");
       return;
     }
-    const [resourceResult, registrationResult] = await Promise.allSettled([
-      getResources(),
-      getRegistrations(),
-    ]);
+    const [resourceResult, registrationResult, telemetryResult] =
+      await Promise.allSettled([
+        getResources(),
+        getRegistrations(),
+        getTelemetry(),
+      ]);
     if (resourceResult.status === "fulfilled") {
       setResourceData(resourceResult.value);
+      const firstMode = resourceResult.value.networks[0]?.connection_mode;
+      if (isConnectionModeId(firstMode)) {
+        setConnectionMode(firstMode);
+      }
       setResourceState("ready");
     } else {
       setResourceState("error");
       setError(zh ? "加载资源失败" : "Failed to load resources");
+    }
+    if (telemetryResult.status === "fulfilled") {
+      setTelemetry(telemetryResult.value);
     }
     if (registrationResult.status === "fulfilled") {
       setRegistrations(registrationResult.value.registrations);
@@ -578,14 +625,55 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
 
   const changeNetwork = (nextNetworkId: string): void => {
     setNetworkId(nextNetworkId);
+    const matched = networks.find((network) => network.id === nextNetworkId);
     if (role === "gateway") {
-      setDeviceId(
-        networks.find((network) => network.id === nextNetworkId)?.gateway_id ??
-          "",
-      );
+      setDeviceId(matched?.gateway_id ?? "");
+    }
+    if (isConnectionModeId(matched?.connection_mode)) {
+      setConnectionMode(matched.connection_mode);
     }
     setJoinUri(null);
     setScriptCopied(false);
+  };
+
+  const changeConnectionMode = async (
+    nextMode: ConnectionModeId,
+  ): Promise<void> => {
+    const targetNetwork = selectedNetwork ?? networks[0];
+    if (!writeReady || !targetNetwork) return;
+    if (nextMode === connectionMode) return;
+    setMutationPending(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `/api/xconnect-zero/networks/${encodeURIComponent(targetNetwork.id)}/mode`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ connection_mode: nextMode }),
+        },
+      );
+      if (!response.ok) throw Error();
+      setConnectionMode(nextMode);
+      setResourceData((current) =>
+        current
+          ? {
+              ...current,
+              networks: current.networks.map((item) =>
+                item.id === targetNetwork.id
+                  ? { ...item, connection_mode: nextMode }
+                  : item,
+              ),
+            }
+          : current,
+      );
+    } catch {
+      setError(
+        zh ? "切换互联网络模式失败" : "Failed to switch connection mode",
+      );
+    } finally {
+      setMutationPending(false);
+    }
   };
 
   const changePlatform = (nextPlatform: Platform): void => {
@@ -1151,21 +1239,162 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
             <Telemetry
               title="SASE 流量分析"
               description="按 Internet 与专用网络细分的数据传输"
-            />
+            >
+              {telemetry?.sase_traffic &&
+              telemetry.sase_traffic.internet_rx_bytes +
+                telemetry.sase_traffic.internet_tx_bytes +
+                telemetry.sase_traffic.private_rx_bytes +
+                telemetry.sase_traffic.private_tx_bytes >
+                0 ? (
+                <div className="space-y-4 text-sm">
+                  {(() => {
+                    const internetRx =
+                      telemetry.sase_traffic.internet_rx_bytes ?? 0;
+                    const internetTx =
+                      telemetry.sase_traffic.internet_tx_bytes ?? 0;
+                    const privateRx =
+                      telemetry.sase_traffic.private_rx_bytes ?? 0;
+                    const privateTx =
+                      telemetry.sase_traffic.private_tx_bytes ?? 0;
+                    const internetTotal = internetRx + internetTx;
+                    const privateTotal = privateRx + privateTx;
+                    const grandTotal = internetTotal + privateTotal;
+                    const privatePct =
+                      grandTotal > 0
+                        ? Math.round((privateTotal / grandTotal) * 100)
+                        : 0;
+                    return (
+                      <>
+                        <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--color-surface-muted)]">
+                          <div
+                            className="h-full bg-[var(--color-primary)]"
+                            style={{ width: `${privatePct}%` }}
+                          />
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="rounded border border-[color:var(--color-surface-border)] p-3">
+                            <div className="flex items-center justify-between font-semibold text-[var(--color-heading)]">
+                              <span>Internet</span>
+                              <span>{formatBytes(internetTotal)}</span>
+                            </div>
+                            <small className="mt-1 block text-xs text-[var(--color-text-subtle)]">
+                              RX {formatBytes(internetRx)} / TX{" "}
+                              {formatBytes(internetTx)}
+                            </small>
+                          </div>
+                          <div className="rounded border border-[color:var(--color-surface-border)] p-3">
+                            <div className="flex items-center justify-between font-semibold text-[var(--color-heading)]">
+                              <span>{zh ? "专用网络" : "Private Network"}</span>
+                              <span>{formatBytes(privateTotal)}</span>
+                            </div>
+                            <small className="mt-1 block text-xs text-[var(--color-text-subtle)]">
+                              RX {formatBytes(privateRx)} / TX{" "}
+                              {formatBytes(privateTx)}
+                            </small>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              ) : null}
+            </Telemetry>
             <Telemetry
               title="已连接用户"
               description="通过应用程序或设备客户端连接的用户"
-            />
+            >
+              {telemetry?.connected_users &&
+              telemetry.connected_users.length > 0 ? (
+                <div className="space-y-2 text-sm">
+                  {telemetry.connected_users.map((user) => (
+                    <div
+                      key={`${user.network_id}-${user.device_id}`}
+                      className="flex items-center justify-between gap-3 rounded border border-[color:var(--color-surface-border)] px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <b className="block truncate text-[var(--color-heading)]">
+                          {user.name || user.device_id}
+                        </b>
+                        <small className="block text-xs text-[var(--color-text-subtle)]">
+                          {user.network_id}
+                          {user.wireguard_address
+                            ? ` · ${user.wireguard_address}`
+                            : ""}
+                          {user.active_path ? ` · ${user.active_path}` : ""}
+                        </small>
+                      </div>
+                      <span className="shrink-0 text-xs font-medium text-[var(--color-text-subtle)]">
+                        {typeof user.rtt_ms === "number"
+                          ? `${user.rtt_ms} ms`
+                          : "—"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </Telemetry>
             <Telemetry
               title="热门专用应用程序"
               description="按用户统计的热门专用应用程序"
               compact
-            />
+            >
+              {telemetry?.top_private_apps &&
+              telemetry.top_private_apps.length > 0 ? (
+                <div className="space-y-2 text-sm">
+                  {telemetry.top_private_apps.map((appItem) => (
+                    <div
+                      key={appItem.app}
+                      className="flex items-center justify-between gap-3 rounded border border-[color:var(--color-surface-border)] px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <b className="block truncate text-[var(--color-heading)]">
+                          {appItem.app}
+                        </b>
+                        <small className="block text-xs text-[var(--color-text-subtle)]">
+                          RX {formatBytes(appItem.rx_bytes)} / TX{" "}
+                          {formatBytes(appItem.tx_bytes)}
+                        </small>
+                      </div>
+                      <span className="shrink-0 text-xs font-semibold text-[var(--color-heading)]">
+                        {appItem.connections} {zh ? "连接" : "conns"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </Telemetry>
             <Telemetry
               title="热门用户"
               description="按数据传输量统计"
               compact
-            />
+            >
+              {telemetry?.top_users && telemetry.top_users.length > 0 ? (
+                <div className="space-y-2 text-sm">
+                  {telemetry.top_users.map((topUser) => (
+                    <div
+                      key={topUser.device_id}
+                      className="flex items-center justify-between gap-3 rounded border border-[color:var(--color-surface-border)] px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <b className="block truncate text-[var(--color-heading)]">
+                          {topUser.name || topUser.user_id || topUser.device_id}
+                        </b>
+                        <small className="block text-xs text-[var(--color-text-subtle)]">
+                          RX {formatBytes(topUser.rx_bytes)} / TX{" "}
+                          {formatBytes(topUser.tx_bytes)}
+                        </small>
+                      </div>
+                      <span className="shrink-0 text-xs font-semibold text-[var(--color-heading)]">
+                        {formatBytes(
+                          topUser.total_bytes ??
+                            (topUser.rx_bytes ?? 0) + (topUser.tx_bytes ?? 0),
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </Telemetry>
           </div>
         </div>
       ) : null}
@@ -1776,6 +2005,14 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                       {device.network_id} · {device.platform} ·{" "}
                       {device.wireguard_address} ·{" "}
                       {xconnectNodeStatusLabel(device, zh)}
+                      {device.active_path ? ` · ${device.active_path}` : ""}
+                      {typeof device.rtt_ms === "number"
+                        ? ` · ${device.rtt_ms} ms`
+                        : ""}
+                      {typeof device.rx_bytes === "number" ||
+                      typeof device.tx_bytes === "number"
+                        ? ` · RX ${formatBytes(device.rx_bytes)} / TX ${formatBytes(device.tx_bytes)}`
+                        : ""}
                       {device.last_seen_at &&
                       !Number.isNaN(Date.parse(device.last_seen_at))
                         ? ` · ${zh ? "上次配置确认" : "Last config ACK"}: ${new Date(device.last_seen_at).toLocaleString(zh ? "zh-CN" : "en-US")}`
@@ -1813,9 +2050,13 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
             >
               <div className="p-5">
                 <p className="text-sm text-[var(--color-text-subtle)]">
-                  {zh
-                    ? "当前模式展示保留；控制面下发接口尚未接入，因此暂不可切换。"
-                    : "The current mode cards remain visible; switching is disabled until the control-plane dispatch API is available."}
+                  {writeReady && networks.length > 0
+                    ? zh
+                      ? "已连接控制面；可切换所选网络的 Gateway / One 互联网络模式。"
+                      : "Control plane connected; switch the connection mode for the selected network."
+                    : zh
+                      ? "当前模式展示保留；控制面下发接口尚未接入，因此暂不可切换。"
+                      : "The current mode cards remain visible; switching is disabled until the control-plane dispatch API is available."}
                 </p>
                 <fieldset className="mt-4 grid gap-3 lg:grid-cols-3">
                   <legend className="sr-only">
@@ -1824,18 +2065,20 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   {modes.map((mode) => {
                     const Icon = mode.icon;
                     const selected = connectionMode === mode.id;
+                    const modeEnabled = writeReady && networks.length > 0;
                     return (
                       <label
                         key={mode.id}
-                        aria-disabled="true"
-                        className={`relative flex cursor-not-allowed flex-col rounded-[var(--radius-lg)] border p-4 opacity-75 ${selected ? "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)]/35 ring-1 ring-[color:var(--color-primary)]" : "border-[color:var(--color-surface-border)]"}`}
+                        aria-disabled={!modeEnabled ? "true" : undefined}
+                        className={`relative flex ${modeEnabled ? "cursor-pointer" : "cursor-not-allowed opacity-75"} flex-col rounded-[var(--radius-lg)] border p-4 ${selected ? "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)]/35 ring-1 ring-[color:var(--color-primary)]" : "border-[color:var(--color-surface-border)]"}`}
                       >
                         <input
                           type="radio"
                           name="xconnect-connection-mode"
                           value={mode.id}
                           checked={selected}
-                          disabled
+                          disabled={!modeEnabled}
+                          onChange={() => void changeConnectionMode(mode.id)}
                           aria-label={zh ? mode.name.zh : mode.name.en}
                           className="sr-only"
                         />
@@ -1880,9 +2123,13 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                 >
                   <CheckCircle2 className="h-4 w-4 text-[var(--color-success-foreground)]" />
                   <span>
-                    {zh
-                      ? "默认预设（非实际下发状态）"
-                      : "Default preset (not a dispatch status)"}
+                    {writeReady && networks.length > 0
+                      ? zh
+                        ? "当前下发模式"
+                        : "Active connection mode"
+                      : zh
+                        ? "默认预设（非实际下发状态）"
+                        : "Default preset (not a dispatch status)"}
                     :
                   </span>
                   <strong className="text-[var(--color-heading)]">
@@ -1890,9 +2137,11 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   </strong>
                   <code className="text-xs">{connectionMode}</code>
                   <span className="ml-auto text-xs text-[var(--color-text-muted)]">
-                    {zh
-                      ? "未下发 · 切换暂不可用"
-                      : "Not dispatched · switching unavailable"}
+                    {writeReady && networks.length > 0
+                      ? `${(selectedNetwork ?? networks[0])?.id ?? ""}`
+                      : zh
+                        ? "未下发 · 切换暂不可用"
+                        : "Not dispatched · switching unavailable"}
                   </span>
                 </div>
               </div>
@@ -1944,7 +2193,15 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
             <Row
               icon={SlidersHorizontal}
               title={zh ? "地址池" : "Address pool"}
-              detail={zh ? "地址池与节点分配" : "Address pool and assignments"}
+              detail={
+                devices.length > 0
+                  ? zh
+                    ? `地址池与节点分配 · 已分配 ${devices.length} 个节点`
+                    : `Address pool and assignments · ${devices.length} nodes assigned`
+                  : zh
+                    ? "地址池与节点分配"
+                    : "Address pool and assignments"
+              }
               value={networks[0]?.cidr ?? "—"}
             />
           </Frame>
@@ -1957,7 +2214,15 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                   ? "状态由控制面读取；Portal 不提供证书重置。"
                   : "Read from the control plane; Portal does not offer certificate reset."
               }
-              value={zh ? "只读" : "Read-only"}
+              value={
+                controlPlaneAvailable
+                  ? (overview?.signingKeyId ??
+                    overview?.signing_key_id ??
+                    (zh ? "已签名 · 只读" : "Signed · Read-only"))
+                  : zh
+                    ? "只读"
+                    : "Read-only"
+              }
             />
           </Frame>
           <Frame title={zh ? "节点 UUID" : "Node UUID"}>

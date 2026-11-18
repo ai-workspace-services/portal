@@ -22,6 +22,7 @@ const ALLOWED_ROUTES = new Map([
   ["GET devices", "/admin/devices"],
   ["GET invites", "/admin/invites"],
   ["GET registrations", "/admin/registrations"],
+  ["GET telemetry", "/admin/telemetry"],
   ["POST invites", "/admin/invites"],
   ["POST networks/bootstrap", "/admin/networks/bootstrap"],
 ]);
@@ -57,6 +58,15 @@ function resolveRoute(
     segments[2] === "policy"
   ) {
     return `/admin/networks/${encodeURIComponent(segments[1])}/policy`;
+  }
+  if (
+    method === "PUT" &&
+    segments.length === 3 &&
+    segments[0] === "networks" &&
+    segments[1] &&
+    segments[2] === "mode"
+  ) {
+    return `/admin/networks/${encodeURIComponent(segments[1])}/mode`;
   }
   if (
     method === "DELETE" &&

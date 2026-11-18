@@ -692,6 +692,65 @@ describe("/api/xconnect-zero/[...segments]", () => {
     await expect(response.json()).resolves.toEqual({ error: "forbidden" });
   });
 
+  it("forwards owner-scoped telemetry reads and network connection mode updates", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.endsWith("/admin/telemetry")) {
+        return new Response(
+          JSON.stringify({
+            status: "available",
+            sase_traffic: {
+              internet_rx_bytes: 1024,
+              internet_tx_bytes: 2048,
+              private_rx_bytes: 4096,
+              private_tx_bytes: 8192,
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(
+        JSON.stringify({ network: { id: "net-a", connection_mode: "wg_udp_l3" } }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GET, PUT } = await import("./route");
+    const telemetryRes = await GET(
+      new NextRequest("https://console.svc.plus/api/xconnect-zero/telemetry"),
+      { params: Promise.resolve({ segments: ["telemetry"] }) },
+    );
+    expect(telemetryRes.status).toBe(200);
+    await expect(telemetryRes.json()).resolves.toMatchObject({
+      status: "available",
+    });
+
+    const modeRes = await PUT(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-a/mode",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ connection_mode: "wg_udp_l3" }),
+        },
+      ),
+      { params: Promise.resolve({ segments: ["networks", "net-a", "mode"] }) },
+    );
+    expect(modeRes.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/overlay\/v1\/admin\/networks\/net-a\/mode$/),
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ connection_mode: "wg_udp_l3" }),
+      }),
+    );
+  });
+
   it("does not expose unregistered adapter paths", async () => {
     const { GET } = await import("./route");
     const response = await GET(

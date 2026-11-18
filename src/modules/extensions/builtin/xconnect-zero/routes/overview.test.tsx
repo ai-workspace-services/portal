@@ -112,4 +112,146 @@ describe("XConnectZeroOverviewRoute", () => {
     expect(screen.getByText("Ed25519 签名状态")).toBeInTheDocument();
     expect(screen.queryByText("GPG 证书重置")).not.toBeInTheDocument();
   });
+
+  it("renders live telemetry cards, device runtime metrics, and connection mode switching when available", async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.endsWith("/overview")) {
+        return new Response(
+          JSON.stringify({
+            status: "available",
+            networkCount: 1,
+            deviceCount: 1,
+            gatewayCount: 0,
+            oneCount: 1,
+            gatewayStatus: "not_configured",
+            oneStatus: "connected",
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.endsWith("/networks")) {
+        return new Response(
+          JSON.stringify({
+            networks: [
+              {
+                id: "net-a",
+                display_name: "UAT Network",
+                cidr: "10.77.0.0/24",
+                gateway_id: "gw-a",
+                gateway_endpoint_host: "gw.uat.example",
+                gateway_endpoint_port: 51820,
+                transport_server_name: "gw.uat.example",
+                transport_port: 443,
+                connection_mode: "wg_vless_l3",
+              },
+            ],
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.endsWith("/devices")) {
+        return new Response(
+          JSON.stringify({
+            devices: [
+              {
+                id: "one-live",
+                network_id: "net-a",
+                name: "Live One",
+                role: "one",
+                platform: "linux",
+                hostname: "live-one",
+                wireguard_address: "10.77.0.2/32",
+                status: "active",
+                connection_status: "recent_ack",
+                active_path: "vless_xhttp_l3",
+                rtt_ms: 18,
+                rx_bytes: 2048,
+                tx_bytes: 4096,
+              },
+            ],
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.endsWith("/telemetry")) {
+        return new Response(
+          JSON.stringify({
+            status: "available",
+            sase_traffic: {
+              internet_rx_bytes: 1024,
+              internet_tx_bytes: 2048,
+              private_rx_bytes: 4096,
+              private_tx_bytes: 8192,
+            },
+            connected_users: [
+              {
+                device_id: "one-live",
+                name: "Live One",
+                network_id: "net-a",
+                wireguard_address: "10.77.0.2/32",
+                active_path: "vless_xhttp_l3",
+                rtt_ms: 18,
+              },
+            ],
+            top_private_apps: [
+              {
+                app: "ssh.internal",
+                rx_bytes: 1024,
+                tx_bytes: 2048,
+                connections: 4,
+              },
+            ],
+            top_users: [
+              {
+                device_id: "one-live",
+                name: "Live One",
+                rx_bytes: 2048,
+                tx_bytes: 4096,
+                total_bytes: 6144,
+              },
+            ],
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (url.endsWith("/networks/net-a/mode") && init?.method === "PUT") {
+        return new Response(
+          JSON.stringify({
+            network: { id: "net-a", connection_mode: "wg_udp_l3" },
+          }),
+          { headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(
+        JSON.stringify({ invites: [], registrations: [] }),
+        { headers: { "Content-Type": "application/json" } },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<XConnectZeroOverviewRoute />);
+
+    expect(await screen.findByText("ssh.internal")).toBeInTheDocument();
+    expect(screen.getAllByText("Live One").length).toBeGreaterThan(0);
+    expect(screen.getByText("18 ms")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "节点管理" }));
+    expect(await screen.findByText(/vless_xhttp_l3/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "配置管理" }));
+    const directRadio = screen.getByRole("radio", { name: /高性能直连/ });
+    expect(directRadio).toBeEnabled();
+    await user.click(directRadio);
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/xconnect-zero/networks/net-a/mode",
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({ connection_mode: "wg_udp_l3" }),
+        }),
+      ),
+    );
+    expect(directRadio).toBeChecked();
+  });
 });
