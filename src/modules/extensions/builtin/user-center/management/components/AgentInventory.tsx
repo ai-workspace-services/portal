@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -63,6 +64,7 @@ const copy = {
     empty: "没有匹配的节点。",
     retry: "重试",
     manageGrants: "临时 Free 白名单管理",
+    availableGateways: "可用网关列表",
     grantAction: "临时白名单",
     teamDecision: "团队审批",
   },
@@ -89,6 +91,7 @@ const copy = {
     empty: "No matching agents.",
     retry: "Retry",
     manageGrants: "Manage Free Grants",
+    availableGateways: "Available Gateways",
     grantAction: "Free Grants",
     teamDecision: "Team Decision",
   },
@@ -201,6 +204,12 @@ export default function AgentInventory({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/panel/gateway"
+            className="inline-flex h-9 items-center rounded-md border border-[color:var(--color-surface-border)] px-3 text-xs font-medium text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-heading)]"
+          >
+            {t.availableGateways}
+          </Link>
           <button
             type="button"
             onClick={() => {

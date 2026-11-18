@@ -13,6 +13,7 @@ import {
   Terminal,
 } from "lucide-react";
 
+import { useLanguage } from "@i18n/LanguageProvider";
 import type { XConnectZeroGateway } from "@lib/xconnectZero";
 
 function formatModeLabel(mode: string): string {
@@ -36,6 +37,8 @@ function formatLastSeen(value?: string | null): string {
 }
 
 export default function XConnectZeroGatewayRoute() {
+  const { language } = useLanguage();
+  const zh = language === "zh";
   const [gateways, setGateways] = useState<XConnectZeroGateway[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,9 +97,17 @@ export default function XConnectZeroGatewayRoute() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            <Server className="h-3.5 w-3.5" />
-            <span>XConnect Zero</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1.5 uppercase tracking-wider">
+              <Server className="h-3.5 w-3.5" />
+              <span>XConnect Zero</span>
+            </span>
+            <Link
+              href="/panel/agent"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              {zh ? "运营与管理 / 可用网关" : "Admin & Operations / Gateways"}
+            </Link>
           </div>
           <h1 className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
             Available Gateways

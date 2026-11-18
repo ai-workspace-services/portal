@@ -85,6 +85,8 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
           label = copy?.items?.subscription || (zh ? '订阅计划' : 'Subscription')
         } else if (segments[i] === 'agent') {
           label = copy?.items?.agents || (zh ? '运行节点' : 'Agents')
+        } else if (segments[i] === 'gateway') {
+          label = copy?.items?.gateway || (zh ? '可用网关' : 'Gateways')
         } else if (segments[i] === 'api') {
           label = copy?.items?.apis || (zh ? '接口集成' : 'Integrations')
         } else if (segments[i] === 'appearance') {

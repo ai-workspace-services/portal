@@ -119,6 +119,55 @@ describe("/api/xconnect-zero/[...segments]", () => {
     );
   });
 
+  it("forwards GET /api/xconnect-zero/gateways to /api/overlay/v1/gateways", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          gateways: [
+            {
+              network_id: "net-ph-xconnect",
+              gateway_id: "ph-xconnect-gateway-01",
+              connection_mode: "wg_vless_l3",
+              runtime_healthy: true,
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GET } = await import("./route");
+    const response = await GET(
+      new NextRequest("https://console.svc.plus/api/xconnect-zero/gateways", {
+        headers: { "x-forwarded-host": "console.svc.plus" },
+      }),
+      { params: Promise.resolve({ segments: ["gateways"] }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(userHasRoleOrPermissionMock).toHaveBeenCalledWith(
+      { role: "user" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.read"],
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://accounts-cloudflare-uat.onwalk.net/api/overlay/v1/gateways",
+      expect.objectContaining({
+        method: "GET",
+        headers: {
+          Authorization: "Bearer account-session-token",
+          Accept: "application/json",
+        },
+      }),
+    );
+  });
+
   it("forwards an owner-scoped device invite request to Accounts", async () => {
     getAccountSessionMock.mockResolvedValue({
       token: "account-session-token",

@@ -8,6 +8,7 @@ import { useMemo, useState, type ComponentType } from "react";
 import {
   ChevronDown,
   Plus,
+  Server,
   Settings2,
   Zap,
   type LucideIcon,
@@ -106,6 +107,32 @@ export function PanelSidebarContent({
           })
           .filter((value) => Boolean(value)) as NavItem[];
 
+        if (
+          section.id === "admin" &&
+          resolveAccess(user, {
+            requireLogin: true,
+            roles: ["admin", "operator"],
+          }).allowed
+        ) {
+          const gatewayItem: NavItem = {
+            id: "gateway",
+            href: "/panel/gateway",
+            label: language === "zh" ? "可用网关" : "Gateways",
+            description:
+              language === "zh"
+                ? "查看当前可用的 XConnect Gateway 节点"
+                : "Available XConnect Gateway nodes",
+            Icon: Server,
+            disabled: false,
+          };
+          const agentsIndex = items.findIndex((item) => item.id === "agents");
+          if (agentsIndex >= 0) {
+            items.splice(agentsIndex + 1, 0, gatewayItem);
+          } else {
+            items.unshift(gatewayItem);
+          }
+        }
+
         if (items.length === 0) {
           return null;
         }
@@ -117,7 +144,7 @@ export function PanelSidebarContent({
         };
       })
       .filter((value) => Boolean(value)) as NavSection[];
-  }, [user]);
+  }, [language, user]);
 
   const primarySections = navSections.filter(
     (section) => section.id !== "infra",

@@ -1,9 +1,14 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { useLanguageStore } from "@i18n/LanguageProvider";
 import XConnectZeroGatewayRoute from "./gateway";
 
 describe("XConnectZeroGatewayRoute", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    cleanup();
+    useLanguageStore.setState({ language: "zh" });
+    vi.unstubAllGlobals();
+  });
 
   it("renders available gateways and CLI connect command", async () => {
     vi.stubGlobal(
@@ -42,9 +47,13 @@ describe("XConnectZeroGatewayRoute", () => {
       screen.getByText("xconnect-one up --gateway ph-xconnect-gateway-01.svc.plus"),
     ).toBeInTheDocument();
     expect(screen.getByText("Healthy")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "运营与管理 / 可用网关" }),
+    ).toHaveAttribute("href", "/panel/agent");
   });
 
-  it("renders empty state when no gateways are returned", async () => {
+  it("renders empty state and English header badge when language is en", async () => {
+    useLanguageStore.setState({ language: "en" });
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
@@ -60,5 +69,8 @@ describe("XConnectZeroGatewayRoute", () => {
     await waitFor(() => {
       expect(screen.getByText("暂无可用 Gateway 节点")).toBeInTheDocument();
     });
+    expect(
+      screen.getByRole("link", { name: "Admin & Operations / Gateways" }),
+    ).toHaveAttribute("href", "/panel/agent");
   });
 });
