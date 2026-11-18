@@ -564,6 +564,7 @@ type UserCenterTranslation = {
   items: {
     dashboard: string
     agents: string
+    gateway: string
     apis: string
     accounts: string
     subscription: string
@@ -1096,6 +1097,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
       items: {
         dashboard: 'Overview',
         agents: 'Regional entry pools',
+        gateway: 'Gateways',
         apis: 'APIs',
         accounts: 'Accounts',
         subscription: 'Subscription',
@@ -1981,6 +1983,7 @@ export const translations: Record<'en' | 'zh', Translation> = {
       items: {
         dashboard: '总览',
         agents: '区域入口池',
+        gateway: '可用网关',
         apis: '接口集成',
         accounts: '账户中心',
         subscription: '订阅计划',

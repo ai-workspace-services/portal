@@ -35,6 +35,9 @@ it("filters five Accounts resource classes independently and uses the authentica
     </SWRConfig>,
   );
   const table = await screen.findByRole("table");
+  expect(
+    screen.getByRole("link", { name: "Available Gateways" }),
+  ).toHaveAttribute("href", "/panel/gateway");
   expect(within(table).getAllByRole("rowheader")).toHaveLength(5);
   for (const name of classes) {
     fireEvent.click(screen.getByRole("button", { name }));
@@ -129,6 +132,9 @@ it("supports 5+1 classes including Team enrollments and inspects client count", 
   );
 
   const table = await screen.findByRole("table");
+  expect(
+    screen.getByRole("link", { name: "可用网关列表" }),
+  ).toHaveAttribute("href", "/panel/gateway");
   expect(within(table).getAllByRole("rowheader")).toHaveLength(3);
   expect(screen.getByText("42")).toBeTruthy();
   expect(screen.getByText("15")).toBeTruthy();

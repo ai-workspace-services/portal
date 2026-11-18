@@ -39,6 +39,13 @@ describe('Panel Breadcrumbs', () => {
     expect(screen.getByText('运行节点')).toBeInTheDocument()
   })
 
+  it('renders dynamic crumbs for /panel/gateway', () => {
+    mockPathname = '/panel/gateway'
+    render(<Breadcrumbs />)
+    expect(screen.getByText('用户中心')).toBeInTheDocument()
+    expect(screen.getByText('可用网关')).toBeInTheDocument()
+  })
+
   it('renders multi-level crumbs for /panel/ops/billing/ledger', () => {
     mockPathname = '/panel/ops/billing/ledger'
     render(<Breadcrumbs />)

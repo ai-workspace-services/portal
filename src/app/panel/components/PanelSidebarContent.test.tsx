@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { PanelSidebarContent } from "./PanelSidebarContent";
 
 const state = vi.hoisted(() => ({
@@ -24,6 +24,7 @@ afterEach(() => {
   cleanup();
   state.user = null;
   state.language = "zh";
+  state.pathname = "/panel/operations/releases";
 });
 
 describe("Operations sidebar", () => {
@@ -82,4 +83,39 @@ describe("Operations sidebar", () => {
       ).toBeInTheDocument();
     },
   );
+  it.each(["admin", "operator"])(
+    "shows /panel/gateway under admin section to %s and highlights active route",
+    (role) => {
+      state.user = { role, groups: [], permissions: [] };
+      state.pathname = "/panel/gateway";
+      render(<PanelSidebarContent />);
+      const adminGroup = screen.getByText("运营与管理").parentElement!;
+      const gatewayLink = within(adminGroup).getByRole("link", {
+        name: "可用网关",
+      });
+      expect(gatewayLink).toHaveAttribute("href", "/panel/gateway");
+      expect(gatewayLink).toHaveClass("xds-is-active");
+    },
+  );
+  it("shows Gateways in English under Admin & Operations and hides it from user/guest", () => {
+    state.user = { role: "operator", groups: [], permissions: [] };
+    state.language = "en";
+    const view = render(<PanelSidebarContent />);
+    const adminGroup = screen.getByText("Admin & Operations").parentElement!;
+    expect(
+      within(adminGroup).getByRole("link", { name: "Gateways" }),
+    ).toHaveAttribute("href", "/panel/gateway");
+
+    state.user = { role: "user", groups: [], permissions: [] };
+    view.rerender(<PanelSidebarContent />);
+    expect(
+      screen.queryByRole("link", { name: "Gateways" }),
+    ).not.toBeInTheDocument();
+
+    state.user = null;
+    view.rerender(<PanelSidebarContent />);
+    expect(
+      screen.queryByRole("link", { name: "Gateways" }),
+    ).not.toBeInTheDocument();
+  });
 });

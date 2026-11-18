@@ -18,7 +18,7 @@ const MAX_RESPONSE_BODY_BYTES = 256 * 1024;
 const READ_ROLES: AccountUserRole[] = ["admin", "operator", "user"];
 const ALLOWED_ROUTES = new Map([
   ["GET overview", "/admin/overview"],
-  ["GET gateways", "/v1/gateways"],
+  ["GET gateways", "/gateways"],
   ["GET networks", "/admin/networks"],
   ["GET devices", "/admin/devices"],
   ["GET invites", "/admin/invites"],
