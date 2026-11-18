@@ -4,6 +4,7 @@ export const XCONNECT_ZERO_ADMIN_PATHS = {
   devices: "/admin/devices",
   invites: "/admin/invites",
   registrations: "/admin/registrations",
+  telemetry: "/admin/telemetry",
 } as const;
 
 export type XConnectZeroAdminPath =
@@ -26,6 +27,9 @@ export interface XConnectZeroAdminOverview {
   gatewayStatus?: "connected" | "active" | "pending" | "not_configured";
   /** Enrollment/runtime state for the owner-scoped One devices. */
   oneStatus?: "connected" | "active" | "pending" | "not_configured";
+  /** Optional control-plane signing key identifier. */
+  signingKeyId?: string;
+  signing_key_id?: string;
 }
 
 export interface XConnectZeroNetwork {
@@ -38,6 +42,7 @@ export interface XConnectZeroNetwork {
   transport_server_name: string;
   transport_port: number;
   config_generation?: number;
+  connection_mode?: "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 }
 
 export interface XConnectZeroDevice {
@@ -51,6 +56,65 @@ export interface XConnectZeroDevice {
   status?: string;
   last_seen_at?: string | null;
   connection_status?: "recent_ack" | "stale" | "never_seen" | "revoked";
+  runtime_healthy?: boolean;
+  active_path?: string;
+  rtt_ms?: number;
+  rx_bytes?: number;
+  tx_bytes?: number;
+  applied_generation?: number;
+  connection_mode?: string;
+}
+
+export interface XConnectZeroTelemetry {
+  status: "available";
+  sase_traffic?: {
+    internet_rx_bytes: number;
+    internet_tx_bytes: number;
+    private_rx_bytes: number;
+    private_tx_bytes: number;
+  };
+  connected_users?: Array<{
+    device_id: string;
+    user_id?: string;
+    name?: string;
+    network_id: string;
+    gateway_id?: string;
+    platform?: string;
+    wireguard_address?: string;
+    active_path?: string;
+    rtt_ms?: number;
+    rx_bytes?: number;
+    tx_bytes?: number;
+    last_seen_at?: string | null;
+  }>;
+  top_private_apps?: Array<{
+    app: string;
+    rx_bytes: number;
+    tx_bytes: number;
+    connections: number;
+  }>;
+  top_users?: Array<{
+    user_id?: string;
+    device_id: string;
+    name?: string;
+    rx_bytes: number;
+    tx_bytes: number;
+    total_bytes?: number;
+  }>;
+}
+
+export function formatBytes(bytes?: number): string {
+  if (typeof bytes !== "number" || !Number.isFinite(bytes) || bytes <= 0) {
+    return "0 B";
+  }
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`;
 }
 
 /** ACK activity is control-plane evidence, never a data-plane online claim. */
