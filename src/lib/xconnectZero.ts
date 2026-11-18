@@ -65,6 +65,21 @@ export interface XConnectZeroDevice {
   connection_mode?: string;
 }
 
+export interface XConnectZeroGateway {
+  network_id: string;
+  network_display_name?: string;
+  cidr?: string;
+  gateway_id: string;
+  display_name: string;
+  gateway_endpoint_host: string;
+  gateway_endpoint_port: number;
+  transport_server_name: string;
+  transport_port: number;
+  connection_mode: string;
+  runtime_healthy: boolean;
+  last_seen_at?: string | null;
+}
+
 export interface XConnectZeroTelemetry {
   status: "available";
   sase_traffic?: {
