@@ -8,9 +8,9 @@ export type GitOpsPolicyTarget = {
 };
 
 export const DEFAULT_GITOPS_TARGET: GitOpsPolicyTarget = {
-  repository: "ai-workspace-infra/playbooks",
+  repository: "ai-workspace-infra/gitops",
   branch: "main",
-  path: "config/xconnect-routing-policy.yaml",
+  path: "topology/xconnect/routing-policy.yaml",
   commitMessage: "chore(xconnect): sync three-tier routing policy from portal",
 };
 
@@ -37,9 +37,9 @@ pools:
 
   Pro-EC2-Pool:
     public_resource: true
-    media_on_pro_action: "blackhole"
+    media_on_pro_action: "allow"
     fallback_default: false
-    description: "公共 EC2 精品池（t4g.small / c8g 等）：仅限 AI / 开发 / 商务办公低延迟白名单，服务端严格限制流媒体与下载"
+    description: "公共 EC2 精品池（t4g.small / c8g 等）：AI / 开发 / 商务办公低延迟优先；不做严格白名单限制，正常请求均放行，高流量流媒体 / 游戏下载 / 测速以客户端提醒 + 服务端流量管控为主"
     pricing_groups:
       - pro
     url_test:
@@ -288,10 +288,6 @@ export function parseAndValidateRoutingPolicy(
   }
   if (!proPool) {
     errors.push("缺少必需的分流池 Pro-EC2-Pool");
-  } else if (proPool.mediaOnProAction !== "blackhole") {
-    warnings.push(
-      "Pro-EC2-Pool 建议保持 media_on_pro_action: blackhole 以防止流媒体/下载流量回落消耗高价带宽",
-    );
   }
 
   if (isPlainRecord(parsed.tiers)) {

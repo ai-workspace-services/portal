@@ -71,9 +71,9 @@ describe("/api/panel/gateway/routing-policy", () => {
     const payload = await response.json();
     expect(payload.source).toBe("canonical_default");
     expect(payload.target).toEqual({
-      repository: "ai-workspace-infra/playbooks",
+      repository: "ai-workspace-infra/gitops",
       branch: "main",
-      path: "config/xconnect-routing-policy.yaml",
+      path: "topology/xconnect/routing-policy.yaml",
     });
     expect(payload.yaml).toContain("Pro-EC2-Pool");
   });
