@@ -800,6 +800,169 @@ describe("/api/xconnect-zero/[...segments]", () => {
     );
   });
 
+  it("forwards GET, POST, and DELETE network member bindings and preserves upstream 404", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "admin" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            members: [
+              {
+                id: "mem-1",
+                network_id: "net-ph-xconnect",
+                user_id: "user-156",
+                email: "156405189@qq.com",
+                created_by: "admin-1",
+                created_at: "2026-11-19T00:00:00Z",
+              },
+            ],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            member: {
+              id: "mem-1",
+              network_id: "net-ph-xconnect",
+              user_id: "user-156",
+              email: "156405189@qq.com",
+              created_by: "admin-1",
+              created_at: "2026-11-19T00:00:00Z",
+            },
+          }),
+          { status: 201, headers: { "Content-Type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "user_not_found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GET, POST, DELETE } = await import("./route");
+
+    const listRes = await GET(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph-xconnect/members",
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph-xconnect", "members"],
+        }),
+      },
+    );
+    expect(listRes.status).toBe(200);
+    expect(userHasRoleOrPermissionMock).toHaveBeenNthCalledWith(
+      1,
+      { role: "admin" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.read"],
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://accounts-cloudflare-uat.onwalk.net/api/overlay/v1/admin/networks/net-ph-xconnect/members",
+      expect.objectContaining({
+        method: "GET",
+        headers: {
+          Authorization: "Bearer account-session-token",
+          Accept: "application/json",
+        },
+      }),
+    );
+
+    const createRes = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph-xconnect/members",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "156405189@qq.com" }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph-xconnect", "members"],
+        }),
+      },
+    );
+    expect(createRes.status).toBe(201);
+    expect(userHasRoleOrPermissionMock).toHaveBeenNthCalledWith(
+      2,
+      { role: "admin" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.manage"],
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "https://accounts-cloudflare-uat.onwalk.net/api/overlay/v1/admin/networks/net-ph-xconnect/members",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ email: "156405189@qq.com" }),
+      }),
+    );
+
+    const missingUserRes = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph-xconnect/members",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "missing@example.com" }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph-xconnect", "members"],
+        }),
+      },
+    );
+    expect(missingUserRes.status).toBe(404);
+    await expect(missingUserRes.json()).resolves.toEqual({
+      error: "user_not_found",
+    });
+
+    const deleteRes = await DELETE(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph-xconnect/members/user-156",
+        { method: "DELETE" },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph-xconnect", "members", "user-156"],
+        }),
+      },
+    );
+    expect(deleteRes.status).toBe(204);
+    expect(userHasRoleOrPermissionMock).toHaveBeenNthCalledWith(
+      4,
+      { role: "admin" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.manage"],
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      4,
+      "https://accounts-cloudflare-uat.onwalk.net/api/overlay/v1/admin/networks/net-ph-xconnect/members/user-156",
+      expect.objectContaining({
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer account-session-token",
+          Accept: "application/json",
+        },
+      }),
+    );
+  });
+
   it("does not expose unregistered adapter paths", async () => {
     const { GET } = await import("./route");
     const response = await GET(

@@ -45,6 +45,15 @@ export interface XConnectZeroNetwork {
   connection_mode?: "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 }
 
+export interface XConnectZeroNetworkMember {
+  id: string;
+  network_id: string;
+  user_id: string;
+  email: string;
+  created_by: string;
+  created_at: string;
+}
+
 export interface XConnectZeroDevice {
   id: string;
   network_id: string;

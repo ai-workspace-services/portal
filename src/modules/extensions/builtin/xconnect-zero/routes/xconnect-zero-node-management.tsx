@@ -4,7 +4,9 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
+  type FormEvent,
   type ReactNode,
 } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
@@ -24,6 +26,8 @@ import {
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
+  UserPlus,
+  Users,
   X,
 } from "lucide-react";
 import Breadcrumbs from "@/app/panel/components/Breadcrumbs";
@@ -38,6 +42,7 @@ import {
   type XConnectZeroDevice,
   type XConnectZeroInvite,
   type XConnectZeroNetwork,
+  type XConnectZeroNetworkMember,
   type XConnectZeroRegistration,
   type XConnectZeroTelemetry,
 } from "@lib/xconnectZero";
@@ -49,6 +54,8 @@ type InvitationTtl = 15 | 30 | 60;
 type ConnectionModeId = "wg_udp_l3" | "wg_vless_l3" | "wg_vless_l2";
 type ResourceState = "loading" | "ready" | "error" | "unavailable";
 type RegistrationLoadState = "loading" | "ready" | "error" | "unavailable";
+type MembersLoadState = "idle" | "loading" | "ready" | "error" | "unavailable";
+type MemberFeedback = { kind: "success" | "error"; message: string };
 type RegistrationAction = "approve" | "reject";
 type State =
   | { kind: "loading" }
@@ -498,9 +505,23 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
   const [platformFilter, setPlatformFilter] = useState<"all" | Platform>("all");
   const [connectionMode, setConnectionMode] =
     useState<ConnectionModeId>("wg_vless_l3");
+  const [membersState, setMembersState] = useState<MembersLoadState>("idle");
+  const [networkMembers, setNetworkMembers] = useState<
+    XConnectZeroNetworkMember[]
+  >([]);
+  const [memberEmailInput, setMemberEmailInput] = useState("");
+  const [memberActionPending, setMemberActionPending] = useState(false);
+  const [revokingMemberUserId, setRevokingMemberUserId] = useState<
+    string | null
+  >(null);
+  const [memberFeedback, setMemberFeedback] = useState<MemberFeedback | null>(
+    null,
+  );
+  const membersRequestSeqRef = useRef(0);
 
   const networks = useMemo(() => resourceData?.networks ?? [], [resourceData]);
   const selectedNetwork = networks.find((network) => network.id === networkId);
+  const activeNetwork = selectedNetwork ?? networks[0];
   const devices = useMemo(() => resourceData?.devices ?? [], [resourceData]);
   const controlPlaneAvailable = state.kind === "available";
   const writeReady =
@@ -556,6 +577,10 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     setRegistrationTarget(null);
     setRegistrationAction(null);
     setRegistrationError(null);
+    membersRequestSeqRef.current += 1;
+    setMembersState("idle");
+    setNetworkMembers([]);
+    setMemberFeedback(null);
     setError(null);
     const nextState = await getOverview();
     setState(nextState);
@@ -609,6 +634,71 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     void refresh();
   }, [refresh]);
 
+  const loadNetworkMembers = useCallback(
+    async (targetNetworkId: string): Promise<void> => {
+      const seq = ++membersRequestSeqRef.current;
+      setMembersState("loading");
+      try {
+        const response = await fetch(
+          `/api/xconnect-zero/networks/${encodeURIComponent(targetNetworkId)}/members`,
+          { cache: "no-store" },
+        );
+        if (seq !== membersRequestSeqRef.current) return;
+        const body = (await response.json().catch(() => null)) as
+          | { members?: unknown; error?: unknown; message?: unknown }
+          | XConnectZeroNetworkMember[]
+          | null;
+        if (seq !== membersRequestSeqRef.current) return;
+        if (
+          response.status === 503 ||
+          (body &&
+            !Array.isArray(body) &&
+            body.error === "control_plane_unavailable")
+        ) {
+          setNetworkMembers([]);
+          setMembersState("unavailable");
+          return;
+        }
+        if (!response.ok) {
+          setNetworkMembers([]);
+          setMembersState("error");
+          return;
+        }
+        const list = Array.isArray(body)
+          ? body
+          : Array.isArray(body?.members)
+            ? (body.members as XConnectZeroNetworkMember[])
+            : [];
+        setNetworkMembers(list);
+        setMembersState("ready");
+      } catch {
+        if (seq !== membersRequestSeqRef.current) return;
+        setNetworkMembers([]);
+        setMembersState("error");
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (
+      !controlPlaneAvailable ||
+      resourceState !== "ready" ||
+      !activeNetwork?.id
+    ) {
+      membersRequestSeqRef.current += 1;
+      setNetworkMembers([]);
+      setMembersState("idle");
+      return;
+    }
+    void loadNetworkMembers(activeNetwork.id);
+  }, [
+    activeNetwork?.id,
+    controlPlaneAvailable,
+    loadNetworkMembers,
+    resourceState,
+  ]);
+
   const chooseRole = (nextRole: NodeRole): void => {
     if (mutationPending) return;
     setRole(nextRole);
@@ -632,8 +722,181 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
     if (isConnectionModeId(matched?.connection_mode)) {
       setConnectionMode(matched.connection_mode);
     }
+    setMemberFeedback(null);
     setJoinUri(null);
     setScriptCopied(false);
+  };
+
+  const addNetworkMember = async (
+    event?: FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
+    event?.preventDefault();
+    if (!writeReady || !activeNetwork || memberActionPending || revokingMemberUserId) {
+      return;
+    }
+    const trimmedEmail = memberEmailInput.trim();
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setMemberFeedback({
+        kind: "error",
+        message: zh
+          ? "请输入有效的账号邮箱。"
+          : "Please enter a valid account email.",
+      });
+      return;
+    }
+    setMemberActionPending(true);
+    setMemberFeedback(null);
+    try {
+      const response = await fetch(
+        `/api/xconnect-zero/networks/${encodeURIComponent(activeNetwork.id)}/members`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: trimmedEmail }),
+        },
+      );
+      const body = (await response.json().catch(() => null)) as {
+        error?: unknown;
+        message?: unknown;
+      } | null;
+      if (!response.ok) {
+        const code = errorCode(body);
+        if (
+          response.status === 404 ||
+          code === "user_not_found" ||
+          code === "not_found" ||
+          code === "resource_not_found"
+        ) {
+          setMemberFeedback({
+            kind: "error",
+            message: zh
+              ? `用户不存在（404）：未找到邮箱为 ${trimmedEmail} 的账号。`
+              : `User not found (404): no account exists for ${trimmedEmail}.`,
+          });
+          return;
+        }
+        if (
+          response.status === 409 ||
+          code === "already_exists" ||
+          code === "resource_conflict"
+        ) {
+          setMemberFeedback({
+            kind: "error",
+            message: zh
+              ? `账号 ${trimmedEmail} 已绑定到当前网关网络。`
+              : `Account ${trimmedEmail} is already authorized for this network.`,
+          });
+          return;
+        }
+        if (response.status === 400 || code === "invalid_request") {
+          setMemberFeedback({
+            kind: "error",
+            message: zh
+              ? "账号邮箱格式无效或请求参数不合法。"
+              : "Invalid account email or request payload.",
+          });
+          return;
+        }
+        if (response.status === 403 || code === "forbidden") {
+          setMemberFeedback({
+            kind: "error",
+            message: zh
+              ? "权限不足：无法管理当前网络的账号授权。"
+              : "Forbidden: insufficient permissions to manage authorized accounts.",
+          });
+          return;
+        }
+        setMemberFeedback({
+          kind: "error",
+          message: zh
+            ? `授权绑定失败（HTTP ${response.status}）。`
+            : `Failed to authorize account (HTTP ${response.status}).`,
+        });
+        return;
+      }
+      setMemberEmailInput("");
+      await loadNetworkMembers(activeNetwork.id);
+      setMemberFeedback({
+        kind: "success",
+        message: zh
+          ? `已将网关网络 ${activeNetwork.id} 授权绑定给 ${trimmedEmail}。`
+          : `Authorized ${trimmedEmail} for gateway network ${activeNetwork.id}.`,
+      });
+    } catch {
+      setMemberFeedback({
+        kind: "error",
+        message: zh
+          ? "授权绑定请求失败，请检查网络连接或控制面状态。"
+          : "Authorization request failed; check connectivity and control-plane status.",
+      });
+    } finally {
+      setMemberActionPending(false);
+    }
+  };
+
+  const revokeNetworkMember = async (
+    member: XConnectZeroNetworkMember,
+  ): Promise<void> => {
+    if (
+      !writeReady ||
+      !activeNetwork ||
+      memberActionPending ||
+      revokingMemberUserId !== null
+    ) {
+      return;
+    }
+    setRevokingMemberUserId(member.user_id);
+    setMemberFeedback(null);
+    try {
+      const response = await fetch(
+        `/api/xconnect-zero/networks/${encodeURIComponent(activeNetwork.id)}/members/${encodeURIComponent(member.user_id)}`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) {
+        if (response.status === 404) {
+          await loadNetworkMembers(activeNetwork.id);
+          setMemberFeedback({
+            kind: "error",
+            message: zh
+              ? `未找到 ${member.email || member.user_id} 的绑定记录（404），已刷新列表。`
+              : `Binding not found for ${member.email || member.user_id} (404); refreshed list.`,
+          });
+          return;
+        }
+        if (response.status === 403) {
+          setMemberFeedback({
+            kind: "error",
+            message: zh
+              ? "权限不足：无法解除该账号的授权绑定。"
+              : "Forbidden: insufficient permissions to revoke this account.",
+          });
+          return;
+        }
+        setMemberFeedback({
+          kind: "error",
+          message: zh
+            ? `解除绑定失败（HTTP ${response.status}）。`
+            : `Failed to revoke authorization (HTTP ${response.status}).`,
+        });
+        return;
+      }
+      await loadNetworkMembers(activeNetwork.id);
+      setMemberFeedback({
+        kind: "success",
+        message: zh
+          ? `已解除 ${member.email || member.user_id} 对网关网络 ${activeNetwork.id} 的授权绑定。`
+          : `Revoked ${member.email || member.user_id} from gateway network ${activeNetwork.id}.`,
+      });
+    } catch {
+      setMemberFeedback({
+        kind: "error",
+        message: zh
+          ? "解除绑定请求失败，请稍后重试。"
+          : "Failed to revoke authorization; please try again.",
+      });
+    } finally {
+      setRevokingMemberUserId(null);
+    }
   };
 
   const changeConnectionMode = async (
@@ -1231,6 +1494,17 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                 title={zh ? "查看接入配置" : "View integration settings"}
                 detail="accounts"
                 value=""
+                onClick={() => setPage("configuration")}
+              />
+              <Row
+                icon={Users}
+                title={zh ? "账号授权绑定" : "Authorized Accounts"}
+                detail={
+                  zh
+                    ? "将网关网络授权绑定给指定账号"
+                    : "Bind gateway networks to user accounts"
+                }
+                value={activeNetwork?.id ?? ""}
                 onClick={() => setPage("configuration")}
               />
             </Frame>
@@ -2144,6 +2418,209 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                         : "Not dispatched · switching unavailable"}
                   </span>
                 </div>
+              </div>
+            </Frame>
+          </div>
+          <div className="lg:col-span-2">
+            <Frame title={zh ? "账号授权绑定" : "Authorized Accounts"}>
+              <div className="space-y-4 p-5">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-[var(--color-text-subtle)]">
+                      {zh
+                        ? "将所选网关网络授权绑定给指定账号，绑定后该账号可从网关列表查看并接入对应节点。"
+                        : "Bind the selected gateway network to an account email so that user can view and connect to the gateway."}
+                    </p>
+                    {activeNetwork ? (
+                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                        {zh ? "当前网关网络" : "Selected network"}:{" "}
+                        <strong className="text-[var(--color-heading)]">
+                          {activeNetwork.display_name || activeNetwork.id}
+                        </strong>{" "}
+                        · <code>{activeNetwork.id}</code>
+                        {activeNetwork.gateway_id
+                          ? ` · Gateway ${activeNetwork.gateway_id}`
+                          : ""}
+                      </p>
+                    ) : null}
+                  </div>
+                  {networks.length > 0 ? (
+                    <label className="min-w-60 text-xs font-semibold text-[var(--color-heading)]">
+                      {zh ? "目标网关网络" : "Target gateway network"}
+                      <select
+                        aria-label={
+                          zh ? "目标网关网络" : "Target gateway network"
+                        }
+                        value={activeNetwork?.id ?? ""}
+                        onChange={(event) => changeNetwork(event.target.value)}
+                        disabled={!writeReady || memberActionPending}
+                        className="mt-1 block w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-normal disabled:opacity-50"
+                      >
+                        {networks.map((network) => (
+                          <option key={network.id} value={network.id}>
+                            {network.display_name || network.id} · {network.id}
+                            {network.gateway_id
+                              ? ` · ${network.gateway_id}`
+                              : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+                </div>
+
+                <form
+                  onSubmit={(event) => void addNetworkMember(event)}
+                  className="flex flex-col gap-3 sm:flex-row sm:items-end"
+                >
+                  <label className="flex-1 text-xs font-semibold text-[var(--color-heading)]">
+                    {zh ? "账号邮箱" : "Account email"}
+                    <input
+                      id="xconnect-member-email"
+                      type="email"
+                      value={memberEmailInput}
+                      onChange={(event) =>
+                        setMemberEmailInput(event.target.value)
+                      }
+                      placeholder="156405189@qq.com"
+                      disabled={
+                        !writeReady || !activeNetwork || memberActionPending
+                      }
+                      className="mt-1 block w-full rounded border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-normal disabled:opacity-50"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={
+                      !writeReady ||
+                      !activeNetwork ||
+                      memberActionPending ||
+                      revokingMemberUserId !== null
+                    }
+                    className="tactile-button tactile-button-primary px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {memberActionPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-4 w-4" />
+                    )}
+                    {memberActionPending
+                      ? zh
+                        ? "绑定中…"
+                        : "Authorizing…"
+                      : zh
+                        ? "授权绑定"
+                        : "Authorize Account"}
+                  </button>
+                </form>
+
+                {memberFeedback ? (
+                  <div
+                    role={memberFeedback.kind === "error" ? "alert" : "status"}
+                    aria-live="polite"
+                    className={`flex items-center gap-2 rounded border px-3 py-2 text-sm ${
+                      memberFeedback.kind === "error"
+                        ? "border-[color:var(--color-warning-muted)] bg-[var(--color-warning-muted)]/40 text-[var(--color-heading)]"
+                        : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300"
+                    }`}
+                  >
+                    {memberFeedback.kind === "error" ? (
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    )}
+                    <span>{memberFeedback.message}</span>
+                  </div>
+                ) : null}
+
+                {!activeNetwork ? (
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    {zh
+                      ? "暂无可用的网关网络，请先创建或加载已授权网络。"
+                      : "No gateway network available yet; create or load a network first."}
+                  </p>
+                ) : membersState === "loading" && networkMembers.length === 0 ? (
+                  <p
+                    role="status"
+                    className="text-sm text-[var(--color-text-muted)]"
+                  >
+                    {zh
+                      ? "正在加载已授权账号…"
+                      : "Loading authorized accounts…"}
+                  </p>
+                ) : membersState === "unavailable" ? (
+                  <p
+                    role="status"
+                    className="text-sm text-[var(--color-text-muted)]"
+                  >
+                    {zh
+                      ? "控制面暂未开放账号授权接口或当前不可用。"
+                      : "The control-plane account binding endpoint is currently unavailable."}
+                  </p>
+                ) : membersState === "error" ? (
+                  <p
+                    role="alert"
+                    className="text-sm text-[var(--color-danger-foreground)]"
+                  >
+                    {zh
+                      ? "加载已授权账号列表失败。"
+                      : "Failed to load authorized accounts."}
+                  </p>
+                ) : networkMembers.length === 0 ? (
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    {zh
+                      ? "当前网关网络暂无已授权绑定账号。"
+                      : "No authorized accounts bound to this gateway network yet."}
+                  </p>
+                ) : (
+                  <div className="divide-y divide-[color:var(--color-divider)] rounded-[var(--radius-lg)] border border-[color:var(--color-surface-border)]">
+                    {networkMembers.map((member) => {
+                      const boundAt =
+                        member.created_at &&
+                        !Number.isNaN(Date.parse(member.created_at))
+                          ? new Date(member.created_at).toLocaleString(
+                              zh ? "zh-CN" : "en-US",
+                            )
+                          : member.created_at || "—";
+                      const revoking = revokingMemberUserId === member.user_id;
+                      return (
+                        <div
+                          key={member.id || member.user_id}
+                          className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <b className="block truncate text-sm text-[var(--color-heading)]">
+                              {member.email || "—"}
+                            </b>
+                            <small className="mt-0.5 block text-xs text-[var(--color-text-subtle)]">
+                              User ID: <code>{member.user_id}</code> ·{" "}
+                              {zh ? "绑定时间" : "Bound at"}: {boundAt}
+                            </small>
+                          </div>
+                          <Button
+                            onClick={() => void revokeNetworkMember(member)}
+                            disabled={
+                              !writeReady ||
+                              memberActionPending ||
+                              revokingMemberUserId !== null
+                            }
+                          >
+                            {revoking ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : null}
+                            {revoking
+                              ? zh
+                                ? "解除中…"
+                                : "Revoking…"
+                              : zh
+                                ? "解除绑定"
+                                : "Revoke"}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </Frame>
           </div>
