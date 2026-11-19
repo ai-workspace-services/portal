@@ -54,6 +54,25 @@ function resolveRoute(
   const exact = ALLOWED_ROUTES.get(`${method} ${segments.join("/")}`);
   if (exact) return exact;
   if (
+    (method === "GET" || method === "POST") &&
+    segments.length === 3 &&
+    segments[0] === "networks" &&
+    segments[1] &&
+    segments[2] === "members"
+  ) {
+    return `/admin/networks/${encodeURIComponent(segments[1])}/members`;
+  }
+  if (
+    method === "DELETE" &&
+    segments.length === 4 &&
+    segments[0] === "networks" &&
+    segments[1] &&
+    segments[2] === "members" &&
+    segments[3]
+  ) {
+    return `/admin/networks/${encodeURIComponent(segments[1])}/members/${encodeURIComponent(segments[3])}`;
+  }
+  if (
     segments.length === 3 &&
     segments[0] === "networks" &&
     segments[2] === "policy"
@@ -191,6 +210,9 @@ async function proxy(
   const registrationRoute = endpointPath.startsWith("/admin/registrations");
   const networkDeleteRoute =
     method === "DELETE" && /^\/admin\/networks\/[^/]+$/.test(endpointPath);
+  const networkMemberMutationRoute =
+    (method === "POST" || method === "DELETE") &&
+    /^\/admin\/networks\/[^/]+\/members(?:\/[^/]+)?$/.test(endpointPath);
   const boundedBodyRoute = registrationRoute || method === "DELETE";
   let body: string | undefined;
   try {
@@ -242,7 +264,8 @@ async function proxy(
   if (
     response.status === 404 &&
     !(registrationRoute && method === "POST") &&
-    !networkDeleteRoute
+    !networkDeleteRoute &&
+    !networkMemberMutationRoute
   )
     return errorResponse("control_plane_unavailable", 503);
   if (response.status === 204) {
