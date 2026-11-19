@@ -12,7 +12,7 @@ describe("GatewayRoutingPolicyCard", () => {
     expect(screen.getByText("策略校验通过")).toBeInTheDocument();
     expect(screen.getByText("Media-Pool")).toBeInTheDocument();
     expect(screen.getByText("Pro-EC2-Pool")).toBeInTheDocument();
-    expect(screen.getByText("mediaOnProAction: blackhole")).toBeInTheDocument();
+    expect(screen.getAllByText("media: allow").length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText(/MATCH,Media-Pool/).length).toBeGreaterThanOrEqual(2);
   });
 
@@ -42,9 +42,9 @@ describe("GatewayRoutingPolicyCard", () => {
       synced: true,
       mode: "github_commit" as const,
       target: {
-        repository: "ai-workspace-infra/playbooks",
+        repository: "ai-workspace-infra/gitops",
         branch: "main",
-        path: "config/xconnect-routing-policy.yaml",
+        path: "topology/xconnect/routing-policy.yaml",
         commitMessage: "chore(xconnect): sync three-tier routing policy from portal",
       },
       commitSha: "abc1234",
@@ -68,9 +68,9 @@ describe("GatewayRoutingPolicyCard", () => {
     await waitFor(() =>
       expect(onSyncPolicy).toHaveBeenCalledWith(
         expect.objectContaining({
-          repository: "ai-workspace-infra/playbooks",
+          repository: "ai-workspace-infra/gitops",
           branch: "main",
-          path: "config/xconnect-routing-policy.yaml",
+          path: "topology/xconnect/routing-policy.yaml",
           dryRun: false,
         }),
       ),

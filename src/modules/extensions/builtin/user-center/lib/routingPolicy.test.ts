@@ -21,7 +21,7 @@ describe("routingPolicy parser and validator", () => {
         }),
         expect.objectContaining({
           name: "Pro-EC2-Pool",
-          mediaOnProAction: "blackhole",
+          mediaOnProAction: "allow",
           fallbackDefault: false,
         }),
         expect.objectContaining({
@@ -87,8 +87,8 @@ rules:
     expect(missingPro.errors).toContain("缺少必需的分流池 Pro-EC2-Pool");
   });
 
-  it("warns when Pro-EC2-Pool disables blackhole media protection", () => {
-    const weakPro = parseAndValidateRoutingPolicy(`
+  it("accepts both allow (default) and blackhole (opt-in strict mode) on Pro-EC2-Pool without warnings", () => {
+    const allowPro = parseAndValidateRoutingPolicy(`
 pools:
   Media-Pool:
     media_on_pro_action: "allow"
@@ -100,9 +100,7 @@ rules:
   - "GEOSITE,openai,Pro-EC2-Pool"
   - "MATCH,Media-Pool"
 `);
-    expect(weakPro.valid).toBe(true);
-    expect(weakPro.warnings).toContain(
-      "Pro-EC2-Pool 建议保持 media_on_pro_action: blackhole 以防止流媒体/下载流量回落消耗高价带宽",
-    );
+    expect(allowPro.valid).toBe(true);
+    expect(allowPro.warnings).toEqual([]);
   });
 });

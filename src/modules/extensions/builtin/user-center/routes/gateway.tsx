@@ -102,20 +102,20 @@ export default function UserCenterGatewayRoute() {
               title="Pro-EC2-Pool"
               actions={
                 <XdsBadge tone="warning" dot={false}>
-                  {zh ? "仅白名单" : "Whitelist-Only"}
+                  {zh ? "提醒 + 流量管控" : "Reminder & Traffic Control"}
                 </XdsBadge>
               }
             />
             <XdsCardBody className="space-y-2 text-xs text-[var(--color-text-muted)]">
               <p>
                 {zh
-                  ? "公共 EC2 低延迟精品池（Pro），仅放行 AI / 开发 / 商务域名，流媒体自动黑洞阻断。"
-                  : "Public low-latency EC2 pool (Pro) restricted to AI / Dev / Business whitelists with active media blackhole."}
+                  ? "公共 EC2 低延迟精品池（Pro），优先用于 AI / 开发 / 商务办公；解除严格黑洞限制，正常请求均放行，流媒体/大流量下载以提醒与流量管控为主。"
+                  : "Public low-latency EC2 pool (Pro) tuned for AI / Dev / Business; allows normal traffic and uses reminder + traffic control for heavy media."}
               </p>
               <div className="flex flex-wrap gap-1.5">
-                <XdsBadge tone="danger" dot={false}>
+                <XdsBadge tone="success" dot={false}>
                   <ShieldCheck className="mr-1 h-3 w-3" aria-hidden="true" />
-                  mediaOnProAction: blackhole
+                  mediaOnProAction: allow
                 </XdsBadge>
               </div>
             </XdsCardBody>
