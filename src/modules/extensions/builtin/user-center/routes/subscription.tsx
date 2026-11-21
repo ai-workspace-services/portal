@@ -413,20 +413,42 @@ export default function UserCenterSubscriptionRoute() {
                 }
                 meta={
                   usageSummary?.planAssignmentStatus === "assigned"
-                    ? `${zh ? "已用" : "Used"} ${bytesOrDash(usageSummary?.usedBytes)} / ${usageSummary.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.includedQuotaBytes)} · ${zh ? "本期重置" : "resets"} ${formatDate(usageSummary?.periodEnd)}`
+                    ? typeof usageSummary.highSpeedQuotaBytes === "number" &&
+                      usageSummary.highSpeedQuotaBytes > 0 &&
+                      !usageSummary.currentPlan?.unlimited
+                      ? `${zh ? "高速" : "High-speed"} ${bytesOrDash(usageSummary.highSpeedUsedBytes)} / ${bytesOrDash(usageSummary.highSpeedQuotaBytes)} · VPS ${bytesOrDash(usageSummary.vpsUsedBytes ?? usageSummary.usedBytes)} / ${bytesOrDash(usageSummary.vpsQuotaBytes ?? usageSummary.currentPlan?.maxTrafficBytes ?? usageSummary.includedQuotaBytes)} · ${zh ? "本期重置" : "resets"} ${formatDate(usageSummary.periodEnd)}`
+                      : `${zh ? "已用" : "Used"} ${bytesOrDash(usageSummary?.usedBytes)} / ${usageSummary.currentPlan?.unlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(usageSummary?.currentPlan?.maxTrafficBytes ?? usageSummary?.includedQuotaBytes)} · ${zh ? "本期重置" : "resets"} ${formatDate(usageSummary?.periodEnd)}`
                     : `${zh ? "未分配" : "Unassigned"} · ${usageSummary?.defaultPlan?.displayName || "default"} ${zh ? "默认额度参考" : "default quota reference"} ${bytesOrDash(usageSummary?.defaultPlan?.maxTrafficBytes)}`
                 }
               >
-                <XdsMeter
-                  percent={
-                    usageSummary?.planAssignmentStatus === "assigned" &&
-                    !usageSummary.currentPlan?.unlimited
-                      ? usageSummary?.usagePercent
-                      : undefined
-                  }
-                  label={zh ? "月度配额" : "Monthly quota"}
-                  className="xds-mt-12"
-                />
+                {usageSummary?.planAssignmentStatus === "assigned" &&
+                !usageSummary.currentPlan?.unlimited &&
+                typeof usageSummary.highSpeedQuotaBytes === "number" &&
+                usageSummary.highSpeedQuotaBytes > 0 ? (
+                  <>
+                    <XdsMeter
+                      percent={usageSummary.highSpeedUsagePercent}
+                      label={`${zh ? "高速流量 (Pro-EC2-Pool)" : "High-speed quota (Pro-EC2-Pool)"} · ${bytesOrDash(usageSummary.highSpeedUsedBytes)} / ${bytesOrDash(usageSummary.highSpeedQuotaBytes)}`}
+                      className="xds-mt-12"
+                    />
+                    <XdsMeter
+                      percent={usageSummary.vpsUsagePercent ?? usageSummary.usagePercent}
+                      label={`${zh ? "VPS 流量 (Media-Pool)" : "VPS quota (Media-Pool)"} · ${bytesOrDash(usageSummary.vpsUsedBytes ?? usageSummary.usedBytes)} / ${bytesOrDash(usageSummary.vpsQuotaBytes ?? usageSummary.currentPlan?.maxTrafficBytes ?? usageSummary.includedQuotaBytes)}`}
+                      className="xds-mt-12"
+                    />
+                  </>
+                ) : (
+                  <XdsMeter
+                    percent={
+                      usageSummary?.planAssignmentStatus === "assigned" &&
+                      !usageSummary.currentPlan?.unlimited
+                        ? usageSummary?.usagePercent
+                        : undefined
+                    }
+                    label={zh ? "月度配额" : "Monthly quota"}
+                    className="xds-mt-12"
+                  />
+                )}
               </XdsStat>
 
               <XdsStat

@@ -160,6 +160,59 @@ describe("QuotaCard", () => {
     expect(screen.getByText("1 GB / 20 GB")).toBeInTheDocument();
   });
 
+  it("renders separate High-speed and VPS meters for dual-bucket Pro plans and notifies when only high-speed quota is exhausted", () => {
+    const gib = 1024 * 1024 * 1024;
+    render(
+      <QuotaCard
+        zh
+        usage={{
+          accountUuid: "account-pro",
+          totalBytes: 40 * gib,
+          includedQuotaBytes: 50 * gib,
+          remainingIncludedQuota: 40 * gib,
+          usedBytes: 10 * gib,
+          usagePercent: 20,
+          highSpeedQuotaBytes: 30 * gib,
+          remainingHighSpeedQuota: 0,
+          highSpeedUsedBytes: 30 * gib,
+          highSpeedUsagePercent: 100,
+          highSpeedQuotaExhausted: true,
+          vpsQuotaBytes: 50 * gib,
+          remainingVpsQuota: 40 * gib,
+          vpsUsedBytes: 10 * gib,
+          vpsUsagePercent: 20,
+          vpsQuotaExhausted: false,
+          quotaExhausted: false,
+          planAssignmentStatus: "assigned",
+          currentPlan: {
+            planId: "PRO-MONTHLY-V2",
+            displayName: "Pro 月付",
+            packageName: "pro",
+            maxTrafficBytes: 50 * gib,
+            catalogMaxTrafficBytes: 50 * gib,
+            quotaCycle: "natural_month",
+            unlimited: false,
+            assigned: true,
+            source: "account_entitlement",
+          },
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByLabelText("高速流量 (Pro-EC2-Pool) · 30 GB / 30 GB"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("VPS 流量 (Media-Pool) · 10 GB / 50 GB"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("剩余 高速 0 B · VPS 40 GB"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "高速流量（Pro-EC2-Pool）已用尽，VPS 流量（Media-Pool）仍可继续使用。",
+    );
+  });
+
   it("shows unlimited internal plans without rendering a zero-byte cap", () => {
     render(
       <QuotaCard

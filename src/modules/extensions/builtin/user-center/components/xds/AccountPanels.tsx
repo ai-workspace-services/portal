@@ -647,6 +647,39 @@ export function QuotaCard({
   const planMaxQuota = currentPlanMaxQuota(usage);
   const quotaExhausted = usage?.quotaExhausted === true;
   const sync = accountSyncPresentation(usage, policy, zh);
+  const highSpeedMaxQuota = usage?.highSpeedQuotaBytes;
+  const hasDualBucket =
+    isAssigned &&
+    !isUnlimited &&
+    typeof highSpeedMaxQuota === "number" &&
+    Number.isFinite(highSpeedMaxQuota) &&
+    highSpeedMaxQuota > 0;
+  const highSpeedUsedBytes = hasDualBucket
+    ? (usage?.highSpeedUsedBytes ??
+      Math.max(
+        0,
+        highSpeedMaxQuota - (usage?.remainingHighSpeedQuota ?? highSpeedMaxQuota),
+      ))
+    : 0;
+  const highSpeedPercent = hasDualBucket
+    ? (usage?.highSpeedUsagePercent ??
+      (highSpeedMaxQuota > 0 ? (highSpeedUsedBytes / highSpeedMaxQuota) * 100 : 0))
+    : undefined;
+  const vpsMaxQuota =
+    typeof usage?.vpsQuotaBytes === "number" && usage.vpsQuotaBytes > 0
+      ? usage.vpsQuotaBytes
+      : planMaxQuota;
+  const vpsUsedBytes = usage?.vpsUsedBytes ?? usage?.usedBytes;
+  const vpsPercent = usage?.vpsUsagePercent ?? percent;
+  const vpsRemainingQuota =
+    typeof usage?.remainingVpsQuota === "number"
+      ? usage.remainingVpsQuota
+      : usage?.remainingIncludedQuota;
+  const highSpeedOnlyExhausted =
+    hasDualBucket &&
+    usage?.highSpeedQuotaExhausted === true &&
+    !quotaExhausted &&
+    usage?.vpsQuotaExhausted !== true;
   return (
     <XdsCard>
       <XdsCardHead
@@ -673,22 +706,39 @@ export function QuotaCard({
       <XdsCardBody>
         <div className="xds-row-between" style={{ alignItems: "flex-end" }}>
           <div className="xds-stat-value" style={{ fontSize: "var(--fs-h1)" }}>
-            {isUnlimited ? "∞" : isAssigned ? pct(percent) : DASH}
+            {isUnlimited ? "∞" : isAssigned ? pct(hasDualBucket ? vpsPercent : percent) : DASH}
             {isAssigned && !isUnlimited ? (
               <span className="xds-unit">%</span>
             ) : null}
           </div>
           <span className="xds-t-caption xds-t-mono">
             {isAssigned
-              ? `${bytesOrDash(usage?.usedBytes)} / ${isUnlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(planMaxQuota)}`
+              ? hasDualBucket
+                ? `${zh ? "VPS" : "VPS"} ${bytesOrDash(vpsUsedBytes)} / ${bytesOrDash(vpsMaxQuota)}`
+                : `${bytesOrDash(usage?.usedBytes)} / ${isUnlimited ? (zh ? "无限制" : "Unlimited") : bytesOrDash(planMaxQuota)}`
               : `${zh ? "未分配" : "Unassigned"} · ${bytesOrDash(defaultPlan?.maxTrafficBytes)} ${zh ? "默认额度参考" : "default quota reference"}`}
           </span>
         </div>
-        <XdsMeter
-          percent={isAssigned && !isUnlimited ? percent : undefined}
-          label={zh ? "月度配额" : "Monthly quota"}
-          className="xds-mt-12"
-        />
+        {hasDualBucket ? (
+          <>
+            <XdsMeter
+              percent={highSpeedPercent}
+              label={`${zh ? "高速流量 (Pro-EC2-Pool)" : "High-speed quota (Pro-EC2-Pool)"} · ${bytesOrDash(highSpeedUsedBytes)} / ${bytesOrDash(highSpeedMaxQuota)}`}
+              className="xds-mt-12"
+            />
+            <XdsMeter
+              percent={vpsPercent}
+              label={`${zh ? "VPS 流量 (Media-Pool)" : "VPS quota (Media-Pool)"} · ${bytesOrDash(vpsUsedBytes)} / ${bytesOrDash(vpsMaxQuota)}`}
+              className="xds-mt-12"
+            />
+          </>
+        ) : (
+          <XdsMeter
+            percent={isAssigned && !isUnlimited ? percent : undefined}
+            label={zh ? "月度配额" : "Monthly quota"}
+            className="xds-mt-12"
+          />
+        )}
         <div className="xds-row-between" style={{ marginTop: 8 }}>
           <span className="xds-t-caption">
             {zh ? "剩余" : "Remaining"}{" "}
@@ -698,12 +748,32 @@ export function QuotaCard({
                 ? zh
                   ? "无限制"
                   : "Unlimited"
-                : bytesOrDash(usage?.remainingIncludedQuota)}
+                : hasDualBucket
+                  ? `${zh ? "高速" : "High-speed"} ${bytesOrDash(usage?.remainingHighSpeedQuota)} · VPS ${bytesOrDash(vpsRemainingQuota)}`
+                  : bytesOrDash(usage?.remainingIncludedQuota)}
           </span>
           <span className="xds-t-caption">
             {zh ? "本期重置" : "Resets"} {dateOrDash(usage?.periodEnd)}
           </span>
         </div>
+
+        {highSpeedOnlyExhausted ? (
+          <div
+            role="status"
+            className="xds-t-caption"
+            style={{
+              marginTop: 12,
+              padding: "10px 12px",
+              border: "1px solid var(--border-subtle, #e2e8f0)",
+              borderRadius: "var(--r-md)",
+              background: "var(--surface-subtle, rgba(148, 163, 184, 0.1))",
+            }}
+          >
+            {zh
+              ? "高速流量（Pro-EC2-Pool）已用尽，VPS 流量（Media-Pool）仍可继续使用。"
+              : "High-speed quota (Pro-EC2-Pool) is exhausted; VPS quota (Media-Pool) remains available."}
+          </div>
+        ) : null}
 
         {quotaExhausted ? (
           <div
