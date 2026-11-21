@@ -39,20 +39,20 @@ pools:
     public_resource: true
     media_on_pro_action: "allow"
     fallback_default: false
-    description: "公共 EC2 精品池（t4g.small / c8g 等）：AI / 开发 / 商务办公低延迟优先；不做严格白名单限制，正常请求均放行，高流量流媒体 / 游戏下载 / 测速以客户端提醒 + 服务端流量管控为主"
+    description: "公共高速流量池（Pro-EC2-Pool，EC2 t4g.small / c8g 等）：定义为高速流量，不再限制流媒体与下载（默认 allow）；Pro 订阅可用 Media-Pool + Pro-EC2-Pool（如 50 元套餐：30GB 高速 + 50GB VPS），Plus 订阅仅可用 Media-Pool 且 Pro 节点不可见"
     pricing_groups:
       - pro
     url_test:
       url: "https://cp.cloudflare.com/generate_204"
       interval: 180
     nodes:
-      - "jp-xconnect-02.svc.plus"
+      - "jp-xconnect-pro-01.svc.plus"
 
   Custom-Dedicated:
     public_resource: false
     media_on_pro_action: "allow"
     fallback_default: false
-    description: "非公共专属节点（Custom 白名单绑定）：绝不进入公共池，客户端与服务端均无限制"
+    description: "非公共专属节点（Custom 白名单绑定机制）：绝不进入公共池，没有使用限制"
     pricing_groups:
       - custom
       - team
