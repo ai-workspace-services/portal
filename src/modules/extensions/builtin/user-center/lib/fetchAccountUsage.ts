@@ -5,6 +5,12 @@ type AccountUsageError = Error & {
   code?: string;
 };
 
+export type PoolUsageBreakdownEntry = {
+  uplinkBytes: number;
+  downlinkBytes: number;
+  totalBytes: number;
+};
+
 export type AccountUsageSummary = {
   accountUuid: string;
   totalBytes: number;
@@ -15,6 +21,17 @@ export type AccountUsageSummary = {
   currentBalanceUsd?: number;
   remainingIncludedQuota?: number;
   includedQuotaBytes?: number;
+  highSpeedQuotaBytes?: number;
+  remainingHighSpeedQuota?: number;
+  highSpeedUsedBytes?: number;
+  highSpeedUsagePercent?: number;
+  highSpeedQuotaExhausted?: boolean;
+  vpsQuotaBytes?: number;
+  remainingVpsQuota?: number;
+  vpsUsedBytes?: number;
+  vpsUsagePercent?: number;
+  vpsQuotaExhausted?: boolean;
+  poolUsageBreakdown?: Record<string, PoolUsageBreakdownEntry>;
   currentPlan?: AccountPlanSummary | null;
   defaultPlan?: AccountPlanSummary | null;
   planAssignmentStatus?: "assigned" | "unassigned";
@@ -49,6 +66,7 @@ export type AccountPolicy = {
 export type AccountBillingProfile = {
   packageName?: string;
   includedQuotaBytes?: number;
+  highSpeedQuotaBytes?: number;
   basePricePerByte?: number;
   regionMultiplier?: number;
   lineMultiplier?: number;
