@@ -12,6 +12,8 @@ import { isXConnectZeroAdminOverview } from "@lib/xconnectZero";
 
 const CONTROL_PLANE_TIMEOUT_MS = 8_000;
 const MAX_REQUEST_BODY_BYTES = 16 * 1024;
+const MAX_POLICY_BODY_BYTES = 64 * 1024;
+const MAX_POLICY_EXPLAIN_BODY_BYTES = 4096;
 const MAX_RESPONSE_BODY_BYTES = 256 * 1024;
 // XConnect Zero is a self-service user feature. The accounts API applies the
 // authoritative owner scope; this BFF only forwards the current session.
@@ -73,11 +75,23 @@ function resolveRoute(
     return `/admin/networks/${encodeURIComponent(segments[1])}/members/${encodeURIComponent(segments[3])}`;
   }
   if (
+    (method === "GET" || method === "PUT") &&
     segments.length === 3 &&
     segments[0] === "networks" &&
+    segments[1] &&
     segments[2] === "policy"
   ) {
     return `/admin/networks/${encodeURIComponent(segments[1])}/policy`;
+  }
+  if (
+    method === "POST" &&
+    segments.length === 4 &&
+    segments[0] === "networks" &&
+    segments[1] &&
+    segments[2] === "policy" &&
+    segments[3] === "explain"
+  ) {
+    return `/admin/networks/${encodeURIComponent(segments[1])}/policy/explain`;
   }
   if (
     method === "PUT" &&
@@ -117,6 +131,12 @@ function resolveRoute(
 
 function requiredPermission(method: string, endpointPath: string): string {
   if (endpointPath === "/admin/registrations") return "xconnect.zero.manage";
+  if (
+    method === "POST" &&
+    /^\/admin\/networks\/[^/]+\/policy\/explain$/.test(endpointPath)
+  ) {
+    return "xconnect.zero.read";
+  }
   return method === "GET" ? "xconnect.zero.read" : "xconnect.zero.manage";
 }
 
@@ -213,11 +233,28 @@ async function proxy(
   const networkMemberMutationRoute =
     (method === "POST" || method === "DELETE") &&
     /^\/admin\/networks\/[^/]+\/members(?:\/[^/]+)?$/.test(endpointPath);
-  const boundedBodyRoute = registrationRoute || method === "DELETE";
+  const policyRoute =
+    (method === "GET" || method === "PUT") &&
+    /^\/admin\/networks\/[^/]+\/policy$/.test(endpointPath);
+  const policyExplainRoute =
+    method === "POST" &&
+    /^\/admin\/networks\/[^/]+\/policy\/explain$/.test(endpointPath);
+  const boundedBodyRoute =
+    registrationRoute ||
+    method === "DELETE" ||
+    (method === "PUT" && policyRoute) ||
+    policyExplainRoute;
   let body: string | undefined;
   try {
     const contentLength = Number(request.headers.get("content-length"));
-    const bodyLimit = method === "DELETE" ? 4096 : MAX_REQUEST_BODY_BYTES;
+    const bodyLimit =
+      method === "DELETE"
+        ? 4096
+        : policyExplainRoute
+          ? MAX_POLICY_EXPLAIN_BODY_BYTES
+          : method === "PUT" && policyRoute
+            ? MAX_POLICY_BODY_BYTES
+            : MAX_REQUEST_BODY_BYTES;
     if (boundedBodyRoute && contentLength > bodyLimit) {
       return errorResponse("request_too_large", 413);
     }
@@ -265,7 +302,9 @@ async function proxy(
     response.status === 404 &&
     !(registrationRoute && method === "POST") &&
     !networkDeleteRoute &&
-    !networkMemberMutationRoute
+    !networkMemberMutationRoute &&
+    !policyRoute &&
+    !policyExplainRoute
   )
     return errorResponse("control_plane_unavailable", 503);
   if (response.status === 204) {
