@@ -233,6 +233,331 @@ function isOverviewStatus(
   );
 }
 
+export type XConnectZeroPolicyAction = "allow" | "deny";
+export type XConnectZeroPolicyProtocol = "all" | "tcp" | "udp" | "icmp";
+
+export interface XConnectZeroPolicyRule {
+  id: string;
+  action: XConnectZeroPolicyAction;
+  source_devices: string[];
+  destination_devices: string[];
+  protocols: XConnectZeroPolicyProtocol[];
+  ports: number[];
+  whole_device?: boolean;
+}
+
+export interface XConnectZeroPolicyArtifact {
+  schema_version: number;
+  compiler_version: string;
+  network_id: string;
+  revision: number;
+  default_action: XConnectZeroPolicyAction;
+  protected_flows: string[];
+  rules: XConnectZeroPolicyRule[];
+}
+
+export interface XConnectZeroPolicyExplainRequest {
+  source_device_id: string;
+  destination_device_id: string;
+  protocol: XConnectZeroPolicyProtocol;
+  port?: number;
+}
+
+export interface XConnectZeroPolicyExplainResponse {
+  network_id: string;
+  revision: number;
+  default_action: XConnectZeroPolicyAction;
+  decision: XConnectZeroPolicyAction;
+  matched_rule_id?: string;
+  matched_rule_index?: number;
+  reason: string;
+  source_address?: string;
+  destination_address?: string;
+}
+
+const VALID_POLICY_PROTOCOLS = new Set<XConnectZeroPolicyProtocol>([
+  "all",
+  "tcp",
+  "udp",
+  "icmp",
+]);
+
+function normalizePolicyAction(
+  value: unknown,
+  fallback: XConnectZeroPolicyAction = "deny",
+): XConnectZeroPolicyAction {
+  if (value === "allow" || value === "accept") return "allow";
+  if (value === "deny") return "deny";
+  return fallback;
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function normalizePolicyProtocols(
+  value: unknown,
+): XConnectZeroPolicyProtocol[] {
+  if (!Array.isArray(value)) return [];
+  const out: XConnectZeroPolicyProtocol[] = [];
+  for (const item of value) {
+    if (typeof item !== "string") continue;
+    const lowered = item.trim().toLowerCase() as XConnectZeroPolicyProtocol;
+    if (VALID_POLICY_PROTOCOLS.has(lowered) && !out.includes(lowered)) {
+      out.push(lowered);
+    }
+  }
+  return out;
+}
+
+function normalizePolicyPorts(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  const out: number[] = [];
+  for (const item of value) {
+    if (
+      typeof item === "number" &&
+      Number.isInteger(item) &&
+      item >= 1 &&
+      item <= 65535 &&
+      !out.includes(item)
+    ) {
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+export function createDefaultXConnectZeroPolicy(
+  networkId: string,
+  revision = 0,
+): XConnectZeroPolicyArtifact {
+  return {
+    schema_version: 1,
+    compiler_version: "1",
+    network_id: networkId,
+    revision,
+    default_action: "deny",
+    protected_flows: [],
+    rules: [],
+  };
+}
+
+export function normalizeXConnectZeroPolicyArtifact(
+  raw: unknown,
+  networkId: string,
+  fallbackRevision = 0,
+): { artifact: XConnectZeroPolicyArtifact; recognized: boolean } {
+  const candidate =
+    raw &&
+    typeof raw === "object" &&
+    !Array.isArray(raw) &&
+    "policy" in raw &&
+    raw.policy &&
+    typeof raw.policy === "object" &&
+    !Array.isArray(raw.policy)
+      ? (raw.policy as Record<string, unknown>)
+      : raw && typeof raw === "object" && !Array.isArray(raw)
+        ? (raw as Record<string, unknown>)
+        : null;
+
+  const recognized = Boolean(
+    candidate &&
+      (typeof candidate.default_action === "string" ||
+        Array.isArray(candidate.rules)),
+  );
+  if (!candidate || !recognized) {
+    return {
+      artifact: createDefaultXConnectZeroPolicy(networkId, fallbackRevision),
+      recognized: false,
+    };
+  }
+
+  const rules: XConnectZeroPolicyRule[] = Array.isArray(candidate.rules)
+    ? candidate.rules
+        .filter(
+          (item): item is Record<string, unknown> =>
+            Boolean(item) && typeof item === "object" && !Array.isArray(item),
+        )
+        .map((rule, index) => ({
+          id:
+            typeof rule.id === "string" && rule.id.trim()
+              ? rule.id.trim()
+              : `rule-${index + 1}`,
+          action: normalizePolicyAction(rule.action, "deny"),
+          source_devices: normalizeStringArray(rule.source_devices),
+          destination_devices: normalizeStringArray(rule.destination_devices),
+          protocols: normalizePolicyProtocols(rule.protocols),
+          ports: normalizePolicyPorts(rule.ports),
+          ...(typeof rule.whole_device === "boolean"
+            ? { whole_device: rule.whole_device }
+            : {}),
+        }))
+    : [];
+
+  return {
+    recognized: true,
+    artifact: {
+      schema_version:
+        typeof candidate.schema_version === "number" &&
+        Number.isInteger(candidate.schema_version) &&
+        candidate.schema_version > 0
+          ? candidate.schema_version
+          : 1,
+      compiler_version:
+        typeof candidate.compiler_version === "string" &&
+        candidate.compiler_version.trim()
+          ? candidate.compiler_version.trim()
+          : "1",
+      network_id:
+        typeof candidate.network_id === "string" && candidate.network_id.trim()
+          ? candidate.network_id.trim()
+          : networkId,
+      revision:
+        typeof candidate.revision === "number" &&
+        Number.isInteger(candidate.revision) &&
+        candidate.revision >= 0
+          ? candidate.revision
+          : fallbackRevision,
+      default_action: normalizePolicyAction(candidate.default_action, "deny"),
+      protected_flows: normalizeStringArray(candidate.protected_flows),
+      rules,
+    },
+  };
+}
+
+function resolveDeviceOverlayAddress(
+  devices: XConnectZeroDevice[],
+  networkId: string,
+  deviceId: string,
+): string | undefined {
+  const trimmedId = deviceId.trim();
+  if (!trimmedId) return undefined;
+  const matched =
+    devices.find(
+      (device) =>
+        device.id === trimmedId &&
+        (!device.network_id || device.network_id === networkId),
+    ) ?? devices.find((device) => device.id === trimmedId);
+  const address = matched?.wireguard_address?.trim();
+  return address || undefined;
+}
+
+function ruleMatchesProtocolAndPort(
+  rule: XConnectZeroPolicyRule,
+  reqProtocol: XConnectZeroPolicyProtocol,
+  reqPort: number | undefined,
+): boolean {
+  const rawProtocols = (rule.protocols ?? []).map((proto) =>
+    proto.toLowerCase(),
+  );
+  const ports = Array.isArray(rule.ports) ? rule.ports : [];
+  const effectiveProtocols =
+    rawProtocols.length > 0
+      ? rawProtocols
+      : ports.length > 0
+        ? ["tcp", "udp"]
+        : ["all"];
+
+  const normalizedReqProto = (reqProtocol || "all").toLowerCase();
+  const hasPort =
+    typeof reqPort === "number" && Number.isInteger(reqPort) && reqPort > 0;
+
+  for (const proto of effectiveProtocols) {
+    if (proto === "all") {
+      return true;
+    }
+    if (proto === "icmp") {
+      if (normalizedReqProto === "icmp" && !hasPort) {
+        return true;
+      }
+      continue;
+    }
+    if (proto === "tcp" || proto === "udp") {
+      if (normalizedReqProto === proto) {
+        if (ports.length === 0 || (hasPort && ports.includes(reqPort))) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Evaluates a policy artifact draft locally using the same first-match-wins
+ * semantics as XConnect-Gateway/internal/policy/compiler.go.
+ */
+export function evaluateXConnectZeroPolicyDraft(
+  policy: XConnectZeroPolicyArtifact,
+  req: XConnectZeroPolicyExplainRequest,
+  devices: XConnectZeroDevice[],
+): XConnectZeroPolicyExplainResponse {
+  const sourceAddress = resolveDeviceOverlayAddress(
+    devices,
+    policy.network_id,
+    req.source_device_id,
+  );
+  const destinationAddress = resolveDeviceOverlayAddress(
+    devices,
+    policy.network_id,
+    req.destination_device_id,
+  );
+  const defaultAction = normalizePolicyAction(policy.default_action, "deny");
+  const rules = Array.isArray(policy.rules) ? policy.rules : [];
+
+  for (let index = 0; index < rules.length; index += 1) {
+    const rule = rules[index];
+    const sourceDevices = Array.isArray(rule.source_devices)
+      ? rule.source_devices
+      : [];
+    const destinationDevices = Array.isArray(rule.destination_devices)
+      ? rule.destination_devices
+      : [];
+
+    const sourceMatches =
+      sourceDevices.includes("*") ||
+      sourceDevices.includes(req.source_device_id);
+    if (!sourceMatches) continue;
+
+    const destinationMatches =
+      destinationDevices.includes("*") ||
+      destinationDevices.includes(req.destination_device_id);
+    if (!destinationMatches) continue;
+
+    if (!ruleMatchesProtocolAndPort(rule, req.protocol, req.port)) continue;
+
+    const decision = normalizePolicyAction(rule.action, "deny");
+    return {
+      network_id: policy.network_id,
+      revision: policy.revision,
+      default_action: defaultAction,
+      decision,
+      matched_rule_id: rule.id,
+      matched_rule_index: index,
+      reason: `matched rule "${rule.id}" at index ${index} (${decision})`,
+      ...(sourceAddress ? { source_address: sourceAddress } : {}),
+      ...(destinationAddress
+        ? { destination_address: destinationAddress }
+        : {}),
+    };
+  }
+
+  return {
+    network_id: policy.network_id,
+    revision: policy.revision,
+    default_action: defaultAction,
+    decision: defaultAction,
+    reason: `no rule matched; fell back to default_action (${defaultAction})`,
+    ...(sourceAddress ? { source_address: sourceAddress } : {}),
+    ...(destinationAddress ? { destination_address: destinationAddress } : {}),
+  };
+}
+
 export function isXConnectZeroAdminOverview(
   value: unknown,
 ): value is XConnectZeroAdminOverview {

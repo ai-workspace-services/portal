@@ -43,9 +43,11 @@ import {
   type XConnectZeroInvite,
   type XConnectZeroNetwork,
   type XConnectZeroNetworkMember,
+  type XConnectZeroPolicyArtifact,
   type XConnectZeroRegistration,
   type XConnectZeroTelemetry,
 } from "@lib/xconnectZero";
+import XConnectZeroPolicyPanel from "./xconnect-zero-policy-panel";
 
 type Page = "overview" | "join" | "configuration";
 type NodeRole = "gateway" | "one";
@@ -898,6 +900,38 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
       setRevokingMemberUserId(null);
     }
   };
+
+  const handlePolicySaved = useCallback(
+    async (saved: XConnectZeroPolicyArtifact): Promise<void> => {
+      setResourceData((current) =>
+        current
+          ? {
+              ...current,
+              networks: current.networks.map((item) =>
+                item.id === saved.network_id
+                  ? { ...item, config_generation: saved.revision }
+                  : item,
+              ),
+            }
+          : current,
+      );
+      const [overviewResult, resourceResult] = await Promise.allSettled([
+        getOverview(),
+        getResources(),
+      ]);
+      if (
+        overviewResult.status === "fulfilled" &&
+        overviewResult.value.kind === "available"
+      ) {
+        setState(overviewResult.value);
+      }
+      if (resourceResult.status === "fulfilled") {
+        setResourceData(resourceResult.value);
+        setResourceState("ready");
+      }
+    },
+    [],
+  );
 
   const changeConnectionMode = async (
     nextMode: ConnectionModeId,
@@ -2420,6 +2454,17 @@ export default function XConnectZeroNodeManagement(): JSX.Element {
                 </div>
               </div>
             </Frame>
+          </div>
+          <div className="lg:col-span-2">
+            <XConnectZeroPolicyPanel
+              zh={zh}
+              writeReady={writeReady}
+              activeNetwork={activeNetwork}
+              networks={networks}
+              devices={devices}
+              onSelectNetwork={changeNetwork}
+              onPolicySaved={handlePolicySaved}
+            />
           </div>
           <div className="lg:col-span-2">
             <Frame title={zh ? "账号授权绑定" : "Authorized Accounts"}>

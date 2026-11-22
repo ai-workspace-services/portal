@@ -595,29 +595,279 @@ describe("/api/xconnect-zero/[...segments]", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("does not impose registration size caps on existing policy routes", async () => {
+  it("allows policy PUTs above the 16KB registration cap up to 64KB and rejects >64KB payloads", async () => {
     getAccountSessionMock.mockResolvedValue({
       token: "session",
       user: { role: "user" },
     });
     userHasRoleOrPermissionMock.mockResolvedValue(true);
-    const large = JSON.stringify({ policy: "x".repeat(300 * 1024) });
-    const fetchMock = vi.fn().mockResolvedValue(new Response(large));
+    const mediumPolicy = JSON.stringify({
+      default_action: "deny",
+      rules: [{ id: "r1", padding: "x".repeat(48 * 1024) }],
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(mediumPolicy, {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const { PUT } = await import("./route");
-    const result = await PUT(
+    const okResult = await PUT(
       new NextRequest(
         "https://console.svc.plus/api/xconnect-zero/networks/net/policy",
-        { method: "PUT", body: large },
+        { method: "PUT", body: mediumPolicy },
       ),
       { params: Promise.resolve({ segments: ["networks", "net", "policy"] }) },
     );
-    expect(result.status).toBe(200);
-    expect(await result.json()).toEqual(JSON.parse(large));
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({ body: large }),
+    expect(okResult.status).toBe(200);
+    expect(await okResult.json()).toEqual(JSON.parse(mediumPolicy));
+    expect(userHasRoleOrPermissionMock).toHaveBeenCalledWith(
+      { role: "user" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.manage"],
     );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://accounts-cloudflare-uat.onwalk.net/api/overlay/v1/admin/networks/net/policy",
+      expect.objectContaining({ method: "PUT", body: mediumPolicy }),
+    );
+
+    const cancel = vi.fn();
+    const oversizedStream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(65 * 1024));
+      },
+      cancel,
+    });
+    const tooLarge = await PUT(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net/policy",
+        {
+          method: "PUT",
+          body: oversizedStream,
+          ...({ duplex: "half" } as { duplex: "half" }),
+        },
+      ),
+      { params: Promise.resolve({ segments: ["networks", "net", "policy"] }) },
+    );
+    expect(tooLarge.status).toBe(413);
+    await expect(tooLarge.json()).resolves.toEqual({
+      error: "request_too_large",
+    });
+    expect(cancel).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("forwards GET/PUT /networks/:id/policy and POST /networks/:id/policy/explain with proper permissions, limits, and 404 passthrough", async () => {
+    getAccountSessionMock.mockResolvedValue({
+      token: "account-session-token",
+      user: { role: "user" },
+    });
+    userHasRoleOrPermissionMock.mockResolvedValue(true);
+    const samplePolicy = {
+      schema_version: 1,
+      compiler_version: "1",
+      network_id: "net-ph",
+      revision: 3,
+      default_action: "deny",
+      protected_flows: [],
+      rules: [],
+    };
+    const explainResponse = {
+      network_id: "net-ph",
+      revision: 3,
+      default_action: "deny",
+      decision: "allow",
+      matched_rule_id: "allow-all-icmp",
+      matched_rule_index: 0,
+      reason: "matched allow-all-icmp",
+    };
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(samplePolicy), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "not_found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(explainResponse), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "explain_not_implemented" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { GET, POST, PUT, DELETE } = await import("./route");
+
+    const getPolicyRes = await GET(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy",
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy"],
+        }),
+      },
+    );
+    expect(getPolicyRes.status).toBe(200);
+    await expect(getPolicyRes.json()).resolves.toEqual(samplePolicy);
+    expect(userHasRoleOrPermissionMock).toHaveBeenNthCalledWith(
+      1,
+      { role: "user" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.read"],
+    );
+
+    const missingPolicyPutRes = await PUT(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(samplePolicy),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy"],
+        }),
+      },
+    );
+    expect(missingPolicyPutRes.status).toBe(404);
+    await expect(missingPolicyPutRes.json()).resolves.toEqual({
+      error: "not_found",
+    });
+
+    const explainRes = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy/explain",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_device_id: "one-1",
+            destination_device_id: "gw-1",
+            protocol: "icmp",
+          }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy", "explain"],
+        }),
+      },
+    );
+    expect(explainRes.status).toBe(200);
+    await expect(explainRes.json()).resolves.toEqual(explainResponse);
+    expect(userHasRoleOrPermissionMock).toHaveBeenNthCalledWith(
+      3,
+      { role: "user" },
+      ["admin", "operator", "user"],
+      ["xconnect.zero.read"],
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "https://accounts-cloudflare-uat.onwalk.net/api/overlay/v1/admin/networks/net-ph/policy/explain",
+      expect.objectContaining({ method: "POST" }),
+    );
+
+    const explain404Res = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy/explain",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source_device_id: "one-1",
+            destination_device_id: "gw-1",
+            protocol: "tcp",
+            port: 443,
+          }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy", "explain"],
+        }),
+      },
+    );
+    expect(explain404Res.status).toBe(404);
+    await expect(explain404Res.json()).resolves.toEqual({
+      error: "explain_not_implemented",
+    });
+
+    const oversizedExplainRes = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy/explain",
+        {
+          method: "POST",
+          headers: { "content-length": "5000" },
+          body: JSON.stringify({ pad: "x".repeat(4500) }),
+        },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy", "explain"],
+        }),
+      },
+    );
+    expect(oversizedExplainRes.status).toBe(413);
+    await expect(oversizedExplainRes.json()).resolves.toEqual({
+      error: "request_too_large",
+    });
+
+    const postPolicyDenied = await POST(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy",
+        { method: "POST" },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy"],
+        }),
+      },
+    );
+    const deletePolicyDenied = await DELETE(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy",
+        { method: "DELETE" },
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy"],
+        }),
+      },
+    );
+    const getExplainDenied = await GET(
+      new NextRequest(
+        "https://console.svc.plus/api/xconnect-zero/networks/net-ph/policy/explain",
+      ),
+      {
+        params: Promise.resolve({
+          segments: ["networks", "net-ph", "policy", "explain"],
+        }),
+      },
+    );
+    expect(postPolicyDenied.status).toBe(404);
+    expect(deletePolicyDenied.status).toBe(404);
+    expect(getExplainDenied.status).toBe(404);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it("injects the trusted bootstrap controller while preserving network and invite fields", async () => {
