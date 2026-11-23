@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildDownloadCatalog } from "./catalog";
+import { DEFAULT_DOWNLOAD_CHANNELS_CONFIG } from "./channels-types";
 import type { DirListing } from "./types";
 
 describe("buildDownloadCatalog", () => {
@@ -108,5 +109,97 @@ describe("buildDownloadCatalog", () => {
       href: "https://github.com/ai-workspace-lab/xworkmate-app/releases/download/v1.2.0-build.851/XWorkmate-1.2.0.dmg",
       source: "github-release",
     });
+  });
+
+  it("excludes internal/store artifacts and prevents cross-OS zip collisions", () => {
+    const catalog = buildDownloadCatalog([
+      {
+        path: "github-release/xconnect/latest-43702841981-33947f3/",
+        entries: [
+          {
+            name: "app-release.aab",
+            href: "https://github.com/ai-workspace-xstream/xconnect-app/releases/download/latest-43702841981-33947f3/app-release.aab",
+            type: "file",
+            lastModified: "2026-11-15T10:29:28Z",
+          },
+          {
+            name: "xconnect.app.zip",
+            href: "https://github.com/ai-workspace-xstream/xconnect-app/releases/download/latest-43702841981-33947f3/xconnect.app.zip",
+            type: "file",
+            lastModified: "2026-11-15T10:29:28Z",
+          },
+          {
+            name: "xconnect-linux.zip",
+            href: "https://github.com/ai-workspace-xstream/xconnect-app/releases/download/latest-43702841981-33947f3/xconnect-linux.zip",
+            type: "file",
+            lastModified: "2026-11-15T10:29:28Z",
+          },
+          {
+            name: "xconnect-latest-33947f3.dmg",
+            href: "https://github.com/ai-workspace-xstream/xconnect-app/releases/download/latest-43702841981-33947f3/xconnect-latest-33947f3.dmg",
+            type: "file",
+            lastModified: "2026-11-15T10:29:28Z",
+          },
+          {
+            name: "xconnect.dmg",
+            href: "https://github.com/ai-workspace-xstream/xconnect-app/releases/download/latest-43702841981-33947f3/xconnect.dmg",
+            type: "file",
+            lastModified: "2026-11-15T10:29:28Z",
+          },
+        ],
+      },
+    ]);
+
+    const xconnect = catalog.find((product) => product.id === "xconnect");
+    expect(
+      xconnect?.platforms.find((platform) => platform.id === "windows")?.asset,
+    ).toBeUndefined();
+    expect(
+      xconnect?.platforms.find((platform) => platform.id === "android")?.asset,
+    ).toBeUndefined();
+    expect(
+      xconnect?.platforms.find((platform) => platform.id === "ios")?.asset,
+    ).toBeUndefined();
+    expect(
+      xconnect?.platforms.find((platform) => platform.id === "macos")?.asset
+        ?.name,
+    ).toBe("xconnect.dmg");
+    expect(
+      xconnect?.platforms.find((platform) => platform.id === "linux")?.asset
+        ?.name,
+    ).toBe("xconnect-linux.zip");
+  });
+
+  it("attaches CI releaseMatrix and GitOps store slots onto xconnect", () => {
+    const catalog = buildDownloadCatalog([], {
+      channelsConfig: DEFAULT_DOWNLOAD_CHANNELS_CONFIG,
+      releaseMatrices: {
+        xconnect: {
+          fetchedFrom: "cn",
+          matrix: {
+            schemaVersion: 1,
+            product: "xconnect",
+            defaultChannel: "latest",
+            channels: {
+              latest: {
+                tag: "latest-1-abc",
+                version: "1.0.0",
+                channel: "latest",
+                platforms: [],
+              },
+            },
+            history: [],
+          },
+        },
+      },
+    });
+
+    const xconnect = catalog.find((product) => product.id === "xconnect");
+    expect(xconnect?.matrixFetchedFrom).toBe("cn");
+    expect(xconnect?.releaseMatrix?.channels.latest?.tag).toBe("latest-1-abc");
+    expect(xconnect?.stores?.ios?.map((s) => s.id)).toEqual([
+      "app-store",
+      "testflight",
+    ]);
   });
 });

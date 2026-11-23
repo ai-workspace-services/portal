@@ -1,11 +1,14 @@
+import type {
+  DownloadChannelsConfig,
+  DownloadPlatformId,
+  MirrorRegion,
+  ReleaseMatrixDocument,
+  StoreChannelConfig,
+} from "./channels-types";
+import type { FetchedReleaseMatrix } from "./release-matrix";
 import type { DirEntry, DirListing } from "./types";
 
-export type DownloadPlatformId =
-  | "macos"
-  | "windows"
-  | "linux"
-  | "ios"
-  | "android";
+export type { DownloadPlatformId };
 
 export type DownloadAsset = {
   name: string;
@@ -36,10 +39,19 @@ export type DownloadCatalogProduct = {
   releaseUrl: string;
   workflowUrl: string;
   platforms: CatalogPlatform[];
+  releaseMatrix?: ReleaseMatrixDocument;
+  matrixFetchedFrom?: MirrorRegion;
+  stores?: Partial<Record<DownloadPlatformId, StoreChannelConfig[]>>;
+};
+
+export type BuildDownloadCatalogOptions = {
+  channelsConfig?: DownloadChannelsConfig;
+  releaseMatrices?: Partial<Record<string, FetchedReleaseMatrix | undefined>>;
 };
 
 type PlatformDefinition = Omit<CatalogPlatform, "asset"> & {
   matches: RegExp[];
+  excludeMatches?: RegExp[];
 };
 
 type ProductDefinition = Omit<DownloadCatalogProduct, "platforms"> & {
@@ -85,7 +97,8 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detail: "x64 · MSI / ZIP",
         detailZh: "x64 · MSI / ZIP",
         supported: true,
-        matches: [/windows/i, /\.msi$|\.zip$/i],
+        matches: [/windows/i, /\.msi$/i, /windows.*\.zip$/i],
+        excludeMatches: [/linux|macos|android|ios/i],
       },
       {
         id: "linux",
@@ -94,7 +107,8 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detail: "amd64 · DEB / RPM",
         detailZh: "amd64 · DEB / RPM",
         supported: true,
-        matches: [/linux/i, /\.deb$|\.rpm$/i],
+        matches: [/linux/i, /\.deb$|\.rpm$/i, /linux.*\.zip$/i],
+        excludeMatches: [/windows|macos|android|ios/i],
       },
       {
         id: "ios",
@@ -137,6 +151,7 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detailZh: "Apple 芯片 · DMG",
         supported: true,
         matches: [/macos/i, /\.dmg$/i],
+        excludeMatches: [/windows|linux|android|ios/i, /xconnect-latest-[0-9a-f]+\.dmg$/i],
       },
       {
         id: "windows",
@@ -145,7 +160,8 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detail: "x64 · MSI / ZIP",
         detailZh: "x64 · MSI / ZIP",
         supported: true,
-        matches: [/windows/i, /\.msi$|\.zip$/i],
+        matches: [/windows/i, /\.msi$/i, /windows.*\.zip$/i],
+        excludeMatches: [/macos|linux|android|ios/i],
       },
       {
         id: "linux",
@@ -154,7 +170,8 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detail: "x64 · AppImage / DEB / RPM",
         detailZh: "x64 · AppImage / DEB / RPM",
         supported: true,
-        matches: [/linux/i, /\.appimage$|\.deb$|\.rpm$|\.zip$/i],
+        matches: [/linux/i, /\.appimage$|\.deb$|\.rpm$/i, /linux.*\.zip$/i],
+        excludeMatches: [/windows|macos|android|ios/i],
       },
       {
         id: "ios",
@@ -164,6 +181,7 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detailZh: "arm64 · IPA",
         supported: true,
         matches: [/ios/i, /\.ipa$/i],
+        excludeMatches: [/windows|macos|linux|android/i, /xconnect\.app\.zip$/i],
       },
       {
         id: "android",
@@ -173,6 +191,7 @@ const PRODUCT_DEFINITIONS: ProductDefinition[] = [
         detailZh: "通用包 · APK",
         supported: true,
         matches: [/android/i, /\.apk$/i],
+        excludeMatches: [/windows|macos|linux|ios/i, /\.aab$/i],
       },
     ],
   },
@@ -311,11 +330,22 @@ export function getGithubReleaseTargets(): GithubReleaseTarget[] {
   });
 }
 
-function toDownloadUrl(href: string): string {
-  return href.startsWith("http") ? href : `https://dl.svc.plus${href}`;
+const EXCLUDED_ARTIFACT_PATTERNS = [
+  /\.aab$/i,
+  /(?:^|\/)xconnect\.app\.zip$/i,
+];
+
+function toDownloadUrl(href: string, mirrorBaseUrl: string): string {
+  if (href.startsWith("http")) return href;
+  const normalizedBase = mirrorBaseUrl.replace(/\/+$/, "");
+  const normalizedHref = href.startsWith("/") ? href : `/${href}`;
+  return `${normalizedBase}${normalizedHref}`;
 }
 
-function flattenFiles(listings: DirListing[]): DownloadAsset[] {
+function flattenFiles(
+  listings: DirListing[],
+  mirrorBaseUrl = "https://dl.svc.plus",
+): DownloadAsset[] {
   const files: Array<DownloadAsset & { sourcePath: string }> = [];
 
   for (const listing of listings) {
@@ -323,7 +353,7 @@ function flattenFiles(listings: DirListing[]): DownloadAsset[] {
       if (entry.type !== "file") continue;
       files.push({
         name: entry.name,
-        href: toDownloadUrl(entry.href),
+        href: toDownloadUrl(entry.href, mirrorBaseUrl),
         lastModified: entry.lastModified,
         size: entry.size,
         sha256: entry.sha256,
@@ -348,11 +378,18 @@ function getLatestAsset(
   files: DownloadAsset[],
   productMatches: RegExp[],
   platformMatches: RegExp[],
+  excludeMatches: RegExp[] = [],
 ): DownloadAsset | undefined {
   if (platformMatches.length === 0) return undefined;
 
   const matchingAssets = files.filter((asset) => {
     const haystack = `${asset.href}/${asset.name}`;
+    if (EXCLUDED_ARTIFACT_PATTERNS.some((pattern) => pattern.test(haystack))) {
+      return false;
+    }
+    if (excludeMatches.some((pattern) => pattern.test(haystack))) {
+      return false;
+    }
     return (
       productMatches.some((matcher) => matcher.test(haystack)) &&
       platformMatches.some((matcher) => matcher.test(haystack))
@@ -370,22 +407,32 @@ function getLatestAsset(
 
 /**
  * Projects the live download manifest onto the release matrices declared by
- * the owning repositories. A release page remains the safe fallback while a
- * package has not yet been mirrored to dl.svc.plus.
+ * the owning repositories. When a CI-published release-matrix.json is present
+ * (e.g. for XConnect), it is attached directly for pure-presentation rendering.
  */
 export function buildDownloadCatalog(
   listings: DirListing[],
+  options?: BuildDownloadCatalogOptions,
 ): DownloadCatalogProduct[] {
-  const files = flattenFiles(listings);
+  const mirrorBaseUrl =
+    options?.channelsConfig?.mirrors.global.baseUrl || "https://dl.svc.plus";
+  const files = flattenFiles(listings, mirrorBaseUrl);
 
   return PRODUCT_DEFINITIONS.map(
-    ({ productMatches, platforms, ...product }) => ({
-      ...product,
-      platforms: platforms.map(({ matches, ...platform }) => ({
-        ...platform,
-        asset: getLatestAsset(files, productMatches, matches),
-      })),
-    }),
+    ({ productMatches, platforms, ...product }) => {
+      const fetchedMatrix = options?.releaseMatrices?.[product.id];
+      const stores = options?.channelsConfig?.products[product.id]?.stores;
+      return {
+        ...product,
+        releaseMatrix: fetchedMatrix?.matrix,
+        matrixFetchedFrom: fetchedMatrix?.fetchedFrom,
+        stores,
+        platforms: platforms.map(({ matches, excludeMatches, ...platform }) => ({
+          ...platform,
+          asset: getLatestAsset(files, productMatches, matches, excludeMatches),
+        })),
+      };
+    },
   );
 }
 
