@@ -58,17 +58,35 @@ export default async function DownloadHome({
     (initialRegion === "cn" ? "direct" : "store");
   const initialTrack = parseReleaseTrack(resolvedSearchParams.track);
 
+  const matrixProductIds = Object.entries(channelsConfig.products)
+    .filter(([, cfg]) => Boolean(cfg.matrixPath))
+    .map(([productId]) => productId);
+
   const [
     allListings,
     offlinePackageListings,
     githubReleaseListings,
-    xconnectMatrix,
+    matrixEntries,
   ] = await Promise.all([
     getDownloadListings(),
     getOfflinePackageListings(),
     getGithubReleaseListings(getGithubReleaseTargets()),
-    fetchProductReleaseMatrix("xconnect", channelsConfig, initialRegion),
+    Promise.all(
+      matrixProductIds.map(
+        async (productId) =>
+          [
+            productId,
+            await fetchProductReleaseMatrix(
+              productId,
+              channelsConfig,
+              initialRegion,
+            ),
+          ] as const,
+      ),
+    ),
   ]);
+
+  const releaseMatrices = Object.fromEntries(matrixEntries);
 
   const catalog = prioritizeDownloadProduct(
     buildDownloadCatalog(
@@ -79,9 +97,7 @@ export default async function DownloadHome({
       ],
       {
         channelsConfig,
-        releaseMatrices: {
-          xconnect: xconnectMatrix,
-        },
+        releaseMatrices,
       },
     ),
     resolvedSearchParams.product,
