@@ -69,7 +69,7 @@ export default function BillingOptionsPanel({
   const currentFamily = planFamily(currentCatalogPlan);
   const hasPaidSubscription = Boolean(
     selectedPlanId &&
-    currentFamily !== "free" &&
+    currentFamily !== null &&
     (currentCatalogPlan?.kind ?? "subscription") === "subscription",
   );
 
@@ -129,10 +129,7 @@ export default function BillingOptionsPanel({
   }, [currentPlanId, mutate]);
 
   const catalogOptions = useMemo(
-    () =>
-      billingPlans(catalog)
-        .filter(({ family }) => family !== "free")
-        .map(({ plan }) => plan),
+    () => billingPlans(catalog).map(({ plan }) => plan),
     [catalog],
   );
 
@@ -186,8 +183,8 @@ export default function BillingOptionsPanel({
         </h2>
         <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
           {zh
-            ? "实时同步套餐目录（Free / Plus / Pro / Custom），订阅欠费保留 3 天宽限期。"
-            : "Synced live from the 4-family billing catalog (Free / Plus / Pro / Custom) with a 3-day payment grace period."}
+            ? "实时同步套餐目录（Plus / Pro / Custom），订阅欠费保留 3 天宽限期，到期或用尽后进入暂停流量模式。"
+            : "Synced live from the commercial billing catalog (Plus / Pro / Custom) with a 3-day payment grace period before traffic pauses."}
         </p>
       </div>
 
@@ -430,7 +427,7 @@ export default function BillingOptionsPanel({
                         ? zh
                           ? "同步中"
                           : "Synchronizing"
-                        : pendingPlanId === "FREE"
+                        : pendingPlanId === "FREE" || pendingPlanId === "PAUSED"
                           ? zh
                             ? "已安排取消"
                             : "Cancellation scheduled"

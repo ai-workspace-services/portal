@@ -45,7 +45,10 @@ describe("buildPlanUpsertBody", () => {
   });
 
   it("sends what the form does edit", () => {
-    const body = buildPlanUpsertBody(form, existing);
+    const body = buildPlanUpsertBody(
+      { ...form, highSpeedQuotaBytes: "32212254720" },
+      existing,
+    );
 
     expect(body).toMatchObject({
       planId: "PRO-MONTHLY",
@@ -54,6 +57,7 @@ describe("buildPlanUpsertBody", () => {
       packageName: "pro",
       stripePriceId: "price_123",
       includedQuotaBytes: 21474836480,
+      highSpeedQuotaBytes: 32212254720,
       trialDays: 0,
       sortOrder: 30,
       active: true,

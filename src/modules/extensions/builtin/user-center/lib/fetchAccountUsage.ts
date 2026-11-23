@@ -44,9 +44,13 @@ export type AccountUsageSummary = {
   suspendState?: string;
   throttleState?: string;
   quotaExhausted?: boolean;
+  isWhitelistFree?: boolean;
+  isOneTimeTrial?: boolean;
   networkAccessState?: "active" | "paused" | "blocked";
   networkAccessReason?:
     | "quota_exhausted"
+    | "trial_exhausted"
+    | "subscription_required"
     | "billing_suspended"
     | "operator_paused"
     | "";

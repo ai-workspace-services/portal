@@ -148,7 +148,7 @@ describe("BillingOptionsPanel", () => {
     preview.mockClear();
   });
 
-  it("renders the 4-family aligned paid options dynamically without PAYG tabs", async () => {
+  it("renders the 3 commercial families dynamically without Free or PAYG tabs", async () => {
     pending.mockResolvedValue({ pending: false });
     render(<BillingOptionsPanel />);
 

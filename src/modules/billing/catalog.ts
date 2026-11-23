@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { formatBytes } from "@lib/format";
 
-export type PlanFamilyId = "free" | "plus" | "pro" | "custom";
+export type PlanFamilyId = "plus" | "pro" | "custom";
 
 export const PLAN_FAMILIES: readonly PlanFamilyId[] = [
-  "free",
   "plus",
   "pro",
   "custom",
@@ -24,7 +23,7 @@ export type PlanComparisonMatrix = {
   support?: string;
 };
 
-export type PlanCtaMode = "free" | "stripe_checkout" | "contact_sales";
+export type PlanCtaMode = "stripe_checkout" | "contact_sales";
 export type PlanCheckoutMode = "subscription" | "payment";
 
 /**
@@ -36,14 +35,15 @@ export type CatalogPlan = {
   planId: string;
   stripePriceId?: string;
   displayName?: string;
-  /** subscription */
+  /** subscription | service */
   kind?: string;
-  /** free | plus | pro | custom */
+  /** plus | pro | custom */
   packageName?: string;
   includedQuotaBytes?: number;
+  highSpeedQuotaBytes?: number;
   /** Explicit maximum traffic in bytes, mirrored from the local accounts catalog. */
   maxTrafficBytes?: number;
-  /** List price in the currency's minor unit (cents, 分). 0 = free or not published. */
+  /** List price in the currency's minor unit (cents, 分). */
   priceAmount?: number;
   /** ISO 4217, e.g. CNY / USD. */
   priceCurrency?: string;
@@ -84,7 +84,6 @@ export type PlanComparisonRow = {
 };
 
 const FAMILY_RANK: Record<PlanFamilyId, number> = {
-  free: 0,
   plus: 10,
   pro: 20,
   custom: 30,
@@ -107,92 +106,96 @@ const UNIT_SUFFIX: Record<string, { zh: string; en: string }> = {
 export type FormattedPrice = { amount: string; period: string };
 
 /**
- * Default aligned 4-family catalog templates used when a family has no active
- * database row published yet. Operators can override every field in
+ * Default aligned 3-family commercial catalog templates used when a family has no
+ * active database row published yet. Operators can override every field in
  * `/panel/ops/billing/plans` via `/api/admin/billing/plans`.
  */
 export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
   {
-    planId: "FREE-MONTHLY-2026",
-    displayName: "Free",
-    kind: "subscription",
-    packageName: "free",
-    includedQuotaBytes: 5 * GB_BYTES,
-    priceAmount: 0,
-    priceCurrency: "CNY",
-    priceUnit: "month",
-    active: false,
-    sortOrder: 0,
-    features: {
-      family: "free",
-      description: "基础免费体验档，登录即可使用。",
-      description_en: "Starter free plan — sign in to connect.",
-      quota_label: "5 GB / 月",
-      quota_label_en: "5 GB / month",
-      marketing_features: [
-        "基础免费流量额度",
-        "共享基础资源池",
-        "可随时升级至 PLUS / PRO / 定制节点",
-      ],
-      marketing_features_en: [
-        "Starter free traffic allowance",
-        "Shared starter resource pool",
-        "Upgrade to PLUS, PRO, or Custom anytime",
-      ],
-      comparison_matrix: {
-        resources: "共享基础资源池",
-        exit_ip: "共享 IP",
-        ip_changes: "—",
-        support: "基础文档与社区支持",
-      },
-      cta_mode: "free",
-      cta_href: "/login",
-    },
-  },
-  {
-    planId: "PLUS-MONTHLY-2026",
-    displayName: "PLUS",
+    planId: "PLUS",
+    displayName: "Plus · 20 GB",
     kind: "subscription",
     packageName: "plus",
-    includedQuotaBytes: 30 * GB_BYTES,
-    priceAmount: 3000,
+    includedQuotaBytes: 20 * GB_BYTES,
+    highSpeedQuotaBytes: 0,
+    priceAmount: 2000,
     priceCurrency: "CNY",
     priceUnit: "month",
     active: false,
     sortOrder: 10,
     features: {
       family: "plus",
-      description: "订阅用户 · 30GB 高速流量 · 共享资源池。",
+      description: "订阅用户 · 20GB/月 VPS 流量 · Media-Pool 共享资源池（仅月付）。",
       description_en:
-        "30 GB monthly accelerated traffic on the shared resource pool.",
-      quota_label: "30 GB / 月",
-      quota_label_en: "30 GB / month",
+        "20 GB monthly VPS traffic on the shared Media-Pool (monthly only).",
+      quota_label: "20 GB VPS / 月",
+      quota_label_en: "20 GB VPS / month",
       marketing_features: [
-        "每月 30 GB 高速流量",
-        "共享资源池",
-        "3 天欠费宽限期",
+        "每月 20 GB VPS 流量",
+        "Media-Pool 共享资源池",
+        "3 天欠费宽限期 · 到期或用尽暂停流量",
       ],
       marketing_features_en: [
-        "30 GB accelerated traffic per month",
-        "Shared resource pool",
-        "3-day grace period",
+        "20 GB VPS traffic per month",
+        "Shared Media-Pool resource pool",
+        "3-day grace period · Pauses traffic upon expiry",
       ],
       comparison_matrix: {
-        resources: "共享资源池",
+        resources: "Media-Pool 共享资源池",
         exit_ip: "共享 IP",
         ip_changes: "—",
         support: "环境维护与技术支持",
       },
       cta_mode: "stripe_checkout",
-      dunning: { grace_days: 3 },
+      dunning: { policy: "pause_traffic", grace_days: 3 },
     },
   },
   {
-    planId: "PRO-MONTHLY-2026",
-    displayName: "PRO",
+    planId: "PLUS-MONTHLY-2026",
+    displayName: "Plus · 30 GB",
+    kind: "subscription",
+    packageName: "plus",
+    includedQuotaBytes: 30 * GB_BYTES,
+    highSpeedQuotaBytes: 0,
+    priceAmount: 3000,
+    priceCurrency: "CNY",
+    priceUnit: "month",
+    active: false,
+    sortOrder: 15,
+    features: {
+      family: "plus",
+      description: "订阅用户 · 30GB/月 VPS 流量 · Media-Pool 共享资源池（仅月付）。",
+      description_en:
+        "30 GB monthly VPS traffic on the shared Media-Pool (monthly only).",
+      quota_label: "30 GB VPS / 月",
+      quota_label_en: "30 GB VPS / month",
+      marketing_features: [
+        "每月 30 GB VPS 流量",
+        "Media-Pool 共享资源池",
+        "3 天欠费宽限期 · 到期或用尽暂停流量",
+      ],
+      marketing_features_en: [
+        "30 GB VPS traffic per month",
+        "Shared Media-Pool resource pool",
+        "3-day grace period · Pauses traffic upon expiry",
+      ],
+      comparison_matrix: {
+        resources: "Media-Pool 共享资源池",
+        exit_ip: "共享 IP",
+        ip_changes: "—",
+        support: "环境维护与技术支持",
+      },
+      cta_mode: "stripe_checkout",
+      dunning: { policy: "pause_traffic", grace_days: 3 },
+    },
+  },
+  {
+    planId: "PRO-MONTHLY-V2",
+    displayName: "Pro 月付",
     kind: "subscription",
     packageName: "pro",
     includedQuotaBytes: 50 * GB_BYTES,
+    highSpeedQuotaBytes: 30 * GB_BYTES,
     priceAmount: 5000,
     priceCurrency: "CNY",
     priceUnit: "month",
@@ -202,29 +205,70 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
       family: "pro",
       highlight: true,
       badge: "推荐",
-      description: "订阅用户 · 50GB/月高速流量 · PRO专属资源池。",
+      description: "订阅用户 · 30GB 高速流量池 + 50GB VPS 流量池/月。",
       description_en:
-        "50 GB/month accelerated traffic on the dedicated PRO resource pool.",
-      quota_label: "50 GB / 月",
-      quota_label_en: "50 GB / month",
+        "30 GB high-speed traffic + 50 GB VPS traffic per month across dedicated and shared pools.",
+      quota_label: "30 GB 高速 + 50 GB VPS / 月",
+      quota_label_en: "30 GB High-Speed + 50 GB VPS / month",
       marketing_features: [
-        "每月 50 GB 高速流量",
-        "PRO专属资源池",
-        "3 天欠费宽限期",
+        "每月 30 GB 高速流量资源池 (Pro-EC2-Pool)",
+        "每月 50 GB VPS 流量资源池 (Media-Pool)",
+        "3 天欠费宽限期 · 到期或用尽暂停流量",
       ],
       marketing_features_en: [
-        "50 GB accelerated traffic per month",
-        "PRO dedicated resource pool",
-        "3-day grace period",
+        "30 GB high-speed pool traffic per month",
+        "50 GB VPS pool traffic per month",
+        "3-day grace period · Pauses traffic upon expiry",
       ],
       comparison_matrix: {
-        resources: "PRO专属资源池",
-        exit_ip: "精品 IP 资源",
+        resources: "Pro-EC2-Pool 高速池 + Media-Pool 共享池",
+        exit_ip: "Pro 高速专属节点 + 共享出口",
         ip_changes: "—",
         support: "优先环境维护与技术支持",
       },
       cta_mode: "stripe_checkout",
-      dunning: { grace_days: 3 },
+      dunning: { policy: "pause_traffic", grace_days: 3 },
+    },
+  },
+  {
+    planId: "PRO-YEARLY-V2",
+    displayName: "Pro 年付",
+    kind: "subscription",
+    packageName: "pro",
+    includedQuotaBytes: 50 * GB_BYTES,
+    highSpeedQuotaBytes: 30 * GB_BYTES,
+    priceAmount: 50000,
+    priceCurrency: "CNY",
+    priceUnit: "year",
+    active: false,
+    sortOrder: 25,
+    features: {
+      family: "pro",
+      highlight: true,
+      badge: "年付优惠",
+      description: "年付特惠 · 每自然月 30GB 高速流量池 + 50GB VPS 流量池。",
+      description_en:
+        "Annual billing · 30 GB high-speed + 50 GB VPS monthly allowance.",
+      quota_label: "30 GB 高速 + 50 GB VPS / 月",
+      quota_label_en: "30 GB High-Speed + 50 GB VPS / month",
+      marketing_features: [
+        "年付相当于买 10 个月送 2 个月",
+        "每自然月 30 GB 高速池 + 50 GB VPS 池",
+        "3 天欠费宽限期 · 到期或用尽暂停流量",
+      ],
+      marketing_features_en: [
+        "2 months free vs monthly billing",
+        "30 GB high-speed + 50 GB VPS every UTC month",
+        "3-day grace period · Pauses traffic upon expiry",
+      ],
+      comparison_matrix: {
+        resources: "Pro-EC2-Pool 高速池 + Media-Pool 共享池",
+        exit_ip: "Pro 高速专属节点 + 共享出口",
+        ip_changes: "—",
+        support: "优先环境维护与技术支持",
+      },
+      cta_mode: "stripe_checkout",
+      dunning: { policy: "pause_traffic", grace_days: 3 },
     },
   },
   {
@@ -233,6 +277,7 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
     kind: "subscription",
     packageName: "custom",
     includedQuotaBytes: 1024 * GB_BYTES,
+    highSpeedQuotaBytes: 0,
     priceAmount: 8000,
     priceCurrency: "CNY",
     priceUnit: "month",
@@ -265,15 +310,16 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
       },
       cta_mode: "contact_sales",
       cta_href: "/docs/contact",
-      dunning: { grace_days: 3 },
+      dunning: { policy: "pause_traffic", grace_days: 3 },
     },
   },
   {
     planId: "CUSTOM-AI-CONSULT-2026",
     displayName: "AI 工具咨询，电脑环境配置",
-    kind: "subscription",
+    kind: "service",
     packageName: "custom",
     includedQuotaBytes: 0,
+    highSpeedQuotaBytes: 0,
     priceAmount: 10000,
     priceCurrency: "CNY",
     priceUnit: "once",
@@ -285,18 +331,18 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
       price_unit_label: "小时/次",
       price_unit_label_en: "hour/session",
       description:
-        "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统（面向非订阅用户的付费服务）",
+        "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统（一次性付费服务）",
       description_en:
-        "Supported: macOS, Windows, Linux, iOS, Android. Not supported: Huawei HarmonyOS NEXT (paid service for non-subscribers).",
+        "Supported: macOS, Windows, Linux, iOS, Android. Not supported: Huawei HarmonyOS NEXT (one-time paid service).",
       quota_label: "按小时/按次服务",
       quota_label_en: "Per hour / session",
       marketing_features: [
-        "面向非订阅用户的付费服务（100元/小时/次）",
+        "按次付费咨询服务（100元/小时/次）",
         "支持：MacOS Windows Linux IOS Android",
         "不支持：国产华为纯血鸿蒙系统",
       ],
       marketing_features_en: [
-        "Paid consultation for non-subscribers (¥100/hour/session)",
+        "Paid consultation service (¥100/hour/session)",
         "Supported: macOS, Windows, Linux, iOS, Android",
         "Not supported: Huawei HarmonyOS NEXT",
       ],
@@ -309,7 +355,7 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
       },
       cta_mode: "contact_sales",
       cta_href: "/docs/contact",
-      dunning: { grace_days: 3 },
+      dunning: { policy: "none", grace_days: 3 },
     },
   },
 ];
@@ -319,19 +365,23 @@ function classifyFamilyToken(raw: unknown): PlanFamilyId | "excluded" | null {
   const token = raw.trim().toLowerCase();
   if (!token) return null;
   if (
+    token === "free" ||
+    /(^|[^a-z])free([^a-z]|$)/.test(token) ||
+    token === "whitelist" ||
+    token === "whitelist_group" ||
+    token === "paused" ||
     token === "trial" ||
     token === "payg" ||
     token === "paygo" ||
     token === "paygo_topup" ||
     token === "beta" ||
     token === "gift" ||
+    token.startsWith("free-") ||
+    token.startsWith("whitelist-") ||
     token.startsWith("payg-") ||
     token.startsWith("trial-")
   ) {
     return "excluded";
-  }
-  if (token === "free" || /(^|[^a-z])free([^a-z]|$)/.test(token)) {
-    return "free";
   }
   if (token === "plus" || /(^|[^a-z])plus([^a-z]|$)/.test(token)) {
     return "plus";
@@ -349,12 +399,20 @@ function classifyFamilyToken(raw: unknown): PlanFamilyId | "excluded" | null {
 }
 
 /**
- * Resolves a plan into one of the 4 supported families (`free | plus | pro | custom`).
- * Returns `null` for `trial`, `paygo_topup`, `internal_only`, or unrecognized plans.
+ * Resolves a plan into one of the 3 commercial families (`plus | pro | custom`).
+ * Returns `null` for `free`, `trial`, `paygo_topup`, `whitelist_group`,
+ * `paused`, `internal_only`, or unrecognized plans.
  */
 export function planFamily(plan: CatalogPlan | undefined): PlanFamilyId | null {
   if (!plan) return null;
-  if (plan.kind === "trial" || plan.kind === "paygo_topup") return null;
+  if (
+    plan.kind === "trial" ||
+    plan.kind === "paygo_topup" ||
+    plan.kind === "whitelist_group" ||
+    plan.kind === "paused"
+  ) {
+    return null;
+  }
   if (plan.features?.internal_only === true) return null;
 
   const policy = plan.features?.catalog_policy as
@@ -438,9 +496,22 @@ export function formatPlanQuota(
   if (isUnlimitedQuota(plan)) {
     return locale === "zh" ? "不限流量" : "Unlimited traffic";
   }
-  const bytes = plan.includedQuotaBytes ?? plan.maxTrafficBytes ?? 0;
-  if (typeof bytes === "number" && Number.isFinite(bytes) && bytes > 0) {
-    return formatBytes(bytes);
+  const vpsBytes = plan.includedQuotaBytes ?? plan.maxTrafficBytes ?? 0;
+  const fastBytes = plan.highSpeedQuotaBytes ?? 0;
+  if (
+    typeof fastBytes === "number" &&
+    Number.isFinite(fastBytes) &&
+    fastBytes > 0 &&
+    typeof vpsBytes === "number" &&
+    Number.isFinite(vpsBytes) &&
+    vpsBytes > 0
+  ) {
+    return locale === "zh"
+      ? `${formatBytes(fastBytes)} 高速 + ${formatBytes(vpsBytes)} VPS`
+      : `${formatBytes(fastBytes)} High-Speed + ${formatBytes(vpsBytes)} VPS`;
+  }
+  if (typeof vpsBytes === "number" && Number.isFinite(vpsBytes) && vpsBytes > 0) {
+    return formatBytes(vpsBytes);
   }
   return "";
 }
@@ -469,15 +540,10 @@ export function planCheckoutMode(
 
 export function planCtaMode(plan: CatalogPlan | undefined): PlanCtaMode {
   const explicit = plan?.features?.cta_mode;
-  if (
-    explicit === "free" ||
-    explicit === "stripe_checkout" ||
-    explicit === "contact_sales"
-  ) {
+  if (explicit === "stripe_checkout" || explicit === "contact_sales") {
     return explicit;
   }
   const family = planFamily(plan);
-  if (family === "free") return "free";
   if (family === "custom" && !isPurchasable(plan)) return "contact_sales";
   return "stripe_checkout";
 }
@@ -494,7 +560,6 @@ export function planCtaHref(
     return rawHref.trim();
   }
   const mode = planCtaMode(plan);
-  if (mode === "free") return fallback ?? "/login";
   if (mode === "contact_sales") return fallback ?? "/docs/contact";
   return fallback ?? "/panel/subscription";
 }
@@ -561,23 +626,19 @@ export function planDescription(
     {}) as PlanComparisonMatrix;
 
   switch (family) {
-    case "free":
-      return locale === "zh"
-        ? `基础免费体验档${quota ? `（${quota}）` : ""}，登录即可使用。`
-        : `Starter free plan${quota ? ` (${quota})` : ""} — sign in to connect.`;
     case "plus":
       return locale === "zh"
-        ? `订阅用户 · ${quota || "30 GB"} 高速流量 · ${matrix.resources || "共享资源池"}。`
-        : `${quota || "30 GB"} accelerated traffic · ${matrix.resources || "Shared resource pool"}.`;
+        ? `订阅用户 · ${quota || "30 GB"} VPS 流量 · ${matrix.resources || "Media-Pool 共享资源池"}。`
+        : `${quota || "30 GB"} VPS traffic · ${matrix.resources || "Shared Media-Pool"}.`;
     case "pro":
       return locale === "zh"
-        ? `订阅用户 · ${quota || "50 GB"} 高速流量 · ${matrix.resources || "PRO专属资源池"}。`
-        : `${quota || "50 GB"} accelerated traffic · ${matrix.resources || "PRO dedicated resource pool"}.`;
+        ? `订阅用户 · ${quota || "30 GB 高速 + 50 GB VPS"} · ${matrix.resources || "Pro 双资源池"}。`
+        : `${quota || "30 GB High-Speed + 50 GB VPS"} · ${matrix.resources || "Pro dual resource pools"}.`;
     case "custom":
       if (planCheckoutMode(plan) === "payment") {
         return locale === "zh"
-          ? "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统（面向非订阅用户的付费服务）"
-          : "Supported: macOS, Windows, Linux, iOS, Android. Not supported: Huawei HarmonyOS NEXT (paid service for non-subscribers).";
+          ? "支持：MacOS Windows Linux IOS Android，不支持：国产华为纯血鸿蒙系统（一次性付费服务）"
+          : "Supported: macOS, Windows, Linux, iOS, Android. Not supported: Huawei HarmonyOS NEXT (one-time paid service).";
       }
       return locale === "zh"
         ? "订阅用户 · 独享IP · 独享节点 · 每个月免费更换一次，再次更换10元/次。"
@@ -626,56 +687,40 @@ export function planFeatureList(
     {}) as PlanComparisonMatrix;
 
   switch (family) {
-    case "free":
-      return locale === "zh"
-        ? [
-            quota ? `每月 ${quota} 基础流量` : "基础免费流量额度",
-            matrix.resources || "共享基础资源池",
-            "可随时升级至 PLUS / PRO / 定制节点",
-          ]
-        : [
-            quota ? `${quota} starter traffic` : "Starter free traffic",
-            matrix.resources || "Shared starter resource pool",
-            "Upgrade to PLUS, PRO, or Custom anytime",
-          ];
     case "plus":
       return locale === "zh"
         ? [
-            quota ? `每月 ${quota} 高速流量` : "每月 30 GB 高速流量",
-            matrix.resources || "共享资源池",
+            quota ? `每月 ${quota} VPS 流量` : "每月 30 GB VPS 流量",
+            matrix.resources || "Media-Pool 共享资源池",
             `${days} 天欠费宽限期`,
           ]
         : [
-            quota
-              ? `${quota} accelerated traffic`
-              : "30 GB accelerated traffic",
-            matrix.resources || "Shared resource pool",
+            quota ? `${quota} VPS traffic` : "30 GB VPS traffic",
+            matrix.resources || "Shared Media-Pool",
             `${days}-day grace period`,
           ];
     case "pro":
       return locale === "zh"
         ? [
-            quota ? `${quota} 高速流量` : "每月 50 GB 高速流量",
-            matrix.resources || "PRO专属资源池",
+            quota || "30 GB 高速流量 + 50 GB VPS 流量",
+            matrix.resources || "Pro-EC2-Pool 高速池 + Media-Pool 共享池",
             `${days} 天欠费宽限期`,
           ]
         : [
-            quota
-              ? `${quota} accelerated traffic`
-              : "50 GB accelerated traffic",
-            matrix.resources || "PRO dedicated resource pool",
+            quota || "30 GB High-Speed + 50 GB VPS traffic",
+            matrix.resources || "Pro-EC2-Pool + Media-Pool",
             `${days}-day grace period`,
           ];
     case "custom":
       if (planCheckoutMode(plan) === "payment") {
         return locale === "zh"
           ? [
-              "面向非订阅用户的付费服务（100元/小时/次）",
+              "按次付费咨询服务（100元/小时/次）",
               "支持：MacOS Windows Linux IOS Android",
               "不支持：国产华为纯血鸿蒙系统",
             ]
           : [
-              "Paid consultation for non-subscribers (¥100/hour/session)",
+              "Paid consultation service (¥100/hour/session)",
               "Supported: macOS, Windows, Linux, iOS, Android",
               "Not supported: Huawei HarmonyOS NEXT",
             ];
@@ -711,9 +756,11 @@ export function planComparisonRow(
   const ctaMode = planCtaMode(plan);
 
   const defaultResources: Record<PlanFamilyId, { zh: string; en: string }> = {
-    free: { zh: "共享基础资源池", en: "Shared starter resource pool" },
-    plus: { zh: "共享资源池", en: "Shared resource pool" },
-    pro: { zh: "PRO专属资源池", en: "PRO dedicated resource pool" },
+    plus: { zh: "Media-Pool 共享资源池", en: "Shared Media-Pool" },
+    pro: {
+      zh: "Pro-EC2-Pool 高速池 + Media-Pool 共享池",
+      en: "Pro-EC2-Pool + Media-Pool",
+    },
     custom:
       planCheckoutMode(plan) === "payment"
         ? {
@@ -724,9 +771,8 @@ export function planComparisonRow(
   };
 
   const defaultExitIp: Record<PlanFamilyId, { zh: string; en: string }> = {
-    free: { zh: "共享 IP", en: "Shared IP" },
     plus: { zh: "共享 IP", en: "Shared IP" },
-    pro: { zh: "精品 IP 资源", en: "Premium IP resources" },
+    pro: { zh: "Pro 高速专属节点 + 共享出口", en: "Pro high-speed + shared IP" },
     custom:
       planCheckoutMode(plan) === "payment"
         ? { zh: "—", en: "—" }
@@ -734,7 +780,6 @@ export function planComparisonRow(
   };
 
   const defaultIpChanges: Record<PlanFamilyId, { zh: string; en: string }> = {
-    free: { zh: "—", en: "—" },
     plus: { zh: "—", en: "—" },
     pro: { zh: "—", en: "—" },
     custom:
@@ -747,7 +792,6 @@ export function planComparisonRow(
   };
 
   const defaultSupport: Record<PlanFamilyId, { zh: string; en: string }> = {
-    free: { zh: "基础文档与社区支持", en: "Documentation & community support" },
     plus: {
       zh: "环境维护与技术支持",
       en: "Environment maintenance & technical support",
@@ -768,20 +812,15 @@ export function planComparisonRow(
           },
   };
 
-  const priceDisplay =
-    family === "free" && !price
+  const priceDisplay = price
+    ? `${price.amount}${price.period}`
+    : family === "custom"
       ? locale === "zh"
-        ? "免费"
-        : "Free"
-      : price
-        ? `${price.amount}${price.period}`
-        : family === "custom"
-          ? locale === "zh"
-            ? "按需定制"
-            : "Custom pricing"
-          : locale === "zh"
-            ? "即将上线"
-            : "Coming soon";
+        ? "按需定制"
+        : "Custom pricing"
+      : locale === "zh"
+        ? "即将上线"
+        : "Coming soon";
 
   const quotaDisplay =
     quota ||
@@ -796,31 +835,25 @@ export function planComparisonRow(
         : "—");
 
   const graceDisplay =
-    family === "free" || planCheckoutMode(plan) === "payment"
+    planCheckoutMode(plan) === "payment"
       ? "—"
       : locale === "zh"
         ? `${days} 天欠费宽限期`
         : `${days}-day grace period`;
 
   const ctaLabel =
-    ctaMode === "free"
+    ctaMode === "contact_sales"
       ? locale === "zh"
-        ? "免费开始"
-        : "Start for free"
-      : ctaMode === "contact_sales"
-        ? locale === "zh"
-          ? "联系定制"
-          : "Contact sales"
-        : locale === "zh"
-          ? "立即订阅"
-          : "Subscribe";
+        ? "联系定制"
+        : "Contact sales"
+      : locale === "zh"
+        ? "立即订阅"
+        : "Subscribe";
 
   const ctaHref =
-    ctaMode === "free"
-      ? planCtaHref(plan, "/register")
-      : ctaMode === "contact_sales"
-        ? planCtaHref(plan, "/prices")
-        : "/panel/subscription";
+    ctaMode === "contact_sales"
+      ? planCtaHref(plan, "/prices")
+      : "/panel/subscription";
 
   return {
     planId: plan.planId,
@@ -892,12 +925,7 @@ export function canUpgradeSubscription(
   if (currentPlan.planId === targetPlan.planId) return false;
   const currentFamily = planFamily(currentPlan);
   const targetFamily = planFamily(targetPlan);
-  if (
-    !currentFamily ||
-    !targetFamily ||
-    currentFamily === "free" ||
-    targetFamily === "free"
-  ) {
+  if (!currentFamily || !targetFamily) {
     return false;
   }
   if (planCheckoutMode(targetPlan) !== "subscription") {
@@ -939,9 +967,9 @@ function compareCatalogPlans(left: CatalogPlan, right: CatalogPlan): number {
 }
 
 /**
- * Returns every active billing plan in the 4 supported families (`free`, `plus`,
- * `pro`, `custom`), filtering out inactive, `trial`, `paygo_topup`, and
- * `internal_only` rows.
+ * Returns every active billing plan in the 3 commercial families (`plus`,
+ * `pro`, `custom`), filtering out inactive, `free`, `trial`, `paygo_topup`,
+ * `whitelist_group`, `paused`, and `internal_only` rows.
  */
 export function billingPlans(
   catalog: Map<string, CatalogPlan>,
@@ -967,7 +995,6 @@ export function groupCatalogByFamily(
 ): Record<PlanFamilyId, CatalogPlan[]> {
   const list = Array.isArray(catalog) ? catalog : [...catalog.values()];
   const grouped: Record<PlanFamilyId, CatalogPlan[]> = {
-    free: [],
     plus: [],
     pro: [],
     custom: [],
@@ -985,7 +1012,7 @@ export function groupCatalogByFamily(
 }
 
 /**
- * Merges live active catalog plans with the 4-family default templates for any
+ * Merges live active catalog plans with the 3-family default templates for any
  * family not yet published in `/api/billing/plans`.
  */
 export function catalogWithFamilyDefaults(

@@ -21,22 +21,40 @@ import {
   type CatalogPlan,
 } from "./catalog";
 
-describe("four-family billing catalog", () => {
-  it("supports strictly the 4 canonical families and 3-day grace default", () => {
-    expect(PLAN_FAMILIES).toEqual(["free", "plus", "pro", "custom"]);
+describe("three-family commercial billing catalog", () => {
+  it("supports strictly the 3 canonical commercial families and 3-day grace default", () => {
+    expect(PLAN_FAMILIES).toEqual(["plus", "pro", "custom"]);
     expect(DEFAULT_GRACE_DAYS).toBe(3);
     expect(graceDays(undefined)).toBe(3);
     expect(
       graceDays({
-        planId: "PRO-MONTHLY-2026",
+        planId: "PRO-MONTHLY-V2",
         active: true,
         features: { dunning: { grace_days: 14 } },
       }),
     ).toBe(3);
   });
 
-  it("excludes legacy trial, paygo_topup, and internal_only plans from billingPlans", () => {
+  it("excludes free, trial, paygo_topup, whitelist_group, paused, and internal_only plans from billingPlans", () => {
     const catalog = new Map<string, CatalogPlan>([
+      [
+        "FREE",
+        {
+          planId: "FREE",
+          kind: "subscription",
+          packageName: "free",
+          active: true,
+        },
+      ],
+      [
+        "WHITELIST-FREE",
+        {
+          planId: "WHITELIST-FREE",
+          kind: "whitelist_group",
+          packageName: "whitelist",
+          active: true,
+        },
+      ],
       [
         "FREE-3GB-2026",
         {
@@ -69,7 +87,7 @@ describe("four-family billing catalog", () => {
         "PLUS-MONTHLY-2026",
         {
           planId: "PLUS-MONTHLY-2026",
-          displayName: "Plus",
+          displayName: "Plus · 30 GB",
           kind: "subscription",
           packageName: "plus",
           includedQuotaBytes: 30 * GB_BYTES,
@@ -107,12 +125,30 @@ describe("four-family billing catalog", () => {
     ).toBe("不限流量");
   });
 
-  it("formats default 4-family aligned plans and AI consult one-time service", () => {
-    const plus = DEFAULT_CATALOG_PLANS.find(
+  it("formats dual high-speed + VPS quota when quota_label is omitted", () => {
+    expect(
+      formatPlanQuota(
+        {
+          planId: "PRO-MONTHLY-V2",
+          active: true,
+          includedQuotaBytes: 50 * GB_BYTES,
+          highSpeedQuotaBytes: 30 * GB_BYTES,
+        },
+        "zh",
+      ),
+    ).toBe("30 GB 高速 + 50 GB VPS");
+  });
+
+  it("formats default 3-family aligned plans and AI consult one-time service", () => {
+    const plus20 = DEFAULT_CATALOG_PLANS.find((p) => p.planId === "PLUS")!;
+    const plus30 = DEFAULT_CATALOG_PLANS.find(
       (p) => p.planId === "PLUS-MONTHLY-2026",
     )!;
-    const pro = DEFAULT_CATALOG_PLANS.find(
-      (p) => p.planId === "PRO-MONTHLY-2026",
+    const proMonthly = DEFAULT_CATALOG_PLANS.find(
+      (p) => p.planId === "PRO-MONTHLY-V2",
+    )!;
+    const proYearly = DEFAULT_CATALOG_PLANS.find(
+      (p) => p.planId === "PRO-YEARLY-V2",
     )!;
     const node = DEFAULT_CATALOG_PLANS.find(
       (p) => p.planId === "CUSTOM-NODE-MONTHLY-2026",
@@ -121,15 +157,17 @@ describe("four-family billing catalog", () => {
       (p) => p.planId === "CUSTOM-AI-CONSULT-2026",
     )!;
 
-    expect(formatPlanPrice(plus, "zh")).toEqual({ amount: "¥30", period: "/月" });
-    expect(formatPlanPrice(pro, "zh")).toEqual({ amount: "¥50", period: "/月" });
+    expect(formatPlanPrice(plus20, "zh")).toEqual({ amount: "¥20", period: "/月" });
+    expect(formatPlanPrice(plus30, "zh")).toEqual({ amount: "¥30", period: "/月" });
+    expect(formatPlanPrice(proMonthly, "zh")).toEqual({ amount: "¥50", period: "/月" });
+    expect(formatPlanPrice(proYearly, "zh")).toEqual({ amount: "¥500", period: "/年" });
     expect(formatPlanPrice(node, "zh")).toEqual({ amount: "¥80", period: "/月" });
     expect(formatPlanPrice(consult, "zh")).toEqual({
       amount: "¥100",
       period: "/小时/次",
     });
     expect(planCheckoutMode(consult)).toBe("payment");
-    expect(planCtaMode(plus)).toBe("stripe_checkout");
+    expect(planCtaMode(plus30)).toBe("stripe_checkout");
     expect(planFamily(node)).toBe("custom");
   });
 
@@ -145,20 +183,21 @@ describe("four-family billing catalog", () => {
       active: true,
     };
     const pro: CatalogPlan = {
-      planId: "PRO-MONTHLY-2026",
+      planId: "PRO-MONTHLY-V2",
       kind: "subscription",
       packageName: "pro",
       priceAmount: 5000,
       priceCurrency: "CNY",
       priceUnit: "month",
       includedQuotaBytes: 50 * GB_BYTES,
+      highSpeedQuotaBytes: 30 * GB_BYTES,
       active: true,
     };
     expect(canUpgradeSubscription(plus, pro)).toBe(true);
     expect(canUpgradeSubscription(pro, plus)).toBe(false);
   });
 
-  it("builds dynamic XConnect comparison table for all 4 families", () => {
+  it("builds dynamic XConnect comparison table for all 3 commercial families", () => {
     const comparison = buildXConnectPlanComparison(new Map(), "zh");
     expect(comparison.columns.length).toBe(
       catalogWithFamilyDefaults(new Map()).length,

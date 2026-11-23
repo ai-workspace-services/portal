@@ -85,17 +85,29 @@ export default function SubscriptionStatusCard({
       ? zh
         ? "额度已用尽 · 已暂停"
         : "Quota exhausted · Paused"
-      : usageSummary?.networkAccessReason === "billing_suspended"
+      : usageSummary?.networkAccessReason === "trial_exhausted"
         ? zh
-          ? "账务暂停"
-          : "Billing suspended"
-        : activeRecords.length > 0 || assigned
+          ? "体验流量已用尽 · 已暂停"
+          : "Trial exhausted · Paused"
+        : usageSummary?.networkAccessReason === "subscription_required"
           ? zh
-            ? "正常"
-            : "Active"
-          : zh
-            ? "待分配"
-            : "Awaiting assignment";
+            ? "暂无有效订阅 · 已暂停"
+            : "Subscription required · Paused"
+          : usageSummary?.networkAccessReason === "operator_paused"
+            ? zh
+              ? "管理员暂停"
+              : "Operator paused"
+            : usageSummary?.networkAccessReason === "billing_suspended"
+              ? zh
+                ? "账务暂停"
+                : "Billing suspended"
+              : activeRecords.length > 0 || assigned
+                ? zh
+                  ? "正常"
+                  : "Active"
+                : zh
+                  ? "待分配"
+                  : "Awaiting assignment";
 
   return (
     <XdsCard data-testid="subscription-status-card">
@@ -189,13 +201,21 @@ export default function SubscriptionStatusCard({
               {statusLabel}
             </div>
             <p className="xds-t-caption" style={{ marginTop: 3 }}>
-              {usageSummary?.networkAccessReason === "quota_exhausted"
+              {usageSummary?.networkAccessReason === "trial_exhausted"
                 ? zh
-                  ? "可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。"
-                  : "Upgrade your plan to restore access once payment is confirmed and the new quota takes effect. Access also resumes after quota renewal or adjustment."
-                : assigned
-                  ? billingPolicy[zh ? "zh" : "en"].assignedPlanHelp
-                  : billingPolicy[zh ? "zh" : "en"].unassignedPlanHelp}
+                  ? "5 GB 一次性体验流量已用尽，节点流量已暂停（控制台登录正常）。订阅任意付费套餐后立即恢复访问。"
+                  : "Your one-time 5 GB trial allowance has been exhausted and traffic is paused (console sign-in remains active). Subscribe to a paid plan to restore access."
+                : usageSummary?.networkAccessReason === "subscription_required"
+                  ? zh
+                    ? "当前暂无有效付费订阅，节点流量已暂停（控制台登录正常）。选择套餐并完成订阅后自动开启流量。"
+                    : "No active paid subscription; network traffic is paused (console sign-in remains active). Subscribe to reactivate access."
+                  : usageSummary?.networkAccessReason === "quota_exhausted"
+                    ? zh
+                      ? "可通过升级套餐恢复；新套餐支付成功并生效后，按新额度恢复访问。配额续期或调整后也会自动恢复。"
+                      : "Upgrade your plan to restore access once payment is confirmed and the new quota takes effect. Access also resumes after quota renewal or adjustment."
+                    : assigned
+                      ? billingPolicy[zh ? "zh" : "en"].assignedPlanHelp
+                      : billingPolicy[zh ? "zh" : "en"].unassignedPlanHelp}
             </p>
           </div>
           <ShieldCheck
