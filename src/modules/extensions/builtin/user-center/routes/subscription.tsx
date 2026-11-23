@@ -464,7 +464,7 @@ export default function UserCenterSubscriptionRoute() {
               <XdsStat
                 label={zh ? "策略 / 同步" : "Policy / sync"}
                 value={<XdsBadge tone={sync.tone}>{sync.label}</XdsBadge>}
-                meta={`${usageSummary?.networkAccessReason === "quota_exhausted" ? (zh ? "可通过升级套餐恢复 · " : "Upgrade your plan to restore access · ") : ""}${zh ? "统计延迟" : "Sync delay"} ${sync.delayLabel} · ${zh ? "策略组" : "groups"} ${sync.groupsLabel}`}
+                meta={`${usageSummary?.networkAccessReason === "quota_exhausted" || usageSummary?.networkAccessReason === "trial_exhausted" || usageSummary?.networkAccessReason === "subscription_required" ? (zh ? "订阅激活后可恢复访问 · " : "Subscribe to restore access · ") : ""}${zh ? "统计延迟" : "Sync delay"} ${sync.delayLabel} · ${zh ? "策略组" : "groups"} ${sync.groupsLabel}`}
               />
             </section>
 
@@ -775,8 +775,8 @@ export default function UserCenterSubscriptionRoute() {
                 </div>
                 <p className="xds-t-caption" style={{ marginTop: 3 }}>
                   {zh
-                    ? "当前周期结束前服务保持可用，之后自动降级到 Free 套餐，连接凭据保留。"
-                    : "Service stays available until the period ends, then downgrades to Free. Connection credentials are kept."}
+                    ? "当前周期结束前服务保持可用，之后进入暂停流量模式（控制台仍可正常登录），充值激活订阅即可重新开启流量。"
+                    : "Service stays available until the period ends, then enters paused traffic mode (console login stays active) until a paid subscription reactivates access."}
                 </p>
               </div>
               <XdsButton

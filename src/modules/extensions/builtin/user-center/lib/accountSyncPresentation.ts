@@ -32,6 +32,16 @@ export function accountSyncPresentation(
       zh ? "额度已用尽 · 已暂停" : "Quota exhausted · Paused",
       "danger",
     );
+  if (usage.networkAccessReason === "trial_exhausted")
+    return result(
+      zh ? "体验流量已用尽 · 已暂停" : "Trial quota exhausted · Paused",
+      "danger",
+    );
+  if (usage.networkAccessReason === "subscription_required")
+    return result(
+      zh ? "暂无有效订阅 · 已暂停" : "Subscription required · Paused",
+      "danger",
+    );
   if (usage.networkAccessReason === "billing_suspended")
     return result(zh ? "账务暂停" : "Billing suspended", "danger");
   if (usage.networkAccessReason === "operator_paused")

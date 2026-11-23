@@ -476,8 +476,8 @@ export default async function SupportPage() {
                       <span className="xds-alert-title">{isChinese ? "开始前" : "Before you start"}</span>
                       <p className="xds-alert-body">
                         {isChinese
-                          ? "准备一个可收信的邮箱和一个支持 TOTP 的验证器 App。免费套餐不需要信用卡。"
-                          : "Have an email you can receive mail at and a TOTP-capable authenticator app ready. The free plan needs no card."}
+                          ? "准备一个可收信的邮箱和一个支持 TOTP 的验证器 App。新注册用户获一次性 5 GB 体验流量，无需信用卡。"
+                          : "Have an email you can receive mail at and a TOTP-capable authenticator app ready. New accounts receive a one-time 5 GB trial with no card required."}
                       </p>
                     </div>
                   </div>

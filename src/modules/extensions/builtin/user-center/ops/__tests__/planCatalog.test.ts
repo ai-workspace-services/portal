@@ -19,7 +19,7 @@ describe("catalog unit boundary and version preservation", () => {
     expect(quotaToGB(Number.MAX_VALUE)).toBe("");
   });
 
-  it("partitions only the 4 families and routes trial/payg into legacy", () => {
+  it("partitions only the 3 commercial families, routes free/trial/payg into legacy, and hides whitelist_group", () => {
     const trialPlan = {
       planId: "FREE-3GB-2026",
       kind: "trial",
@@ -33,10 +33,16 @@ describe("catalog unit boundary and version preservation", () => {
       packageName: "payg",
       active: true,
     };
-    const result = partitionCatalog([trialPlan, paygPlan]);
+    const whitelistPlan = {
+      planId: "WHITELIST-FREE",
+      kind: "whitelist_group",
+      packageName: "whitelist",
+      active: true,
+      includedQuotaBytes: 5 * GB,
+    };
+    const result = partitionCatalog([trialPlan, paygPlan, whitelistPlan]);
     expect(result.legacy).toEqual([trialPlan, paygPlan]);
     expect(result.families.map((f) => f.id)).toEqual([
-      "free",
       "plus",
       "pro",
       "custom",
@@ -47,7 +53,7 @@ describe("catalog unit boundary and version preservation", () => {
   });
 
   it("uses persisted edition data without resetting it to template defaults", () => {
-    const template = CATALOG_FAMILIES[1].variants[0];
+    const template = CATALOG_FAMILIES[0].variants[0];
     const saved = {
       ...template,
       displayName: "Reviewed Plus",
@@ -58,7 +64,7 @@ describe("catalog unit boundary and version preservation", () => {
       },
     };
     const result = partitionCatalog([saved]);
-    expect(result.families[1].variants[0]).toBe(saved);
+    expect(result.families[0].variants[0]).toBe(saved);
     expect(result.legacy).toEqual([]);
   });
 });

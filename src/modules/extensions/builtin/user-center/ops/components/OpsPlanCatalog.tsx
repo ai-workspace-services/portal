@@ -12,6 +12,7 @@ import {
   Plus,
   RefreshCw,
   SlidersHorizontal,
+  Trash2,
   X,
 } from "lucide-react";
 import { useUserStore } from "@lib/userStore";
@@ -26,6 +27,7 @@ import {
   type Family,
   type FamilyId,
 } from "../planCatalog";
+import OpsWhitelistGroupCard from "./OpsWhitelistGroupCard";
 
 const inputClass =
   "w-full rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-heading)] outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-muted)]";
@@ -44,7 +46,6 @@ async function fetchPlans(url: string): Promise<{ plans: BillingPlan[] }> {
 function FamilyIcon({ id }: { id: FamilyId }) {
   const Icon = id === "custom" ? SlidersHorizontal : Box;
   const colors: Record<FamilyId, string> = {
-    free: "bg-slate-100 text-slate-600",
     plus: "bg-blue-100 text-blue-600",
     pro: "bg-violet-100 text-violet-600",
     custom: "bg-amber-100 text-amber-700",
@@ -79,9 +80,11 @@ export default function OpsPlanCatalog() {
       user?.permissions?.includes("admin.billing.money.write"),
   );
   const [individual, setIndividual] = useState<BillingPlan | null>(null);
+  const customFallback =
+    CATALOG_FAMILIES.find((f) => f.id === "custom") ?? CATALOG_FAMILIES[0];
   const family = individual
     ? {
-        ...CATALOG_FAMILIES[3],
+        ...customFallback,
         id: (inferFamilyId(individual) ?? "custom") as FamilyId,
         name: individual.displayName || individual.planId,
         variants: [individual],
@@ -93,195 +96,210 @@ export default function OpsPlanCatalog() {
       <div
         className={`grid items-start gap-4 ${family ? "lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]" : ""}`}
       >
-        <section className={`${panelClass} min-w-0 p-4 sm:p-5`}>
-          <header className="mb-5 flex items-start justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-heading)]">
-                套餐目录（源头配置）
-              </h1>
-              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                仅维护 Free / Plus / Pro / Custom 四个系列（3 天欠款宽限期），实时同步至订阅中心、XConnect 方案与定价页。
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                className="rounded-lg p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]"
-                aria-label="刷新套餐目录"
-                onClick={() => void mutate()}
-              >
-                <RefreshCw
-                  size={17}
-                  className={isLoading ? "animate-spin" : ""}
-                />
-              </button>
-              {canWrite && (
+        <div className="min-w-0 space-y-4">
+          <section className={`${panelClass} min-w-0 p-4 sm:p-5`}>
+            <header className="mb-5 flex items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-heading)]">
+                  套餐目录（源头配置）
+                </h1>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                  仅维护 Plus / Pro / Custom 三个商业系列（3 天欠款宽限期）与白名单免费用户组；新用户获一次性 5 GB 公共池体验流量，到期或用尽自动进入暂停流量模式。
+                </p>
+              </div>
+              <div className="flex gap-2">
                 <button
-                  onClick={() => {
-                    setIndividual({
-                      planId: "",
-                      kind: "subscription",
-                      packageName: "custom",
-                      displayName: "新套餐",
-                      includedQuotaBytes: 0,
-                      priceAmount: 0,
-                      priceCurrency: "CNY",
-                      priceUnit: "month",
-                      features: {
-                        family: "custom",
-                        dunning: { grace_days: 3 },
-                      },
-                      active: false,
-                    });
-                    setNotice("");
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white dark:bg-[var(--color-action)]"
+                  type="button"
+                  className="rounded-lg p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]"
+                  aria-label="刷新套餐目录"
+                  onClick={() => void mutate()}
                 >
-                  <Plus size={16} />
-                  新建套餐
+                  <RefreshCw
+                    size={17}
+                    className={isLoading ? "animate-spin" : ""}
+                  />
                 </button>
-              )}
-            </div>
-          </header>
-          {error && (
-            <p role="alert" className="mb-4 text-sm text-[var(--color-danger)]">
-              {error.message}
-            </p>
-          )}
-          {isLoading ? (
-            <p className="py-12 text-center text-sm text-[var(--color-text-muted)]">
-              目录加载中…
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {families.map((f) => {
-                const persisted = f.variants.filter((v) =>
-                  data?.plans.some((p) => p.planId === v.planId),
-                );
-                const published = persisted.some((v) => v.active);
-                return (
+                {canWrite && (
                   <button
-                    key={f.id}
                     type="button"
-                    aria-pressed={selected === f.id}
                     onClick={() => {
-                      setIndividual(null);
-                      setSelected(f.id);
+                      setIndividual({
+                        planId: "",
+                        kind: "subscription",
+                        packageName: "custom",
+                        displayName: "新套餐",
+                        includedQuotaBytes: 0,
+                        highSpeedQuotaBytes: 0,
+                        priceAmount: 0,
+                        priceCurrency: "CNY",
+                        priceUnit: "month",
+                        features: {
+                          family: "custom",
+                          dunning: { grace_days: 3 },
+                        },
+                        active: false,
+                      });
                       setNotice("");
                     }}
-                    className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${selected === f.id ? "border-[var(--color-primary)] bg-[var(--color-primary-muted)]" : "border-[color:var(--color-surface-border)] hover:border-[var(--color-primary)]"}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 py-2.5 text-sm font-semibold text-white dark:bg-[var(--color-action)]"
                   >
-                    <FamilyIcon id={f.id} />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex flex-wrap items-center gap-2">
-                        <strong className="text-base font-semibold text-[var(--color-heading)]">
-                          {f.name}
-                        </strong>
-                        {f.id === "free" && (
-                          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700">
-                            默认
-                          </span>
-                        )}
-                      </span>
-                      <span className="mt-1 block text-sm text-[var(--color-text-muted)]">
-                        {f.description}
-                      </span>
-                      <span className="mt-3 block text-sm text-[var(--color-text-subtle)]">
-                        {persisted.length
-                          ? persisted
-                              .map((p) => {
-                                const gb = quotaToGB(p.includedQuotaBytes);
-                                return gb && Number(gb) > 0
-                                  ? `${p.displayName || p.planId} · ${gb} GB`
-                                  : p.displayName || p.planId;
-                              })
-                              .join(" / ")
-                          : f.summary}
-                      </span>
-                    </span>
-                    <span className="hidden shrink-0 text-right sm:block">
-                      <span className="block text-sm font-semibold text-[var(--color-heading)]">
-                        {persisted.length
-                          ? persisted
-                              .map((p) => {
-                                const unitLabel =
-                                  typeof p.features?.price_unit_label ===
-                                    "string" && p.features.price_unit_label
-                                    ? p.features.price_unit_label
-                                    : p.priceUnit || "免费";
-                                return `${p.priceCurrency || "CNY"} ${(p.priceAmount || 0) / 100} / ${unitLabel}`;
-                              })
-                              .join(" · ")
-                          : f.price}
-                      </span>
-                      <span
-                        className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${published ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                      >
-                        {published
-                          ? "已发布"
-                          : persisted.length
-                            ? "草稿/已停用"
-                            : "待初始化"}
-                      </span>
-                    </span>
-                    <ChevronRight
-                      size={16}
-                      className="mt-1 shrink-0 text-[var(--color-text-subtle)]"
-                    />
+                    <Plus size={16} />
+                    新建套餐
                   </button>
-                );
-              })}
-            </div>
-          )}
-          {legacy.length > 0 && (
-            <div className="mt-4 border-t border-[color:var(--color-surface-border)] pt-3">
-              <button
-                onClick={() => setShowArchived((v) => !v)}
-                aria-expanded={showArchived}
-                className="flex w-full items-center gap-2 py-2 text-left text-sm text-[var(--color-heading)]"
-              >
-                <History size={17} />
-                <span className="flex-1 font-medium">
-                  待清理历史记录（trial / payg / beta）{" "}
-                  <span className="font-normal text-[var(--color-text-subtle)]">
-                    {legacy.length} 项
-                  </span>
-                </span>
-                <ChevronDown
-                  size={16}
-                  className={showArchived ? "rotate-180" : ""}
-                />
-              </button>
-              <p className="ml-6 text-xs leading-5 text-[var(--color-text-subtle)]">
-                历史目录记录已从前台隐藏；如需归档停用，可点选后取消「发布并开放应用」或迁移至四大系列。
+                )}
+              </div>
+            </header>
+            {error && (
+              <p role="alert" className="mb-4 text-sm text-[var(--color-danger)]">
+                {error.message}
               </p>
-              {showArchived && (
-                <div className="mt-3 divide-y divide-[color:var(--color-surface-border)]">
-                  {legacy.map((p) => (
+            )}
+            {isLoading ? (
+              <p className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                目录加载中…
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {families.map((f) => {
+                  const persisted = f.variants.filter((v) =>
+                    data?.plans.some((p) => p.planId === v.planId),
+                  );
+                  const published = persisted.some((v) => v.active);
+                  const displayVariants = persisted.length ? persisted : f.variants;
+                  return (
                     <button
+                      key={f.id}
                       type="button"
-                      onClick={() => setIndividual(p)}
-                      key={p.planId}
-                      className="flex w-full flex-wrap justify-between gap-2 py-3 text-left text-sm"
+                      aria-pressed={selected === f.id}
+                      onClick={() => {
+                        setIndividual(null);
+                        setSelected(f.id);
+                        setNotice("");
+                      }}
+                      className={`flex w-full items-start gap-3 rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${selected === f.id ? "border-[var(--color-primary)] bg-[var(--color-primary-muted)]" : "border-[color:var(--color-surface-border)] hover:border-[var(--color-primary)]"}`}
                     >
-                      <span>
-                        {p.displayName || p.planId}
-                        <small className="mt-1 block text-[var(--color-text-subtle)]">
-                          {p.planId} ({p.kind})
-                        </small>
-                      </span>
-                      <span className="text-xs text-[var(--color-text-muted)]">
-                        {p.active ? "仍在库中启用 · 点击编辑" : "已停用"}
+                      <FamilyIcon id={f.id} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="flex flex-wrap items-center gap-2">
+                            <strong className="text-base font-semibold text-[var(--color-heading)]">
+                              {f.name}
+                            </strong>
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${published ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}
+                            >
+                              {published
+                                ? "● 已发布"
+                                : persisted.length
+                                  ? "○ 草稿/已停用"
+                                  : "○ 待初始化"}
+                            </span>
+                          </span>
+                          <ChevronRight
+                            size={16}
+                            className="shrink-0 text-[var(--color-text-subtle)]"
+                          />
+                        </span>
+                        <span className="mt-1.5 block text-sm text-[var(--color-text-muted)]">
+                          {f.description}
+                        </span>
+                        <span className="mt-3 flex flex-wrap gap-2">
+                          {displayVariants.map((p) => {
+                            const vpsGB = quotaToGB(p.includedQuotaBytes);
+                            const fastGB = quotaToGB(p.highSpeedQuotaBytes);
+                            const hasDual =
+                              (p.highSpeedQuotaBytes ?? 0) > 0 &&
+                              (p.includedQuotaBytes ?? 0) > 0;
+                            const quotaLabel = hasDual
+                              ? `${fastGB} GB 高速 + ${vpsGB} GB VPS`
+                              : (p.includedQuotaBytes ?? 0) > 0
+                                ? `${vpsGB} GB`
+                                : asString(p.features?.quota_label);
+                            const unitLabel =
+                              typeof p.features?.price_unit_label === "string" &&
+                              p.features.price_unit_label
+                                ? p.features.price_unit_label
+                                : p.priceUnit || "month";
+                            const priceLabel = `${p.priceCurrency || "CNY"} ${(p.priceAmount || 0) / 100} / ${unitLabel}`;
+                            return (
+                              <span
+                                key={p.planId}
+                                className="inline-flex flex-wrap items-center gap-1.5 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2.5 py-1 text-xs text-[var(--color-heading)]"
+                              >
+                                <span className="font-medium">
+                                  {p.displayName || p.planId}
+                                </span>
+                                {quotaLabel && (
+                                  <span className="text-[var(--color-text-muted)]">
+                                    · {quotaLabel}
+                                  </span>
+                                )}
+                                <span className="font-semibold text-[var(--color-primary)]">
+                                  · {priceLabel}
+                                </span>
+                              </span>
+                            );
+                          })}
+                        </span>
                       </span>
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </section>
+                  );
+                })}
+              </div>
+            )}
+            {legacy.length > 0 && (
+              <div className="mt-4 border-t border-[color:var(--color-surface-border)] pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowArchived((v) => !v)}
+                  aria-expanded={showArchived}
+                  className="flex w-full items-center gap-2 py-2 text-left text-sm text-[var(--color-heading)]"
+                >
+                  <History size={17} />
+                  <span className="flex-1 font-medium">
+                    待清理历史记录（free / trial / payg / beta）{" "}
+                    <span className="font-normal text-[var(--color-text-subtle)]">
+                      {legacy.length} 项
+                    </span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={showArchived ? "rotate-180" : ""}
+                  />
+                </button>
+                <p className="ml-6 text-xs leading-5 text-[var(--color-text-subtle)]">
+                  历史目录记录已从前台隐藏；可点选后直接「删除套餐」，或取消「发布并开放应用」停用。
+                </p>
+                {showArchived && (
+                  <div className="mt-3 divide-y divide-[color:var(--color-surface-border)]">
+                    {legacy.map((p) => (
+                      <button
+                        type="button"
+                        onClick={() => setIndividual(p)}
+                        key={p.planId}
+                        className="flex w-full flex-wrap justify-between gap-2 py-3 text-left text-sm"
+                      >
+                        <span>
+                          {p.displayName || p.planId}
+                          <small className="mt-1 block text-[var(--color-text-subtle)]">
+                            {p.planId} ({p.kind})
+                          </small>
+                        </span>
+                        <span className="text-xs text-[var(--color-text-muted)]">
+                          {p.active ? "仍在库中启用 · 点击编辑" : "已停用"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+          <OpsWhitelistGroupCard />
+        </div>
         {family && (
           <CatalogEditor
-            key={individual ? `individual-${individual.planId}` : family.id}
+            key={individual ? `individual-${individual.planId || "new"}` : family.id}
             family={family}
             plans={data?.plans ?? []}
             canWrite={canWrite}
@@ -289,9 +307,11 @@ export default function OpsPlanCatalog() {
               setIndividual(null);
               setSelected(null);
             }}
-            onSaved={async (message) => {
+            onSaved={async (message, removed) => {
               const refreshed = await mutate();
-              if (individual?.planId) {
+              if (removed && individual) {
+                setIndividual(null);
+              } else if (individual?.planId) {
                 setIndividual(
                   refreshed?.plans.find(
                     (p) => p.planId === individual.planId,
@@ -322,6 +342,7 @@ export default function OpsPlanCatalog() {
 type EditState = {
   name: string;
   quotaGB: string;
+  highSpeedQuotaGB: string;
   amount: string;
   stripePriceId: string;
   planId: string;
@@ -362,6 +383,7 @@ function formFor(plan: BillingPlan, fallbackFamily: FamilyId): EditState {
   return {
     name: plan.displayName ?? "",
     quotaGB: quotaToGB(plan.includedQuotaBytes) || "0",
+    highSpeedQuotaGB: quotaToGB(plan.highSpeedQuotaBytes) || "0",
     amount: String((plan.priceAmount ?? 0) / 100),
     stripePriceId: plan.stripePriceId ?? "",
     planId: plan.planId,
@@ -397,15 +419,17 @@ function CatalogEditor({
   plans: BillingPlan[];
   canWrite: boolean;
   onClose: () => void;
-  onSaved: (message: string) => Promise<void>;
+  onSaved: (message: string, removed?: boolean) => Promise<void>;
 }) {
   const [variantIndex, setVariantIndex] = useState(0);
+  const safeIndex = variantIndex < family.variants.length ? variantIndex : 0;
   const [draft, setDraft] = useState(() =>
     formFor(family.variants[0], family.id),
   );
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
-  const plan = family.variants[variantIndex] ?? family.variants[0];
+  const plan = family.variants[safeIndex] ?? family.variants[0];
   const existing = plans.find((p) => p.planId === plan.planId);
   const patch = <K extends keyof EditState>(key: K, value: EditState[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -417,6 +441,7 @@ function CatalogEditor({
         throw new Error("请填写套餐 ID、名称与操作原因。");
       }
       const bytes = quotaFromGB(draft.quotaGB);
+      const highSpeedBytes = quotaFromGB(draft.highSpeedQuotaGB || "0");
       if (
         !/^\d+(\.\d{1,2})?$/.test(draft.amount) ||
         !Number.isSafeInteger(Math.round(Number(draft.amount) * 100))
@@ -435,9 +460,10 @@ function CatalogEditor({
           packageName: draft.packageName,
           stripePriceId: draft.stripePriceId,
           includedQuotaBytes: String(bytes),
+          highSpeedQuotaBytes: String(highSpeedBytes),
           sortOrder: String(
             CATALOG_FAMILIES.findIndex((f) => f.id === draft.packageName) * 10 +
-              variantIndex,
+              safeIndex,
           ),
           active: draft.active,
           reason: draft.reason,
@@ -480,6 +506,7 @@ function CatalogEditor({
         ...(bullets.length ? { marketing_features: bullets } : {}),
         dunning: {
           ...prevDunning,
+          policy: draft.kind === "service" ? "none" : "pause_traffic",
           grace_days: parsedGrace,
         },
         comparison_matrix: {
@@ -520,6 +547,43 @@ function CatalogEditor({
     }
   };
 
+  const remove = async () => {
+    if (!existing) return;
+    setError("");
+    if (!draft.reason.trim()) {
+      setError("删除套餐前请填写操作原因。");
+      return;
+    }
+    setDeleting(true);
+    try {
+      const response = await fetch(
+        `${ADMIN_API_BASE}/billing/plans/${encodeURIComponent(existing.planId)}?reason=${encodeURIComponent(draft.reason.trim())}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        const resData = await response.json().catch(() => null);
+        throw new Error(
+          typeof resData?.message === "string"
+            ? resData.message
+            : typeof resData?.error === "string"
+              ? resData.error
+              : "删除套餐失败，请重试。",
+        );
+      }
+      await onSaved(
+        `${existing.displayName || existing.planId} 已从目录删除。`,
+        true,
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "删除套餐失败。");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <aside
       className={`${panelClass} min-w-0 lg:sticky lg:top-4`}
@@ -530,6 +594,7 @@ function CatalogEditor({
           编辑 {family.name}
         </h2>
         <button
+          type="button"
           onClick={onClose}
           aria-label="关闭编辑栏"
           className="rounded p-1 text-[var(--color-text-subtle)]"
@@ -540,18 +605,26 @@ function CatalogEditor({
       <div className="space-y-5 p-5">
         {family.variants.length > 1 && (
           <div
-            className="flex flex-wrap gap-1 rounded-lg bg-[var(--color-surface-muted)] p-1"
+            role="tablist"
+            className="flex gap-1 overflow-x-auto rounded-lg bg-[var(--color-surface-muted)] p-1"
             aria-label="套餐档位"
           >
             {family.variants.map((v, i) => (
               <button
                 key={v.planId}
+                type="button"
+                role="tab"
+                aria-selected={i === safeIndex}
                 onClick={() => {
                   setVariantIndex(i);
                   setDraft(formFor(v, family.id));
                   setError("");
                 }}
-                className={`flex-1 rounded-md px-3 py-2 text-xs sm:text-sm ${i === variantIndex ? "bg-[var(--color-surface-elevated)] font-semibold text-[var(--color-primary)] shadow-sm" : "text-[var(--color-text-muted)]"}`}
+                className={`shrink-0 flex-1 whitespace-nowrap rounded-md border-b-2 px-3 py-2 text-xs sm:text-sm ${
+                  i === safeIndex
+                    ? "border-[var(--color-primary)] bg-[var(--color-surface-elevated)] font-semibold text-[var(--color-primary)] shadow-sm"
+                    : "border-transparent text-[var(--color-text-muted)]"
+                }`}
               >
                 {v.displayName || v.planId}
               </button>
@@ -559,7 +632,7 @@ function CatalogEditor({
           </div>
         )}
         <fieldset
-          disabled={!canWrite || saving}
+          disabled={!canWrite || saving || deleting}
           className="space-y-5 disabled:opacity-70"
         >
           <section className="space-y-3">
@@ -578,7 +651,7 @@ function CatalogEditor({
               />
             )}
             <label className="block text-sm text-[var(--color-text-muted)]">
-              所属系列（四大系列）
+              所属系列（Plus / Pro / Custom）
               <select
                 className={inputClass}
                 value={draft.packageName}
@@ -586,7 +659,6 @@ function CatalogEditor({
                   patch("packageName", e.target.value as FamilyId)
                 }
               >
-                <option value="free">free（免费）</option>
                 <option value="plus">plus（Plus 订阅）</option>
                 <option value="pro">pro（Pro 订阅）</option>
                 <option value="custom">custom（定制节点 / 付费服务）</option>
@@ -657,13 +729,19 @@ function CatalogEditor({
                 onChange={(v) => patch("quotaGB", v)}
               />
               <Field
-                label="欠款宽限期（天）"
+                label="高速流量配额（GB）"
                 type="number"
-                min={1}
-                value={draft.graceDays}
-                onChange={(v) => patch("graceDays", v)}
+                value={draft.highSpeedQuotaGB}
+                onChange={(v) => patch("highSpeedQuotaGB", v)}
               />
             </div>
+            <Field
+              label="欠款宽限期（天）"
+              type="number"
+              min={1}
+              value={draft.graceDays}
+              onChange={(v) => patch("graceDays", v)}
+            />
             <Field
               label="自定义规格标签（如 独享IP · 独享节点）"
               value={draft.quotaLabel}
@@ -741,15 +819,32 @@ function CatalogEditor({
           </p>
         )}
       </div>
-      <footer className="flex justify-end gap-2 border-t border-[color:var(--color-surface-border)] p-4">
+      <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-[color:var(--color-surface-border)] p-4">
+        {canWrite && existing && (
+          <button
+            type="button"
+            disabled={saving || deleting}
+            onClick={() => void remove()}
+            className="mr-auto inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+          >
+            {deleting ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Trash2 size={14} />
+            )}
+            删除套餐
+          </button>
+        )}
         <button
+          type="button"
           onClick={onClose}
           className="rounded-lg border border-[color:var(--color-surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)]"
         >
           取消
         </button>
         <button
-          disabled={!canWrite || saving}
+          type="button"
+          disabled={!canWrite || saving || deleting}
           onClick={() => void save()}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-[var(--color-action)]"
         >

@@ -1234,8 +1234,7 @@ export function UserGroupManagement({
                     保存有效期
                   </button>
                   <p className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
-                    结束日期按当天有效；次日自动降级到 Free
-                    5GB，并暂停后续配置同步。
+                    结束日期按当天有效；次日自动进入暂停流量模式，停止后续节点流量同步。
                   </p>
                 </section>
                 <section>

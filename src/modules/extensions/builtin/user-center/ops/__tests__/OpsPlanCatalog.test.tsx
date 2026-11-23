@@ -24,6 +24,7 @@ beforeEach(() => {
 describe("catalog settings apply", () => {
   it("publishes edited quota and 3-day grace using the existing plan endpoint", async () => {
     render(<OpsPlanCatalog />);
+    fireEvent.click(screen.getByRole("tab", { name: "Plus · 30 GB" }));
     fireEvent.change(screen.getByLabelText("账户配额（GB）"), {
       target: { value: "30" },
     });
@@ -40,6 +41,39 @@ describe("catalog settings apply", () => {
       packageName: "plus",
       includedQuotaBytes: 30 * 1024 ** 3,
       priceAmount: 3000,
+    });
+  });
+
+  it("renders dual-bucket Pro quotas without squeezing and saves highSpeedQuotaBytes", async () => {
+    fixture.plans = [
+      {
+        planId: "PRO-MONTHLY-V2",
+        displayName: "Pro 月付",
+        kind: "subscription",
+        packageName: "pro",
+        active: true,
+        includedQuotaBytes: 50 * 1024 ** 3,
+        highSpeedQuotaBytes: 30 * 1024 ** 3,
+        priceAmount: 5000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+      },
+    ];
+    render(<OpsPlanCatalog />);
+    expect(screen.getByText(/30 GB 高速 \+ 50 GB VPS/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Pro"));
+    fireEvent.change(screen.getByLabelText("高速流量配额（GB）"), {
+      target: { value: "35" },
+    });
+    fireEvent.change(screen.getByLabelText("操作原因"), {
+      target: { value: "adjust fast lane quota" },
+    });
+    fireEvent.click(screen.getByText("保存并应用设置"));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String(options?.body))).toMatchObject({
+      planId: "PRO-MONTHLY-V2",
+      highSpeedQuotaBytes: 35 * 1024 ** 3,
     });
   });
 
@@ -66,5 +100,31 @@ describe("catalog settings apply", () => {
     expect(
       JSON.parse(String(vi.mocked(fetch).mock.calls[0][1]?.body)),
     ).toMatchObject({ planId: "FREE-3GB-2026", active: false });
+  });
+
+  it("lets a root operator delete a retired plan entry with reason", async () => {
+    fixture.plans = [
+      {
+        planId: "FREE-3GB-2026",
+        displayName: "Legacy Trial 3GB",
+        kind: "trial",
+        packageName: "free",
+        active: true,
+        includedQuotaBytes: 3 * 1024 ** 3,
+      },
+    ];
+    render(<OpsPlanCatalog />);
+    fireEvent.click(screen.getByText("待清理历史记录", { exact: false }));
+    fireEvent.click(screen.getByText("Legacy Trial 3GB"));
+    fireEvent.change(screen.getByLabelText("操作原因"), {
+      target: { value: "delete retired plan" },
+    });
+    fireEvent.click(screen.getByText("删除套餐"));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    const [delUrl, delOpts] = vi.mocked(fetch).mock.calls[0];
+    expect(String(delUrl)).toContain(
+      "/billing/plans/FREE-3GB-2026?reason=delete%20retired%20plan",
+    );
+    expect(delOpts?.method).toBe("DELETE");
   });
 });

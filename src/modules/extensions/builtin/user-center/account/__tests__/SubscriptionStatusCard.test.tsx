@@ -77,4 +77,72 @@ describe("SubscriptionStatusCard", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("explains one-time 5GB trial exhaustion and reactivation via subscription", () => {
+    render(
+      <SubscriptionStatusCard
+        zh
+        records={[]}
+        usageSummary={{
+          accountUuid: "account-trial",
+          totalBytes: 5 * 1024 ** 3,
+          usedBytes: 5 * 1024 ** 3,
+          usagePercent: 100,
+          planAssignmentStatus: "assigned",
+          networkAccessState: "paused",
+          networkAccessReason: "trial_exhausted",
+          currentPlan: {
+            planId: "TRIAL-5GB-ONCE",
+            displayName: "一次性 5GB 体验",
+            packageName: "trial",
+            maxTrafficBytes: 5 * 1024 ** 3,
+            unlimited: false,
+            assigned: true,
+            source: "account_entitlement",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getAllByText("体验流量已用尽 · 已暂停")).toHaveLength(2);
+    expect(
+      screen.getByText(
+        "5 GB 一次性体验流量已用尽，节点流量已暂停（控制台登录正常）。订阅任意付费套餐后立即恢复访问。",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("explains paused mode when subscription is required", () => {
+    render(
+      <SubscriptionStatusCard
+        zh
+        records={[]}
+        usageSummary={{
+          accountUuid: "account-paused",
+          totalBytes: 0,
+          usedBytes: 0,
+          usagePercent: 0,
+          planAssignmentStatus: "assigned",
+          networkAccessState: "paused",
+          networkAccessReason: "subscription_required",
+          currentPlan: {
+            planId: "PAUSED",
+            displayName: "暂停流量",
+            packageName: "paused",
+            maxTrafficBytes: 0,
+            unlimited: false,
+            assigned: true,
+            source: "account_entitlement",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getAllByText("暂无有效订阅 · 已暂停")).toHaveLength(2);
+    expect(
+      screen.getByText(
+        "当前暂无有效付费订阅，节点流量已暂停（控制台登录正常）。选择套餐并完成订阅后自动开启流量。",
+      ),
+    ).toBeInTheDocument();
+  });
 });

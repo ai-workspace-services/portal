@@ -116,13 +116,7 @@ function buildDynamicCards(
       highlight,
       button:
         customCtaLabel ??
-        (family === "free"
-          ? isChinese
-            ? "免费开始"
-            : "Start for free"
-          : isChinese
-            ? "预约 / 联系我们"
-            : "Contact us"),
+        (isChinese ? "预约 / 联系我们" : "Contact us"),
       href: planCtaHref(plan),
     };
   });
@@ -141,7 +135,7 @@ export default function PricesPage() {
 
   const effectiveGraceDays = useMemo(() => {
     const firstPaid = [...catalog.values()].find(
-      (plan) => plan.active && planFamily(plan) && planFamily(plan) !== "free",
+      (plan) => plan.active && Boolean(planFamily(plan)),
     );
     return graceDays(firstPaid);
   }, [catalog]);
@@ -273,8 +267,21 @@ export default function PricesPage() {
             </h1>
             <p className="text-lg text-text-muted">
               {isChinese
-                ? `统一提供 Free、Plus、Pro 与定制（Custom）四个系列方案，实时同步套餐目录。订阅欠费享有 ${effectiveGraceDays} 天宽限期。`
-                : `Four plan families — Free, Plus, Pro, and Custom — synced live from the billing catalog with a ${effectiveGraceDays}-day payment grace period.`}
+                ? `提供 Plus、Pro 与定制（Custom）三个商业系列，实时同步套餐目录。订阅欠费享有 ${effectiveGraceDays} 天宽限期，到期或用尽后进入暂停流量模式。`
+                : `Three commercial plan families — Plus, Pro, and Custom — synced live from the billing catalog with a ${effectiveGraceDays}-day payment grace period before traffic pauses.`}
+            </p>
+          </div>
+
+          <div className="mx-auto mb-8 max-w-4xl rounded-xl border border-primary/20 bg-primary/5 px-5 py-4 text-sm text-text">
+            <p className="font-semibold text-heading">
+              {isChinese
+                ? "新用户一次性 5 GB 公共节点体验 · 无永久免费降级"
+                : "One-Time 5 GB Public-Node Trial · Paused Mode on Exhaustion"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-text-muted">
+              {isChinese
+                ? "新注册账号即获一次性 5 GB 体验流量，支持全部公共节点（Media-Pool + Pro-EC2-Pool，不含私有独享节点）。体验流量用尽或订阅到期后将进入「暂停流量」模式（控制台登录不受影响），订阅任意付费方案后立即恢复节点流量。"
+                : "New registrations receive a one-time 5 GB allowance across all public pools (Media-Pool + Pro-EC2-Pool, excluding private dedicated nodes). When exhausted or when a subscription ends, traffic pauses while console sign-in remains active until you subscribe."}
             </p>
           </div>
 
@@ -287,7 +294,7 @@ export default function PricesPage() {
             </p>
           ) : null}
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {cards.map(renderPricingCard)}
           </div>
 

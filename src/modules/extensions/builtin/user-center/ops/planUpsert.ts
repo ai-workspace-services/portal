@@ -8,6 +8,7 @@ export type BillingPlan = {
   displayName?: string;
   kind: "subscription" | "service" | string;
   includedQuotaBytes?: number;
+  highSpeedQuotaBytes?: number;
   packageName?: string;
   /** List price in the currency's minor unit; read by /prices and /products/xconnect. */
   priceAmount?: number;
@@ -28,6 +29,7 @@ export type PlanForm = {
   packageName: string;
   stripePriceId: string;
   includedQuotaBytes: string;
+  highSpeedQuotaBytes?: string;
   sortOrder: string;
   active: boolean;
   reason: string;
@@ -40,6 +42,7 @@ export type PlanUpsertBody = {
   packageName: string;
   stripePriceId: string;
   includedQuotaBytes: number;
+  highSpeedQuotaBytes?: number;
   trialDays: number;
   sortOrder: number;
   active: boolean;
@@ -62,6 +65,7 @@ export function buildPlanUpsertBody(
     packageName: form.packageName.trim() || "custom",
     stripePriceId: form.stripePriceId.trim(),
     includedQuotaBytes: Number(form.includedQuotaBytes),
+    highSpeedQuotaBytes: Number(form.highSpeedQuotaBytes || 0),
     trialDays: 0,
     sortOrder: Number(form.sortOrder),
     active: form.active,

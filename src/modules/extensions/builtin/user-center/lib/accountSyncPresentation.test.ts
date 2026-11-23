@@ -71,5 +71,21 @@ describe("authoritative collection and policy state", () => {
         now,
       ),
     ).toMatchObject({ label: "额度已用尽 · 已暂停", tone: "danger" });
+    expect(
+      accountSyncPresentation(
+        { ...usage, networkAccessReason: "trial_exhausted" },
+        policy,
+        true,
+        now,
+      ),
+    ).toMatchObject({ label: "体验流量已用尽 · 已暂停", tone: "danger" });
+    expect(
+      accountSyncPresentation(
+        { ...usage, networkAccessReason: "subscription_required" },
+        policy,
+        false,
+        now,
+      ),
+    ).toMatchObject({ label: "Subscription required · Paused", tone: "danger" });
   });
 });
