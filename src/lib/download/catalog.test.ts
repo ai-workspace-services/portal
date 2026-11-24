@@ -46,31 +46,31 @@ describe("buildDownloadCatalog", () => {
 
     expect(
       catalog
-        .find((product) => product.id === "xconnect")
+        .find((product) => product.id === "xconnect-app")
         ?.platforms.find((platform) => platform.id === "windows")?.asset?.href,
     ).toBe(
       "https://dl.svc.plus/releases/xconnect/windows/xconnect-windows-x64.msi",
     );
     expect(
       catalog
-        .find((product) => product.id === "ai-workspace-offline")
-        ?.platforms.find((platform) => platform.id === "linux")?.asset?.name,
-    ).toBe("ai-workspace-all-in-one-offline-ubuntu-24.04-arm64.tar.gz");
+        .find((product) => product.id === "open-platform-solutions")
+        ?.docsUrl,
+    ).toBe("https://console.svc.plus/docs/");
     expect(
       catalog
-        .find((product) => product.id === "open-platform-offline")
+        .find((product) => product.id === "open-platform-solutions")
         ?.platforms.find((platform) => platform.id === "linux")?.asset?.name,
     ).toBe("sealos-offline-package-amd64.tar.gz");
   });
 
   it("does not manufacture a package for an unsupported platform", () => {
     const catalog = buildDownloadCatalog([]);
-    const aiWorkspace = catalog.find(
-      (product) => product.id === "ai-workspace-offline",
+    const openPlatform = catalog.find(
+      (product) => product.id === "open-platform-solutions",
     );
 
     expect(
-      aiWorkspace?.platforms.find((platform) => platform.id === "windows"),
+      openPlatform?.platforms.find((platform) => platform.id === "windows"),
     ).toMatchObject({ supported: false, asset: undefined });
   });
 
@@ -102,7 +102,7 @@ describe("buildDownloadCatalog", () => {
 
     expect(
       catalog
-        .find((product) => product.id === "xworkmate")
+        .find((product) => product.id === "xworkmate-app")
         ?.platforms.find((platform) => platform.id === "macos")?.asset,
     ).toMatchObject({
       name: "XWorkmate-1.2.0.dmg",
@@ -150,7 +150,7 @@ describe("buildDownloadCatalog", () => {
       },
     ]);
 
-    const xconnect = catalog.find((product) => product.id === "xconnect");
+    const xconnect = catalog.find((product) => product.id === "xconnect-app");
     expect(
       xconnect?.platforms.find((platform) => platform.id === "windows")?.asset,
     ).toBeUndefined();
@@ -194,7 +194,7 @@ describe("buildDownloadCatalog", () => {
       },
     });
 
-    const xconnect = catalog.find((product) => product.id === "xconnect");
+    const xconnect = catalog.find((product) => product.id === "xconnect-app");
     expect(xconnect?.matrixFetchedFrom).toBe("cn");
     expect(xconnect?.releaseMatrix?.channels.latest?.tag).toBe("latest-1-abc");
     expect(xconnect?.stores?.ios?.map((s) => s.id)).toEqual([
