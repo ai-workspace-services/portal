@@ -315,7 +315,7 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
   },
   {
     planId: "CUSTOM-AI-CONSULT-2026",
-    displayName: "AI 工具咨询，电脑环境配置",
+    displayName: "开源解决方案/AI工具咨询",
     kind: "service",
     packageName: "custom",
     includedQuotaBytes: 0,
@@ -347,7 +347,7 @@ export const DEFAULT_CATALOG_PLANS: CatalogPlan[] = [
         "Not supported: Huawei HarmonyOS NEXT",
       ],
       comparison_matrix: {
-        resources: "一对一 AI 工具咨询与电脑环境配置",
+        resources: "一对一开源解决方案/AI工具咨询",
         exit_ip: "—",
         ip_changes: "—",
         support:
@@ -764,8 +764,8 @@ export function planComparisonRow(
     custom:
       planCheckoutMode(plan) === "payment"
         ? {
-            zh: "一对一 AI 工具咨询与电脑环境配置",
-            en: "1-on-1 AI tool consultation & environment setup",
+            zh: "一对一开源解决方案/AI工具咨询",
+            en: "1-on-1 open-source solution & AI tool consultation",
           }
         : { zh: "独享节点", en: "Dedicated node" },
   };
@@ -1032,6 +1032,122 @@ export function catalogWithFamilyDefaults(
   return result;
 }
 
+function uniqueNonEmpty(values: Array<string | undefined | null>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const val of values) {
+    const trimmed = typeof val === "string" ? val.trim() : "";
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    out.push(trimmed);
+  }
+  return out;
+}
+
+function buildConsolidatedPlusColumn(
+  plans: CatalogPlan[],
+  locale: "zh" | "en",
+): PlanComparisonRow | null {
+  if (plans.length === 0) return null;
+  const primary = plans[plans.length - 1] ?? plans[0];
+  const base = planComparisonRow(primary, locale);
+  const quotaGbs = uniqueNonEmpty(
+    plans.map((p) => {
+      const bytes = p.includedQuotaBytes ?? p.maxTrafficBytes ?? 0;
+      if (bytes > 0 && Number.isFinite(bytes)) {
+        return String(Math.round(bytes / GB_BYTES));
+      }
+      return null;
+    }),
+  );
+  const tierPart = quotaGbs.length > 0 ? quotaGbs.join("/") : "20/30";
+  const name =
+    locale === "zh"
+      ? `Plus · ${tierPart} 月付/年付`
+      : `Plus · ${tierPart} Monthly/Yearly`;
+  const prices = uniqueNonEmpty(
+    plans.map((p) => {
+      const fp = formatPlanPrice(p, locale);
+      return fp ? `${fp.amount}${fp.period}` : null;
+    }),
+  );
+  const quotas = uniqueNonEmpty(plans.map((p) => formatPlanQuota(p, locale)));
+  return {
+    ...base,
+    planId: "plus-family",
+    family: "plus",
+    name,
+    price: prices.length > 0 ? prices.join(" · ") : base.price,
+    quota: quotas.length > 0 ? quotas.join(" / ") : base.quota,
+  };
+}
+
+function buildConsolidatedProColumn(
+  plans: CatalogPlan[],
+  locale: "zh" | "en",
+): PlanComparisonRow | null {
+  if (plans.length === 0) return null;
+  const monthlyPlan =
+    plans.find((p) => (p.priceUnit ?? "month").toLowerCase() === "month") ??
+    plans[0];
+  const base = planComparisonRow(monthlyPlan, locale);
+  const monthlyMajor =
+    monthlyPlan.priceAmount && monthlyPlan.priceAmount > 0
+      ? String(Math.round(monthlyPlan.priceAmount / 100))
+      : "50";
+  const name =
+    locale === "zh"
+      ? `Pro ${monthlyMajor}/月付/年付`
+      : `Pro ${monthlyMajor}/Monthly/Yearly`;
+  const prices = uniqueNonEmpty(
+    plans.map((p) => {
+      const fp = formatPlanPrice(p, locale);
+      return fp ? `${fp.amount}${fp.period}` : null;
+    }),
+  );
+  const quotas = uniqueNonEmpty(plans.map((p) => formatPlanQuota(p, locale)));
+  return {
+    ...base,
+    planId: "pro-family",
+    family: "pro",
+    name,
+    price: prices.length > 0 ? prices.join(" · ") : base.price,
+    quota: quotas.length > 0 ? quotas.join(" / ") : base.quota,
+  };
+}
+
+function buildCustomColumn(
+  plan: CatalogPlan,
+  locale: "zh" | "en",
+): PlanComparisonRow {
+  const base = planComparisonRow(plan, locale);
+  if (planCheckoutMode(plan) === "subscription") {
+    const fp = formatPlanPrice(plan, locale);
+    const priceText = fp ? `${fp.amount}${fp.period}` : base.price;
+    const priceWithStarting =
+      locale === "zh"
+        ? priceText.includes("起")
+          ? priceText
+          : `${priceText}（起）`
+        : priceText.toLowerCase().startsWith("from ")
+          ? priceText
+          : `From ${priceText}`;
+    const rawName = plan.displayName?.trim() || "定制节点";
+    const name =
+      locale === "zh"
+        ? rawName.includes("¥") || rawName.includes("起")
+          ? rawName
+          : `${rawName} ${priceWithStarting}`
+        : `${rawName} (${priceWithStarting})`;
+    return {
+      ...base,
+      name,
+      price: priceWithStarting,
+    };
+  }
+  return base;
+}
+
 export function buildXConnectPlanComparison(
   catalog: Map<string, CatalogPlan>,
   locale: "zh" | "en",
@@ -1040,7 +1156,19 @@ export function buildXConnectPlanComparison(
   rows: Array<{ label: string; values: string[] }>;
 } {
   const plans = catalogWithFamilyDefaults(catalog);
-  const columns = plans.map((plan) => planComparisonRow(plan, locale));
+  const plusPlans = plans.filter((p) => planFamily(p) === "plus");
+  const proPlans = plans.filter((p) => planFamily(p) === "pro");
+  const customPlans = plans.filter((p) => planFamily(p) === "custom");
+
+  const columns: PlanComparisonRow[] = [];
+  const plusCol = buildConsolidatedPlusColumn(plusPlans, locale);
+  if (plusCol) columns.push(plusCol);
+  const proCol = buildConsolidatedProColumn(proPlans, locale);
+  if (proCol) columns.push(proCol);
+  for (const customPlan of customPlans) {
+    columns.push(buildCustomColumn(customPlan, locale));
+  }
+
   const rows = [
     {
       label: locale === "zh" ? "价格" : "Price",

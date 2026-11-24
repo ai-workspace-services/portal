@@ -173,8 +173,8 @@ export const CATALOG_FAMILIES: Family[] = [
   {
     id: "custom",
     name: "Custom 定制",
-    description: "定制节点（独享IP/节点）与 AI 工具咨询/电脑环境配置。",
-    summary: "定制节点 ¥80/月 · AI 工具咨询 ¥100/小时/次",
+    description: "定制节点（独享IP/节点）与开源解决方案/AI工具咨询。",
+    summary: "定制节点 ¥80/月 · 开源解决方案/AI工具咨询 ¥100/小时/次",
     price: "¥80/月 · ¥100/小时/次",
     variants: [
       {
@@ -205,7 +205,7 @@ export const CATALOG_FAMILIES: Family[] = [
       },
       {
         planId: "CUSTOM-AI-CONSULT-2026",
-        displayName: "AI 工具咨询，电脑环境配置",
+        displayName: "开源解决方案/AI工具咨询",
         kind: "service",
         packageName: "custom",
         includedQuotaBytes: 0,
