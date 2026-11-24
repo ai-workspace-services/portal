@@ -197,11 +197,14 @@ describe("three-family commercial billing catalog", () => {
     expect(canUpgradeSubscription(pro, plus)).toBe(false);
   });
 
-  it("builds dynamic XConnect comparison table for all 3 commercial families", () => {
+  it("builds dynamic 4-column XConnect comparison table synced with catalog", () => {
     const comparison = buildXConnectPlanComparison(new Map(), "zh");
-    expect(comparison.columns.length).toBe(
-      catalogWithFamilyDefaults(new Map()).length,
-    );
+    expect(comparison.columns.map((c) => c.name)).toEqual([
+      "Plus · 20/30 月付/年付",
+      "Pro 50/月付/年付",
+      "定制节点 ¥80/月（起）",
+      "开源解决方案/AI工具咨询",
+    ]);
     expect(comparison.rows.some((r) => r.label === "欠费宽限期")).toBe(true);
   });
 });

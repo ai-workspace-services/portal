@@ -98,7 +98,7 @@ const { checkout, preview, pending, retry, plans, mutate } = vi.hoisted(() => ({
         packageName: "custom",
         active: true,
         stripePriceId: "price_ai_consult",
-        displayName: "AI 工具咨询，电脑环境配置",
+        displayName: "开源解决方案/AI工具咨询",
         includedQuotaBytes: 0,
         priceAmount: 10000,
         priceCurrency: "CNY",
@@ -155,7 +155,7 @@ describe("BillingOptionsPanel", () => {
     expect(await screen.findByText("Plus")).toBeInTheDocument();
     expect(screen.getByText("Pro")).toBeInTheDocument();
     expect(screen.getByText("定制节点")).toBeInTheDocument();
-    expect(screen.getByText("AI 工具咨询，电脑环境配置")).toBeInTheDocument();
+    expect(screen.getByText("开源解决方案/AI工具咨询")).toBeInTheDocument();
     expect(screen.queryByText("按量付费")).not.toBeInTheDocument();
   });
 
