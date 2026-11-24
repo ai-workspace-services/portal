@@ -924,7 +924,18 @@ export default function DownloadCatalog({
                     {productName}
                   </h3>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {product.docsUrl ? (
+                    <a
+                      href={product.docsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-[6px] border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/15"
+                    >
+                      {isChinese ? "开源解决方案文档" : "Open Platform Docs"}
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </a>
+                  ) : null}
                   <a
                     href={product.workflowUrl}
                     target="_blank"
@@ -1085,6 +1096,22 @@ export default function DownloadCatalog({
                       </div>
                     )}
                   </div>
+                  {product.cliProductSlug ? (
+                    <div className="mt-4 flex flex-col gap-2 rounded-[var(--radius-md)] border border-border-default bg-surface-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-text-default">
+                          {isChinese ? "包管理器 / CLI 快速安装" : "Package Repo / CLI Quick Install"}
+                        </p>
+                        <code className="mt-1 block truncate font-mono text-xs text-text-muted">
+                          {`curl -fsSL https://${region === "cn" ? "cn-repo.svc.plus" : "repo.svc.plus"}/install.sh | sh -s -- --product ${product.cliProductSlug}`}
+                        </code>
+                      </div>
+                      <CopyButton
+                        text={`curl -fsSL https://${region === "cn" ? "cn-repo.svc.plus" : "repo.svc.plus"}/install.sh | sh -s -- --product ${product.cliProductSlug}`}
+                        label={isChinese ? "复制安装命令" : "Copy install command"}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
 
