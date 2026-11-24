@@ -1103,11 +1103,11 @@ export default function DownloadCatalog({
                           {isChinese ? "包管理器 / CLI 快速安装" : "Package Repo / CLI Quick Install"}
                         </p>
                         <code className="mt-1 block truncate font-mono text-xs text-text-muted">
-                          {`curl -fsSL https://${region === "cn" ? "cn-repo.svc.plus" : "repo.svc.plus"}/install.sh | sh -s -- ${product.cliProductSlug}`}
+                          {`curl -fsSL https://${region === "cn" ? "cn-repo.svc.plus" : "repo.svc.plus"}/install.sh | sh -s -- --product ${product.cliProductSlug}`}
                         </code>
                       </div>
                       <CopyButton
-                        text={`curl -fsSL https://${region === "cn" ? "cn-repo.svc.plus" : "repo.svc.plus"}/install.sh | sh -s -- ${product.cliProductSlug}`}
+                        text={`curl -fsSL https://${region === "cn" ? "cn-repo.svc.plus" : "repo.svc.plus"}/install.sh | sh -s -- --product ${product.cliProductSlug}`}
                         label={isChinese ? "复制安装命令" : "Copy install command"}
                       />
                     </div>
