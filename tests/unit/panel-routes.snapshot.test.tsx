@@ -37,6 +37,8 @@ const expectedPanelRouteSnapshot: Array<
   { id: 'ops-billing-ledger', path: '/panel/ops/billing/ledger', match: 'startsWith', section: 'admin', order: 12, hidden: true, guard: { requireLogin: true, roles: ['admin', 'operator'] } },
   { id: 'ops-audit', path: '/panel/ops/audit', match: 'startsWith', section: 'admin', order: 12, hidden: true, guard: { requireLogin: true, roles: ['admin', 'operator'] } },
   { id: 'ops-system', path: '/panel/ops/system', match: 'startsWith', section: 'admin', order: 12, hidden: true, guard: { requireLogin: true, roles: ['admin', 'operator'] } },
+  { id: 'ops-crawler-protection', path: '/panel/ops/crawler-protection', match: 'startsWith', section: 'admin', order: 12, hidden: true, guard: { requireLogin: true, roles: ['admin', 'operator'] } },
+  { id: 'ops-traffic-dispatch', path: '/panel/ops/traffic-dispatch', match: 'startsWith', section: 'admin', order: 12, hidden: true, guard: { requireLogin: true, roles: ['admin', 'operator'] } },
   { id: 'deployments', path: '/panel/deployments', match: 'exact', section: 'infra', order: 0, hidden: false, guard: { requireLogin: true } },
   { id: 'resources', path: '/panel/resources', match: 'exact', section: 'infra', order: 1, hidden: false, guard: { requireLogin: true } },
   { id: 'apiKeys', path: '/panel/api-keys', match: 'exact', section: 'infra', order: 2, hidden: false, guard: { requireLogin: true } },

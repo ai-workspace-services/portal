@@ -587,6 +587,52 @@ export const capabilities = {
             "order": 12,
             "hidden": true
           }
+        },
+        {
+          "id": "ops-crawler-protection",
+          "path": "/panel/ops/crawler-protection",
+          "label": "爬虫防护",
+          "description": "运营工作台子模块",
+          "match": "startsWith",
+          "guard": {
+            "require_login": true,
+            "roles": [
+              "admin",
+              "operator"
+            ]
+          },
+          "redirect": {
+            "unauthenticated": "/login",
+            "forbidden": "/panel"
+          },
+          "sidebar": {
+            "section": "admin",
+            "order": 12,
+            "hidden": true
+          }
+        },
+        {
+          "id": "ops-traffic-dispatch",
+          "path": "/panel/ops/traffic-dispatch",
+          "label": "流量调度",
+          "description": "运营工作台子模块",
+          "match": "startsWith",
+          "guard": {
+            "require_login": true,
+            "roles": [
+              "admin",
+              "operator"
+            ]
+          },
+          "redirect": {
+            "unauthenticated": "/login",
+            "forbidden": "/panel"
+          },
+          "sidebar": {
+            "section": "admin",
+            "order": 12,
+            "hidden": true
+          }
         }
       ]
     },
@@ -1380,6 +1426,52 @@ export const capabilities = {
         "id": "ops-system",
         "path": "/panel/ops/system",
         "label": "系统管理",
+        "description": "运营工作台子模块",
+        "match": "startsWith",
+        "guard": {
+          "requireLogin": true,
+          "roles": [
+            "admin",
+            "operator"
+          ]
+        },
+        "redirect": {
+          "unauthenticated": "/login",
+          "forbidden": "/panel"
+        },
+        "sidebar": {
+          "section": "admin",
+          "order": 12,
+          "hidden": true
+        }
+      },
+      {
+        "id": "ops-crawler-protection",
+        "path": "/panel/ops/crawler-protection",
+        "label": "爬虫防护",
+        "description": "运营工作台子模块",
+        "match": "startsWith",
+        "guard": {
+          "requireLogin": true,
+          "roles": [
+            "admin",
+            "operator"
+          ]
+        },
+        "redirect": {
+          "unauthenticated": "/login",
+          "forbidden": "/panel"
+        },
+        "sidebar": {
+          "section": "admin",
+          "order": 12,
+          "hidden": true
+        }
+      },
+      {
+        "id": "ops-traffic-dispatch",
+        "path": "/panel/ops/traffic-dispatch",
+        "label": "流量调度",
         "description": "运营工作台子模块",
         "match": "startsWith",
         "guard": {
