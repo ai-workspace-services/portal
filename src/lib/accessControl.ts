@@ -34,10 +34,15 @@ const KNOWN_ROLES: UserRole[] = ["user", "operator", "admin"];
 // 保持一致——那里也把 root 归一化成 admin。
 const GROUP_ROLE_MAP: Record<string, UserRole> = {
   root: "admin",
+  super_admin: "admin",
   admin: "admin",
   administrator: "admin",
   operator: "operator",
+  operators: "operator",
   ops: "operator",
+  "platform-ops": "operator",
+  "platform-operations": "operator",
+  "运营组": "operator",
 };
 
 // 角色强弱顺序，用于在 role 字段与组继承之间取较高者。

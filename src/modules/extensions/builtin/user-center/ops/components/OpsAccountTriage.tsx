@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { resolveEffectiveRole } from "@lib/accessControl";
 import { useUserStore } from "@lib/userStore";
 import OpsAuditConsole from "./OpsAuditConsole";
 import CrawlerProtection from "./CrawlerProtection";
@@ -279,7 +280,15 @@ export default function OpsAccountTriage() {
   const [actionError, setActionError] = useState<string | undefined>();
 
   const canAccess = Boolean(user);
-  const canResetUsage = Boolean(user?.isRoot || user?.isAdmin || user?.role === "operator");
+  const effectiveRole = user
+    ? resolveEffectiveRole(user.role ?? "user", user.groups)
+    : "user";
+  const canResetUsage = Boolean(
+    user?.isRoot ||
+      user?.isAdmin ||
+      effectiveRole === "admin" ||
+      effectiveRole === "operator",
+  );
   const usersSWR = useSWR<ManagedUser[]>(canAccess ? `${ADMIN_API_BASE}/billing/accounts` : null, jsonFetcher, {
     revalidateOnFocus: false,
   });
