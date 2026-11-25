@@ -7,6 +7,7 @@ import useSWR from "swr";
 import {
   Activity,
   AlertTriangle,
+  ArrowLeftRight,
   BarChart3,
   ArrowRight,
   Ban,
@@ -41,6 +42,7 @@ import { useUserStore } from "@lib/userStore";
 import OpsAuditConsole from "./OpsAuditConsole";
 import CrawlerProtection from "./CrawlerProtection";
 import OpsPlanCatalog from "./OpsPlanCatalog";
+import OpsTrafficDispatch from "./OpsTrafficDispatch";
 
 import { ADMIN_API_BASE } from "../../lib/adminApi";
 
@@ -153,6 +155,7 @@ const navItems = [
   { href: "/panel/ops/billing/ledger", label: "账单与对账", icon: CreditCard },
   { href: "/panel/ops/audit", label: "审计与系统", icon: FileClock },
   { href: "/panel/ops/crawler-protection", label: "爬虫防护", icon: ShieldCheck },
+  { href: "/panel/ops/traffic-dispatch", label: "流量调度", icon: ArrowLeftRight },
 ];
 
 async function jsonFetcher<T>(input: RequestInfo): Promise<T> {
@@ -404,6 +407,9 @@ export default function OpsAccountTriage() {
     if (pathname === "/panel/ops/crawler-protection") {
       return <div className="space-y-5 pb-8"><OpsNavigation active={pathname} /><CrawlerProtection /></div>;
     }
+    if (pathname === "/panel/ops/traffic-dispatch") {
+      return <div className="space-y-5 pb-8"><OpsNavigation active={pathname} /><OpsTrafficDispatch /></div>;
+    }
     if (pathname === "/panel/ops/billing/plans") {
       return <OpsPlanCatalog />;
     }
@@ -595,7 +601,7 @@ function OpsWorkbench({ users, loading }: { users: ManagedUser[]; loading: boole
     <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between"><div><p className="text-eyebrow font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">Operations / signal tower</p><h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-heading)] sm:text-3xl">运营工作台</h1><p className="mt-1 text-sm text-[var(--color-text-muted)]">先看经营状态，再处理最需要关注的账号和账务异常。</p></div><span className="inline-flex w-fit items-center gap-2 rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs text-[var(--color-text-muted)]"><ShieldCheck className="h-3.5 w-3.5 text-[var(--color-success)]" />运营角色可见 · 变更全量审计</span></div>
     <OpsNavigation active="/panel/ops" />
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"><OverviewMetric icon={TrendingUp} label="MRR" value={overview?.mrr !== undefined ? formatMoney(overview.mrr) : "待同步"} hint="计费聚合数据" tone="blue" /><OverviewMetric icon={Users} label="活跃订阅" value={loading ? "加载中" : overview?.activeSubscriptions !== undefined ? String(overview.activeSubscriptions) : String(activeUsers)} hint="订阅与账号活跃状态" tone="green" /><OverviewMetric icon={CircleDollarSign} label="欠费金额" value={overview?.arrearsAmount !== undefined ? formatMoney(overview.arrearsAmount) : "待同步"} hint="账本欠费汇总" tone="red" /><OverviewMetric icon={ClipboardCheck} label="待处理事项" value={overview?.pendingActions !== undefined ? String(overview.pendingActions) : "待同步"} hint="账单异常与审批队列" tone="orange" /></div>
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]"><section className={`${surface} p-5`}><div className="flex items-start justify-between"><div><h2 className="text-base font-semibold text-[var(--color-heading)]">经营趋势</h2><p className="mt-1 text-xs text-[var(--color-text-subtle)]">活跃账号、新增账号与流失账号 · 数据待同步</p></div><LineChart className="h-5 w-5 text-[var(--color-primary)]" /></div><div className="mt-6 flex h-56 items-center justify-center rounded-xl border border-dashed border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] text-sm text-[var(--color-text-subtle)]">趋势聚合接口接入后展示近 7 天曲线</div></section><section className={`${surface} p-5`}><div className="flex items-center justify-between"><div><h2 className="text-base font-semibold text-[var(--color-heading)]">快捷处置</h2><p className="mt-1 text-xs text-[var(--color-text-subtle)]">从异常直接进入账号工作流</p></div><Activity className="h-5 w-5 text-[var(--color-primary)]" /></div><div className="mt-5 space-y-3"><QuickAction href="/panel/ops/accounts" label="检索并处置账号" detail={`${users.length} 个账号可检索`} icon={Search} /><QuickAction href="/panel/ops/billing/ledger" label="检查账单异常" detail="打开计费运营总览" icon={ReceiptText} /><QuickAction href="/panel/ops/audit" label="查看变更审计" detail="按操作者和目标账号筛选" icon={FileClock} /></div></section></div>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]"><section className={`${surface} p-5`}><div className="flex items-start justify-between"><div><h2 className="text-base font-semibold text-[var(--color-heading)]">经营趋势</h2><p className="mt-1 text-xs text-[var(--color-text-subtle)]">活跃账号、新增账号与流失账号 · 数据待同步</p></div><LineChart className="h-5 w-5 text-[var(--color-primary)]" /></div><div className="mt-6 flex h-56 items-center justify-center rounded-xl border border-dashed border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] text-sm text-[var(--color-text-subtle)]">趋势聚合接口接入后展示近 7 天曲线</div></section><section className={`${surface} p-5`}><div className="flex items-center justify-between"><div><h2 className="text-base font-semibold text-[var(--color-heading)]">快捷处置</h2><p className="mt-1 text-xs text-[var(--color-text-subtle)]">从异常直接进入账号工作流</p></div><Activity className="h-5 w-5 text-[var(--color-primary)]" /></div><div className="mt-5 space-y-3"><QuickAction href="/panel/ops/accounts" label="检索并处置账号" detail={`${users.length} 个账号可检索`} icon={Search} /><QuickAction href="/panel/ops/billing/ledger" label="检查账单异常" detail="打开计费运营总览" icon={ReceiptText} /><QuickAction href="/panel/ops/audit" label="查看变更审计" detail="按操作者和目标账号筛选" icon={FileClock} /><QuickAction href="/panel/ops/traffic-dispatch" label="手动流量调度" detail="滚动升级排水与慢节点紧急切流" icon={ArrowLeftRight} /></div></section></div>
     <div className="grid gap-5 xl:grid-cols-2"><section className={`${surface} p-5`}><div className="flex items-center justify-between"><div><h2 className="text-base font-semibold text-[var(--color-heading)]">近期审计记录</h2><p className="mt-1 text-xs text-[var(--color-text-subtle)]">所有金额和权益变更都必须可追溯</p></div><Link href="/panel/ops/audit" className="text-xs font-semibold text-[var(--color-primary)]">查看全部 <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link></div><EmptyPanel icon={FileClock} label="暂无可展示的审计记录" /></section><section className={`${surface} p-5`}><div className="flex items-center justify-between"><div><h2 className="text-base font-semibold text-[var(--color-heading)]">用量 TopN</h2><p className="mt-1 text-xs text-[var(--color-text-subtle)]">按账号或租户查看资源消耗</p></div><BarChart3 className="h-5 w-5 text-[var(--color-primary)]" /></div><EmptyPanel icon={BarChart3} label="用量聚合接口接入后展示" /></section></div>
   </div>;
 }

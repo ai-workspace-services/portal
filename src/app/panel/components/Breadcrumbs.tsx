@@ -111,6 +111,8 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
           label = zh ? '账号处置台' : 'Account Triage'
         } else if (segments[i] === 'audit') {
           label = zh ? '审计日志' : 'Audit Logs'
+        } else if (segments[i] === 'traffic-dispatch') {
+          label = zh ? '手动流量调度' : 'Traffic Dispatch'
         } else if (segments[i] === 'system') {
           label = zh ? '系统管理' : 'System'
         } else {

@@ -172,6 +172,9 @@ export default function OpsAuditConsole() {
         <span className="shrink-0 rounded-lg bg-[var(--color-surface)] px-3 py-2 text-sm font-medium text-[var(--color-primary)] shadow-sm">
           审计与系统
         </span>
+        <Link href="/panel/ops/traffic-dispatch" className="shrink-0 rounded-lg px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-surface)]">
+          流量调度
+        </Link>
       </nav>
 
       <section className={`${surface} p-4 sm:p-5`}>
