@@ -250,7 +250,14 @@ export const userCenterExtension: DashboardExtension = {
       redirect: { unauthenticated: "/login", forbidden: "/panel" },
       sidebar: { section: "admin", order: 11, hidden: true },
     },
-    ...["billing/plans", "billing/ledger", "audit", "system"].map((suffix) => ({
+    ...[
+      "billing/plans",
+      "billing/ledger",
+      "audit",
+      "system",
+      "crawler-protection",
+      "traffic-dispatch",
+    ].map((suffix) => ({
       id: `ops-${suffix.replace("/", "-")}`,
       path: `/panel/ops/${suffix}`,
       label:
@@ -260,7 +267,11 @@ export const userCenterExtension: DashboardExtension = {
             ? "系统管理"
             : suffix === "billing/plans"
               ? "套餐与订阅"
-              : "账单与对账",
+              : suffix === "crawler-protection"
+                ? "爬虫防护"
+                : suffix === "traffic-dispatch"
+                  ? "流量调度"
+                  : "账单与对账",
       description: "运营工作台子模块",
       icon: LayoutDashboard,
       loader: () => import("./routes/ops"),
