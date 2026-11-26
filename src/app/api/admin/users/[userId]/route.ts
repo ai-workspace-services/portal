@@ -51,14 +51,23 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json<ErrorPayload>({ error: 'invalid_user' }, { status: 400 })
   }
 
-  const response = await fetch(`${ACCOUNT_API_BASE}/admin/users/${encodeURIComponent(userId)}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${session.token}`,
-      Accept: 'application/json',
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${session.token}`,
+    Accept: 'application/json',
+  }
+  const requestId = request.headers.get('x-request-id')
+  if (requestId) {
+    headers['X-Request-ID'] = requestId
+  }
+
+  const response = await fetch(
+    `${ACCOUNT_API_BASE}/admin/users/${encodeURIComponent(userId)}${request.nextUrl.search}`,
+    {
+      method: 'DELETE',
+      headers,
+      cache: 'no-store',
     },
-    cache: 'no-store',
-  })
+  )
 
   const payload = await response.json().catch(() => null)
   if (payload === null) {

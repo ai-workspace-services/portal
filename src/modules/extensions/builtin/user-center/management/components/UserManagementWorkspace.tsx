@@ -26,6 +26,7 @@ type UserManagementWorkspaceProps = {
   users?: ManagedUser[];
   isLoading?: boolean;
   canEditRoles: boolean;
+  canDeleteUsers?: boolean;
   pendingUserIds?: Set<string>;
   pendingGroupIds?: Set<string>;
   groupError?: string;
@@ -70,16 +71,22 @@ function formatDate(value?: string): string {
       }).format(date);
 }
 
-function StatusPill({ active }: { active: boolean }) {
+function StatusPill({
+  active,
+  archived = false,
+}: {
+  active: boolean;
+  archived?: boolean;
+}) {
   return (
     <span
       className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ${
-        active
+        active && !archived
           ? "bg-[var(--color-success-muted)] text-[var(--color-success-foreground)]"
           : "bg-[var(--color-danger-muted)] text-[var(--color-danger-foreground)]"
       }`}
     >
-      {active ? "活跃" : "停用"}
+      {archived ? "已归档" : active ? "活跃" : "停用"}
     </span>
   );
 }
@@ -88,6 +95,7 @@ export default function UserManagementWorkspace({
   users,
   isLoading = false,
   canEditRoles,
+  canDeleteUsers,
   pendingUserIds,
   pendingGroupIds,
   groupError,
@@ -306,7 +314,10 @@ export default function UserManagementWorkspace({
                           </div>
                         </td>
                         <td className="px-3 py-2.5">
-                          <StatusPill active={active} />
+                          <StatusPill
+                            active={active}
+                            archived={Boolean(user.archivedAt)}
+                          />
                         </td>
                         <td className="px-3 py-2.5 text-[var(--color-text-muted)]">
                           {user.created_at ? formatDate(user.created_at) : "—"}
@@ -401,7 +412,10 @@ export default function UserManagementWorkspace({
                     <p className="font-semibold text-[var(--color-heading)]">
                       {selectedUser.email}
                     </p>
-                    <StatusPill active={selectedActive} />
+                    <StatusPill
+                      active={selectedActive}
+                      archived={Boolean(selectedUser.archivedAt)}
+                    />
                   </div>
                   <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">
                     {displayName(selectedUser)}
@@ -520,7 +534,10 @@ export default function UserManagementWorkspace({
                       </dd>
                       <dt className="text-[var(--color-text-subtle)]">状态</dt>
                       <dd>
-                        <StatusPill active={selectedActive} />
+                        <StatusPill
+                          active={selectedActive}
+                          archived={Boolean(selectedUser.archivedAt)}
+                        />
                       </dd>
 
                       <dt className="text-[var(--color-text-subtle)]">
@@ -606,11 +623,17 @@ export default function UserManagementWorkspace({
                       </button>
                       <button
                         type="button"
+                        disabled={
+                          !(canDeleteUsers ?? canEditRoles) ||
+                          !onDeleteUser ||
+                          Boolean(selectedUser.archivedAt) ||
+                          Boolean(pendingAccessIds?.has(selectedUser.id))
+                        }
                         onClick={() => onDeleteUser?.(selectedUser.id)}
-                        className="inline-flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] p-2.5 text-left text-sm text-[var(--color-danger)] hover:bg-[var(--color-danger-muted)]"
+                        className="inline-flex items-center gap-2 rounded-md border border-[color:var(--color-surface-border)] p-2.5 text-left text-sm text-[var(--color-danger)] hover:bg-[var(--color-danger-muted)] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
-                        删除用户
+                        {selectedUser.archivedAt ? "已归档" : "删除用户"}
                       </button>
                     </div>
                   </section>

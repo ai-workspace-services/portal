@@ -12,7 +12,7 @@ vi.mock("@server/account/adminAccess", () => ({
 vi.mock("@server/serviceConfig", () => ({
   getAccountServiceApiBaseUrl: () => "https://accounts.test/api/auth",
 }));
-import { GET, PUT } from "./route";
+import { DELETE, GET, PUT } from "./route";
 
 describe("Selfhost auth admin boundary", () => {
   const fetchMock = vi.fn();
@@ -126,5 +126,30 @@ describe("Selfhost auth admin boundary", () => {
     );
     expect(response.status).toBe(400);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("forwards DELETE reason query and X-Request-ID for user archive", async () => {
+    fetchMock.mockResolvedValue(
+      new Response('{"message":"user archived"}', {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const response = await DELETE(
+      new NextRequest(
+        "https://console.test/api/auth/admin/users/u-1?reason=duplicate%20account",
+        {
+          method: "DELETE",
+          headers: { "X-Request-ID": "req-123" },
+        },
+      ),
+      { params: Promise.resolve({ segments: ["users", "u-1"] }) },
+    );
+    expect(response.status).toBe(200);
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "https://accounts.test/api/auth/admin/users/u-1?reason=duplicate%20account",
+    );
+    expect(fetchMock.mock.calls[0][1].headers.get("X-Request-ID")).toBe(
+      "req-123",
+    );
   });
 });

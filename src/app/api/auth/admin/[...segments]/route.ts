@@ -37,6 +37,8 @@ async function proxy(request: NextRequest, context: RouteContext) {
   });
   const contentType = request.headers.get("content-type");
   if (contentType) headers.set("Content-Type", contentType);
+  const requestId = request.headers.get("x-request-id");
+  if (requestId) headers.set("X-Request-ID", requestId);
 
   try {
     const response = await fetch(

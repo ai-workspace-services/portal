@@ -34,6 +34,9 @@ import UserGroupManagement, {
 } from "../management/components/UserGroupManagement";
 import HomepageVideoSettingsPanel from "../management/components/HomepageVideoSettingsPanel";
 import { EmailBlacklist } from "../management/components/EmailBlacklist";
+import DeleteUserDialog, {
+  type DeleteUserTarget,
+} from "../management/components/DeleteUserDialog";
 import UserManagementWorkspace from "../management/components/UserManagementWorkspace";
 import MfaRecoveryReviews from "@/components/auth/MfaRecoveryReviews";
 import { resolveAccess } from "@lib/accessControl";
@@ -93,6 +96,36 @@ async function jsonFetcher<T>(
 
 type ManagementTab = "users" | "permissions" | "groups" | "homepage" | "email";
 
+function createDeleteRequestId(): string {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+  return `delete-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function formatDeleteUserError(error: unknown): string {
+  const raw = error instanceof Error ? error.message.trim() : "";
+  switch (raw) {
+    case "a reason is required for this change and is recorded in the audit log":
+      return "请填写删除原因，变更会写入审计日志。";
+    case "reason must be at most 500 characters":
+      return "删除原因最多 500 个字符。";
+    case "administrator or paid accounts are protected from archive":
+      return "管理员账号或付费/有效订阅账号受保护，无法删除归档。";
+    case "user is already archived":
+      return "该用户已归档，无需重复删除。";
+    case "atomic archive requires the account lifecycle migration":
+      return "后端账号生命周期表结构尚未完成迁移，暂无法执行归档删除。";
+    case "user not found":
+      return "目标用户不存在或已被移除。";
+    default:
+      return raw || "删除用户失败";
+  }
+}
+
 export default function UserCenterManagementRoute({
   showAgents = false,
 }: {
@@ -123,6 +156,12 @@ export default function UserCenterManagementRoute({
     accessDecision.userRole === "admin" || accessDecision.userRole === "operator";
   const canEditPermissions = Boolean(user?.isAdmin);
   const canEditRoles = Boolean(user?.isAdmin);
+  const canDeleteUsers = Boolean(
+    accessDecision.userRole === "admin" ||
+      user?.isAdmin ||
+      user?.isRoot ||
+      user?.permissions?.includes("admin.users.delete.write"),
+  );
   const canCreateCustomUser = Boolean(user?.isRoot);
   const canManageSubscriptions = Boolean(
     user?.isRoot || user?.isAdmin || user?.role === "operator",
@@ -149,6 +188,7 @@ export default function UserCenterManagementRoute({
   const [pendingAccessIds, setPendingAccessIds] = useState<Set<string>>(
     new Set(),
   );
+  const [deleteDialog, setDeleteDialog] = useState<DeleteUserTarget>();
   const [isBlacklistOpen, setIsBlacklistOpen] = useState(false);
   const [homepageVideoSaving, setHomepageVideoSaving] = useState(false);
   const [homepageVideoStatus, setHomepageVideoStatus] = useState<
@@ -545,18 +585,83 @@ export default function UserCenterManagementRoute({
     handleAccessChange(userId, "resume");
 
   const handleDeleteUser = useCallback(
-    async (userId: string) => {
-      try {
-        await jsonFetcher(`${ADMIN_API_BASE}/users/${userId}`, {
-          method: "DELETE",
-        });
-        usersSWR.mutate();
-      } catch (error) {
-        alert(error instanceof Error ? error.message : "操作失败");
+    (userId: string) => {
+      if (!canDeleteUsers) {
+        return;
       }
+      const targetUser = usersSWR.data?.find((item) => item.id === userId);
+      setDeleteDialog({
+        userId,
+        email: targetUser?.email ?? userId,
+        displayName:
+          targetUser?.username?.trim() ||
+          targetUser?.name?.trim() ||
+          targetUser?.email ||
+          userId,
+        reason: "",
+        requestId: createDeleteRequestId(),
+        busy: false,
+      });
     },
-    [usersSWR],
+    [canDeleteUsers, usersSWR.data],
   );
+
+  const handleConfirmDeleteUser = useCallback(async () => {
+    if (!deleteDialog || deleteDialog.busy) {
+      return;
+    }
+    const reason = deleteDialog.reason.trim();
+    if (!reason) {
+      setDeleteDialog((current) =>
+        current
+          ? { ...current, error: "请填写删除原因，变更会写入审计日志。" }
+          : current,
+      );
+      return;
+    }
+    if (reason.length > 500) {
+      setDeleteDialog((current) =>
+        current ? { ...current, error: "删除原因最多 500 个字符。" } : current,
+      );
+      return;
+    }
+
+    const targetId = deleteDialog.userId;
+    setDeleteDialog((current) =>
+      current ? { ...current, busy: true, error: undefined } : current,
+    );
+    setPendingAccessIds((previous) => new Set(previous).add(targetId));
+
+    try {
+      await jsonFetcher(
+        `${ADMIN_API_BASE}/users/${encodeURIComponent(targetId)}?reason=${encodeURIComponent(reason)}`,
+        {
+          method: "DELETE",
+          headers: {
+            "X-Request-ID": deleteDialog.requestId,
+          },
+        },
+      );
+      setDeleteDialog(undefined);
+      await Promise.all([usersSWR.mutate(), metricsSWR.mutate()]);
+    } catch (error) {
+      setDeleteDialog((current) =>
+        current
+          ? {
+              ...current,
+              busy: false,
+              error: formatDeleteUserError(error),
+            }
+          : current,
+      );
+    } finally {
+      setPendingAccessIds((previous) => {
+        const next = new Set(previous);
+        next.delete(targetId);
+        return next;
+      });
+    }
+  }, [deleteDialog, metricsSWR, usersSWR]);
 
   const handleRenewUuid = useCallback(
     async (userId: string) => {
@@ -752,6 +857,7 @@ export default function UserCenterManagementRoute({
             users={usersSWR.data}
             isLoading={usersLoading}
             canEditRoles={canEditRoles}
+            canDeleteUsers={canDeleteUsers}
             pendingUserIds={pendingRoleUpdates}
             pendingGroupIds={pendingGroupUpdates}
             groupError={groupsUpdateMessage}
@@ -853,6 +959,28 @@ export default function UserCenterManagementRoute({
       <EmailBlacklist
         isOpen={isBlacklistOpen}
         onClose={() => setIsBlacklistOpen(false)}
+      />
+
+      <DeleteUserDialog
+        target={deleteDialog}
+        onReasonChange={(reason) =>
+          setDeleteDialog((current) =>
+            current
+              ? {
+                  ...current,
+                  reason,
+                  requestId: createDeleteRequestId(),
+                  error: undefined,
+                }
+              : current,
+          )
+        }
+        onClose={() => {
+          setDeleteDialog((current) => (current?.busy ? current : undefined));
+        }}
+        onConfirm={() => {
+          void handleConfirmDeleteUser();
+        }}
       />
     </div>
   );
