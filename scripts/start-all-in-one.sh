@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Docker injects HOSTNAME with the container ID. Next standalone treats that
 # value as a bind address, which makes 127.0.0.1 unavailable to local Nginx.
-HOSTNAME=0.0.0.0 node server.js &
+HOSTNAME=0.0.0.0 node --require ./scripts/ddtrace-preload.cjs server.js &
 frontend_server_pid=$!
 
 nginx -g 'daemon off;' &

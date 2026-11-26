@@ -8,7 +8,7 @@ export async function register() {
 
   try {
     const { startTracing } = await import('./src/server/observability')
-    startTracing()
+    await startTracing()
   } catch (error) {
     console.error('[otel] Console tracing initialization failed', error)
   }

@@ -171,6 +171,7 @@ const nextConfig = {
 
   reactStrictMode: true,
   typedRoutes: false,
+  serverExternalPackages: ["dd-trace"],
   turbopack: {
     root: path.resolve(__dirname),
   },
