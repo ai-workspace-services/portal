@@ -33,6 +33,7 @@ type Agent = {
   nodeId?: string;
   provider?: string;
   product?: string;
+  canEditCapacity?: boolean;
   capacity?: {
     monthlyLimitBytes?: number | null;
     bandwidthLimitMbps?: number | null;
@@ -144,6 +145,11 @@ async function fetchInventory(): Promise<{ agents: Agent[] }> {
 
 async function fetchTeamEnrollments(): Promise<{ agents: Array<{
   agentId?: string;
+  provider?: string;
+  product?: string;
+  capacity?: Agent["capacity"];
+  canEditCapacity?: boolean;
+  clientCount?: number;
   entryPoint?: string;
   online?: boolean;
   status?: string;
@@ -206,7 +212,11 @@ export default function AgentInventory({
       status: entry.online ? "healthy" : "offline",
       lastHeartbeat: entry.lastHeartbeat,
       lastSync: entry.updatedAt,
-      clients: undefined,
+      provider: entry.provider,
+      product: entry.product,
+      capacity: entry.capacity,
+      canEditCapacity: entry.canEditCapacity,
+      clientCount: entry.clientCount,
     }));
 
   const allAgents = [...inventoryAgents, ...teamAgents];
@@ -260,7 +270,8 @@ export default function AgentInventory({
       );
       if (!response.ok) throw new Error("capacity_save_failed");
       setEditingAgent(undefined);
-      void mutate().catch(() => {});
+      const refresh = editingAgent.resourceClass === "team" ? teamSWR.mutate : mutate;
+      void refresh().catch(() => {});
     } catch {
       setCapacityError(t.capacitySaveError);
     } finally {
@@ -472,7 +483,7 @@ export default function AgentInventory({
                     {date(agent.lastSync)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
-                    {canManage && agent.resourceClass !== "team" && (
+                    {canManage && (agent.resourceClass !== "team" || agent.canEditCapacity) && (
                       <button
                         type="button"
                         disabled={savingCapacity}
