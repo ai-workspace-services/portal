@@ -161,3 +161,46 @@ it("supports 5+1 classes including Team enrollments and inspects client count", 
   expect(await screen.findByText("beta@example.com")).toBeTruthy();
   expect(screen.getByText("Free trial")).toBeTruthy();
 });
+
+it("shows measured usage and saves or clears independent node limits", async () => {
+  const fetchMock = vi.fn(async (input: RequestInfo, init?: RequestInit) => ({
+    ok: true,
+    json: async () => ({
+      agents: String(input).endsWith("/inventory") && !init?.method ? [{
+        id: "edge.example",
+        resourceClass: "plus",
+        status: "healthy",
+        capacity: {
+          monthlyLimitBytes: 1e12,
+          bandwidthLimitMbps: 100,
+          usedBytes: 2e11,
+          remainingBytes: 8e11,
+          month: "2026-11",
+        },
+      }] : [],
+    }),
+  }));
+  vi.stubGlobal("fetch", fetchMock);
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <AgentInventory accountId="admin" language="en" canManage />
+    </SWRConfig>,
+  );
+
+  fireEvent.click(await screen.findByRole("button", { name: "Edit capacity" }));
+  expect(screen.getByText("Remaining ~800 GB")).toBeVisible();
+  expect(screen.getByText("100 Mbps")).toBeVisible();
+  fireEvent.change(screen.getByLabelText("Monthly limit (GB)"), { target: { value: "1500" } });
+  fireEvent.change(screen.getByLabelText("Bandwidth limit (Mbps)"), { target: { value: "" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+  await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument());
+  expect(fetchMock).toHaveBeenCalledWith(
+    "/api/auth/admin/agents/edge.example/capacity",
+    expect.objectContaining({
+      method: "PUT",
+      credentials: "include",
+      body: JSON.stringify({ monthlyLimitBytes: 1.5e12, bandwidthLimitMbps: null }),
+    }),
+  );
+});

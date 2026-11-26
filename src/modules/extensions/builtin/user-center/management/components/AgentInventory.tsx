@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import useSWR from "swr";
 
 import { ADMIN_API_BASE } from "../../lib/adminApi";
@@ -31,6 +31,16 @@ type AgentStatus = "healthy" | "unhealthy" | "offline" | "unknown";
 type Agent = {
   id: string;
   nodeId?: string;
+  provider?: string;
+  product?: string;
+  canEditCapacity?: boolean;
+  capacity?: {
+    monthlyLimitBytes?: number | null;
+    bandwidthLimitMbps?: number | null;
+    usedBytes?: number | null;
+    remainingBytes?: number | null;
+    month?: string;
+  };
   name?: string;
   resourceClass: ResourceClass;
   status: AgentStatus;
@@ -54,6 +64,18 @@ const copy = {
     filter: "节点类别",
     all: "全部",
     node: "节点",
+    nodeType: "节点类型",
+    traffic: "月流量 (UTC)",
+    bandwidth: "带宽上限",
+    editCapacity: "编辑容量",
+    monthlyLimitInput: "月流量上限 (GB)",
+    bandwidthLimitInput: "带宽上限 (Mbps)",
+    saveCapacity: "保存",
+    cancelCapacity: "取消",
+    capacitySaveError: "保存失败，请重试。",
+    capacityInvalid: "请输入大于零的有效上限。",
+    awaitingSample: "待采集",
+    remaining: "余量",
     health: "状态",
     clients: "客户端数",
     heartbeat: "最近心跳",
@@ -81,6 +103,18 @@ const copy = {
     filter: "Resource class",
     all: "All",
     node: "Node",
+    nodeType: "Node type",
+    traffic: "Monthly traffic (UTC)",
+    bandwidth: "Bandwidth limit",
+    editCapacity: "Edit capacity",
+    monthlyLimitInput: "Monthly limit (GB)",
+    bandwidthLimitInput: "Bandwidth limit (Mbps)",
+    saveCapacity: "Save",
+    cancelCapacity: "Cancel",
+    capacitySaveError: "Could not save limits. Try again.",
+    capacityInvalid: "Enter valid limits greater than zero.",
+    awaitingSample: "No sample",
+    remaining: "Remaining",
     health: "Status",
     clients: "Clients",
     heartbeat: "Last heartbeat",
@@ -111,6 +145,11 @@ async function fetchInventory(): Promise<{ agents: Agent[] }> {
 
 async function fetchTeamEnrollments(): Promise<{ agents: Array<{
   agentId?: string;
+  provider?: string;
+  product?: string;
+  capacity?: Agent["capacity"];
+  canEditCapacity?: boolean;
+  clientCount?: number;
   entryPoint?: string;
   online?: boolean;
   status?: string;
@@ -141,6 +180,9 @@ export default function AgentInventory({
   onSelectTeamAgent?: (agentId: string) => void;
 }) {
   const t = language === "zh" ? copy.zh : copy.en;
+  const [editingAgent, setEditingAgent] = useState<Agent>();
+  const [capacityError, setCapacityError] = useState("");
+  const [savingCapacity, setSavingCapacity] = useState(false);
   const [filter, setFilter] = useState<ResourceClass | "all">("all");
   const [isGrantsModalOpen, setIsGrantsModalOpen] = useState(false);
   const [selectedCustomNodeId, setSelectedCustomNodeId] = useState<string | undefined>();
@@ -170,7 +212,11 @@ export default function AgentInventory({
       status: entry.online ? "healthy" : "offline",
       lastHeartbeat: entry.lastHeartbeat,
       lastSync: entry.updatedAt,
-      clients: undefined,
+      provider: entry.provider,
+      product: entry.product,
+      capacity: entry.capacity,
+      canEditCapacity: entry.canEditCapacity,
+      clientCount: entry.clientCount,
     }));
 
   const allAgents = [...inventoryAgents, ...teamAgents];
@@ -188,6 +234,50 @@ export default function AgentInventory({
   });
   const date = (value?: string) =>
     value ? formatter.format(new Date(value)) : "—";
+
+  const formatBytes = (bytes: number) => {
+    const unit = bytes >= 1e12 ? "TB" : bytes >= 1e9 ? "GB" : bytes >= 1e6 ? "MB" : "KB";
+    const divisor = unit === "TB" ? 1e12 : unit === "GB" ? 1e9 : unit === "MB" ? 1e6 : 1e3;
+    return `${(bytes / divisor).toLocaleString(language, { maximumFractionDigits: 2 })} ${unit}`;
+  };
+
+  async function saveCapacity(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingAgent || savingCapacity) return;
+    const form = new FormData(event.currentTarget);
+    const monthly = String(form.get("monthly") ?? "").trim();
+    const bandwidth = String(form.get("bandwidth") ?? "").trim();
+    const monthlyLimitBytes = monthly ? Math.round(Number(monthly) * 1e9) : null;
+    const bandwidthLimitMbps = bandwidth ? Number(bandwidth) : null;
+    if (
+      (monthlyLimitBytes !== null && (!Number.isSafeInteger(monthlyLimitBytes) || monthlyLimitBytes <= 0)) ||
+      (bandwidthLimitMbps !== null && (!Number.isSafeInteger(bandwidthLimitMbps) || bandwidthLimitMbps <= 0))
+    ) {
+      setCapacityError(t.capacityInvalid);
+      return;
+    }
+    setCapacityError("");
+    setSavingCapacity(true);
+    try {
+      const response = await fetch(
+        `${ADMIN_API_BASE}/agents/${encodeURIComponent(editingAgent.id)}/capacity`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ monthlyLimitBytes, bandwidthLimitMbps }),
+        },
+      );
+      if (!response.ok) throw new Error("capacity_save_failed");
+      setEditingAgent(undefined);
+      const refresh = editingAgent.resourceClass === "team" ? teamSWR.mutate : mutate;
+      void refresh().catch(() => {});
+    } catch {
+      setCapacityError(t.capacitySaveError);
+    } finally {
+      setSavingCapacity(false);
+    }
+  }
 
   return (
     <section
@@ -281,8 +371,11 @@ export default function AgentInventory({
                 {[
                   t.node,
                   t.filter,
+                  t.nodeType,
                   t.health,
                   t.clients,
+                  t.traffic,
+                  t.bandwidth,
                   t.heartbeat,
                   t.sync,
                   t.actions,
@@ -335,6 +428,9 @@ export default function AgentInventory({
                       {resourceLabels[agent.resourceClass]}
                     </span>
                   </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {[agent.provider, agent.product].filter(Boolean).join(" / ") || "—"}
+                  </td>
                   <td className="px-3 py-2">
                     <span
                       className={`inline-flex items-center gap-1.5 text-xs font-medium ${
@@ -361,12 +457,46 @@ export default function AgentInventory({
                     {agent.clientCount ?? agent.clients ?? "—"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
+                    {agent.capacity?.usedBytes != null ? (
+                      <span className="block" title={agent.capacity.month}>
+                        ~{formatBytes(agent.capacity.usedBytes)}
+                        {agent.capacity.remainingBytes != null && (
+                          <span className="block text-xs text-[var(--color-text-muted)]">
+                            {t.remaining} ~{formatBytes(agent.capacity.remainingBytes)}
+                          </span>
+                        )}
+                      </span>
+                    ) : agent.capacity?.monthlyLimitBytes != null ? t.awaitingSample : "—"}
+                    {agent.capacity?.monthlyLimitBytes != null && (
+                      <span className="block text-xs text-[var(--color-text-muted)]">
+                        / {formatBytes(agent.capacity.monthlyLimitBytes)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {agent.capacity?.bandwidthLimitMbps != null ? `${agent.capacity.bandwidthLimitMbps} Mbps` : "—"}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
                     {date(agent.lastHeartbeat)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
                     {date(agent.lastSync)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
+                    {canManage && (agent.resourceClass !== "team" || agent.canEditCapacity) && (
+                      <button
+                        type="button"
+                        disabled={savingCapacity}
+                        onClick={() => {
+                          setCapacityError("");
+                          setEditingAgent(agent);
+                          requestAnimationFrame(() => document.getElementById("agent-monthly-limit")?.focus());
+                        }}
+                        className="mr-2 rounded border border-[color:var(--color-surface-border)] px-2 py-1 text-xs"
+                      >
+                        {t.editCapacity}
+                      </button>
+                    )}
                     {agent.resourceClass === "custom" && agent.nodeId ? (
                       <button
                         type="button"
@@ -403,6 +533,49 @@ export default function AgentInventory({
             </tbody>
           </table>
         </div>
+      )}
+
+      {editingAgent && (
+        <form
+          key={editingAgent.id}
+          onSubmit={saveCapacity}
+          className="space-y-3 rounded-md border border-[color:var(--color-surface-border)] p-3 text-sm"
+          aria-label={`${t.editCapacity} · ${editingAgent.id}`}
+        >
+          <p className="font-medium">{editingAgent.id}</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1">
+              {t.monthlyLimitInput}
+              <input
+                id="agent-monthly-limit"
+                name="monthly"
+                type="number"
+                step="any"
+                min="0"
+                defaultValue={editingAgent.capacity?.monthlyLimitBytes == null ? "" : editingAgent.capacity.monthlyLimitBytes / 1e9}
+                className="rounded border border-[color:var(--color-surface-border)] bg-transparent p-2"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              {t.bandwidthLimitInput}
+              <input
+                name="bandwidth"
+                type="number"
+                step="1"
+                min="1"
+                defaultValue={editingAgent.capacity?.bandwidthLimitMbps ?? ""}
+                className="rounded border border-[color:var(--color-surface-border)] bg-transparent p-2"
+              />
+            </label>
+            <button type="submit" disabled={savingCapacity} className="rounded bg-indigo-600 px-3 py-2 text-white">
+              {t.saveCapacity}
+            </button>
+            <button type="button" disabled={savingCapacity} onClick={() => setEditingAgent(undefined)} className="px-2 py-2">
+              {t.cancelCapacity}
+            </button>
+          </div>
+          {capacityError && <p role="alert">{capacityError}</p>}
+        </form>
       )}
 
       {isGrantsModalOpen && (
