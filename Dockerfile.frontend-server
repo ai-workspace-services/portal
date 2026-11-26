@@ -131,6 +131,8 @@ COPY --from=builder /app/dashboard/node_modules/es-module-lexer ./node_modules/e
 COPY --from=builder /app/dashboard/node_modules/ms ./node_modules/ms
 COPY --from=builder /app/dashboard/node_modules/supports-color ./node_modules/supports-color
 COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
+ARG ENABLE_APM=true
+ENV APM_COMPILED=${ENABLE_APM}
 COPY --from=builder /app/dashboard/node_modules/dd-trace ./node_modules/dd-trace
 COPY --from=builder /app/dashboard/node_modules/dc-polyfill ./node_modules/dc-polyfill
 COPY --from=builder /app/dashboard/node_modules/opentracing ./node_modules/opentracing
@@ -139,6 +141,9 @@ COPY --from=builder /app/dashboard/node_modules/opentracing ./node_modules/opent
 # accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
 COPY --from=builder /app/dashboard/.next/server/instrumentation.js ./.next/server/instrumentation.js
 COPY scripts/ddtrace-preload.cjs ./scripts/ddtrace-preload.cjs
+RUN if [ "$ENABLE_APM" != "true" ]; then \
+      rm -rf ./node_modules/dd-trace ./node_modules/dc-polyfill ./node_modules/opentracing ./scripts/ddtrace-preload.cjs; \
+    fi
 
 # ---------------------------
 # 额外瘦身（可减少 15–40 MB）
@@ -154,4 +159,4 @@ EXPOSE 3000
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["node", "--require", "./scripts/ddtrace-preload.cjs", "server.js"]
+CMD ["sh", "-c", "if [ -f ./scripts/ddtrace-preload.cjs ] && [ \"${APM_COMPILED:-true}\" = \"true\" ]; then exec node --require ./scripts/ddtrace-preload.cjs server.js; else exec node server.js; fi"]

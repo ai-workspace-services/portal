@@ -132,6 +132,8 @@ COPY --from=builder /app/dashboard/node_modules/es-module-lexer ./node_modules/e
 COPY --from=builder /app/dashboard/node_modules/ms ./node_modules/ms
 COPY --from=builder /app/dashboard/node_modules/supports-color ./node_modules/supports-color
 COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
+ARG ENABLE_APM=true
+ENV APM_COMPILED=${ENABLE_APM}
 COPY --from=builder /app/dashboard/node_modules/dd-trace ./node_modules/dd-trace
 COPY --from=builder /app/dashboard/node_modules/dc-polyfill ./node_modules/dc-polyfill
 COPY --from=builder /app/dashboard/node_modules/opentracing ./node_modules/opentracing
@@ -147,6 +149,9 @@ COPY --from=builder /app/dashboard/static-dashboard/out /usr/share/nginx/html
 COPY --from=builder /app/dashboard/.next/static /usr/share/nginx/html/_next/static
 COPY deploy/nginx/all-in-one.conf /etc/nginx/conf.d/default.conf
 COPY scripts/ddtrace-preload.cjs ./scripts/ddtrace-preload.cjs
+RUN if [ "$ENABLE_APM" != "true" ]; then \
+      rm -rf ./node_modules/dd-trace ./node_modules/dc-polyfill ./node_modules/opentracing ./scripts/ddtrace-preload.cjs; \
+    fi
 COPY scripts/start-all-in-one.sh /usr/local/bin/start-all-in-one
 RUN chmod +x /usr/local/bin/start-all-in-one
 
