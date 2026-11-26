@@ -1261,3 +1261,13 @@ html.dark .finops-workspace .recharts-default-tooltip {
   border-color: var(--color-surface-border) !important;
   color: var(--color-text);
 }
+
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  background: var(--color-overlay);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}

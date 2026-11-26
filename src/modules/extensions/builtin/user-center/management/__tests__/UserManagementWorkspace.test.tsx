@@ -108,4 +108,42 @@ describe("UserManagementWorkspace", () => {
     expect(onResumeUser).toHaveBeenCalledWith(users[0].id);
     expect(onActivateUser).not.toHaveBeenCalled();
   });
+
+  it("triggers delete callback when allowed and disables delete for archived or unauthorized states", () => {
+    const onDeleteUser = vi.fn();
+    const { rerender } = render(
+      <UserManagementWorkspace
+        users={[users[1]]}
+        canEditRoles
+        canDeleteUsers
+        onDeleteUser={onDeleteUser}
+      />,
+    );
+
+    const deleteButton = screen.getByRole("button", { name: "删除用户" });
+    expect(deleteButton).toBeEnabled();
+    fireEvent.click(deleteButton);
+    expect(onDeleteUser).toHaveBeenCalledWith(users[1].id);
+
+    rerender(
+      <UserManagementWorkspace
+        users={[users[1]]}
+        canEditRoles={false}
+        canDeleteUsers={false}
+        onDeleteUser={onDeleteUser}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "删除用户" })).toBeDisabled();
+
+    rerender(
+      <UserManagementWorkspace
+        users={[{ ...users[1], archivedAt: "2026-11-26T00:00:00Z" }]}
+        canEditRoles
+        canDeleteUsers
+        onDeleteUser={onDeleteUser}
+      />,
+    );
+    expect(screen.getAllByText("已归档").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("button", { name: "已归档" })).toBeDisabled();
+  });
 });
