@@ -26,7 +26,13 @@ const users = [
 
 describe("UserManagementWorkspace", () => {
   it("filters users and opens the matching details inspector", () => {
-    render(<UserManagementWorkspace users={users} canEditRoles />);
+    render(
+      <UserManagementWorkspace
+        users={users}
+        canEditRoles
+        canDeleteUsers
+      />,
+    );
 
     fireEvent.change(screen.getByPlaceholderText(/搜索用户/), {
       target: { value: "inactive" },
@@ -48,6 +54,7 @@ describe("UserManagementWorkspace", () => {
       <UserManagementWorkspace
         users={users}
         canEditRoles
+        canDeleteUsers
         onPauseUser={onPauseUser}
         onDeactivateUser={onDeactivateUser}
         onRenewUuid={onRenewUuid}
@@ -65,7 +72,13 @@ describe("UserManagementWorkspace", () => {
   });
 
   it("supports closing and reopening the inspector", () => {
-    render(<UserManagementWorkspace users={users} canEditRoles />);
+    render(
+      <UserManagementWorkspace
+        users={users}
+        canEditRoles
+        canDeleteUsers
+      />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "关闭用户详情" }));
     expect(
@@ -84,6 +97,7 @@ describe("UserManagementWorkspace", () => {
       <UserManagementWorkspace
         users={[{ ...users[1], proxyAccessState: "paused" }]}
         canEditRoles
+        canDeleteUsers
         onActivateUser={onActivateUser}
         onResumeUser={onResumeUser}
       />,
@@ -100,6 +114,7 @@ describe("UserManagementWorkspace", () => {
       <UserManagementWorkspace
         users={[{ ...users[0], proxyAccessState: "paused" }]}
         canEditRoles
+        canDeleteUsers
         onActivateUser={onActivateUser}
         onResumeUser={onResumeUser}
       />,

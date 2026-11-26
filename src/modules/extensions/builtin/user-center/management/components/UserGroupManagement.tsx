@@ -97,7 +97,6 @@ type Props = {
   onRoleChange?: (userId: string, role: string) => void;
   onPauseUser?: (userId: string) => void;
   onResumeUser?: (userId: string) => void;
-  onDeleteUser?: (userId: string) => void;
   onRenewUuid?: (userId: string) => void;
   onManageBlacklist?: () => void;
   onCreateCustomUser?: (input: CreateManagedUserInput) => Promise<void> | void;

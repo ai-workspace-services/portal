@@ -26,7 +26,7 @@ type UserManagementWorkspaceProps = {
   users?: ManagedUser[];
   isLoading?: boolean;
   canEditRoles: boolean;
-  canDeleteUsers?: boolean;
+  canDeleteUsers: boolean;
   pendingUserIds?: Set<string>;
   pendingGroupIds?: Set<string>;
   groupError?: string;
@@ -624,7 +624,7 @@ export default function UserManagementWorkspace({
                       <button
                         type="button"
                         disabled={
-                          !(canDeleteUsers ?? canEditRoles) ||
+                          !canDeleteUsers ||
                           !onDeleteUser ||
                           Boolean(selectedUser.archivedAt) ||
                           Boolean(pendingAccessIds?.has(selectedUser.id))

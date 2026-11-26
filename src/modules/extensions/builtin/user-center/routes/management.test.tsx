@@ -58,6 +58,12 @@ const sampleUsers = [
 
 describe("UserCenterManagementRoute delete user flow", () => {
   beforeEach(() => {
+    if (!globalThis.crypto?.randomUUID) {
+      Object.defineProperty(globalThis.crypto, "randomUUID", {
+        value: () => "test-request-id",
+        configurable: true,
+      });
+    }
     if (!HTMLDialogElement.prototype.showModal) {
       HTMLDialogElement.prototype.showModal = function showModal() {
         this.setAttribute("open", "");

@@ -96,16 +96,6 @@ async function jsonFetcher<T>(
 
 type ManagementTab = "users" | "permissions" | "groups" | "homepage" | "email";
 
-function createDeleteRequestId(): string {
-  if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
-  ) {
-    return crypto.randomUUID();
-  }
-  return `delete-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
 function formatDeleteUserError(error: unknown): string {
   const raw = error instanceof Error ? error.message.trim() : "";
   switch (raw) {
@@ -599,7 +589,7 @@ export default function UserCenterManagementRoute({
           targetUser?.email ||
           userId,
         reason: "",
-        requestId: createDeleteRequestId(),
+        requestId: crypto.randomUUID(),
         busy: false,
       });
     },
@@ -914,7 +904,6 @@ export default function UserCenterManagementRoute({
             pendingUserIds={pendingRoleUpdates}
             onPauseUser={handlePauseUser}
             onResumeUser={handleResumeUser}
-            onDeleteUser={handleDeleteUser}
             onRenewUuid={handleRenewUuid}
             onCreateCustomUser={handleCreateCustomUser}
             onManageBlacklist={() => setIsBlacklistOpen(true)}
@@ -969,7 +958,7 @@ export default function UserCenterManagementRoute({
               ? {
                   ...current,
                   reason,
-                  requestId: createDeleteRequestId(),
+                  requestId: crypto.randomUUID(),
                   error: undefined,
                 }
               : current,
