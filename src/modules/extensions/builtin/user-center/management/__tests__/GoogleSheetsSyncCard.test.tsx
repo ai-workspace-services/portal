@@ -146,4 +146,90 @@ describe("GoogleSheetsSyncCard", () => {
       ),
     );
   });
+
+  it("re-fetches fresh sheet diff on Pull so newly registered users are included", async () => {
+    let diffCalls = 0;
+    const fetchMock = vi.fn(async (input: RequestInfo) => {
+      const url = String(input);
+      if (url === "/api/connectors") {
+        return new Response(
+          JSON.stringify({
+            "google-drive": {
+              status: "connected",
+              writable: true,
+              account: "ops@svc.plus",
+              spreadsheetUrl:
+                "https://docs.google.com/spreadsheets/d/1V4u9b6MFIJgVuVAb056jidZLSFMiyhJJj9eDSGud1_I/edit?gid=1136257492#gid=1136257492",
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      if (url === "/api/connectors/google-drive/sheets/diff") {
+        diffCalls += 1;
+        return new Response(
+          JSON.stringify({
+            spreadsheetUrl:
+              "https://docs.google.com/spreadsheets/d/1V4u9b6MFIJgVuVAb056jidZLSFMiyhJJj9eDSGud1_I/edit?gid=1136257492#gid=1136257492",
+            spreadsheetId: "sheet-1",
+            gid: "1136257492",
+            sheetTitle: "订阅用户",
+            authMode: "oauth2",
+            writable: true,
+            diff: {
+              totalSheetRows: 14,
+              totalSystemRecords: 13,
+              inSyncCount: 13,
+              pullCandidateCount: diffCalls === 1 ? 0 : 1,
+              pushCandidateCount: 0,
+              conflictCount: 0,
+              unregisteredCount: diffCalls === 1 ? 1 : 0,
+              pullCsv:
+                diffCalls === 1
+                  ? "邮箱,套餐"
+                  : "邮箱,套餐\nbuoudidi@outlook.com,plus",
+              rows: [],
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({}), { status: 404 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const onImport = vi.fn(async () => ({
+      requestId: "req-2",
+      previewToken: "tok-2",
+      expiresAt: "2030-01-01",
+      changes: [
+        {
+          userId: "u-14",
+          planId: "PLUS",
+          usedBytesPreserved: 0,
+          remainingIncludedQuota: 30 * 1024 ** 3,
+          configurationSyncWillPause: false,
+        },
+      ],
+    }));
+
+    render(
+      <GoogleSheetsSyncCard
+        onSubscriptionRecordsImport={onImport}
+        onShowImportPreview={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "双向比对" }));
+    await waitFor(() => expect(diffCalls).toBe(1));
+
+    fireEvent.click(screen.getByRole("button", { name: /从表格拉取/ }));
+    await waitFor(() => expect(diffCalls).toBe(2));
+    await waitFor(() =>
+      expect(onImport).toHaveBeenCalledWith(
+        "邮箱,套餐\nbuoudidi@outlook.com,plus",
+        expect.stringContaining("Google Sheets"),
+      ),
+    );
+  });
 });

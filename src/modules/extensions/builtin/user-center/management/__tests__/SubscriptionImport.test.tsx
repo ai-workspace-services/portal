@@ -239,4 +239,29 @@ describe("file import compatibility", () => {
       screen.getAllByText("dedicated@example.invalid").length,
     ).toBeGreaterThan(0);
   });
+
+  it("explains clearly when import completes with zero changes so UI never feels silent", async () => {
+    const { container } = render(
+      <UserGroupManagement
+        canEditRoles
+        onSubscriptionRecordsImport={async () => ({
+          requestId: "noop-all-synced",
+          previewToken: "",
+          expiresAt: "",
+          noChanges: true,
+          changes: [],
+        })}
+      />,
+    );
+    const file = new File(["email\nbuoudidi@outlook.com"], "roster.tsv");
+    Object.defineProperty(file, "text", {
+      value: async () => "email\nbuoudidi@outlook.com",
+    });
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [file] },
+    });
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("变化 0 条");
+    expect(status).toHaveTextContent("无需更新");
+  });
 });

@@ -368,7 +368,11 @@ export function UserGroupManagement({
   const [uuid, setUuid] = useState("");
   const [groups, setGroups] = useState("");
   const [creating, setCreating] = useState(false);
-  const [notice, setNotice] = useState<string>();
+  const [importingMembers, setImportingMembers] = useState(false);
+  const [notice, setNotice] = useState<{
+    kind: "error" | "warning" | "info";
+    text: string;
+  }>();
   const [createError, setCreateError] = useState<string>();
 
   const segment = SEGMENTS.find((item) => item.id === segmentId) ?? SEGMENTS[0];
@@ -644,7 +648,7 @@ export function UserGroupManagement({
         uuid: uuid.trim(),
         groups: parsed,
       });
-      setNotice("用户创建成功");
+      setNotice({ kind: "info", text: "用户创建成功" });
       setEmail("");
       setUuid("");
       setGroups("");
@@ -670,7 +674,10 @@ export function UserGroupManagement({
       link.remove();
       setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "导出失败");
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : "导出失败",
+      });
     }
   };
 
@@ -678,9 +685,24 @@ export function UserGroupManagement({
     preview: AdminPlanGroupPreview,
     reason: string,
   ) => {
-    setNotice(
-      `变化 ${preview.changes.length} 条；跳过 ${preview.skipped?.length ?? 0} 条。${preview.skipped?.map((row) => `第 ${row.row} 行 ${row.email}：账号不存在`).join("；") ?? ""}`,
-    );
+    const skippedCount = preview.skipped?.length ?? 0;
+    const skippedText =
+      preview.skipped
+        ?.map((row) => `第 ${row.row} 行 ${row.email}：账号不存在`)
+        .join("；") ?? "";
+    const noChangeSuffix =
+      preview.noChanges || preview.changes.length === 0
+        ? skippedCount > 0 && preview.changes.length === 0
+          ? " 未匹配到可导入的已注册账号，未打开应用弹窗。"
+          : " 所有匹配账号与系统记录一致，无需更新。"
+        : "";
+    setNotice({
+      kind:
+        skippedCount > 0 && preview.changes.length === 0
+          ? "warning"
+          : "info",
+      text: `变化 ${preview.changes.length} 条；跳过 ${skippedCount} 条。${skippedText}${noChangeSuffix}`,
+    });
     if (preview.noChanges || preview.changes.length === 0) return;
     setPlanGroupDialog({
       scope: "batch",
@@ -699,6 +721,8 @@ export function UserGroupManagement({
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !onSubscriptionRecordsImport) return;
+    setImportingMembers(true);
+    setNotice(undefined);
     try {
       const reason =
         "按邮箱覆盖匹配账户的订阅记录，跳过不存在的邮箱并保留覆盖历史";
@@ -708,7 +732,12 @@ export function UserGroupManagement({
       );
       showImportPreview(preview, reason);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "导入失败");
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : "导入失败",
+      });
+    } finally {
+      setImportingMembers(false);
     }
   };
 
@@ -737,17 +766,17 @@ export function UserGroupManagement({
               type="file"
               accept=".csv,.tsv,text/csv,text/tab-separated-values"
               onChange={importMembers}
-              disabled={!onSubscriptionRecordsImport}
+              disabled={!onSubscriptionRecordsImport || importingMembers}
               className="hidden"
             />
             <button
               type="button"
               onClick={() => importInputRef.current?.click()}
-              disabled={!onSubscriptionRecordsImport}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50"
+              disabled={!onSubscriptionRecordsImport || importingMembers}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--color-surface-border)] px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-slate-50 disabled:opacity-50"
             >
               <FileUp className="h-4 w-4" />
-              导入订阅清单
+              {importingMembers ? "导入预览中…" : "导入订阅清单"}
             </button>
             <button
               type="button"
@@ -761,9 +790,26 @@ export function UserGroupManagement({
           </div>
         </header>
         {notice ? (
-          <p role="status" className="text-sm">
-            {notice}
-          </p>
+          <div
+            role="status"
+            className={`flex items-start justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm ${
+              notice.kind === "error"
+                ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
+                : notice.kind === "warning"
+                  ? "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300"
+                  : "border-emerald-500/25 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
+            }`}
+          >
+            <span className="whitespace-pre-wrap">{notice.text}</span>
+            <button
+              type="button"
+              onClick={() => setNotice(undefined)}
+              aria-label="关闭导入提示"
+              className="shrink-0 rounded p-0.5 opacity-70 hover:opacity-100"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         ) : null}
         <GoogleSheetsSyncCard
           onSubscriptionRecordsImport={onSubscriptionRecordsImport}
