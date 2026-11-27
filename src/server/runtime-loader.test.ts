@@ -21,6 +21,7 @@ describe("runtime-loader", () => {
     delete process.env.RUNTIME_DASHBOARD_URL;
     delete process.env.RUNTIME_DOCS_SERVICE_URL;
     delete process.env.RUNTIME_XCONNECT_ZERO_URL;
+    delete process.env.RUNTIME_AGENT_SERVER_URL;
   });
 
   afterAll(() => {

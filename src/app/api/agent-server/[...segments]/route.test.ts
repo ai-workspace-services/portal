@@ -3,14 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { resolveOrigin, proxyFactory, proxy, resolveSession } = vi.hoisted(
   () => ({
-    resolveOrigin: vi.fn((host: string) => `https://accounts-for-${host}`),
+    resolveOrigin: vi.fn((host: string) => `https://agent-server-for-${host}`),
     proxy: vi.fn(async () => new Response("[]")),
     proxyFactory: vi.fn(),
     resolveSession: vi.fn(async () => ({ token: "test-session" })),
   }),
 );
 vi.mock("@server/serviceConfig", () => ({
-  getAccountServiceBaseUrl: resolveOrigin,
+  getAgentServerServiceBaseUrl: resolveOrigin,
 }));
 vi.mock("@server/account/session", () => ({
   getAccountSession: resolveSession,
@@ -23,22 +23,26 @@ describe("agent discovery request environment", () => {
     vi.clearAllMocks();
     proxyFactory.mockReturnValue(proxy);
   });
-  it("resolves each request host rather than freezing a build-time origin", async () => {
+  it("resolves each request host to agent-server control plane rather than freezing a build-time origin", async () => {
     for (const host of [
       "console-serverless-uat.onwalk.net",
       "console.svc.plus",
     ]) {
-      const request = new NextRequest(
-        `https://${host}/api/agent-server/v1/nodes`,
-      );
-      await GET(request);
-      expect(resolveOrigin).toHaveBeenLastCalledWith(host);
-      const options = proxyFactory.mock.calls.at(-1)![0];
-      expect(options.upstreamBaseUrl).toBe(`https://accounts-for-${host}`);
-      expect(await options.getAdditionalHeaders(request)).toEqual({
-        authorization: "Bearer test-session",
-        "x-account-session": "test-session",
-      });
+      for (const endpoint of [
+        "/api/agent-server/v1/nodes",
+        "/api/agent-server/v1/regional-pools",
+      ]) {
+        const request = new NextRequest(`https://${host}${endpoint}`);
+        await GET(request);
+        expect(resolveOrigin).toHaveBeenLastCalledWith(host);
+        const options = proxyFactory.mock.calls.at(-1)![0];
+        expect(options.upstreamBaseUrl).toBe(`https://agent-server-for-${host}`);
+        expect(options.upstreamPathPrefix).toBe("/api/agent-server");
+        expect(await options.getAdditionalHeaders(request)).toEqual({
+          authorization: "Bearer test-session",
+          "x-account-session": "test-session",
+        });
+      }
     }
   });
   it("preserves an explicit agent Authorization header", async () => {

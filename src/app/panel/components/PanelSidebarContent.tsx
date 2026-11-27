@@ -117,11 +117,11 @@ export function PanelSidebarContent({
           const gatewayItem: NavItem = {
             id: "gateway",
             href: "/panel/gateway",
-            label: language === "zh" ? "可用网关" : "Gateways",
+            label: language === "zh" ? "Gateway 分组" : "Gateway Groups",
             description:
               language === "zh"
-                ? "查看当前可用的 XConnect Gateway 节点"
-                : "Available XConnect Gateway nodes",
+                ? "查看与管理 XConnect Gateway 网关节点分组"
+                : "Inspect and manage XConnect Gateway groups",
             Icon: Server,
             disabled: false,
           };

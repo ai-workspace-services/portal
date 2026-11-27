@@ -10,6 +10,9 @@ describe("serviceConfig", () => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env.RUNTIME_ENV;
     delete process.env.RUNTIME_HOSTNAME;
+    delete process.env.RUNTIME_AUTH_URL;
+    delete process.env.RUNTIME_XCONNECT_ZERO_URL;
+    delete process.env.RUNTIME_AGENT_SERVER_URL;
     delete process.env.ACCOUNT_SERVICE_URL;
     delete process.env.NEXT_PUBLIC_ACCOUNT_SERVICE_URL;
   });
@@ -68,5 +71,41 @@ describe("serviceConfig", () => {
       "http://accounts:8080",
     );
     expect(serviceConfig.getDocsServiceBaseUrl()).toBe("http://content:8084");
+  });
+
+  it("prefers RUNTIME_AGENT_SERVER_URL over RUNTIME_XCONNECT_ZERO_URL and RUNTIME_AUTH_URL for proxy agent-server traffic", async () => {
+    process.env.RUNTIME_ENV = "prod";
+    process.env.RUNTIME_AUTH_URL =
+      "http://web-saas-accounts.web-saas-prod.svc.cluster.local:80";
+    process.env.RUNTIME_XCONNECT_ZERO_URL =
+      "http://web-saas-xconnect-zero.web-saas-prod.svc.cluster.local:80";
+    process.env.RUNTIME_AGENT_SERVER_URL =
+      "http://web-saas-xconnect-controller.web-saas-prod.svc.cluster.local:80";
+
+    const serviceConfig = await import("./serviceConfig");
+
+    expect(serviceConfig.getAccountServiceBaseUrl("console.svc.plus")).toBe(
+      "http://web-saas-accounts.web-saas-prod.svc.cluster.local",
+    );
+    expect(serviceConfig.getXConnectZeroServiceBaseUrl("console.svc.plus")).toBe(
+      "http://web-saas-xconnect-zero.web-saas-prod.svc.cluster.local",
+    );
+    expect(serviceConfig.getAgentServerServiceBaseUrl("console.svc.plus")).toBe(
+      "http://web-saas-xconnect-controller.web-saas-prod.svc.cluster.local",
+    );
+  });
+
+  it("falls back to getAccountServiceBaseUrl when xconnectZeroUrl or agentServerUrl is unset", async () => {
+    process.env.RUNTIME_ENV = "sit";
+    process.env.ACCOUNT_SERVICE_URL = "https://accounts-sit.example/api";
+
+    const serviceConfig = await import("./serviceConfig");
+
+    expect(serviceConfig.getXConnectZeroServiceBaseUrl()).toBe(
+      "https://accounts-sit.example",
+    );
+    expect(serviceConfig.getAgentServerServiceBaseUrl()).toBe(
+      "https://accounts-sit.example",
+    );
   });
 });

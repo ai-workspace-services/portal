@@ -17,7 +17,13 @@ function getRuntimeDefaultAccountServiceUrl(requestHost?: string | null): string
 function getRuntimeDefaultXConnectZeroServiceUrl(requestHost?: string | null): string {
   const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
   const candidate = typeof runtime.xconnectZeroUrl === 'string' ? runtime.xconnectZeroUrl.trim() : undefined
-  return candidate && candidate.length > 0 ? candidate : getRuntimeDefaultAccountServiceUrl(requestHost)
+  return candidate && candidate.length > 0 ? candidate : getAccountServiceBaseUrl(requestHost)
+}
+
+function getRuntimeDefaultAgentServerServiceUrl(requestHost?: string | null): string {
+  const runtime = loadRuntimeConfig(requestHost ? { hostname: requestHost } : undefined)
+  const candidate = typeof runtime.agentServerUrl === 'string' ? runtime.agentServerUrl.trim() : undefined
+  return candidate && candidate.length > 0 ? candidate : getAccountServiceBaseUrl(requestHost)
 }
 
 function getRuntimeDefaultServerServiceUrl(requestHost?: string | null): string {
@@ -126,6 +132,13 @@ export function getAccountServiceApiBaseUrl(requestHost?: string | null): string
 // origins; use the explicit runtime value when supplied.
 export function getXConnectZeroServiceBaseUrl(requestHost?: string | null): string {
   return normalizeServiceOrigin(getRuntimeDefaultXConnectZeroServiceUrl(requestHost))
+}
+
+// Proxy / Agent-Server traffic (/api/agent-server/*, /api/agent/*) is
+// decoupled from both browser auth (RUNTIME_AUTH_URL) and XConnect Zero
+// overlay/gateway control-plane (RUNTIME_XCONNECT_ZERO_URL).
+export function getAgentServerServiceBaseUrl(requestHost?: string | null): string {
+  return normalizeServiceOrigin(getRuntimeDefaultAgentServerServiceUrl(requestHost))
 }
 
 function normalizeHostCandidate(value: string): string {

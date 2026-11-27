@@ -91,31 +91,38 @@ describe("Operations sidebar", () => {
       render(<PanelSidebarContent />);
       const adminGroup = screen.getByText("运营与管理").parentElement!;
       const gatewayLink = within(adminGroup).getByRole("link", {
-        name: "可用网关",
+        name: "Gateway 分组",
       });
       expect(gatewayLink).toHaveAttribute("href", "/panel/gateway");
       expect(gatewayLink).toHaveClass("xds-is-active");
+      if (role === "admin") {
+        const agentLink = within(adminGroup).getByRole("link", {
+          name: "Agent 分组",
+        });
+        expect(agentLink).toHaveAttribute("href", "/panel/agent");
+        expect(agentLink).not.toHaveClass("xds-is-active");
+      }
     },
   );
-  it("shows Gateways in English under Admin & Operations and hides it from user/guest", () => {
+  it("shows Gateway Groups in English under Admin & Operations and hides it from user/guest", () => {
     state.user = { role: "operator", groups: [], permissions: [] };
     state.language = "en";
     const view = render(<PanelSidebarContent />);
     const adminGroup = screen.getByText("Admin & Operations").parentElement!;
     expect(
-      within(adminGroup).getByRole("link", { name: "Gateways" }),
+      within(adminGroup).getByRole("link", { name: "Gateway Groups" }),
     ).toHaveAttribute("href", "/panel/gateway");
 
     state.user = { role: "user", groups: [], permissions: [] };
     view.rerender(<PanelSidebarContent />);
     expect(
-      screen.queryByRole("link", { name: "Gateways" }),
+      screen.queryByRole("link", { name: "Gateway Groups" }),
     ).not.toBeInTheDocument();
 
     state.user = null;
     view.rerender(<PanelSidebarContent />);
     expect(
-      screen.queryByRole("link", { name: "Gateways" }),
+      screen.queryByRole("link", { name: "Gateway Groups" }),
     ).not.toBeInTheDocument();
   });
 });
