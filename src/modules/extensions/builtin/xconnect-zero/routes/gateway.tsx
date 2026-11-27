@@ -106,22 +106,30 @@ export default function XConnectZeroGatewayRoute() {
               href="/panel/agent"
               className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
-              {zh ? "运营与管理 / 可用网关" : "Admin & Operations / Gateways"}
+              {zh ? "运营与管理 / Agent 分组" : "Admin & Operations / Agent Groups"}
             </Link>
           </div>
           <h1 className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            Available Gateways
+            {zh ? "Gateway 分组" : "Gateway Groups"}
           </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            查看当前账号可接入的 XConnect Gateway 入口节点，支持一键复制 CLI 连接命令。
+            {zh
+              ? "查看当前账号可接入的 XConnect Gateway 网关节点分组，支持一键复制 CLI 连接命令。"
+              : "Inspect available XConnect Gateway groups for your account and copy CLI connection commands."}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href="/panel/agent"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            {zh ? "Agent 分组" : "Agent Groups"}
+          </Link>
+          <Link
             href="/panel/xconnect-zero"
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
-            管理网络
+            {zh ? "管理网络" : "Manage networks"}
           </Link>
           <button
             type="button"

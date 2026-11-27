@@ -36,7 +36,7 @@ it("filters five Accounts resource classes independently and uses the authentica
   );
   const table = await screen.findByRole("table");
   expect(
-    screen.getByRole("link", { name: "Available Gateways" }),
+    screen.getByRole("link", { name: "Gateway Groups" }),
   ).toHaveAttribute("href", "/panel/gateway");
   expect(within(table).getAllByRole("rowheader")).toHaveLength(5);
   for (const name of classes) {
@@ -49,6 +49,53 @@ it("filters five Accounts resource classes independently and uses the authentica
     "/api/auth/admin/agents/inventory",
     expect.objectContaining({ cache: "no-store", credentials: "include" }),
   );
+});
+
+it("excludes gateway nodes from the Agent grouping view", async () => {
+  const fetchMock = vi.fn().mockImplementation(async (input: RequestInfo) => {
+    const url = String(input);
+    if (url.includes("/agents/inventory")) {
+      return {
+        ok: true,
+        json: async () => ({
+          agents: [
+            {
+              id: "jp-xconnect-01.svc.plus",
+              resourceClass: "plus",
+              status: "healthy",
+            },
+            {
+              id: "jp-xconnect-gateway-01",
+              resourceClass: "plus",
+              status: "healthy",
+            },
+            {
+              id: "ph-custom-node",
+              role: "gateway",
+              resourceClass: "custom",
+              status: "healthy",
+            },
+          ],
+        }),
+      };
+    }
+    return {
+      ok: true,
+      json: async () => ({ agents: [] }),
+    };
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <AgentInventory accountId="operator" language="zh" />
+    </SWRConfig>,
+  );
+  const table = await screen.findByRole("table");
+  const rows = within(table).getAllByRole("rowheader");
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toHaveTextContent("jp-xconnect-01.svc.plus");
+  expect(screen.queryByText("jp-xconnect-gateway-01")).toBeNull();
+  expect(screen.queryByText("ph-custom-node")).toBeNull();
 });
 
 it("supports 5+1 classes including Team enrollments and inspects client count", async () => {
@@ -133,7 +180,7 @@ it("supports 5+1 classes including Team enrollments and inspects client count", 
 
   const table = await screen.findByRole("table");
   expect(
-    screen.getByRole("link", { name: "可用网关列表" }),
+    screen.getByRole("link", { name: "Gateway 分组" }),
   ).toHaveAttribute("href", "/panel/gateway");
   expect(within(table).getAllByRole("rowheader")).toHaveLength(3);
   expect(screen.getByText("42")).toBeTruthy();

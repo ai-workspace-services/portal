@@ -51,6 +51,7 @@ export type RuntimeConfig = {
   dashboardUrl?: string
   docsServiceUrl?: string
   xconnectZeroUrl?: string
+  agentServerUrl?: string
   internalApiBaseUrl?: string
   logLevel?: string
   [key: string]: unknown
@@ -88,6 +89,7 @@ function runtimeEndpointOverrides(): Record<string, string> {
     dashboardUrl: process.env.RUNTIME_DASHBOARD_URL,
     docsServiceUrl: process.env.RUNTIME_DOCS_SERVICE_URL,
     xconnectZeroUrl: process.env.RUNTIME_XCONNECT_ZERO_URL,
+    agentServerUrl: process.env.RUNTIME_AGENT_SERVER_URL,
   }
   return Object.fromEntries(
     Object.entries(fields)

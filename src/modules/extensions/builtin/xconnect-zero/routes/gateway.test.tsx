@@ -48,8 +48,15 @@ describe("XConnectZeroGatewayRoute", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Healthy")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "运营与管理 / 可用网关" }),
+      screen.getByRole("heading", { name: "Gateway 分组" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "运营与管理 / Agent 分组" }),
     ).toHaveAttribute("href", "/panel/agent");
+    expect(screen.getByRole("link", { name: "Agent 分组" })).toHaveAttribute(
+      "href",
+      "/panel/agent",
+    );
   });
 
   it("renders empty state and English header badge when language is en", async () => {
@@ -70,7 +77,14 @@ describe("XConnectZeroGatewayRoute", () => {
       expect(screen.getByText("暂无可用 Gateway 节点")).toBeInTheDocument();
     });
     expect(
-      screen.getByRole("link", { name: "Admin & Operations / Gateways" }),
+      screen.getByRole("heading", { name: "Gateway Groups" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Admin & Operations / Agent Groups" }),
     ).toHaveAttribute("href", "/panel/agent");
+    expect(screen.getByRole("link", { name: "Agent Groups" })).toHaveAttribute(
+      "href",
+      "/panel/agent",
+    );
   });
 });

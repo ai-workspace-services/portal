@@ -31,6 +31,7 @@ type AgentStatus = "healthy" | "unhealthy" | "offline" | "unknown";
 type Agent = {
   id: string;
   nodeId?: string;
+  role?: string;
   provider?: string;
   product?: string;
   canEditCapacity?: boolean;
@@ -49,6 +50,22 @@ type Agent = {
   clients?: number;
   clientCount?: number;
 };
+
+function isGatewayNode(
+  agent: Pick<Agent, "id" | "nodeId" | "name" | "role">,
+): boolean {
+  if (agent.role?.trim().toLowerCase() === "gateway") {
+    return true;
+  }
+  return [agent.id, agent.nodeId, agent.name].some((candidate) => {
+    const lower = candidate?.trim().toLowerCase() ?? "";
+    return (
+      lower.includes("-gateway-") ||
+      lower.endsWith("-gateway") ||
+      lower.startsWith("gateway-")
+    );
+  });
+}
 
 const copy = {
   zh: {
@@ -86,7 +103,7 @@ const copy = {
     empty: "没有匹配的节点。",
     retry: "重试",
     manageGrants: "临时 Free 白名单管理",
-    availableGateways: "可用网关列表",
+    availableGateways: "Gateway 分组",
     grantAction: "临时白名单",
     teamDecision: "团队审批",
   },
@@ -125,7 +142,7 @@ const copy = {
     empty: "No matching agents.",
     retry: "Retry",
     manageGrants: "Manage Free Grants",
-    availableGateways: "Available Gateways",
+    availableGateways: "Gateway Groups",
     grantAction: "Free Grants",
     teamDecision: "Team Decision",
   },
@@ -199,11 +216,17 @@ export default function AgentInventory({
     { refreshInterval: 30_000 },
   );
 
-  const inventoryAgents = data?.agents ?? [];
+  const inventoryAgents = (data?.agents ?? []).filter(
+    (agent) => !isGatewayNode(agent),
+  );
   const existingIds = new Set(inventoryAgents.map((a) => a.id));
 
   const teamAgents: Agent[] = (teamSWR.data?.agents ?? [])
-    .filter((entry) => Boolean(entry && entry.agentId && !existingIds.has(entry.agentId)))
+    .filter(
+      (entry) =>
+        Boolean(entry && entry.agentId && !existingIds.has(entry.agentId)) &&
+        !isGatewayNode({ id: entry.agentId as string }),
+    )
     .map((entry) => ({
       id: entry.agentId as string,
       nodeId: entry.agentId,
