@@ -245,22 +245,19 @@ export function GoogleSheetsSyncCard({
     setBusy("pull");
     setStatusMessage(null);
     try {
-      let current = diffResult;
-      if (!current) {
-        const response = await fetch("/api/connectors/google-drive/sheets/diff", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ spreadsheetUrl: spreadsheetUrl.trim() }),
-        });
-        const payload = (await response.json().catch(() => ({}))) as DiffResponse & {
-          message?: string;
-        };
-        if (!response.ok) {
-          throw new Error(payload.message || "拉取 Google Sheet 失败");
-        }
-        current = payload;
-        setDiffResult(payload);
+      const response = await fetch("/api/connectors/google-drive/sheets/diff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ spreadsheetUrl: spreadsheetUrl.trim() }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as DiffResponse & {
+        message?: string;
+      };
+      if (!response.ok) {
+        throw new Error(payload.message || "拉取 Google Sheet 失败");
       }
+      const current = payload;
+      setDiffResult(payload);
 
       const reason = `Google Sheets 双向同步拉取 (${current.spreadsheetId} / ${current.sheetTitle})`;
       const preview = await onSubscriptionRecordsImport(
@@ -271,9 +268,14 @@ export function GoogleSheetsSyncCard({
         onShowImportPreview(preview, reason);
       }
       if (preview.noChanges || preview.changes.length === 0) {
+        const skippedCount =
+          (preview.skipped?.length ?? 0) + current.diff.unregisteredCount;
         setStatusMessage({
           kind: "success",
-          text: `拉取检查完成：系统与表格已一致（跳过未注册 ${current.diff.unregisteredCount} 条）。`,
+          text:
+            skippedCount > 0
+              ? `拉取检查完成：系统与可导入记录已一致（跳过未注册 ${skippedCount} 条）。`
+              : "拉取检查完成：系统与表格已一致（0 条待更新）。",
         });
       }
     } catch (error) {
