@@ -34,6 +34,9 @@ export type PlanCheckoutMode = "subscription" | "payment";
 export type CatalogPlan = {
   planId: string;
   stripePriceId?: string;
+  stripeProfile?: string;
+  businessLine?: string;
+  merchantEntity?: string;
   displayName?: string;
   /** subscription | service */
   kind?: string;
@@ -92,6 +95,7 @@ const FAMILY_RANK: Record<PlanFamilyId, number> = {
 const CURRENCY_SYMBOL: Record<string, string> = {
   CNY: "¥",
   USD: "$",
+  HKD: "HK$",
   EUR: "€",
 };
 

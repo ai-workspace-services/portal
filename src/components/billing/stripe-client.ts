@@ -108,8 +108,9 @@ export async function requestRefundReview(
   });
 }
 
-type StripePortalPayload = {
+export type StripePortalPayload = {
   returnPath?: string;
+  stripeProfile?: string;
 };
 
 function buildLoginUrl(): string {

@@ -86,4 +86,20 @@ describe("buildPlanUpsertBody", () => {
     expect(body.packageName).toBe("custom");
     expect(body.reason).toBe("why");
   });
+
+  it("includes trimmed multi-entity stripe fields when supplied", () => {
+    const body = buildPlanUpsertBody(
+      {
+        ...form,
+        stripeProfile: " US ",
+        businessLine: " us_nodes ",
+        merchantEntity: " US Entity Inc ",
+      },
+      existing,
+    );
+
+    expect(body.stripeProfile).toBe("us");
+    expect(body.businessLine).toBe("us_nodes");
+    expect(body.merchantEntity).toBe("US Entity Inc");
+  });
 });

@@ -43,6 +43,28 @@ async function fetchPlans(url: string): Promise<{ plans: BillingPlan[] }> {
   return response.json();
 }
 
+type StripeProfileSummary = {
+  profile: string;
+  accountId?: string;
+  merchantEntity?: string;
+  mode: string;
+  liveMode: boolean;
+  enabled: boolean;
+  webhookPath: string;
+  isDefault: boolean;
+};
+
+async function fetchStripeProfiles(
+  url: string,
+): Promise<{ defaultProfile?: string; profiles?: StripeProfileSummary[] }> {
+  const response = await fetch(url, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  if (!response.ok) return { profiles: [] };
+  return response.json();
+}
+
 function FamilyIcon({ id }: { id: FamilyId }) {
   const Icon = id === "custom" ? SlidersHorizontal : Box;
   const colors: Record<FamilyId, string> = {
@@ -66,6 +88,14 @@ export default function OpsPlanCatalog() {
     fetchPlans,
     { revalidateOnFocus: false },
   );
+  const { data: profilesData } = useSWR(
+    `${ADMIN_API_BASE}/billing/stripe-profiles`,
+    fetchStripeProfiles,
+    { revalidateOnFocus: false },
+  );
+  const stripeProfiles = Array.isArray(profilesData?.profiles)
+    ? profilesData.profiles
+    : [];
   const { families, legacy } = useMemo(
     () => partitionCatalog(data?.plans ?? []),
     [data],
@@ -149,6 +179,36 @@ export default function OpsPlanCatalog() {
                 )}
               </div>
             </header>
+            {stripeProfiles.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-text-muted)]">
+                <span className="font-medium text-[var(--color-heading)]">
+                  Stripe 收款主体：
+                </span>
+                {stripeProfiles.map((sp) => (
+                  <span
+                    key={sp.profile}
+                    className="inline-flex items-center gap-1 rounded-md border border-[color:var(--color-surface-border)] px-2 py-0.5 text-[11px] text-[var(--color-heading)]"
+                  >
+                    <span className="font-semibold uppercase">
+                      {sp.profile}
+                    </span>
+                    {sp.merchantEntity && <span>· {sp.merchantEntity}</span>}
+                    <span
+                      className={
+                        sp.enabled ? "text-emerald-600" : "text-amber-600"
+                      }
+                    >
+                      · {sp.enabled ? sp.mode : "未配置"}
+                    </span>
+                    {sp.isDefault && (
+                      <span className="text-[var(--color-primary)]">
+                        (默认)
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
             {error && (
               <p role="alert" className="mb-4 text-sm text-[var(--color-danger)]">
                 {error.message}
@@ -221,6 +281,12 @@ export default function OpsPlanCatalog() {
                                 ? p.features.price_unit_label
                                 : p.priceUnit || "month";
                             const priceLabel = `${p.priceCurrency || "CNY"} ${(p.priceAmount || 0) / 100} / ${unitLabel}`;
+                            const profileTag =
+                              p.stripeProfile ||
+                              asString(p.features?.stripe_profile);
+                            const businessTag =
+                              p.businessLine ||
+                              asString(p.features?.business_line);
                             return (
                               <span
                                 key={p.planId}
@@ -229,6 +295,12 @@ export default function OpsPlanCatalog() {
                                 <span className="font-medium">
                                   {p.displayName || p.planId}
                                 </span>
+                                {profileTag && (
+                                  <span className="rounded bg-[var(--color-surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--color-text-muted)]">
+                                    {profileTag}
+                                    {businessTag ? ` · ${businessTag}` : ""}
+                                  </span>
+                                )}
                                 {quotaLabel && (
                                   <span className="text-[var(--color-text-muted)]">
                                     · {quotaLabel}
@@ -345,6 +417,9 @@ type EditState = {
   highSpeedQuotaGB: string;
   amount: string;
   stripePriceId: string;
+  stripeProfile: string;
+  businessLine: string;
+  merchantEntity: string;
   planId: string;
   kind: string;
   packageName: FamilyId;
@@ -386,6 +461,9 @@ function formFor(plan: BillingPlan, fallbackFamily: FamilyId): EditState {
     highSpeedQuotaGB: quotaToGB(plan.highSpeedQuotaBytes) || "0",
     amount: String((plan.priceAmount ?? 0) / 100),
     stripePriceId: plan.stripePriceId ?? "",
+    stripeProfile: plan.stripeProfile ?? asString(features.stripe_profile),
+    businessLine: plan.businessLine ?? asString(features.business_line),
+    merchantEntity: plan.merchantEntity ?? asString(features.merchant_entity),
     planId: plan.planId,
     kind: plan.kind === "service" ? "service" : "subscription",
     packageName: rawFamily,
@@ -459,6 +537,9 @@ function CatalogEditor({
           kind: draft.kind,
           packageName: draft.packageName,
           stripePriceId: draft.stripePriceId,
+          stripeProfile: draft.stripeProfile,
+          businessLine: draft.businessLine,
+          merchantEntity: draft.merchantEntity,
           includedQuotaBytes: String(bytes),
           highSpeedQuotaBytes: String(highSpeedBytes),
           sortOrder: String(
@@ -698,6 +779,7 @@ function CatalogEditor({
                 >
                   <option value="CNY">CNY</option>
                   <option value="USD">USD</option>
+                  <option value="HKD">HKD</option>
                 </select>
               </label>
             </div>
@@ -795,12 +877,32 @@ function CatalogEditor({
               />
             </label>
           </Section>
-          <Section title="Stripe 价格映射">
+          <Section title="Stripe 价格与多主体映射">
             <Field
               label="Stripe Price ID"
               value={draft.stripePriceId}
               onChange={(v) => patch("stripePriceId", v)}
             />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Field
+                label="收款主体（Stripe Profile）"
+                value={draft.stripeProfile}
+                onChange={(v) => patch("stripeProfile", v)}
+                placeholder="如 hk / us"
+              />
+              <Field
+                label="业务线（Business Line）"
+                value={draft.businessLine}
+                onChange={(v) => patch("businessLine", v)}
+                placeholder="如 global_hk / us_nodes"
+              />
+              <Field
+                label="收款公司名称（Merchant Entity）"
+                value={draft.merchantEntity}
+                onChange={(v) => patch("merchantEntity", v)}
+                placeholder="如 HK Entity Ltd"
+              />
+            </div>
           </Section>
           <label className="block space-y-1.5 text-sm text-[var(--color-text-muted)]">
             <span>操作原因</span>
@@ -880,6 +982,7 @@ function Field({
   min = 0,
   max,
   type = "text",
+  placeholder,
 }: {
   label: string;
   value: string;
@@ -887,6 +990,7 @@ function Field({
   type?: string;
   min?: number;
   max?: number;
+  placeholder?: string;
 }) {
   return (
     <label className="block space-y-1.5 text-sm text-[var(--color-text-muted)]">
@@ -897,6 +1001,7 @@ function Field({
         min={type === "number" ? min : undefined}
         max={type === "number" ? max : undefined}
         step={type === "number" ? "any" : undefined}
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
