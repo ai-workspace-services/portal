@@ -127,4 +127,47 @@ describe("catalog settings apply", () => {
     );
     expect(delOpts?.method).toBe("DELETE");
   });
+
+  it("edits multi-entity stripeProfile, businessLine, and merchantEntity fields", async () => {
+    fixture.plans = [
+      {
+        planId: "PRO-MONTHLY-V2",
+        displayName: "Pro 月付",
+        kind: "subscription",
+        packageName: "pro",
+        active: true,
+        includedQuotaBytes: 50 * 1024 ** 3,
+        highSpeedQuotaBytes: 30 * 1024 ** 3,
+        priceAmount: 5000,
+        priceCurrency: "USD",
+        priceUnit: "month",
+        stripeProfile: "us",
+        businessLine: "us_nodes",
+        merchantEntity: "US Entity Inc",
+      },
+    ];
+    render(<OpsPlanCatalog />);
+    fireEvent.click(screen.getByText("Pro"));
+    fireEvent.change(screen.getByLabelText("收款主体（Stripe Profile）"), {
+      target: { value: "us" },
+    });
+    fireEvent.change(screen.getByLabelText("业务线（Business Line）"), {
+      target: { value: "us_retail" },
+    });
+    fireEvent.change(screen.getByLabelText("收款公司名称（Merchant Entity）"), {
+      target: { value: "US Retail LLC" },
+    });
+    fireEvent.change(screen.getByLabelText("操作原因"), {
+      target: { value: "assign us entity" },
+    });
+    fireEvent.click(screen.getByText("保存并应用设置"));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String(options?.body))).toMatchObject({
+      planId: "PRO-MONTHLY-V2",
+      stripeProfile: "us",
+      businessLine: "us_retail",
+      merchantEntity: "US Retail LLC",
+    });
+  });
 });

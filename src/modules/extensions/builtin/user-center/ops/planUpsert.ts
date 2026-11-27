@@ -5,6 +5,9 @@
 export type BillingPlan = {
   planId: string;
   stripePriceId?: string;
+  stripeProfile?: string;
+  businessLine?: string;
+  merchantEntity?: string;
   displayName?: string;
   kind: "subscription" | "service" | string;
   includedQuotaBytes?: number;
@@ -28,6 +31,9 @@ export type PlanForm = {
   kind: string;
   packageName: string;
   stripePriceId: string;
+  stripeProfile?: string;
+  businessLine?: string;
+  merchantEntity?: string;
   includedQuotaBytes: string;
   highSpeedQuotaBytes?: string;
   sortOrder: string;
@@ -41,6 +47,9 @@ export type PlanUpsertBody = {
   kind: string;
   packageName: string;
   stripePriceId: string;
+  stripeProfile?: string;
+  businessLine?: string;
+  merchantEntity?: string;
   includedQuotaBytes: number;
   highSpeedQuotaBytes?: number;
   trialDays: number;
@@ -71,6 +80,19 @@ export function buildPlanUpsertBody(
     active: form.active,
     reason: form.reason.trim(),
   };
+
+  if (form.stripeProfile !== undefined) {
+    const trimmed = form.stripeProfile.trim().toLowerCase();
+    if (trimmed) body.stripeProfile = trimmed;
+  }
+  if (form.businessLine !== undefined) {
+    const trimmed = form.businessLine.trim();
+    if (trimmed) body.businessLine = trimmed;
+  }
+  if (form.merchantEntity !== undefined) {
+    const trimmed = form.merchantEntity.trim();
+    if (trimmed) body.merchantEntity = trimmed;
+  }
 
   if (existing?.priceAmount !== undefined) body.priceAmount = existing.priceAmount;
   if (existing?.priceCurrency !== undefined) body.priceCurrency = existing.priceCurrency;
