@@ -206,6 +206,17 @@ export default function UserCenterManagementRoute({
     }
   }, [router, showAgents]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (
+      params.get("connected") === "google-drive" ||
+      params.get("tab") === "groups"
+    ) {
+      setManagementTab("groups");
+    }
+  }, []);
+
   function setActiveTab(tab: ManagementTab) {
     setManagementTab(tab);
   }
@@ -746,6 +757,49 @@ export default function UserCenterManagementRoute({
     [homepageVideoSWR],
   );
 
+  const handleExportUsersCsv = useCallback(() => {
+    const rows = usersSWR.data ?? [];
+    const header = [
+      "id",
+      "email",
+      "username",
+      "role",
+      "active",
+      "groups",
+      "created_at",
+    ];
+    const escapeCell = (val: string) =>
+      val.includes(",") || val.includes('"') || val.includes("\n")
+        ? `"${val.replaceAll('"', '""')}"`
+        : val;
+    const csv = [
+      header.join(","),
+      ...rows.map((item) =>
+        [
+          item.id,
+          item.email,
+          item.username ?? item.name ?? "",
+          item.role ?? "user",
+          String(item.active !== false),
+          (item.groups ?? []).join(";"),
+          item.created_at ?? "",
+        ]
+          .map((v) => escapeCell(String(v)))
+          .join(","),
+      ),
+    ].join("\n");
+    const url = URL.createObjectURL(
+      new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "users-export.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, [usersSWR.data]);
+
   const matrixPending = matrixSaving || isUserLoading;
   const metricsLoading = metricsSWR.isLoading;
   const settingsLoading = settingsSWR.isLoading;
@@ -787,6 +841,7 @@ export default function UserCenterManagementRoute({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={handleExportUsersCsv}
               className="inline-flex h-9 items-center rounded-md border border-[color:var(--color-surface-border)] px-3 text-sm font-medium text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-hover)]"
             >
               导出用户
@@ -870,6 +925,7 @@ export default function UserCenterManagementRoute({
             onResumeUser={handleResumeUser}
             onDeleteUser={handleDeleteUser}
             onRenewUuid={handleRenewUuid}
+            onExportUsers={handleExportUsersCsv}
           />
         </>
       ) : null}

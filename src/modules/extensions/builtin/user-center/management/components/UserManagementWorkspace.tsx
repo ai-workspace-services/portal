@@ -39,6 +39,7 @@ type UserManagementWorkspaceProps = {
   onResumeUser?: (userId: string) => void;
   onDeleteUser?: (userId: string) => void;
   onRenewUuid?: (userId: string) => void;
+  onExportUsers?: () => void;
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -108,6 +109,7 @@ export default function UserManagementWorkspace({
   onResumeUser,
   onDeleteUser,
   onRenewUuid,
+  onExportUsers,
 }: UserManagementWorkspaceProps) {
   const data = useMemo(() => users ?? [], [users]);
   const [query, setQuery] = useState("");
@@ -217,7 +219,9 @@ export default function UserManagementWorkspace({
             </button>
             <button
               type="button"
-              className="inline-flex h-8 items-center gap-1 rounded-md border border-[color:var(--color-surface-border)] px-2.5 hover:bg-[var(--color-surface-hover)]"
+              onClick={onExportUsers}
+              disabled={!onExportUsers}
+              className="inline-flex h-8 items-center gap-1 rounded-md border border-[color:var(--color-surface-border)] px-2.5 hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
             >
               <Download className="h-3.5 w-3.5" /> 导出
             </button>

@@ -9,6 +9,7 @@ const panelRoutes = [
   "src/app/panel/account/page.tsx",
   "src/app/panel/agent/page.tsx",
   "src/app/panel/api/page.tsx",
+  "src/app/panel/connector/page.tsx",
   "src/app/panel/appearance/page.tsx",
   "src/app/panel/ldp/page.tsx",
   "src/app/panel/management/page.tsx",

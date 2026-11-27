@@ -492,7 +492,7 @@ export default function PlaceholderPage() {
                   右侧助手已经默认打开。完成 Gateway 接入后，这里的中间结果区会直接显示部署、资源或日志分析结果。
                 </p>
                 <Link
-                  href="/panel/api"
+                  href="/panel/connector"
                   className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-semibold text-[var(--color-primary-foreground)] shadow-[var(--shadow-sm)] dark:bg-[var(--color-action)]"
                 >
                   打开接口集成

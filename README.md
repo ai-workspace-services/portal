@@ -62,7 +62,7 @@ Portal 只负责 UI、交互、路由与服务端代理：账户、会话与订�
 | `/docs`、`/blogs` | 文档与博客，内容由内容服务提供 |
 | `/services` | 服务导航页 |
 | `/panel/*` | 控制台：账户、团队、订阅、AI Aggregator、Cloud Hub |
-| `/panel/api` | 集成设置：OpenClaw Gateway、Vault、APISIX AI Gateway 的配置与探测（对应变量见 `.env.example`） |
+| `/panel/connector` | 连接器中心：GitHub、Google Drive/Sheets、OpenClaw Gateway、Vault 与自定义 MCP 的配置与探测 |
 | `/ai-workspace` | AI Workspace，见下节 |
 | `/xworkmate` | 独立的 XWorkmate 在线工作区，与 `/ai-workspace` 共用同一个外壳 |
 | `/cloud_iac/[provider]` | 云 IaC 目录 |

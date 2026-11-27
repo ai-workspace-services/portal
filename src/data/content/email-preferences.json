@@ -150,8 +150,8 @@
         "delayHours": 72,
         "subject": "下一步：配置你的工作空间",
         "body": "你好 {{name}}，\n\n完成基础设置后，可以打开接口集成页面，按需要连接你使用的服务。\n\n只添加你需要的集成，凭据请通过页面提供的安全方式填写。",
-        "actionLabel": "打开接口集成",
-        "path": "/panel/api"
+        "actionLabel": "打开连接器",
+        "path": "/panel/connector"
       }
     ],
     "retryStatus": "等待重试",
@@ -309,8 +309,8 @@
         "delayHours": 72,
         "subject": "Next: configure your workspace",
         "body": "Hello {{name}},\n\nAfter the basic setup, visit integrations to connect the services you use. Add only the integrations you need, and enter credentials through the secure controls provided.",
-        "actionLabel": "Open integrations",
-        "path": "/panel/api"
+        "actionLabel": "Open connectors",
+        "path": "/panel/connector"
       }
     ],
     "retryStatus": "Waiting to retry",

@@ -63,7 +63,7 @@ A page in another boundary is not part of the current build, so in-app links mus
 | `/docs`, `/blogs` | Docs and blog, served by the content service |
 | `/services` | Service navigation page |
 | `/panel/*` | Console: account, team, subscription, AI Aggregator, Cloud Hub |
-| `/panel/api` | Integration settings: configure and probe OpenClaw Gateway, Vault and APISIX AI Gateway (variables in `.env.example`) |
+| `/panel/connector` | Connector center: configure and probe GitHub, Google Drive/Sheets, OpenClaw Gateway, Vault and custom MCP connectors |
 | `/ai-workspace` | The AI Workspace, see the next section |
 | `/xworkmate` | Standalone XWorkmate online workspace; shares the same shell as `/ai-workspace` |
 | `/cloud_iac/[provider]` | Cloud IaC catalog |

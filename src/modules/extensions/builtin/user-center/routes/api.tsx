@@ -1,5 +1,1 @@
-import { IntegrationsConsole } from "../components/IntegrationsConsole";
-
-export default function UserCenterApiRoute() {
-  return <IntegrationsConsole />;
-}
+export { default } from "./connector";

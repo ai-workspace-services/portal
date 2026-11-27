@@ -283,9 +283,9 @@ export const capabilities = {
         },
         {
           "id": "apis",
-          "path": "/panel/api",
-          "label": "Integrations",
-          "description": "统一管理 OpenClaw、Vault 与 AI Gateway",
+          "path": "/panel/connector",
+          "label": "连接器",
+          "description": "管理外部服务与自建 AI Workspace 连接",
           "guard": {
             "require_login": true
           },
@@ -298,8 +298,8 @@ export const capabilities = {
           },
           "feature_flag": {
             "id": "user-center.api",
-            "title": "接口集成",
-            "description": "启用 OpenClaw、Vault 与 APISIX AI Gateway 集成页面。",
+            "title": "连接器",
+            "description": "启用连接器中心页面。",
             "env_var": "NEXT_PUBLIC_FEATURE_API_MODULE",
             "default_enabled": true
           }
@@ -1140,9 +1140,9 @@ export const capabilities = {
       },
       {
         "id": "apis",
-        "path": "/panel/api",
-        "label": "Integrations",
-        "description": "统一管理 OpenClaw、Vault 与 AI Gateway",
+        "path": "/panel/connector",
+        "label": "连接器",
+        "description": "管理外部服务与自建 AI Workspace 连接",
         "guard": {
           "requireLogin": true
         },
@@ -1155,8 +1155,8 @@ export const capabilities = {
         },
         "featureFlag": {
           "id": "user-center.api",
-          "title": "接口集成",
-          "description": "启用 OpenClaw、Vault 与 APISIX AI Gateway 集成页面。",
+          "title": "连接器",
+          "description": "启用连接器中心页面。",
           "envVar": "NEXT_PUBLIC_FEATURE_API_MODULE",
           "defaultEnabled": true
         }
