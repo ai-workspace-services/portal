@@ -23,7 +23,7 @@ const expectedPanelRouteSnapshot: Array<
   { id: 'globalMesh', path: '/panel/cloud-hub', match: 'exact', section: 'workspace', order: 2, hidden: false, guard: { requireLogin: true } },
   { id: 'productsGlobalMesh', path: '/products/cloud-hub', match: 'exact', section: 'workspace', order: 3, hidden: false, guard: {} },
   { id: 'agents', path: '/panel/agent', match: 'exact', section: 'admin', order: 9, hidden: false, guard: { requireLogin: true, roles: ['admin'] } },
-  { id: 'apis', path: '/panel/api', match: 'exact', section: 'productivity', order: 11, hidden: false, guard: { requireLogin: true } },
+  { id: 'apis', path: '/panel/connector', match: 'exact', section: 'productivity', order: 11, hidden: false, guard: { requireLogin: true } },
   { id: 'ai-aggregator', path: '/panel/ai-aggregator', match: 'exact', section: 'productivity', order: 12, hidden: false, guard: { requireLogin: true } },
   { id: 'accounts', path: '/panel/account', match: 'exact', section: 'management', order: 20, hidden: true, guard: { requireLogin: true } },
   { id: 'subscription', path: '/panel/subscription', match: 'exact', section: 'management', order: 21, hidden: false, guard: { requireLogin: true } },

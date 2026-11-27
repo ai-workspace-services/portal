@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import Card from "../../components/Card";
+import { GoogleSheetsSyncCard } from "./GoogleSheetsSyncCard";
 
 export type ManagedUser = {
   id: string;
@@ -764,6 +765,10 @@ export function UserGroupManagement({
             {notice}
           </p>
         ) : null}
+        <GoogleSheetsSyncCard
+          onSubscriptionRecordsImport={onSubscriptionRecordsImport}
+          onShowImportPreview={showImportPreview}
+        />
         <section
           aria-label="月度限流开关"
           className="rounded-md border border-[color:var(--color-surface-border)] bg-[var(--color-surface-subtle)] p-4"

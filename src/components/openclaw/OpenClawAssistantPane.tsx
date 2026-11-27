@@ -401,7 +401,7 @@ export function OpenClawAssistantPane({
   variant = "page",
   showConversation = true,
   emptyConversationHint,
-  integrationsHref = "/panel/api",
+  integrationsHref = "/panel/connector",
   onStateChange,
 }: OpenClawAssistantPaneProps) {
   const router = useRouter();

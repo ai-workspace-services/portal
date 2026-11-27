@@ -179,7 +179,7 @@ extensions:
         env_var: NEXT_PUBLIC_FEATURE_AGENT_MODULE
         default_enabled: true
         sidebar_section: productivity
-      - path: /panel/api
+      - path: /panel/connector
         id: apis
         enabled: true
         env_var: NEXT_PUBLIC_FEATURE_API_MODULE
@@ -343,9 +343,12 @@ pages:
     - path: /panel/agent
       component: src/app/panel/agent/page.tsx
       status: extension_route
+    - path: /panel/connector
+      component: src/app/panel/connector/page.tsx
+      status: extension_route
     - path: /panel/api
       component: src/app/panel/api/page.tsx
-      status: extension_route
+      status: legacy_redirect
     - path: /panel/appearance
       component: src/app/panel/appearance/page.tsx
       status: extension_route

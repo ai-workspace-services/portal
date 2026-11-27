@@ -91,11 +91,11 @@ export const userCenterExtension: DashboardExtension = {
     },
     {
       id: "apis",
-      path: "/panel/api",
+      path: "/panel/connector",
       label: "连接器",
       description: "管理外部服务与自建 AI Workspace 连接",
       icon: PlugZap,
-      loader: () => import("./routes/api"),
+      loader: () => import("./routes/connector"),
       guard: { requireLogin: true },
       redirect: { unauthenticated: "/login" },
       sidebar: { section: "productivity", order: 11 },

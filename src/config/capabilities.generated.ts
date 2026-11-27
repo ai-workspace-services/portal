@@ -255,6 +255,34 @@ export const capabilities = {
           }
         },
         {
+          "id": "gateway",
+          "path": "/panel/gateway",
+          "label": "网关路由",
+          "description": "三层分流池状态、媒体防护与 GitOps 路由策略同步",
+          "guard": {
+            "require_login": true,
+            "roles": [
+              "admin",
+              "operator"
+            ]
+          },
+          "redirect": {
+            "unauthenticated": "/login",
+            "forbidden": "/panel"
+          },
+          "sidebar": {
+            "section": "admin",
+            "order": 8
+          },
+          "feature_flag": {
+            "id": "user-center.gateway",
+            "title": "网关路由",
+            "description": "启用三层分流池与 GitOps 路由策略同步页面。",
+            "env_var": "NEXT_PUBLIC_FEATURE_GATEWAY_MODULE",
+            "default_enabled": true
+          }
+        },
+        {
           "id": "agents",
           "path": "/panel/agent",
           "label": "区域入口池",
@@ -569,52 +597,6 @@ export const capabilities = {
           "id": "ops-system",
           "path": "/panel/ops/system",
           "label": "系统管理",
-          "description": "运营工作台子模块",
-          "match": "startsWith",
-          "guard": {
-            "require_login": true,
-            "roles": [
-              "admin",
-              "operator"
-            ]
-          },
-          "redirect": {
-            "unauthenticated": "/login",
-            "forbidden": "/panel"
-          },
-          "sidebar": {
-            "section": "admin",
-            "order": 12,
-            "hidden": true
-          }
-        },
-        {
-          "id": "ops-crawler-protection",
-          "path": "/panel/ops/crawler-protection",
-          "label": "爬虫防护",
-          "description": "运营工作台子模块",
-          "match": "startsWith",
-          "guard": {
-            "require_login": true,
-            "roles": [
-              "admin",
-              "operator"
-            ]
-          },
-          "redirect": {
-            "unauthenticated": "/login",
-            "forbidden": "/panel"
-          },
-          "sidebar": {
-            "section": "admin",
-            "order": 12,
-            "hidden": true
-          }
-        },
-        {
-          "id": "ops-traffic-dispatch",
-          "path": "/panel/ops/traffic-dispatch",
-          "label": "流量调度",
           "description": "运营工作台子模块",
           "match": "startsWith",
           "guard": {
@@ -1112,6 +1094,34 @@ export const capabilities = {
         }
       },
       {
+        "id": "gateway",
+        "path": "/panel/gateway",
+        "label": "网关路由",
+        "description": "三层分流池状态、媒体防护与 GitOps 路由策略同步",
+        "guard": {
+          "requireLogin": true,
+          "roles": [
+            "admin",
+            "operator"
+          ]
+        },
+        "redirect": {
+          "unauthenticated": "/login",
+          "forbidden": "/panel"
+        },
+        "sidebar": {
+          "section": "admin",
+          "order": 8
+        },
+        "featureFlag": {
+          "id": "user-center.gateway",
+          "title": "网关路由",
+          "description": "启用三层分流池与 GitOps 路由策略同步页面。",
+          "envVar": "NEXT_PUBLIC_FEATURE_GATEWAY_MODULE",
+          "defaultEnabled": true
+        }
+      },
+      {
         "id": "agents",
         "path": "/panel/agent",
         "label": "区域入口池",
@@ -1426,52 +1436,6 @@ export const capabilities = {
         "id": "ops-system",
         "path": "/panel/ops/system",
         "label": "系统管理",
-        "description": "运营工作台子模块",
-        "match": "startsWith",
-        "guard": {
-          "requireLogin": true,
-          "roles": [
-            "admin",
-            "operator"
-          ]
-        },
-        "redirect": {
-          "unauthenticated": "/login",
-          "forbidden": "/panel"
-        },
-        "sidebar": {
-          "section": "admin",
-          "order": 12,
-          "hidden": true
-        }
-      },
-      {
-        "id": "ops-crawler-protection",
-        "path": "/panel/ops/crawler-protection",
-        "label": "爬虫防护",
-        "description": "运营工作台子模块",
-        "match": "startsWith",
-        "guard": {
-          "requireLogin": true,
-          "roles": [
-            "admin",
-            "operator"
-          ]
-        },
-        "redirect": {
-          "unauthenticated": "/login",
-          "forbidden": "/panel"
-        },
-        "sidebar": {
-          "section": "admin",
-          "order": 12,
-          "hidden": true
-        }
-      },
-      {
-        "id": "ops-traffic-dispatch",
-        "path": "/panel/ops/traffic-dispatch",
-        "label": "流量调度",
         "description": "运营工作台子模块",
         "match": "startsWith",
         "guard": {

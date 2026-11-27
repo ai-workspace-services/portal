@@ -1,199 +1,278 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Activity,
   ArrowUpRight,
+  Box,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
-  CircleHelp,
   Cloud,
-  Database,
   Code,
+  Coffee,
+  Copy,
+  ExternalLink,
+  FileText,
+  FolderSync,
+  GitBranch,
   HardDrive,
   KeyRound,
+  LayoutGrid,
   LoaderCircle,
   Mail,
   PlugZap,
+  Plus,
   Search,
+  Server,
   ShieldCheck,
+  Triangle,
+  Unplug,
   X,
 } from "lucide-react";
 
-type AuthKind = "oidc" | "api-token" | "ak-sk" | "webhook-mcp";
-type FilterKind = "all" | "oidc" | "api-token" | "webhook-mcp";
-type ConnectorStatus = "connected" | "attention" | "available";
-type ConnectorIcon =
-  | "github"
+import { useUserStore } from "@lib/userStore";
+import {
+  authorizeConnectorWithPopup,
+  openOAuthPopupWindow,
+} from "../lib/oauthPopup";
+
+type CategoryId =
+  | "all"
+  | "code"
   | "cloud"
-  | "mail"
-  | "drive"
-  | "vault"
+  | "email"
   | "workspace"
-  | "xworkmate"
-  | "aws";
+  | "secrets"
+  | "mcp";
+
+type AuthKind =
+  | "oidc"
+  | "api-token"
+  | "ak-sk"
+  | "webhook-mcp"
+  | "service-account";
+
+type ConnectorStatus = "connected" | "attention" | "available";
 
 type ConnectorDefinition = {
   id: string;
   name: string;
   description: string;
-  category: string;
-  icon: ConnectorIcon;
+  category: Exclude<CategoryId, "all">;
+  categoryLabel: string;
   authKinds: AuthKind[];
   preferredAuth: AuthKind;
-  builtIn?: boolean;
+  isCustom?: boolean;
 };
 
-type ConnectorRuntime = {
+export type ConnectorRuntime = {
+  id?: string;
   status: ConnectorStatus;
   account?: string;
+  authMode?: string;
   lastChecked?: string;
+  lastSyncedAt?: string;
   credentialConfigured?: boolean;
+  writable?: boolean;
+  oauthConfigured?: boolean;
+  endpoint?: string;
+  spreadsheetUrl?: string;
+  spreadsheetId?: string;
+  gid?: string;
+  sheetTitle?: string;
+  statusDetail?: string;
+  isCustom?: boolean;
+  customMeta?: {
+    name: string;
+    description: string;
+    category: Exclude<CategoryId, "all">;
+    categoryLabel: string;
+    authKinds: AuthKind[];
+    preferredAuth: AuthKind;
+  };
 };
 
 type Connector = ConnectorDefinition & ConnectorRuntime;
 
-const CONNECTOR_CATALOG: ConnectorDefinition[] = [
+const DEFAULT_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1V4u9b6MFIJgVuVAb056jidZLSFMiyhJJj9eDSGud1_I/edit?gid=1136257492#gid=1136257492";
+
+const BUILTIN_CATALOG: ConnectorDefinition[] = [
   {
     id: "github",
     name: "GitHub",
-    description: "连接代码仓库、Issue 与开发工作流。",
-    category: "开发工具",
-    icon: "github",
+    description: "支持 GitHub OIDC 与仓库工作流接入。",
+    category: "code",
+    categoryLabel: "代码托管",
     authKinds: ["oidc", "api-token"],
     preferredAuth: "oidc",
   },
   {
-    id: "cloudflare",
-    name: "Cloudflare",
-    description: "访问 DNS、边缘网络与 Cloudflare 资源。",
-    category: "云与基础设施",
-    icon: "cloud",
-    authKinds: ["api-token"],
+    id: "gitea",
+    name: "Gitea",
+    description: "自托管或 Gitea.com 仓库与组织连接。",
+    category: "code",
+    categoryLabel: "代码托管",
+    authKinds: ["api-token", "oidc"],
     preferredAuth: "api-token",
   },
   {
-    id: "aws",
-    name: "AWS",
-    description: "通过工作负载身份或访问密钥连接云资源。",
-    category: "云与基础设施",
-    icon: "aws",
-    authKinds: ["oidc", "ak-sk"],
+    id: "gitlab",
+    name: "GitLab",
+    description: "GitLab SaaS 或私有部署实例流水线集成。",
+    category: "code",
+    categoryLabel: "代码托管",
+    authKinds: ["oidc", "api-token"],
     preferredAuth: "oidc",
   },
   {
     id: "gmail",
     name: "Gmail",
-    description: "安全连接邮箱与邮件工作流。",
-    category: "沟通协作",
-    icon: "mail",
+    description: "通过 Google OAuth 连接邮箱与服务通知工作流。",
+    category: "email",
+    categoryLabel: "邮件通信",
     authKinds: ["oidc"],
     preferredAuth: "oidc",
   },
   {
     id: "google-drive",
     name: "Google Drive",
-    description: "搜索、读取并协作处理云端文件。",
-    category: "文件与知识",
-    icon: "drive",
+    description: "Google OAuth2 授权读写云端表格，驱动管理台订阅双向同步。",
+    category: "workspace",
+    categoryLabel: "办公协作",
+    authKinds: ["oidc", "service-account"],
+    preferredAuth: "oidc",
+  },
+  {
+    id: "google-workspaces",
+    name: "Google Workspaces",
+    description: "集成 Google Drive、Sheets 与 Docs 办公协作套件。",
+    category: "workspace",
+    categoryLabel: "办公协作",
     authKinds: ["oidc"],
     preferredAuth: "oidc",
   },
   {
     id: "vault",
-    name: "Vault",
-    description: "通过受控身份访问已授权的密钥服务。",
-    category: "安全与密钥",
-    icon: "vault",
-    authKinds: ["oidc", "api-token"],
+    name: "Vault Server",
+    description: "HashiCorp Vault 密钥与凭据安全读取。",
+    category: "secrets",
+    categoryLabel: "密钥安全",
+    authKinds: ["api-token", "oidc"],
+    preferredAuth: "api-token",
+  },
+  {
+    id: "cloudflare",
+    name: "Cloudflare",
+    description: "Cloudflare Workers、DNS 与边缘网络规则。",
+    category: "cloud",
+    categoryLabel: "云基础设施",
+    authKinds: ["api-token"],
+    preferredAuth: "api-token",
+  },
+  {
+    id: "aws-lightsail",
+    name: "AWS Lightsail",
+    description: "AWS Lightsail 实例、静态 IP 与节点健康。",
+    category: "cloud",
+    categoryLabel: "云基础设施",
+    authKinds: ["ak-sk", "oidc"],
+    preferredAuth: "ak-sk",
+  },
+  {
+    id: "gcp",
+    name: "GCP",
+    description: "Google Cloud 项目、Cloud Run 与 IAM 身份治理。",
+    category: "cloud",
+    categoryLabel: "云基础设施",
+    authKinds: ["oidc", "service-account"],
     preferredAuth: "oidc",
   },
   {
-    id: "self-hosted-ai-workspace",
-    name: "自建 AI Workspace",
-    description: "连接你部署的 AI Workspace 实例。",
-    category: "AI 工作空间",
-    icon: "workspace",
-    authKinds: ["oidc", "api-token"],
-    preferredAuth: "oidc",
+    id: "linode-vps",
+    name: "Linode VPS",
+    description: "Akamai / Linode VPS 边缘节点资源与算力管理。",
+    category: "cloud",
+    categoryLabel: "云基础设施",
+    authKinds: ["api-token"],
+    preferredAuth: "api-token",
   },
-  {
-    id: "xworkmate",
-    name: "XWorkmate",
-    description: "连接当前工作空间中的 XWorkmate 服务。",
-    category: "AI 工作空间",
-    icon: "xworkmate",
-    authKinds: ["oidc"],
-    preferredAuth: "oidc",
-    builtIn: true,
-  },
-  {
-    id: "custom-mcp-webhook",
-    name: "自定义 MCP / Webhook",
-    description: "接入兼容 MCP 或 Webhook 的自建服务。",
-    category: "自定义服务",
-    icon: "workspace",
-    authKinds: ["webhook-mcp", "api-token"],
-    preferredAuth: "webhook-mcp",
-  },
+];
+
+const CATEGORIES: Array<{ id: CategoryId; label: string }> = [
+  { id: "all", label: "全部" },
+  { id: "code", label: "代码托管" },
+  { id: "cloud", label: "云基础设施" },
+  { id: "email", label: "邮件通信" },
+  { id: "workspace", label: "办公协作" },
+  { id: "secrets", label: "密钥安全" },
+  { id: "mcp", label: "自定义 MCP" },
 ];
 
 const AUTH_LABELS: Record<AuthKind, string> = {
-  oidc: "OIDC / OAuth",
+  oidc: "Google / OAuth2",
   "api-token": "API Token",
   "ak-sk": "AK / SK",
   "webhook-mcp": "Webhook & MCP",
+  "service-account": "Service Account JSON",
 };
 
-const STATUS_LABELS: Record<ConnectorStatus, string> = {
+const STATUS_BUTTON_LABELS: Record<ConnectorStatus, string> = {
   connected: "已连接",
-  attention: "需要检查",
-  available: "未连接",
+  attention: "需检查",
+  available: "连接",
 };
-
-const FILTERS: Array<{ id: FilterKind; label: string }> = [
-  { id: "all", label: "全部" },
-  { id: "oidc", label: "OIDC / OAuth" },
-  { id: "api-token", label: "API Token · AK / SK" },
-  { id: "webhook-mcp", label: "Webhook & MCP" },
-];
 
 const DEFAULT_RUNTIME: ConnectorRuntime = { status: "available" };
 
-function iconFor(icon: ConnectorIcon) {
-  switch (icon) {
+function tileAppearance(id: string): {
+  bg: string;
+  Icon: typeof Code;
+  label?: string;
+} {
+  switch (id) {
     case "github":
-      return Code;
-    case "cloud":
-      return Cloud;
-    case "mail":
-      return Mail;
-    case "drive":
-      return HardDrive;
+      return { bg: "bg-zinc-900 text-white", Icon: Code };
+    case "gitea":
+      return { bg: "bg-[#609926] text-white", Icon: Coffee };
+    case "gitlab":
+      return { bg: "bg-[#fc6d26] text-white", Icon: GitBranch };
+    case "gmail":
+      return {
+        bg: "border border-[color:var(--color-surface-border)] bg-white text-[#ea4335]",
+        Icon: Mail,
+      };
+    case "google-drive":
+      return { bg: "bg-[#0f9d58] text-white", Icon: HardDrive };
+    case "google-workspaces":
+      return { bg: "bg-[#1a73e8] text-white", Icon: LayoutGrid };
     case "vault":
-      return KeyRound;
-    case "workspace":
-      return Database;
-    case "xworkmate":
-      return PlugZap;
-    case "aws":
-      return Cloud;
+      return { bg: "bg-zinc-900 text-[#ffd814]", Icon: Triangle };
+    case "cloudflare":
+      return { bg: "bg-[#f38020] text-white", Icon: Cloud };
+    case "aws-lightsail":
+      return { bg: "bg-[#1e293b] text-[#f59e0b]", Icon: Box };
+    case "gcp":
+      return { bg: "bg-[#4285f4] text-white", Icon: Cloud };
+    case "linode-vps":
+      return { bg: "bg-[#00b050] text-white", Icon: Server };
+    default:
+      return { bg: "bg-indigo-600 text-white", Icon: PlugZap };
   }
 }
 
-function authLabel(auth: AuthKind): string {
-  return AUTH_LABELS[auth];
-}
-
-function statusStyle(status: ConnectorStatus): string {
-  if (status === "connected") {
-    return "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+function authButtonText(connector: Connector, kind: AuthKind): string {
+  if (kind === "oidc") {
+    return connector.id === "github" ||
+      connector.id === "gitlab" ||
+      connector.id === "gitea"
+      ? "OIDC / OAuth"
+      : "Google OAuth2";
   }
-  if (status === "attention") {
-    return "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300";
-  }
-  return "border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)]";
+  return AUTH_LABELS[kind];
 }
 
 function describeError(error: unknown): string {
@@ -203,91 +282,183 @@ function describeError(error: unknown): string {
 }
 
 export function IntegrationsConsole() {
+  const currentUser = useUserStore((state) => state.user);
   const [runtimeById, setRuntimeById] = useState<
     Record<string, ConnectorRuntime>
   >({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterKind>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryId>("all");
+  const [onlyConnected, setOnlyConnected] = useState(false);
+
   const [authChoice, setAuthChoice] = useState<AuthKind>("oidc");
   const [instanceUrl, setInstanceUrl] = useState("");
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState(DEFAULT_SHEET_URL);
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [showOAuthOverrides, setShowOAuthOverrides] = useState(false);
+  const [serviceAccountJson, setServiceAccountJson] = useState("");
   const [token, setToken] = useState("");
   const [accessKey, setAccessKey] = useState("");
   const [secretKey, setSecretKey] = useState("");
+
   const [busyAction, setBusyAction] = useState<
-    "save" | "authorize" | "check" | null
+    "save" | "authorize" | "check" | "disconnect" | null
   >(null);
   const [actionMessage, setActionMessage] = useState<{
     kind: "success" | "error";
     text: string;
   } | null>(null);
+  const [pageBanner, setPageBanner] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [configLoading, setConfigLoading] = useState(false);
+  const [configJson, setConfigJson] = useState("");
+  const [configCopied, setConfigCopied] = useState(false);
+
+  const [customModalOpen, setCustomModalOpen] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const [customEndpoint, setCustomEndpoint] = useState("");
+  const [customToken, setCustomToken] = useState("");
+  const [customDescription, setCustomDescription] = useState("");
+  const [customSaving, setCustomSaving] = useState(false);
+
+  async function refreshConnectors() {
+    try {
+      const response = await fetch("/api/connectors", { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = (await response.json()) as Record<
+        string,
+        ConnectorRuntime
+      >;
+      if (payload && typeof payload === "object") {
+        setRuntimeById(payload);
+      }
+    } catch {
+      // ignore background refresh error
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
-
-    void fetch("/api/connectors", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const payload = (await response.json()) as Record<
-          string,
-          ConnectorRuntime
-        >;
-        if (!cancelled && payload && typeof payload === "object") {
-          setRuntimeById(payload);
-        }
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
+    void refreshConnectors();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get("connected");
+      const err = params.get("connectorError");
+      if (connected === "google-drive") {
+        setPageBanner({
+          kind: "success",
+          text: "Google Drive OAuth2 授权成功，已启用 Google Sheets 双向同步。",
+        });
+      } else if (err) {
+        setPageBanner({ kind: "error", text: err });
+      }
+    }
   }, []);
 
-  const connectors = useMemo<Connector[]>(
-    () =>
-      CONNECTOR_CATALOG.map((item) => ({
-        ...item,
-        ...(runtimeById[item.id] ?? DEFAULT_RUNTIME),
-      })),
-    [runtimeById],
-  );
+  const connectors = useMemo<Connector[]>(() => {
+    const builtinIds = new Set(BUILTIN_CATALOG.map((item) => item.id));
+    const list: Connector[] = BUILTIN_CATALOG.map((item) => ({
+      ...item,
+      ...(runtimeById[item.id] ?? DEFAULT_RUNTIME),
+    }));
+    for (const [id, runtime] of Object.entries(runtimeById)) {
+      if (!builtinIds.has(id) && runtime.customMeta) {
+        list.push({
+          id,
+          name: runtime.customMeta.name,
+          description: runtime.customMeta.description,
+          category: runtime.customMeta.category,
+          categoryLabel: runtime.customMeta.categoryLabel,
+          authKinds: runtime.customMeta.authKinds,
+          preferredAuth: runtime.customMeta.preferredAuth,
+          ...runtime,
+        });
+      }
+    }
+    return list;
+  }, [runtimeById]);
+
   const selectedConnector =
     connectors.find((item) => item.id === selectedId) ?? null;
-  const visibleConnectors = connectors.filter((connector) => {
-    const queryMatch =
-      `${connector.name} ${connector.description} ${connector.category}`
-        .toLocaleLowerCase()
-        .includes(query.trim().toLocaleLowerCase());
-    const filterMatch =
-      filter === "all" ||
-      connector.authKinds.includes(
-        filter === "webhook-mcp" ? "webhook-mcp" : filter,
-      );
-    return queryMatch && filterMatch;
-  });
-  const connectedCount = connectors.filter(
+
+  const connectedConnectors = connectors.filter(
     (item) => item.status === "connected",
-  ).length;
-  const attentionCount = connectors.filter(
-    (item) => item.status === "attention",
-  ).length;
+  );
+
+  const visibleConnectors = connectors.filter((connector) => {
+    if (onlyConnected && connector.status !== "connected") return false;
+    if (categoryFilter !== "all" && connector.category !== categoryFilter) {
+      return false;
+    }
+    const q = query.trim().toLocaleLowerCase();
+    if (!q) return true;
+    return `${connector.name} ${connector.description} ${connector.categoryLabel} ${connector.id}`
+      .toLocaleLowerCase()
+      .includes(q);
+  });
 
   function openConnector(connector: Connector) {
     setSelectedId(connector.id);
     setAuthChoice(connector.preferredAuth);
-    setInstanceUrl("");
+    setInstanceUrl(connector.endpoint ?? "");
+    setSpreadsheetUrl(connector.spreadsheetUrl ?? DEFAULT_SHEET_URL);
+    setClientId("");
+    setClientSecret("");
+    setShowOAuthOverrides(false);
+    setServiceAccountJson("");
     setToken("");
     setAccessKey("");
     setSecretKey("");
     setActionMessage(null);
   }
 
-  async function runAction(action: "save" | "authorize" | "check") {
+  async function runAction(
+    action: "save" | "authorize" | "check" | "disconnect",
+  ) {
     if (!selectedConnector) return;
     setBusyAction(action);
     setActionMessage(null);
 
     try {
+      if (action === "authorize") {
+        const popup = openOAuthPopupWindow(`连接 ${selectedConnector.name}`);
+        const outcome = await authorizeConnectorWithPopup({
+          connectorId: selectedConnector.id,
+          popup,
+          body: {
+            authType: authChoice,
+            ...(selectedConnector.id === "google-drive" && spreadsheetUrl.trim()
+              ? { spreadsheetUrl: spreadsheetUrl.trim(), returnTo: "/panel/connector" }
+              : { returnTo: "/panel/connector" }),
+            ...(clientId.trim() ? { clientId: clientId.trim() } : {}),
+            ...(clientSecret.trim() ? { clientSecret: clientSecret.trim() } : {}),
+          },
+        });
+        if (!outcome.ok) {
+          throw new Error(
+            outcome.error ||
+              (outcome.cancelled
+                ? "已关闭授权窗口，未完成连接。"
+                : "OAuth2 授权失败。"),
+          );
+        }
+        if (outcome.redirected) {
+          return;
+        }
+        await refreshConnectors();
+        setActionMessage({
+          kind: "success",
+          text: outcome.account
+            ? `Google OAuth2 授权成功，已绑定当前账号连接器（${outcome.account}）。`
+            : "Google OAuth2 授权成功，已自动同步连接状态。",
+        });
+        return;
+      }
+
       const response = await fetch(
         `/api/connectors/${encodeURIComponent(selectedConnector.id)}/${action}`,
         {
@@ -296,48 +467,54 @@ export function IntegrationsConsole() {
           body: JSON.stringify({
             authType: authChoice,
             ...(instanceUrl.trim() ? { endpoint: instanceUrl.trim() } : {}),
+            ...(selectedConnector.id === "google-drive" && spreadsheetUrl.trim()
+              ? { spreadsheetUrl: spreadsheetUrl.trim(), returnTo: "/panel/connector" }
+              : {}),
+            ...(clientId.trim() ? { clientId: clientId.trim() } : {}),
+            ...(clientSecret.trim()
+              ? { clientSecret: clientSecret.trim() }
+              : {}),
+            ...(serviceAccountJson.trim()
+              ? { serviceAccountJson: serviceAccountJson.trim() }
+              : {}),
             ...(token ? { token } : {}),
             ...(accessKey ? { accessKey } : {}),
             ...(secretKey ? { secretKey } : {}),
           }),
         },
       );
-      const payload = (await response.json().catch(() => ({}))) as {
+      const payload = (await response.json().catch(() => ({}))) as ConnectorRuntime & {
         authorizationUrl?: string;
         message?: string;
-        status?: ConnectorStatus;
-        account?: string;
-        credentialConfigured?: boolean;
       };
-      if (!response.ok)
-        throw new Error(payload.message || "连接器服务暂不可用。请稍后重试。");
-
-      if (action === "authorize" && payload.authorizationUrl) {
-        window.location.assign(payload.authorizationUrl);
-        return;
+      if (!response.ok) {
+        throw new Error(
+          payload.message || "连接器服务暂不可用，请检查配置后重试。",
+        );
       }
-      if (action === "save" || action === "check") {
-        setRuntimeById((current) => ({
-          ...current,
-          [selectedConnector.id]: {
-            ...(current[selectedConnector.id] ?? DEFAULT_RUNTIME),
-            status:
-              payload.status ??
-              (action === "check" ? "attention" : "connected"),
-            account: payload.account ?? current[selectedConnector.id]?.account,
-            credentialConfigured: payload.credentialConfigured ?? true,
-            ...(action === "check"
-              ? { lastChecked: new Date().toISOString() }
-              : {}),
-          },
-        }));
-        if (action === "save") setToken("");
+
+      const { authorizationUrl: _url, message, ...runtimePatch } = payload;
+      setRuntimeById((current) => ({
+        ...current,
+        [selectedConnector.id]: {
+          ...(current[selectedConnector.id] ?? DEFAULT_RUNTIME),
+          ...runtimePatch,
+        },
+      }));
+      if (action === "save") {
+        setToken("");
+        setClientSecret("");
+        setServiceAccountJson("");
       }
       setActionMessage({
         kind: "success",
         text:
-          payload.message ||
-          (action === "check" ? "连通性检测已完成。" : "连接器设置已更新。"),
+          message ||
+          (action === "check"
+            ? "连通性检测已完成。"
+            : action === "disconnect"
+              ? "已断开连接。"
+              : "连接器设置已更新。"),
       });
     } catch (error) {
       setActionMessage({ kind: "error", text: describeError(error) });
@@ -346,127 +523,287 @@ export function IntegrationsConsole() {
     }
   }
 
+  async function openConfigDrawer() {
+    setConfigModalOpen(true);
+    setConfigLoading(true);
+    setConfigCopied(false);
+    try {
+      const response = await fetch("/api/connectors/config", {
+        cache: "no-store",
+      });
+      const payload = await response.json();
+      setConfigJson(JSON.stringify(payload, null, 2));
+    } catch {
+      setConfigJson(JSON.stringify({ error: "无法读取配置文件" }, null, 2));
+    } finally {
+      setConfigLoading(false);
+    }
+  }
+
+  async function handleCreateCustomMcp(event: React.FormEvent) {
+    event.preventDefault();
+    if (!customName.trim() || !customEndpoint.trim()) return;
+    setCustomSaving(true);
+    try {
+      const response = await fetch("/api/connectors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: customName.trim(),
+          endpoint: customEndpoint.trim(),
+          token: customToken.trim() || undefined,
+          description: customDescription.trim() || undefined,
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        connector?: ConnectorRuntime;
+        message?: string;
+      };
+      if (!response.ok || !payload.connector?.id) {
+        throw new Error(payload.message || "添加自定义 MCP 失败");
+      }
+      setRuntimeById((current) => ({
+        ...current,
+        [payload.connector!.id!]: payload.connector!,
+      }));
+      setCustomModalOpen(false);
+      setCustomName("");
+      setCustomEndpoint("");
+      setCustomToken("");
+      setCustomDescription("");
+      setCategoryFilter("mcp");
+      setPageBanner({
+        kind: "success",
+        text: payload.message || "已添加自定义 MCP 连接器。",
+      });
+    } catch (error) {
+      setPageBanner({ kind: "error", text: describeError(error) });
+    } finally {
+      setCustomSaving(false);
+    }
+  }
+
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId && !configModalOpen && !customModalOpen) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setSelectedId(null);
+      if (event.key === "Escape") {
+        setSelectedId(null);
+        setConfigModalOpen(false);
+        setCustomModalOpen(false);
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedId]);
+  }, [selectedId, configModalOpen, customModalOpen]);
 
   return (
-    <div className="space-y-6 pb-8">
-      <section className="overflow-hidden rounded-3xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)]">
-        <div className="relative px-6 py-7 sm:px-8 sm:py-9">
-          <div className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-[var(--color-primary)]/10 blur-3xl" />
-          <div className="relative flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] px-3 py-1 text-xs font-medium text-[var(--color-text-subtle)]">
-                <PlugZap className="h-3.5 w-3.5 text-[var(--color-primary)]" />
-                Workspace connectors
-              </div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-heading)] sm:text-4xl">
-                连接器
-              </h1>
-              <p className="max-w-xl text-sm leading-6 text-[var(--color-text-subtle)] sm:text-base">
-                把常用工具和自建 AI Workspace 安全接入工作流。优先使用 OIDC /
-                OAuth，也可按连接器能力选择 API Token 或 AK / SK。
-              </p>
-            </div>
-            <div className="grid min-w-full grid-cols-3 gap-3 sm:min-w-[420px] xl:min-w-[440px]">
-              <OverviewMetric
-                icon={CheckCircle2}
-                label="已连接"
-                value={connectedCount}
-                tone="green"
-              />
-              <OverviewMetric
-                icon={Activity}
-                label="需检查"
-                value={attentionCount}
-                tone="amber"
-              />
-              <OverviewMetric
-                icon={PlugZap}
-                label="连接器"
-                value={connectors.length}
-                tone="violet"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-[color:var(--color-surface-border)] px-6 py-4 sm:px-8">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <label className="relative block w-full xl:max-w-sm">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-subtle)]" />
-              <input
-                aria-label="搜索连接器"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="搜索连接器"
-                className="w-full rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] py-2.5 pl-10 pr-4 text-sm text-[var(--color-text)] outline-none transition placeholder:text-[var(--color-text-subtle)] focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]"
-              />
-            </label>
-            <div
-              aria-label="认证类型筛选"
-              className="flex flex-wrap gap-2"
-              role="group"
-            >
-              {FILTERS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-pressed={filter === item.id}
-                  onClick={() => setFilter(item.id)}
-                  className={`rounded-full px-3.5 py-2 text-xs font-semibold transition sm:text-sm ${filter === item.id ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] shadow-sm" : "border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"}`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section aria-label="连接器目录" className="space-y-4">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--color-heading)]">
-              可用连接器
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              选择一个服务，查看可用认证方式并管理连接。
-            </p>
-          </div>
-          <span className="hidden text-sm text-[var(--color-text-subtle)] sm:block">
-            {visibleConnectors.length} 个连接器
+    <div className="mx-auto max-w-5xl space-y-5 pb-10">
+      {/* Top Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-heading)]">
+            连接器
+          </h1>
+          <span className="hidden rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-muted)] sm:inline-flex">
+            {currentUser?.email
+              ? `当前账号专属 · ${currentUser.email}`
+              : "当前账号专属配置"}
           </span>
+          <Link
+            href="/panel/management"
+            className="hidden items-center gap-1 rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1 text-xs font-medium text-[var(--color-text-muted)] transition hover:border-[color:var(--color-primary)]/40 hover:text-[var(--color-heading)] sm:inline-flex"
+          >
+            <FolderSync className="h-3.5 w-3.5 text-[var(--color-primary)]" />
+            订阅双向同步管理台
+          </Link>
         </div>
 
-        {visibleConnectors.length ? (
-          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            {visibleConnectors.map((connector) => (
-              <ConnectorCard
-                key={connector.id}
-                connector={connector}
-                onClick={() => openConnector(connector)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-[color:var(--color-surface-border)] px-6 py-14 text-center">
-            <Search className="mx-auto h-6 w-6 text-[var(--color-text-subtle)]" />
-            <p className="mt-3 text-sm font-medium text-[var(--color-text)]">
-              没有匹配的连接器
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              试试其他名称或认证类型。
-            </p>
-          </div>
-        )}
-      </section>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setOnlyConnected((prev) => !prev)}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+              onlyConnected
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]"
+            }`}
+          >
+            {connectedConnectors.length > 0 ? (
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
+                <Check className="h-3 w-3" />
+              </span>
+            ) : (
+              <PlugZap className="h-3.5 w-3.5 text-[var(--color-text-subtle)]" />
+            )}
+            <span>已连接 {connectedConnectors.length} 个</span>
+            <ChevronRight className="h-3.5 w-3.5 opacity-60" />
+          </button>
 
+          <button
+            type="button"
+            onClick={() => void openConfigDrawer()}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3.5 py-1.5 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-surface-muted)] sm:text-sm"
+          >
+            <FileText className="h-3.5 w-3.5 text-[var(--color-text-subtle)]" />
+            打开配置文件
+          </button>
+        </div>
+      </div>
+
+      {pageBanner ? (
+        <div
+          role="status"
+          className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm ${
+            pageBanner.kind === "success"
+              ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              : "border-[color:var(--color-danger-border)] bg-[var(--color-danger-muted)]/40 text-[var(--color-danger-foreground)]"
+          }`}
+        >
+          <span>{pageBanner.text}</span>
+          <button
+            type="button"
+            aria-label="关闭提示"
+            onClick={() => setPageBanner(null)}
+            className="rounded-lg p-1 opacity-70 hover:opacity-100"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : null}
+
+      {/* Search & Custom MCP row */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label className="relative flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-subtle)]" />
+          <input
+            aria-label="搜索连接器"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索连接器 (GitHub、GitLab、Vault、Cloudflare、GCP...)"
+            className="w-full rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] py-2.5 pl-11 pr-4 text-sm text-[var(--color-text)] outline-none transition placeholder:text-[var(--color-text-subtle)] focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => setCustomModalOpen(true)}
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-surface-muted)]"
+        >
+          <Plus className="h-4 w-4" />
+          自定义 MCP
+        </button>
+      </div>
+
+      {/* Category Filter Pills */}
+      <div
+        aria-label="连接器分类筛选"
+        className="flex flex-wrap items-center gap-2"
+        role="group"
+      >
+        {CATEGORIES.map((item) => {
+          const active = categoryFilter === item.id && !onlyConnected;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => {
+                setOnlyConnected(false);
+                setCategoryFilter(item.id);
+              }}
+              className={`rounded-full px-4 py-1.5 text-xs font-medium transition sm:text-sm ${
+                active
+                  ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900"
+                  : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-heading)]"
+              }`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2-Column Compact Connector Grid */}
+      {visibleConnectors.length > 0 ? (
+        <div
+          aria-label="连接器目录"
+          className="grid grid-cols-1 gap-3 md:grid-cols-2"
+        >
+          {visibleConnectors.map((connector) => {
+            const tile = tileAppearance(connector.id);
+            const Icon = tile.Icon;
+            return (
+              <div
+                key={connector.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => openConnector(connector)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openConnector(connector);
+                  }
+                }}
+                className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-4 py-3.5 transition hover:border-[color:var(--color-primary)]/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]"
+              >
+                <div className="flex min-w-0 items-center gap-3.5">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-xs ${tile.bg}`}
+                  >
+                    <Icon className="h-5 w-5" strokeWidth={2} />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-semibold text-[var(--color-heading)] sm:text-base">
+                        {connector.name}
+                      </span>
+                      {connector.status === "connected" ? (
+                        <span
+                          aria-label="已连接状态指示"
+                          className="h-2 w-2 shrink-0 rounded-full bg-emerald-500"
+                        />
+                      ) : connector.status === "attention" ? (
+                        <span
+                          aria-label="需检查状态指示"
+                          className="h-2 w-2 shrink-0 rounded-full bg-amber-500"
+                        />
+                      ) : null}
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-[var(--color-text-subtle)] sm:text-sm">
+                      {connector.account
+                        ? `${connector.account} · ${connector.description}`
+                        : connector.description}
+                    </p>
+                  </div>
+                </div>
+
+                <span
+                  className={`shrink-0 rounded-full border px-3.5 py-1 text-xs font-medium transition ${
+                    connector.status === "connected"
+                      ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      : connector.status === "attention"
+                        ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                        : "border-[color:var(--color-surface-border)] bg-[var(--color-surface)] text-[var(--color-text)] group-hover:bg-[var(--color-surface-muted)]"
+                  }`}
+                >
+                  {STATUS_BUTTON_LABELS[connector.status]}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-[color:var(--color-surface-border)] px-6 py-14 text-center">
+          <Search className="mx-auto h-6 w-6 text-[var(--color-text-subtle)]" />
+          <p className="mt-3 text-sm font-medium text-[var(--color-text)]">
+            没有匹配的连接器
+          </p>
+          <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+            试试搜索其他关键词，或点击右上角「+ 自定义 MCP」。
+          </p>
+        </div>
+      )}
+
+      {/* Selected Connector Drawer */}
       {selectedConnector ? (
         <>
           <button
@@ -480,285 +817,553 @@ export function IntegrationsConsole() {
             className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xl flex-col border-l border-[color:var(--color-surface-border)] bg-[var(--color-surface)] shadow-2xl"
             role="dialog"
           >
-            <div className="flex items-start justify-between gap-5 border-b border-[color:var(--color-surface-border)] px-6 py-5 sm:px-8">
-              <div className="flex min-w-0 items-center gap-4">
-                <ConnectorIconTile icon={selectedConnector.icon} size="large" />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2
-                      className="text-xl font-semibold text-[var(--color-heading)]"
-                      id="connector-drawer-title"
+            <div className="flex items-start justify-between gap-4 border-b border-[color:var(--color-surface-border)] px-6 py-5">
+              <div className="flex min-w-0 items-center gap-3.5">
+                {(() => {
+                  const tile = tileAppearance(selectedConnector.id);
+                  const Icon = tile.Icon;
+                  return (
+                    <span
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${tile.bg}`}
                     >
-                      {selectedConnector.name}
-                    </h2>
-                    {selectedConnector.builtIn ? (
-                      <span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--color-primary)]">
-                        内置
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-                    {selectedConnector.category}
+                      <Icon className="h-6 w-6" />
+                    </span>
+                  );
+                })()}
+                <div className="min-w-0">
+                  <h2
+                    id="connector-drawer-title"
+                    className="text-lg font-semibold text-[var(--color-heading)]"
+                  >
+                    {selectedConnector.name}
+                  </h2>
+                  <p className="mt-0.5 text-xs text-[var(--color-text-subtle)]">
+                    {selectedConnector.categoryLabel}
+                    {selectedConnector.authMode &&
+                    selectedConnector.authMode !== "none"
+                      ? ` · ${selectedConnector.authMode}`
+                      : ""}
                   </p>
                 </div>
               </div>
               <button
                 aria-label="关闭"
-                className="rounded-xl p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]"
-                onClick={() => setSelectedId(null)}
                 type="button"
+                onClick={() => setSelectedId(null)}
+                className="rounded-xl p-2 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6 sm:px-8">
+            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
               <div
-                className={`flex items-center justify-between rounded-2xl border px-4 py-3 ${statusStyle(selectedConnector.status)}`}
+                className={`flex items-center justify-between gap-2 rounded-2xl border px-4 py-3 text-sm ${
+                  selectedConnector.status === "connected"
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    : selectedConnector.status === "attention"
+                      ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                      : "border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] text-[var(--color-text-subtle)]"
+                }`}
               >
-                <div className="flex items-center gap-2.5">
-                  {selectedConnector.status === "connected" ? (
-                    <CheckCircle2 className="h-4 w-4" />
-                  ) : (
-                    <CircleHelp className="h-4 w-4" />
-                  )}
-                  <span className="text-sm font-semibold">
-                    {STATUS_LABELS[selectedConnector.status]}
-                  </span>
+                <div className="flex items-center gap-2 font-medium">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>{STATUS_BUTTON_LABELS[selectedConnector.status]}</span>
                 </div>
                 {selectedConnector.account ? (
-                  <span className="max-w-[50%] truncate text-xs">
+                  <span className="max-w-[58%] truncate text-xs">
                     {selectedConnector.account}
                   </span>
                 ) : null}
               </div>
 
+              {selectedConnector.statusDetail ? (
+                <p className="text-xs leading-5 text-[var(--color-text-muted)]">
+                  {selectedConnector.statusDetail}
+                </p>
+              ) : null}
+
+              {/* Google Drive Spreadsheet Binding */}
+              {selectedConnector.id === "google-drive" ? (
+                <div className="space-y-3 rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)]/40 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-[var(--color-heading)]">
+                      订阅同步目标表格 (Google Sheets)
+                    </span>
+                    <a
+                      href={spreadsheetUrl || DEFAULT_SHEET_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:underline"
+                    >
+                      打开表格 <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                  <input
+                    aria-label="Google Sheets URL"
+                    type="url"
+                    value={spreadsheetUrl}
+                    onChange={(event) => setSpreadsheetUrl(event.target.value)}
+                    placeholder={DEFAULT_SHEET_URL}
+                    className={inputClassName}
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-subtle)]">
+                    <span>
+                      {selectedConnector.sheetTitle
+                        ? `工作表：${selectedConnector.sheetTitle} (gid=${selectedConnector.gid ?? "0"})`
+                        : "支持粘贴完整编辑链接或 gid 链接"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={busyAction !== null}
+                        onClick={() => void runAction("save")}
+                        className="rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                      >
+                        保存表格链接
+                      </button>
+                      <Link
+                        href="/panel/management"
+                        className="inline-flex items-center gap-1 rounded-lg bg-[var(--color-primary)]/10 px-3 py-1.5 text-xs font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                      >
+                        前往管理台同步
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Auth Mode Selector */}
               <div>
                 <h3 className="text-sm font-semibold text-[var(--color-text)]">
                   认证方式
                 </h3>
-                <p className="mt-1 text-xs leading-5 text-[var(--color-text-subtle)]">
-                  优先选择 OIDC / OAuth；也可使用此连接器支持的凭证类型。
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-2">
                   {selectedConnector.authKinds.map((kind) => (
                     <button
                       key={kind}
                       aria-pressed={authChoice === kind}
-                      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${authChoice === kind ? "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)] text-[var(--color-primary)]" : "border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"}`}
+                      type="button"
                       onClick={() => {
                         setAuthChoice(kind);
                         setActionMessage(null);
                       }}
-                      type="button"
+                      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                        authChoice === kind
+                          ? "border-[color:var(--color-primary)] bg-[var(--color-primary-muted)] text-[var(--color-primary)]"
+                          : "border-[color:var(--color-surface-border)] text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"
+                      }`}
                     >
-                      {authLabel(kind)}
+                      {authButtonText(selectedConnector, kind)}
                       {kind === selectedConnector.preferredAuth ? (
-                        <span className="ml-1.5 opacity-70">推荐</span>
+                        <span className="ml-1.5 opacity-75">推荐</span>
                       ) : null}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {selectedConnector.id === "self-hosted-ai-workspace" ||
-              selectedConnector.id === "custom-mcp-webhook" ? (
-                <FormField
-                  label={
-                    selectedConnector.id === "custom-mcp-webhook"
-                      ? "服务地址"
-                      : "实例地址"
-                  }
-                  hint={
-                    selectedConnector.id === "custom-mcp-webhook"
-                      ? "输入 MCP 服务或 Webhook 的访问地址。"
-                      : "输入自建 AI Workspace 的访问地址。"
-                  }
-                >
+              {(selectedConnector.id === "vault" ||
+                selectedConnector.id === "gitea" ||
+                selectedConnector.id === "gitlab" ||
+                selectedConnector.isCustom) && (
+                <FormField label="服务地址" hint="留空则使用环境变量默认地址。">
                   <input
                     autoComplete="url"
                     className={inputClassName}
-                    onChange={(event) => setInstanceUrl(event.target.value)}
-                    placeholder="https://workspace.example.com"
-                    type="url"
                     value={instanceUrl}
+                    onChange={(event) => setInstanceUrl(event.target.value)}
+                    placeholder="https://service.example.com"
+                    type="url"
                   />
                 </FormField>
-              ) : null}
+              )}
 
               {authChoice === "oidc" ? (
-                <div className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)]/60 p-4">
-                  <div className="flex gap-3">
+                <div className="space-y-3 rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)]/50 p-4">
+                  <div className="flex items-start gap-3">
                     <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-primary)]" />
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--color-text)]">
-                        使用安全授权
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-[var(--color-heading)]">
+                        {selectedConnector.id === "google-drive"
+                          ? "Google OAuth2 安全授权（读写 Sheets）"
+                          : "OAuth2 / OIDC 安全授权"}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-[var(--color-text-subtle)]">
-                        授权将由服务端发起，并在完成后返回连接器中心。
+                      <p className="text-xs leading-5 text-[var(--color-text-subtle)]">
+                        {selectedConnector.id === "google-drive"
+                          ? "将弹出 Google OAuth2 授权窗口，完成后自动关闭并返回本页，凭据仅保存于当前登录账号。"
+                          : "由服务端弹出 OAuth2 授权窗口并在完成后返回连接器中心。"}
                       </p>
+                      {selectedConnector.id === "google-drive" ? (
+                        <span className="inline-block rounded-md bg-[var(--color-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-muted)]">
+                          {selectedConnector.oauthConfigured
+                            ? "✓ 已检测到 Google OAuth Client 配置"
+                            : "尚未检测到环境变量 GOOGLE_CLIENT_ID / SECRET，可展开下方填写"}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
+
+                  {selectedConnector.id === "google-drive" ? (
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowOAuthOverrides((v) => !v)}
+                        className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-heading)]"
+                      >
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 transition ${showOAuthOverrides ? "rotate-180" : ""}`}
+                        />
+                        自定义 OAuth Client ID / Secret（可选）
+                      </button>
+                      {showOAuthOverrides ? (
+                        <div className="mt-3 space-y-3">
+                          <FormField label="Google OAuth Client ID">
+                            <input
+                              className={inputClassName}
+                              value={clientId}
+                              onChange={(event) =>
+                                setClientId(event.target.value)
+                              }
+                              placeholder="xxx.apps.googleusercontent.com"
+                            />
+                          </FormField>
+                          <FormField label="Google OAuth Client Secret">
+                            <input
+                              className={inputClassName}
+                              type="password"
+                              value={clientSecret}
+                              onChange={(event) =>
+                                setClientSecret(event.target.value)
+                              }
+                              placeholder="GOCSPX-..."
+                            />
+                          </FormField>
+                          <button
+                            type="button"
+                            disabled={busyAction !== null}
+                            onClick={() => void runAction("save")}
+                            className="rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+                          >
+                            保存 OAuth 凭据
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <button
-                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    type="button"
                     disabled={busyAction !== null}
                     onClick={() => void runAction("authorize")}
-                    type="button"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:opacity-90 disabled:opacity-50"
                   >
                     {busyAction === "authorize" ? (
                       <LoaderCircle className="h-4 w-4 animate-spin" />
                     ) : (
                       <ArrowUpRight className="h-4 w-4" />
                     )}
-                    继续授权
+                    继续 Google OAuth2 授权
                   </button>
                 </div>
+              ) : null}
+
+              {authChoice === "service-account" ? (
+                <FormField
+                  label="Service Account JSON（备选）"
+                  hint="需先将目标 Google Sheet 共享给该 Service Account 邮箱（编辑者权限）。"
+                >
+                  <textarea
+                    rows={5}
+                    className={inputClassName}
+                    value={serviceAccountJson}
+                    onChange={(event) =>
+                      setServiceAccountJson(event.target.value)
+                    }
+                    placeholder='{"type":"service_account","client_email":"...","private_key":"..."}'
+                  />
+                </FormField>
               ) : null}
 
               {authChoice === "api-token" ? (
                 <FormField
                   label="API Token"
-                  hint={
-                    selectedConnector.credentialConfigured
-                      ? "已保存的凭证不会显示。输入新 Token 可轮换凭证。"
-                      : "凭证会通过安全接口提交，保存后不会再次显示。"
-                  }
+                  hint="已保存的凭据不会明文显示，重新输入可覆盖轮换。"
                 >
                   <input
                     autoComplete="new-password"
                     className={inputClassName}
+                    type="password"
+                    value={token}
                     onChange={(event) => setToken(event.target.value)}
                     placeholder={
                       selectedConnector.credentialConfigured
                         ? "输入新 Token 以轮换"
                         : "粘贴 API Token"
                     }
-                    type="password"
-                    value={token}
                   />
                 </FormField>
               ) : null}
 
               {authChoice === "ak-sk" ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <FormField label="Access Key ID">
                     <input
-                      autoComplete="off"
                       className={inputClassName}
+                      value={accessKey}
                       onChange={(event) => setAccessKey(event.target.value)}
                       placeholder="Access Key ID"
-                      value={accessKey}
                     />
                   </FormField>
-                  <FormField
-                    label="Secret Access Key"
-                    hint="Secret 保存后不会再次显示。"
-                  >
+                  <FormField label="Secret Access Key">
                     <input
-                      autoComplete="new-password"
                       className={inputClassName}
-                      onChange={(event) => setSecretKey(event.target.value)}
-                      placeholder="Secret Access Key"
                       type="password"
                       value={secretKey}
+                      onChange={(event) => setSecretKey(event.target.value)}
+                      placeholder="Secret Access Key"
                     />
                   </FormField>
                 </div>
               ) : null}
 
               {authChoice === "webhook-mcp" ? (
-                <div className="space-y-4">
-                  <FormField label="服务地址">
-                    <input
-                      autoComplete="url"
-                      className={inputClassName}
-                      onChange={(event) => setInstanceUrl(event.target.value)}
-                      placeholder="https://service.example.com/mcp"
-                      type="url"
-                      value={instanceUrl}
-                    />
-                  </FormField>
-                  <FormField
-                    label="访问令牌"
-                    hint="可选；保存后将以掩码状态展示。"
-                  >
-                    <input
-                      autoComplete="new-password"
-                      className={inputClassName}
-                      onChange={(event) => setToken(event.target.value)}
-                      placeholder="Bearer token"
-                      type="password"
-                      value={token}
-                    />
-                  </FormField>
-                </div>
+                <FormField label="访问令牌（可选）">
+                  <input
+                    className={inputClassName}
+                    type="password"
+                    value={token}
+                    onChange={(event) => setToken(event.target.value)}
+                    placeholder="Bearer token"
+                  />
+                </FormField>
               ) : null}
 
               {actionMessage ? (
                 <div
                   aria-live="polite"
-                  className={`rounded-xl border px-4 py-3 text-sm ${actionMessage.kind === "success" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "border-[color:var(--color-danger-border)] bg-[var(--color-danger-muted)]/40 text-[var(--color-danger-foreground)]"}`}
+                  className={`rounded-xl border px-4 py-3 text-sm ${
+                    actionMessage.kind === "success"
+                      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      : "border-[color:var(--color-danger-border)] bg-[var(--color-danger-muted)]/40 text-[var(--color-danger-foreground)]"
+                  }`}
                 >
                   {actionMessage.text}
                 </div>
               ) : null}
+
               {selectedConnector.lastChecked ? (
                 <p className="text-xs text-[var(--color-text-subtle)]">
-                  最近检测：
-                  {new Date(selectedConnector.lastChecked).toLocaleString()}
+                  最近检测：{new Date(selectedConnector.lastChecked).toLocaleString()}
                 </p>
               ) : null}
             </div>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-[color:var(--color-surface-border)] px-6 py-4 sm:flex-row sm:justify-between sm:px-8">
-              <button
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[color:var(--color-surface-border)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text)] transition hover:bg-[var(--color-surface-muted)] disabled:opacity-50"
-                disabled={busyAction !== null}
-                onClick={() => void runAction("check")}
-                type="button"
-              >
-                {busyAction === "check" ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Activity className="h-4 w-4" />
-                )}
-                检测连通性
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[color:var(--color-surface-border)] px-6 py-4">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={busyAction !== null}
+                  onClick={() => void runAction("check")}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--color-surface-border)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-muted)] disabled:opacity-50 sm:text-sm"
+                >
+                  {busyAction === "check" ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Activity className="h-4 w-4" />
+                  )}
+                  检测连通性
+                </button>
+                {selectedConnector.credentialConfigured ? (
+                  <button
+                    type="button"
+                    disabled={busyAction !== null}
+                    onClick={() => void runAction("disconnect")}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--color-surface-border)] px-3 py-2 text-xs font-medium text-[var(--color-danger)] hover:bg-[var(--color-danger-muted)]/30 sm:text-sm"
+                  >
+                    <Unplug className="h-4 w-4" />
+                    断开
+                  </button>
+                ) : null}
+              </div>
+
               {authChoice !== "oidc" ? (
                 <button
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary-foreground)] transition hover:opacity-90 disabled:opacity-50"
-                  disabled={
-                    busyAction !== null ||
-                    (authChoice === "api-token" && !token) ||
-                    (authChoice === "ak-sk" && (!accessKey || !secretKey)) ||
-                    ((authChoice === "webhook-mcp" ||
-                      selectedConnector.id === "self-hosted-ai-workspace" ||
-                      selectedConnector.id === "custom-mcp-webhook") &&
-                      !instanceUrl)
-                  }
-                  onClick={() => void runAction("save")}
                   type="button"
+                  disabled={busyAction !== null}
+                  onClick={() => void runAction("save")}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-xs font-semibold text-[var(--color-primary-foreground)] hover:opacity-90 disabled:opacity-50 sm:text-sm"
                 >
                   {busyAction === "save" ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />
                   ) : (
                     <Check className="h-4 w-4" />
                   )}
-                  {selectedConnector.credentialConfigured
-                    ? "保存并轮换"
-                    : "保存并连接"}
+                  保存并连接
                 </button>
               ) : null}
             </div>
           </aside>
         </>
       ) : null}
+
+      {/* Config Inspector Modal */}
+      {configModalOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="连接器配置文件"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+        >
+          <div className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[color:var(--color-surface-border)] px-5 py-4">
+              <div>
+                <h2 className="text-base font-semibold text-[var(--color-heading)]">
+                  连接器配置文件（已脱敏）
+                </h2>
+                <p className="text-xs text-[var(--color-text-subtle)]">
+                  OAuth Token、Secret Key 与 Service Account 私钥不会在配置视图中暴露。
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="关闭配置"
+                onClick={() => setConfigModalOpen(false)}
+                className="rounded-lg p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              {configLoading ? (
+                <div className="flex items-center gap-2 text-sm text-[var(--color-text-subtle)]">
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  读取配置中…
+                </div>
+              ) : (
+                <pre className="overflow-x-auto rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] p-4 text-xs leading-5 text-[var(--color-text)]">
+                  {configJson}
+                </pre>
+              )}
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-[color:var(--color-surface-border)] px-5 py-3">
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(configJson);
+                  setConfigCopied(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--color-surface-border)] px-3.5 py-2 text-xs font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-muted)]"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                {configCopied ? "已复制" : "复制 JSON"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfigModalOpen(false)}
+                className="rounded-xl bg-[var(--color-primary)] px-4 py-2 text-xs font-semibold text-[var(--color-primary-foreground)]"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Custom MCP Modal */}
+      {customModalOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="新增自定义 MCP 连接器"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+        >
+          <form
+            onSubmit={(e) => void handleCreateCustomMcp(e)}
+            className="w-full max-w-md overflow-hidden rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-[color:var(--color-surface-border)] px-5 py-4">
+              <h2 className="text-base font-semibold text-[var(--color-heading)]">
+                添加自定义 MCP
+              </h2>
+              <button
+                type="button"
+                aria-label="关闭新增"
+                onClick={() => setCustomModalOpen(false)}
+                className="rounded-lg p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-surface-muted)]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4 p-5">
+              <FormField label="名称">
+                <input
+                  required
+                  className={inputClassName}
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder="例如：Internal CMDB MCP"
+                />
+              </FormField>
+              <FormField label="服务地址">
+                <input
+                  required
+                  type="url"
+                  className={inputClassName}
+                  value={customEndpoint}
+                  onChange={(e) => setCustomEndpoint(e.target.value)}
+                  placeholder="https://mcp.example.com/sse"
+                />
+              </FormField>
+              <FormField label="Bearer Token（可选）">
+                <input
+                  type="password"
+                  className={inputClassName}
+                  value={customToken}
+                  onChange={(e) => setCustomToken(e.target.value)}
+                  placeholder="Bearer token"
+                />
+              </FormField>
+              <FormField label="描述（可选）">
+                <input
+                  className={inputClassName}
+                  value={customDescription}
+                  onChange={(e) => setCustomDescription(e.target.value)}
+                  placeholder="服务用途说明"
+                />
+              </FormField>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-[color:var(--color-surface-border)] px-5 py-3">
+              <button
+                type="button"
+                onClick={() => setCustomModalOpen(false)}
+                className="rounded-xl border border-[color:var(--color-surface-border)] px-4 py-2 text-xs font-medium text-[var(--color-text)]"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                disabled={customSaving}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-xs font-semibold text-[var(--color-primary-foreground)] disabled:opacity-50"
+              >
+                {customSaving ? (
+                  <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Plus className="h-3.5 w-3.5" />
+                )}
+                保存并接入
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 const inputClassName =
-  "w-full rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3.5 py-3 text-sm text-[var(--color-text)] outline-none transition placeholder:text-[var(--color-text-subtle)] focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]";
+  "w-full rounded-xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition placeholder:text-[var(--color-text-subtle)] focus:border-[color:var(--color-primary)] focus:ring-2 focus:ring-[color:var(--color-primary-muted)]";
 
 function FormField({
   label,
@@ -770,7 +1375,7 @@ function FormField({
   children: ReactNode;
 }) {
   return (
-    <label className="block space-y-2">
+    <label className="block space-y-1.5">
       <span className="block text-sm font-semibold text-[var(--color-text)]">
         {label}
       </span>
@@ -781,112 +1386,5 @@ function FormField({
         </span>
       ) : null}
     </label>
-  );
-}
-
-function OverviewMetric({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: typeof CheckCircle2;
-  label: string;
-  value: number;
-  tone: "green" | "amber" | "violet";
-}) {
-  const toneClass =
-    tone === "green"
-      ? "text-emerald-600 dark:text-emerald-300"
-      : tone === "amber"
-        ? "text-amber-600 dark:text-amber-300"
-        : "text-[var(--color-primary)]";
-  return (
-    <div className="rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)]/80 p-3.5 sm:p-4">
-      <div
-        className={`flex items-center gap-2 text-xs font-medium ${toneClass}`}
-      >
-        <Icon className="h-4 w-4" />
-        <span>{label}</span>
-      </div>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--color-heading)]">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ConnectorCard({
-  connector,
-  onClick,
-}: {
-  connector: Connector;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      className="group flex min-h-[194px] w-full flex-col rounded-2xl border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] p-5 text-left transition duration-200 hover:-translate-y-0.5 hover:border-[color:var(--color-primary)]/40 hover:shadow-lg hover:shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]"
-      onClick={onClick}
-      type="button"
-    >
-      <div className="flex w-full items-start justify-between gap-4">
-        <ConnectorIconTile icon={connector.icon} />
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusStyle(connector.status)}`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${connector.status === "connected" ? "bg-emerald-500" : connector.status === "attention" ? "bg-amber-500" : "bg-slate-400"}`}
-          />
-          {STATUS_LABELS[connector.status]}
-        </span>
-      </div>
-      <div className="mt-4 flex w-full items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate text-base font-semibold text-[var(--color-heading)]">
-              {connector.name}
-            </h3>
-            {connector.builtIn ? (
-              <span className="rounded-full bg-[var(--color-primary-muted)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--color-primary)]">
-                内置
-              </span>
-            ) : null}
-          </div>
-          <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-[var(--color-text-subtle)]">
-            {connector.description}
-          </p>
-        </div>
-        <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-[var(--color-text-subtle)] transition group-hover:translate-x-0.5 group-hover:text-[var(--color-primary)]" />
-      </div>
-      <div className="mt-auto flex w-full items-center justify-between gap-3 pt-4">
-        <span className="truncate text-xs text-[var(--color-text-subtle)]">
-          {connector.account ?? connector.category}
-        </span>
-        <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-[var(--color-text-subtle)]">
-          {authLabel(connector.preferredAuth)}
-          <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function ConnectorIconTile({
-  icon,
-  size = "normal",
-}: {
-  icon: ConnectorIcon;
-  size?: "normal" | "large";
-}) {
-  const Icon = iconFor(icon);
-  const tileSize =
-    size === "large" ? "h-14 w-14 rounded-2xl" : "h-11 w-11 rounded-xl";
-  const iconSize = size === "large" ? "h-7 w-7" : "h-5 w-5";
-  return (
-    <span
-      className={`flex shrink-0 items-center justify-center border border-[color:var(--color-surface-border)] bg-[var(--color-surface-muted)] text-[var(--color-text)] ${tileSize}`}
-    >
-      <Icon className={iconSize} strokeWidth={1.8} />
-    </span>
   );
 }
