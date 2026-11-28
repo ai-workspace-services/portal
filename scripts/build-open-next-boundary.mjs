@@ -105,7 +105,32 @@ await writeFile(
     "export default {",
     "  ...baseConfig,",
     `  assetPrefix: process.env.NEXT_PUBLIC_STATIC_CDN_URL ? \`\${process.env.NEXT_PUBLIC_STATIC_CDN_URL.replace(/\\/$/, "")}/_edge/${boundary}\` : "/_edge/${boundary}",`,
-    `  generateBuildId: async () => "${boundary}-${releaseId()}",`,
+    `  generateBuildId: async () => "${boundary}-${releaseId()}-cf-edge",`,
+    "  serverExternalPackages: Array.from(new Set([",
+    "    ...(baseConfig.serverExternalPackages ?? []),",
+    '    "dd-trace",',
+    '    "pdfjs-dist",',
+    '    "react-pdf",',
+    "  ])),",
+    "  outputFileTracingExcludes: {",
+    '    "*": [',
+    '      "**/node_modules/dd-trace/**",',
+    '      "**/node_modules/@datadog/**",',
+    '      "**/node_modules/@opentelemetry/sdk-node/**",',
+    '      "**/node_modules/@opentelemetry/sdk-trace-base/**",',
+    '      "**/node_modules/@opentelemetry/sdk-trace-node/**",',
+    '      "**/node_modules/@opentelemetry/exporter-trace-otlp-grpc/**",',
+    '      "**/node_modules/@opentelemetry/exporter-trace-otlp-proto/**",',
+    '      "**/node_modules/@opentelemetry/otlp-exporter-base/**",',
+    '      "**/node_modules/@opentelemetry/otlp-transformer/**",',
+    '      "**/node_modules/@opentelemetry/instrumentation-http/**",',
+    '      "**/node_modules/@opentelemetry/instrumentation-undici/**",',
+    '      "**/node_modules/@opentelemetry/resources/**",',
+    '      "**/node_modules/pdfjs-dist/**",',
+    '      "**/node_modules/react-pdf/**",',
+    '      "**/node_modules/next/dist/compiled/@vercel/og/**",',
+    "    ],",
+    "  },",
     // 客户端要知道「我是哪个 boundary」和「哪个前缀归谁」，BoundaryLink 才能在
     // 跨界时退回原生 <a>。单体构建不写这两个变量，于是全站继续走 next/link。
     //
@@ -158,7 +183,8 @@ if (boundary === "console") {
   ].join("\n"));
 }
 await writeFile(path.join(boundaryRoot, "instrumentation.ts"), [
-  'export * from "../../instrumentation";',
+  "// CF Worker boundaries disable Node-only dd-trace / OpenTelemetry instrumentation.",
+  "export async function register() {}",
   "",
 ].join("\n"));
 await writeFile(
@@ -179,6 +205,11 @@ await writeFile(
       // resolve the matching Accounts endpoint at request time.
       RUNTIME_ENV: deploymentEnvironment,
       CONTENT_LANGUAGE_MODE: process.env.CONTENT_LANGUAGE_MODE || "static",
+      DD_TRACE_ENABLED: "false",
+      OTEL_SDK_DISABLED: "true",
+      TRACING_PROVIDER: "none",
+      PORTAL_RELEASE_VARIANT: "cf-edge",
+      PORTAL_RELEASE_TAG: `${releaseId()}-cf-edge`,
       ...(process.env.CONTENT_REVALIDATE_SECONDS
         ? { CONTENT_REVALIDATE_SECONDS: process.env.CONTENT_REVALIDATE_SECONDS }
         : {}),

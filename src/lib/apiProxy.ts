@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-import { traceLogFields } from '@/server/observability'
+import { traceLogFields } from '@/server/traceLogFields'
 
 const DEFAULT_FORWARD_HEADERS = [
   'accept',
