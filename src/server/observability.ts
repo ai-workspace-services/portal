@@ -6,6 +6,10 @@ import { UndiciInstrumentation } from '@opentelemetry/instrumentation-undici'
 import { resourceFromAttributes } from '@opentelemetry/resources'
 import { NodeSDK } from '@opentelemetry/sdk-node'
 
+export { traceLogFields } from './traceLogFields'
+
+;(globalThis as { __OTEL_TRACE_API__?: typeof trace }).__OTEL_TRACE_API__ = trace
+
 export type TracingProvider = 'otel' | 'ddtrace' | 'none'
 
 export interface DDTraceRuntimeConfig {
@@ -101,6 +105,7 @@ export async function startTracing() {
       logInjection: cfg.logInjection,
     })
     activeDDTracer = ddtrace
+    ;(globalThis as { __DD_TRACER__?: typeof ddtrace }).__DD_TRACER__ = ddtrace
     activeProvider = 'ddtrace'
     started = true
     console.info('[ddtrace] Console tracing started', {
@@ -161,42 +166,4 @@ export async function startTracing() {
     sampler: process.env.OTEL_TRACES_SAMPLER || 'default',
   })
   sdk.start()
-}
-
-export function traceLogFields(): Record<string, string> {
-  const activeSpan = trace.getActiveSpan()
-  const spanContext = activeSpan?.spanContext()
-  let traceId = spanContext?.traceId ?? ''
-  let spanId = spanContext?.spanId ?? ''
-
-  const ddTracer = activeDDTracer ?? (resolveTracingProvider(process.env) === 'ddtrace' ? getGlobalDDTracer() : null)
-  if (!traceId && ddTracer) {
-    const ddSpan = ddTracer.scope().active()
-    const ddCtx = ddSpan?.context()
-    if (ddCtx) {
-      traceId = ddCtx.toTraceId()
-      spanId = ddCtx.toSpanId()
-    }
-  }
-
-  return {
-    trace_id: traceId,
-    span_id: spanId,
-    service_name: firstNonEmpty(process.env.DD_SERVICE, process.env.OTEL_SERVICE_NAME, 'web-saas-console'),
-    instance: firstNonEmpty(
-      process.env.OTEL_SERVICE_INSTANCE_ID,
-      process.env.INSTANCE,
-      process.env.HOSTNAME,
-      process.env.DD_SERVICE,
-      process.env.OTEL_SERVICE_NAME,
-      'web-saas-console',
-    ),
-    environment: firstNonEmpty(
-      process.env.DD_ENV,
-      process.env.OTEL_ENVIRONMENT,
-      process.env.RUNTIME_ENV,
-      process.env.NEXT_PUBLIC_RUNTIME_ENVIRONMENT,
-      process.env.ENVIRONMENT,
-    ),
-  }
 }
