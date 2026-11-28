@@ -37,6 +37,8 @@ export type CatalogPlan = {
   stripeProfile?: string;
   businessLine?: string;
   merchantEntity?: string;
+  reconciliationTag?: string;
+  regionScope?: string;
   displayName?: string;
   /** subscription | service */
   kind?: string;

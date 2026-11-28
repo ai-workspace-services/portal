@@ -128,7 +128,7 @@ describe("catalog settings apply", () => {
     expect(delOpts?.method).toBe("DELETE");
   });
 
-  it("edits multi-entity stripeProfile, businessLine, and merchantEntity fields", async () => {
+  it("edits multi-entity stripeProfile, businessLine, merchantEntity, reconciliationTag, and regionScope fields", async () => {
     fixture.plans = [
       {
         planId: "PRO-MONTHLY-V2",
@@ -157,6 +157,12 @@ describe("catalog settings apply", () => {
     fireEvent.change(screen.getByLabelText("收款公司名称（Merchant Entity）"), {
       target: { value: "US Retail LLC" },
     });
+    fireEvent.change(screen.getByLabelText("财务对账标签（Reconciliation Tag）"), {
+      target: { value: "FIN-US-RETAIL" },
+    });
+    fireEvent.change(screen.getByLabelText("地区/节点范围（Region Scope）"), {
+      target: { value: "US-WEST" },
+    });
     fireEvent.change(screen.getByLabelText("操作原因"), {
       target: { value: "assign us entity" },
     });
@@ -168,6 +174,42 @@ describe("catalog settings apply", () => {
       stripeProfile: "us",
       businessLine: "us_retail",
       merchantEntity: "US Retail LLC",
+      reconciliationTag: "FIN-US-RETAIL",
+      regionScope: "US-WEST",
+    });
+  });
+
+  it("applies HK Plus and US Pro+ quick presets for multi-entity reconciliation", async () => {
+    fixture.plans = [
+      {
+        planId: "PLUS-MONTHLY-2026",
+        displayName: "Plus 月付",
+        kind: "subscription",
+        packageName: "plus",
+        active: true,
+        includedQuotaBytes: 30 * 1024 ** 3,
+        priceAmount: 3000,
+        priceCurrency: "CNY",
+        priceUnit: "month",
+      },
+    ];
+    render(<OpsPlanCatalog />);
+    fireEvent.click(screen.getByText("套用 HK · Plus（JP/PH）"));
+    fireEvent.click(screen.getByText("套用 US · Pro+（美国边缘节点）"));
+    fireEvent.click(screen.getByText("套用 HK · Plus（JP/PH）"));
+    fireEvent.change(screen.getByLabelText("操作原因"), {
+      target: { value: "apply hk plus preset" },
+    });
+    fireEvent.click(screen.getByText("保存并应用设置"));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String(options?.body))).toMatchObject({
+      planId: "PLUS",
+      stripeProfile: "hk",
+      businessLine: "hk_apac_plus",
+      merchantEntity: "HK Entity Ltd",
+      reconciliationTag: "FIN-HK-PLUS-APAC",
+      regionScope: "JP,PH,APAC",
     });
   });
 });
