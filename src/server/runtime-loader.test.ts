@@ -41,15 +41,15 @@ describe("runtime-loader", () => {
     const config = loadRuntimeConfig({ hostname: "console.svc.plus" });
 
     expect(config.authUrl).toBe(
-      "https://prod-accounts-b7wzzanztq-de.a.run.app",
+      "https://accounts-selfhost-prod-v6.svc.plus",
     );
     expect(config.xconnectZeroUrl).toBe(
-      "https://prod-accounts-b7wzzanztq-de.a.run.app",
+      "https://accounts.svc.plus",
     );
     expect(config.dashboardUrl).toBe("https://console.svc.plus");
   });
 
-  it("keeps Serverless UAT on its Cloudflare and Cloud Run service entrances", async () => {
+  it("keeps UAT on its configured service entrances", async () => {
     const { loadRuntimeConfig } = await import("./runtime-loader");
 
     const config = loadRuntimeConfig({
@@ -65,7 +65,7 @@ describe("runtime-loader", () => {
     );
     expect(config.dashboardUrl).toBe("https://console.onwalk.net");
     expect(config.docsServiceUrl).toBe(
-      "https://uat-content-service-4ueoyqlpbq-de.a.run.app",
+      "https://content-uat.onwalk.net",
     );
   });
 
@@ -106,7 +106,7 @@ describe("runtime-loader", () => {
 
     expect(config.environment).toBe("prod");
     expect(config.authUrl).toBe(
-      "https://prod-accounts-b7wzzanztq-de.a.run.app",
+      "https://accounts-selfhost-prod-v6.svc.plus",
     );
   });
   it("uses deployment-owned endpoints for an isolated production stack", async () => {

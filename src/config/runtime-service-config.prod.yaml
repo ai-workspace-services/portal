@@ -1,31 +1,28 @@
-# 生产环境。
+# 生产环境（prod-k3s-v6 + Fluxgate 混合架构）。
 #
 # 顶层必须给全端点: region 的默认值是 'default', 而下面 regions 只声明了 cn
-# 与 global —— region=default 时 regions 覆盖不命中。原先 prod 顶层没有端点,
-# 靠 base 兜底才能工作(base 里写的正是这几个生产地址), 而同一个兜底让所有
-# 非生产环境也连上了生产。现在 base 不再放端点, 每个环境自己声明完整。
-apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
-# Serverless 生产环境 BFF 直接访问 Cloud Run Accounts 源站，避免 Cloudflare Worker
-# 出站请求经公共 edge 别名（accounts.svc.plus / accounts-serverless-prod.svc.plus）
-# 时触发 Cloudflare Managed Challenge (403)。
-authUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
-xconnectZeroUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
+# 与 global —— region=default 时 regions 覆盖不命中。
+# K3s Pod 运行时通过 RUNTIME_*_URL 环境变量注入集群内网 Service；
+# CF Worker 边缘运行时直接消费以下公网源站（其中 authUrl 走直连核心源站避免 WAF/自环）。
+apiBaseUrl: https://accounts.svc.plus/api
+authUrl: https://accounts-selfhost-prod-v6.svc.plus
+agentServerUrl: https://accounts.svc.plus
+xconnectZeroUrl: https://accounts.svc.plus
 dashboardUrl: https://console.svc.plus
-# Use the GitOps-declared Cloud Run source directly. The public docs hostname
-# may point at a stale edge service; server-side requests still carry the
-# INTERNAL_SERVICE_TOKEN through docsServiceClient.
-docsServiceUrl: https://prod-content-service-b7wzzanztq-de.a.run.app
+docsServiceUrl: https://content.svc.plus
 logLevel: warn
 regions:
   cn:
-    apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
-    authUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
-    xconnectZeroUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
+    apiBaseUrl: https://accounts.svc.plus/api
+    authUrl: https://accounts-selfhost-prod-v6.svc.plus
+    agentServerUrl: https://accounts.svc.plus
+    xconnectZeroUrl: https://accounts.svc.plus
     dashboardUrl: https://console.svc.plus
-    docsServiceUrl: https://prod-content-service-b7wzzanztq-de.a.run.app
+    docsServiceUrl: https://content.svc.plus
   global:
-    apiBaseUrl: https://rag-server-svc-plus-266500572462.asia-northeast1.run.app
-    authUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
-    xconnectZeroUrl: https://prod-accounts-b7wzzanztq-de.a.run.app
+    apiBaseUrl: https://accounts.svc.plus/api
+    authUrl: https://accounts-selfhost-prod-v6.svc.plus
+    agentServerUrl: https://accounts.svc.plus
+    xconnectZeroUrl: https://accounts.svc.plus
     dashboardUrl: https://console.svc.plus
-    docsServiceUrl: https://prod-content-service-b7wzzanztq-de.a.run.app
+    docsServiceUrl: https://content.svc.plus

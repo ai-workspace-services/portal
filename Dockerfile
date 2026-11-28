@@ -97,7 +97,11 @@ WORKDIR /app/dashboard/
 # (dev), 那是安全的方向 —— 猜错成 dev 只是连不上, 猜错成 prod 会把测试流量
 # 打进生产。
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3000 \
+    NEXT_TELEMETRY_DISABLED=1 \
+    DD_TRACE_ENABLED=false \
+    OTEL_SDK_DISABLED=true \
+    TRACING_PROVIDER=none
 
 # ---------------------------
 # 安装 tini（修复子进程 + 更快退出）
@@ -132,14 +136,14 @@ COPY --from=builder /app/dashboard/node_modules/es-module-lexer ./node_modules/e
 COPY --from=builder /app/dashboard/node_modules/ms ./node_modules/ms
 COPY --from=builder /app/dashboard/node_modules/supports-color ./node_modules/supports-color
 COPY --from=builder /app/dashboard/node_modules/has-flag ./node_modules/has-flag
-ARG ENABLE_APM=true
+ARG ENABLE_APM=false
 ENV APM_COMPILED=${ENABLE_APM}
 COPY --from=builder /app/dashboard/node_modules/dd-trace ./node_modules/dd-trace
 COPY --from=builder /app/dashboard/node_modules/dc-polyfill ./node_modules/dc-polyfill
 COPY --from=builder /app/dashboard/node_modules/opentracing ./node_modules/opentracing
 # Next's standalone trace excludes the compiled instrumentation entrypoint.
 # Copy it explicitly so the runtime server executes instrumentation.ts before
-# accepting requests and the Console HTTP/Undici spans reach VictoriaTraces.
+# accepting requests when APM/OTel is explicitly enabled.
 COPY --from=builder /app/dashboard/.next/server/instrumentation.js ./.next/server/instrumentation.js
 
 # ---------------------------
@@ -150,8 +154,17 @@ COPY --from=builder /app/dashboard/.next/static /usr/share/nginx/html/_next/stat
 COPY deploy/nginx/all-in-one.conf /etc/nginx/conf.d/default.conf
 COPY scripts/ddtrace-preload.cjs ./scripts/ddtrace-preload.cjs
 RUN if [ "$ENABLE_APM" != "true" ]; then \
-      rm -rf ./node_modules/dd-trace ./node_modules/dc-polyfill ./node_modules/opentracing ./scripts/ddtrace-preload.cjs; \
-    fi
+      rm -rf ./node_modules/dd-trace ./node_modules/@datadog ./node_modules/dc-polyfill ./node_modules/opentracing \
+             ./node_modules/@opentelemetry/sdk-node ./node_modules/@opentelemetry/sdk-trace-base ./node_modules/@opentelemetry/sdk-trace-node \
+             ./node_modules/@opentelemetry/exporter-trace-otlp-grpc ./node_modules/@opentelemetry/exporter-trace-otlp-proto \
+             ./node_modules/@opentelemetry/otlp-exporter-base ./node_modules/@opentelemetry/otlp-transformer \
+             ./node_modules/@opentelemetry/instrumentation-http ./node_modules/@opentelemetry/instrumentation-undici \
+             ./node_modules/require-in-the-middle ./node_modules/import-in-the-middle \
+             ./scripts/ddtrace-preload.cjs; \
+    fi && \
+    rm -rf ./node_modules/next/dist/compiled/@vercel/og \
+           ./node_modules/pdfjs-dist ./node_modules/react-pdf && \
+    find ./node_modules -type f \( -name "*.map" -o -name "*.md" -o -name "*.ts" ! -name "*.d.ts" \) -delete 2>/dev/null || true
 COPY scripts/start-all-in-one.sh /usr/local/bin/start-all-in-one
 RUN chmod +x /usr/local/bin/start-all-in-one
 

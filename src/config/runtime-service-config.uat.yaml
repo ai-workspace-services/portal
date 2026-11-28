@@ -1,5 +1,5 @@
-# Serverless UAT 保留独立 Cloudflare / Cloud Run 入口。
-# Selfhost UAT 通过部署域名选择 selfhost 覆盖，内部 BFF 只走 Compose 服务。
+# UAT 生产预发环境配置。
+# Selfhost UAT 通过部署域名选择 selfhost 覆盖，内部 BFF 只走 Compose / K3s 服务。
 #
 # 这个文件原先不存在, 而 loader 的 source 选择是
 # `environment === 'prod' ? 'prod' : 'sit'` —— UAT 会静默使用 SIT 的端点
@@ -11,7 +11,7 @@ authUrl: https://accounts-cloudflare-uat.onwalk.net
 # edge routes the request to the GitOps-declared Accounts runtime.
 xconnectZeroUrl: https://accounts-cloudflare-uat.onwalk.net
 dashboardUrl: https://console.onwalk.net
-docsServiceUrl: https://uat-content-service-4ueoyqlpbq-de.a.run.app
+docsServiceUrl: https://content-uat.onwalk.net
 logLevel: info
 
 selfhost:

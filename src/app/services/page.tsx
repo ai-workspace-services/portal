@@ -208,9 +208,8 @@ export default function ServicesPage() {
       description: isChinese
         ? "模块化 MCP 服务驱动的可观测性中心。"
         : "Modular MCP server powering observability hub.",
-      href: "https://x-scope-hub-svc-plus-266500572462.asia-northeast1.run.app",
+      href: "/xscopehub",
       icon: Database,
-      external: true,
     },
     {
       key: "x-cloud-flow",
@@ -218,9 +217,8 @@ export default function ServicesPage() {
       description: isChinese
         ? "多云基础设施、配置编排与边缘执行流水线。"
         : "Multi-cloud infrastructure and edge execution flow.",
-      href: "https://x-cloud-flow-svc-plus-266500572462.asia-northeast1.run.app",
+      href: "/xcloudflow",
       icon: Network,
-      external: true,
     },
     {
       key: "xworkmate",
