@@ -92,14 +92,18 @@ describe("buildPlanUpsertBody", () => {
       {
         ...form,
         stripeProfile: " US ",
-        businessLine: " us_nodes ",
+        businessLine: " us_edge_pro ",
         merchantEntity: " US Entity Inc ",
+        reconciliationTag: " FIN-US-PRO-EDGE ",
+        regionScope: " US ",
       },
       existing,
     );
 
     expect(body.stripeProfile).toBe("us");
-    expect(body.businessLine).toBe("us_nodes");
+    expect(body.businessLine).toBe("us_edge_pro");
     expect(body.merchantEntity).toBe("US Entity Inc");
+    expect(body.reconciliationTag).toBe("FIN-US-PRO-EDGE");
+    expect(body.regionScope).toBe("US");
   });
 });

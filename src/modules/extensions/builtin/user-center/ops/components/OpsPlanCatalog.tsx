@@ -287,6 +287,9 @@ export default function OpsPlanCatalog() {
                             const businessTag =
                               p.businessLine ||
                               asString(p.features?.business_line);
+                            const reconciliationTag =
+                              p.reconciliationTag ||
+                              asString(p.features?.reconciliation_tag);
                             return (
                               <span
                                 key={p.planId}
@@ -295,10 +298,13 @@ export default function OpsPlanCatalog() {
                                 <span className="font-medium">
                                   {p.displayName || p.planId}
                                 </span>
-                                {profileTag && (
+                                {(profileTag || reconciliationTag) && (
                                   <span className="rounded bg-[var(--color-surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--color-text-muted)]">
                                     {profileTag}
                                     {businessTag ? ` · ${businessTag}` : ""}
+                                    {reconciliationTag
+                                      ? ` · ${reconciliationTag}`
+                                      : ""}
                                   </span>
                                 )}
                                 {quotaLabel && (
@@ -420,6 +426,8 @@ type EditState = {
   stripeProfile: string;
   businessLine: string;
   merchantEntity: string;
+  reconciliationTag: string;
+  regionScope: string;
   planId: string;
   kind: string;
   packageName: FamilyId;
@@ -464,6 +472,9 @@ function formFor(plan: BillingPlan, fallbackFamily: FamilyId): EditState {
     stripeProfile: plan.stripeProfile ?? asString(features.stripe_profile),
     businessLine: plan.businessLine ?? asString(features.business_line),
     merchantEntity: plan.merchantEntity ?? asString(features.merchant_entity),
+    reconciliationTag:
+      plan.reconciliationTag ?? asString(features.reconciliation_tag),
+    regionScope: plan.regionScope ?? asString(features.region_scope),
     planId: plan.planId,
     kind: plan.kind === "service" ? "service" : "subscription",
     packageName: rawFamily,
@@ -540,6 +551,8 @@ function CatalogEditor({
           stripeProfile: draft.stripeProfile,
           businessLine: draft.businessLine,
           merchantEntity: draft.merchantEntity,
+          reconciliationTag: draft.reconciliationTag,
+          regionScope: draft.regionScope,
           includedQuotaBytes: String(bytes),
           highSpeedQuotaBytes: String(highSpeedBytes),
           sortOrder: String(
@@ -878,6 +891,40 @@ function CatalogEditor({
             </label>
           </Section>
           <Section title="Stripe 价格与多主体映射">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setDraft((d) => ({
+                    ...d,
+                    stripeProfile: "hk",
+                    businessLine: "hk_apac_plus",
+                    merchantEntity: "HK Entity Ltd",
+                    reconciliationTag: "FIN-HK-PLUS-APAC",
+                    regionScope: "JP,PH,APAC",
+                  }))
+                }
+                className="rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)] hover:border-[color:var(--color-primary-border)] hover:text-[var(--color-heading)]"
+              >
+                套用 HK · Plus（JP/PH）
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setDraft((d) => ({
+                    ...d,
+                    stripeProfile: "us",
+                    businessLine: "us_edge_pro",
+                    merchantEntity: "US Entity Inc",
+                    reconciliationTag: "FIN-US-PRO-EDGE",
+                    regionScope: "US",
+                  }))
+                }
+                className="rounded-lg border border-[color:var(--color-surface-border)] bg-[var(--color-surface)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)] hover:border-[color:var(--color-primary-border)] hover:text-[var(--color-heading)]"
+              >
+                套用 US · Pro+（美国边缘节点）
+              </button>
+            </div>
             <Field
               label="Stripe Price ID"
               value={draft.stripePriceId}
@@ -894,13 +941,27 @@ function CatalogEditor({
                 label="业务线（Business Line）"
                 value={draft.businessLine}
                 onChange={(v) => patch("businessLine", v)}
-                placeholder="如 global_hk / us_nodes"
+                placeholder="如 hk_apac_plus / us_edge_pro"
               />
               <Field
                 label="收款公司名称（Merchant Entity）"
                 value={draft.merchantEntity}
                 onChange={(v) => patch("merchantEntity", v)}
                 placeholder="如 HK Entity Ltd"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field
+                label="财务对账标签（Reconciliation Tag）"
+                value={draft.reconciliationTag}
+                onChange={(v) => patch("reconciliationTag", v)}
+                placeholder="如 FIN-HK-PLUS-APAC / FIN-US-PRO-EDGE"
+              />
+              <Field
+                label="地区/节点范围（Region Scope）"
+                value={draft.regionScope}
+                onChange={(v) => patch("regionScope", v)}
+                placeholder="如 JP,PH,APAC 或 US"
               />
             </div>
           </Section>

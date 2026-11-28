@@ -8,6 +8,8 @@ export type BillingPlan = {
   stripeProfile?: string;
   businessLine?: string;
   merchantEntity?: string;
+  reconciliationTag?: string;
+  regionScope?: string;
   displayName?: string;
   kind: "subscription" | "service" | string;
   includedQuotaBytes?: number;
@@ -34,6 +36,8 @@ export type PlanForm = {
   stripeProfile?: string;
   businessLine?: string;
   merchantEntity?: string;
+  reconciliationTag?: string;
+  regionScope?: string;
   includedQuotaBytes: string;
   highSpeedQuotaBytes?: string;
   sortOrder: string;
@@ -50,6 +54,8 @@ export type PlanUpsertBody = {
   stripeProfile?: string;
   businessLine?: string;
   merchantEntity?: string;
+  reconciliationTag?: string;
+  regionScope?: string;
   includedQuotaBytes: number;
   highSpeedQuotaBytes?: number;
   trialDays: number;
@@ -92,6 +98,14 @@ export function buildPlanUpsertBody(
   if (form.merchantEntity !== undefined) {
     const trimmed = form.merchantEntity.trim();
     if (trimmed) body.merchantEntity = trimmed;
+  }
+  if (form.reconciliationTag !== undefined) {
+    const trimmed = form.reconciliationTag.trim();
+    if (trimmed) body.reconciliationTag = trimmed;
+  }
+  if (form.regionScope !== undefined) {
+    const trimmed = form.regionScope.trim();
+    if (trimmed) body.regionScope = trimmed;
   }
 
   if (existing?.priceAmount !== undefined) body.priceAmount = existing.priceAmount;
